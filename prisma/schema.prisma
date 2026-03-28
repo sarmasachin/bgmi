@@ -1,0 +1,141 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model AdminUser {
+  id           String   @id @default(cuid())
+  email        String   @unique
+  passwordHash String
+  name         String?
+  role         String   @default("admin")
+  isActive     Boolean  @default(true)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  resetTokens  PasswordResetToken[]
+}
+
+model PasswordResetToken {
+  id        String    @id @default(cuid())
+  userId    String
+  user      AdminUser @relation(fields: [userId], references: [id], onDelete: Cascade)
+  tokenHash String
+  expiresAt DateTime
+  usedAt    DateTime?
+  createdAt DateTime  @default(now())
+}
+
+model SiteSetting {
+  id        String   @id @default(cuid())
+  key       String   @unique
+  value     Json
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model PageTemplate {
+  id              String   @id @default(cuid())
+  title           String
+  slug            String   @unique
+  status          String   @default("draft")
+  content         Json
+  seoTitle        String?
+  seoDescription  String?
+  canonicalUrl    String?
+  ogImageUrl      String?
+  publishAsNews   Boolean  @default(false)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+}
+
+model NewsPost {
+  id             String   @id @default(cuid())
+  title          String
+  slug           String   @unique
+  excerpt        String?
+  content        Json
+  featureImage   String?
+  status         String   @default("draft")
+  seoTitle       String?
+  seoDescription String?
+  authorName     String?
+  publishedAt    DateTime?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+  comments       NewsComment[]
+  ratings        NewsRating[]
+}
+
+model NewsComment {
+  id        String   @id @default(cuid())
+  newsId    String
+  news      NewsPost @relation(fields: [newsId], references: [id], onDelete: Cascade)
+  name      String
+  message   String
+  status    String   @default("pending")
+  createdAt DateTime @default(now())
+}
+
+model NewsRating {
+  id        String   @id @default(cuid())
+  newsId    String
+  news      NewsPost @relation(fields: [newsId], references: [id], onDelete: Cascade)
+  value     Int
+  createdAt DateTime @default(now())
+}
+
+model HomeRating {
+  id        String   @id @default(cuid())
+  value     Int
+  createdAt DateTime @default(now())
+}
+
+/// Ratings for dynamic CMS pages (calculator clones, article pages on /[slug], etc.)
+model ToolRating {
+  id        String   @id @default(cuid())
+  context   String
+  value     Int
+  createdAt DateTime @default(now())
+
+  @@index([context])
+}
+
+model AdSlot {
+  id        String   @id @default(cuid())
+  slotKey   String   @unique
+  title     String
+  code      String?
+  isEnabled Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model PushSubscription {
+  id        String   @id @default(cuid())
+  endpoint  String   @unique
+  p256dh    String
+  auth      String
+  tags      String[]
+  createdAt DateTime @default(now())
+}
+
+model EmailSubscriber {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  tags      String[]
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+}
+
+model AuditLog {
+  id        String   @id @default(cuid())
+  actor     String
+  action    String
+  target    String
+  payload   Json?
+  createdAt DateTime @default(now())
+}

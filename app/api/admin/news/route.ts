@@ -1,0 +1,114 @@
+import {
+  createNews,
+  deleteNews,
+  getNewsById,
+  listNews,
+  updateNews,
+  updateNewsStatus,
+} from "@/src/server/repositories/newsRepository";
+import { addAuditLog } from "@/src/server/repositories/auditRepository";
+import { NextRequest, NextResponse } from "next/server";
+import { z } from "zod";
+
+const createSchema = z.object({
+  title: z.string().min(3),
+  slug: z.string().min(1),
+  excerpt: z.string().optional(),
+  content: z.string().optional(),
+  featureImage: z.string().optional(),
+  status: z.enum(["draft", "published"]).default("draft"),
+});
+
+export async function GET(request: NextRequest) {
+  const id = request.nextUrl.searchParams.get("id");
+  if (id) {
+    const item = await getNewsById(id);
+    if (!item) return NextResponse.json({ error: "Not found" }, { status: 404 });
+    return NextResponse.json({ data: item });
+  }
+
+  const page = Number(request.nextUrl.searchParams.get("page") ?? "1");
+  const pageSize = Number(request.nextUrl.searchParams.get("pageSize") ?? "10");
+  const result = await listNews(page, pageSize);
+  return NextResponse.json({
+    data: result.data,
+    page,
+    pageSize,
+    total: result.total,
+  });
+}
+
+export async function POST(request: NextRequest) {
+  const body = await request.json();
+  const parsed = createSchema.safeParse(body);
+  if (!parsed.success) {
+    return NextResponse.json({ error: "Invalid news payload" }, { status: 400 });
+  }
+  const item = await createNews(parsed.data);
+  await addAuditLog({
+    actor: "admin",
+    action: "news.create",
+    target: item.id,
+    payload: { slug: parsed.data.slug },
+  });
+  return NextResponse.json({ ok: true, data: item });
+}
+
+export async function PATCH(request: NextRequest) {
+  const body = await request.json();
+  const statusUpdateSchema = z.object({
+    id: z.string(),
+    status: z.enum(["draft", "published"]),
+  });
+  const contentUpdateSchema = z
+    .object({
+      id: z.string(),
+      title: z.string().min(3),
+      slug: z.string().min(1),
+      excerpt: z.string().optional(),
+      content: z.string().optional(),
+      featureImage: z.string().optional(),
+      status: z.enum(["draft", "published"]).optional(),
+    })
+    .strict();
+
+  const statusParsed = statusUpdateSchema.safeParse(body);
+  if (statusParsed.success) {
+    const item = await updateNewsStatus(statusParsed.data.id, statusParsed.data.status);
+    if (!item) return NextResponse.json({ error: "Not found" }, { status: 404 });
+    await addAuditLog({
+      actor: "admin",
+      action: "news.status.update",
+      target: statusParsed.data.id,
+      payload: { status: statusParsed.data.status },
+    });
+    return NextResponse.json({ ok: true, data: item });
+  }
+
+  const contentParsed = contentUpdateSchema.safeParse(body);
+  if (!contentParsed.success) {
+    return NextResponse.json({ error: "Invalid update" }, { status: 400 });
+  }
+  const item = await updateNews(contentParsed.data);
+  if (!item) return NextResponse.json({ error: "Not found" }, { status: 404 });
+  await addAuditLog({
+    actor: "admin",
+    action: "news.update",
+    target: contentParsed.data.id,
+    payload: { slug: contentParsed.data.slug },
+  });
+  return NextResponse.json({ ok: true, data: item });
+}
+
+export async function DELETE(request: NextRequest) {
+  const id = request.nextUrl.searchParams.get("id");
+  if (!id) return NextResponse.json({ error: "id required" }, { status: 400 });
+  const ok = await deleteNews(id);
+  if (!ok) return NextResponse.json({ error: "Not found" }, { status: 404 });
+  await addAuditLog({
+    actor: "admin",
+    action: "news.delete",
+    target: id,
+  });
+  return NextResponse.json({ ok: true });
+}

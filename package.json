@@ -1,0 +1,40 @@
+{
+  "name": "bgmi",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint",
+    "prisma:generate": "prisma generate",
+    "prisma:push": "prisma db push",
+    "seed:admin": "node scripts/seed-admin.mjs",
+    "seed:ads": "node scripts/seed-ad-slots.mjs",
+    "vapid:generate": "node scripts/generate-vapid.mjs",
+    "env:check": "node scripts/check-env.mjs",
+    "setup:local": "node scripts/setup-local.mjs"
+  },
+  "dependencies": {
+    "@prisma/client": "6.8.2",
+    "bcryptjs": "^3.0.2",
+    "next": "15.2.4",
+    "nodemailer": "^7.0.9",
+    "react": "18.3.1",
+    "react-dom": "18.3.1",
+    "sharp": "^0.33.5",
+    "web-push": "^3.6.7",
+    "zod": "^4.1.12"
+  },
+  "devDependencies": {
+    "@types/node": "^20",
+    "@types/nodemailer": "^7.0.3",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "@types/web-push": "^3.6.4",
+    "eslint": "^9",
+    "eslint-config-next": "15.2.4",
+    "prisma": "6.8.2",
+    "typescript": "^5"
+  }
+}
