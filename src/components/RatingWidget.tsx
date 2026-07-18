@@ -2,6 +2,8 @@
 
 import { useEffect, useLayoutEffect, useState } from "react";
 import type { RatingSummary } from "@/src/server/repositories/ratingSummaryRepository";
+import { UserErrorBanner } from "@/src/components/ui/UserErrorBanner";
+import { messageFromHttpStatus, messageFromUnknownError } from "@/src/lib/userFacingError";
 
 export type RatingTargetType = "home" | "news" | "tool";
 
@@ -106,19 +108,24 @@ export function RatingWidget({
           value: stars,
         }),
       });
-      const data = (await res.json()) as {
+      let data: {
         ok?: boolean;
         saved?: boolean;
         average?: number | null;
         count?: number;
         error?: string;
-      };
+      } = {};
+      try {
+        data = (await res.json()) as typeof data;
+      } catch {
+        data = {};
+      }
       if (!res.ok) {
-        setError(data.error ?? "Could not save rating");
+        setError(messageFromHttpStatus(res.status, data.error || "Could not save your rating."));
         return;
       }
       if (data.saved === false) {
-        setError("Database not connected — rating was not stored.");
+        setError("Ratings are temporarily unavailable. Please try again later.");
         return;
       }
       setValue(stars);
@@ -130,8 +137,8 @@ export function RatingWidget({
       }
       if (typeof data.count === "number") setCount(data.count);
       if (typeof data.average === "number") setAverage(data.average);
-    } catch {
-      setError("Network error");
+    } catch (err) {
+      setError(messageFromUnknownError(err, "Could not save your rating. Please try again."));
     } finally {
       setSubmitting(false);
     }
@@ -168,7 +175,7 @@ export function RatingWidget({
           </button>
         ))}
       </div>
-      {error ? <p className="rating-widget-error">{error}</p> : null}
+      {error ? <UserErrorBanner message={error} /> : null}
     </section>
   );
 }

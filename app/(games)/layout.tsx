@@ -1,4 +1,5 @@
 import { AdSlot } from "@/src/components/AdSlot";
+import { ClientErrorBoundary } from "@/src/components/ClientErrorBoundary";
 import { GameArticleFaq } from "@/src/components/GameArticleFaq";
 import { GameHeroTitle } from "@/src/components/GameHeroTitle";
 import { GameTestimonialsSection } from "@/src/components/GameTestimonialsSection";
@@ -32,17 +33,23 @@ export default async function GamesLayout({ children }: { children: React.ReactN
       <GameHeroTitle bgmiTitle={settings.homeDisplay.heroTitle} />
       <main className="page-container">
         {adPlaces.home.home_above_calculator ? <AdSlot slotKey="home_above_calculator" /> : null}
-        <SensCalculatorHost phoneModels={phoneModels} />
+        <ClientErrorBoundary label="Calculator">
+          <SensCalculatorHost phoneModels={phoneModels} />
+        </ClientErrorBoundary>
         {adPlaces.home.home_between_tool_and_article ? (
           <AdSlot slotKey="home_between_tool_and_article" />
         ) : null}
-        <GameTestimonialsSection
-          bgmiTestimonials={bgmiTestimonials}
-          pubgTestimonials={pubgTestimonials}
-        />
+        <ClientErrorBoundary label="Reviews">
+          <GameTestimonialsSection
+            bgmiTestimonials={bgmiTestimonials}
+            pubgTestimonials={pubgTestimonials}
+          />
+        </ClientErrorBoundary>
         {children}
       </main>
-      <GameArticleFaq faqItems={faqItems} />
+      <ClientErrorBoundary label="Guide">
+        <GameArticleFaq faqItems={faqItems} />
+      </ClientErrorBoundary>
       <SiteFooter settings={settings} />
     </div>
   );

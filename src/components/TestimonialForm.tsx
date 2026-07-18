@@ -1,6 +1,8 @@
 "use client";
 
 import { FormEvent, useId, useState } from "react";
+import { UserErrorBanner } from "@/src/components/ui/UserErrorBanner";
+import { messageFromUnknownError, readApiError } from "@/src/lib/userFacingError";
 
 type Game = "bgmi" | "pubg";
 
@@ -84,16 +86,8 @@ export function TestimonialForm({ game }: Props) {
         }),
       });
 
-      const data = (await res.json()) as { ok?: boolean; error?: string; status?: string };
-
       if (!res.ok) {
-        if (res.status === 429) {
-          setError("Too many requests. Please try again in a minute.");
-        } else if (res.status === 503) {
-          setError("Database unavailable. Please try again later.");
-        } else {
-          setError(data.error ?? "Could not submit testimonial.");
-        }
+        setError(await readApiError(res, "Could not submit your review."));
         return;
       }
 
@@ -105,8 +99,8 @@ export function TestimonialForm({ game }: Props) {
       setMessage("");
       setPhoneModel("");
       setShowName(true);
-    } catch {
-      setError("Network error. Please try again.");
+    } catch (err) {
+      setError(messageFromUnknownError(err, "Could not submit your review. Please try again."));
     } finally {
       setSubmitting(false);
     }
@@ -221,11 +215,7 @@ export function TestimonialForm({ game }: Props) {
               <span>Show my name on the website</span>
             </label>
 
-            {error ? (
-              <p className="testimonial-form-error" role="alert">
-                {error}
-              </p>
-            ) : null}
+            <UserErrorBanner message={error} />
 
             <button className="testimonial-form-submit" type="submit" disabled={submitting}>
               {submitting ? "Submitting…" : "Submit review"}

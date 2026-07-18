@@ -1,5 +1,6 @@
 import { AdSlot } from "@/src/components/AdSlot";
 import { RatingWidget } from "@/src/components/RatingWidget";
+import { ClientErrorBoundary } from "@/src/components/ClientErrorBoundary";
 import { ratingWidgetRemountKey } from "@/src/lib/ratingWidgetKey";
 import { getAdPlacementVisibility } from "@/src/server/repositories/adPlacementRepository";
 import { getPublishedNewsBySlug } from "@/src/server/repositories/newsRepository";
@@ -89,13 +90,15 @@ export default async function NewsDetailPage({ params }: Props) {
         ) : null}
         {adPlaces.newsArticle.news_detail_mid ? <AdSlot slotKey="news_detail_mid" /> : null}
         {adPlaces.newsArticle.news_detail_bottom ? <AdSlot slotKey="news_detail_bottom" /> : null}
-        <RatingWidget
-          key={ratingWidgetRemountKey("news", item.id)}
-          title="Rate this news article"
-          targetType="news"
-          targetId={item.id}
-          initialSummary={ratingSummary}
-        />
+        <ClientErrorBoundary label="Rating">
+          <RatingWidget
+            key={ratingWidgetRemountKey("news", item.id)}
+            title="Rate this news article"
+            targetType="news"
+            targetId={item.id}
+            initialSummary={ratingSummary}
+          />
+        </ClientErrorBoundary>
       </article>
       <script
         type="application/ld+json"
