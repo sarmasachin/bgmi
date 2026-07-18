@@ -8,20 +8,21 @@ export type HomeFaqItem = { id: string; question: string; answer: string };
 export const DEFAULT_HOME_FAQ: HomeFaqItem[] = [
   {
     id: "default-1",
-    question: "क्या यह iPhone के लिए काम करता है?",
+    question: "Does this work for iPhone?",
     answer:
-      "हाँ, यह कैलकुलेटर फोन मॉडल के हिसाब से सेंसिटिविटी को ऑटो-एडजस्ट करता है।",
+      "Yes. The calculator auto-adjusts sensitivity based on your phone model.",
   },
   {
     id: "default-2",
-    question: "FPS का क्या रोल है?",
+    question: "What role does FPS play?",
     answer:
-      "FPS जितना ज्यादा होगा, गेम उतना स्मूथ चलेगा और निशाना लगाना आसान होगा।",
+      "Higher FPS makes the game smoother and usually makes aiming feel more responsive.",
   },
   {
     id: "default-3",
-    question: "क्या इससे आईडी बैन हो सकती है?",
-    answer: "बिल्कुल नहीं, यह सिर्फ calculator है जो in-game settings बताता है।",
+    question: "Can this get my ID banned?",
+    answer:
+      "No. This is only a calculator that suggests in-game settings.",
   },
 ];
 

@@ -139,3 +139,20 @@ model AuditLog {
   payload   Json?
   createdAt DateTime @default(now())
 }
+
+/// User testimonials (pending → approved). Max 20 approved; oldest approved removed on overflow.
+model Testimonial {
+  id          String    @id @default(cuid())
+  name        String
+  rating      Int
+  message     String
+  game        String
+  phoneModel  String?
+  showName    Boolean   @default(true)
+  status      String    @default("pending")
+  createdAt   DateTime  @default(now())
+  approvedAt  DateTime?
+
+  @@index([status, approvedAt])
+  @@index([status, createdAt])
+}

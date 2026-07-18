@@ -1,37 +1,57 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { calculateSensitivity, ScopeResult } from "./calculator";
-import { ageOptions, fingerOptions, gyroOptions, ramOptions } from "./constants";
+import {
+  calculateSensitivity,
+  GyroType,
+  PlayerRole,
+  ScopeResult,
+} from "./calculator";
+import {
+  ageOptions,
+  attachmentOptions,
+  fingerOptions,
+  fpsOptions,
+  gyroOptions,
+  playerRoleOptions,
+  ramOptions,
+} from "./constants";
 
 type FormState = {
   modelSearch: string;
   ramSize: number;
+  fpsMode: number;
+  attachment: number;
+  playerRole: PlayerRole;
   baseValue: number;
   ipadView: boolean;
-  fps90: boolean;
   age: number;
   fingers: number;
-  gyro: number;
+  gyro: GyroType;
 };
 
 const initialForm: FormState = {
   modelSearch: "",
-  ramSize: 1,
+  ramSize: 1.0,
+  fpsMode: 1.0,
+  attachment: 1.0,
+  playerRole: "balanced",
   baseValue: 120,
   ipadView: false,
-  fps90: false,
-  age: 1,
-  fingers: 1,
-  gyro: 1,
+  age: 1.0,
+  fingers: 1.0,
+  gyro: "gyro",
 };
 
 type Props = {
   /** Search suggestions only; does not change sensitivity math (modelName stays user text). */
   phoneModels: string[];
+  /** Display text only — calculator math stays the same. */
+  game?: "bgmi" | "pubg";
 };
 
-export function SensCalculator({ phoneModels }: Props) {
+export function SensCalculator({ phoneModels, game = "bgmi" }: Props) {
+  const gameLabel = game === "pubg" ? "PUBG Mobile" : "BGMI";
   const [form, setForm] = useState<FormState>(initialForm);
   const [results, setResults] = useState<ScopeResult[] | null>(null);
   const [showSuggestions, setShowSuggestions] = useState(false);
@@ -46,11 +66,13 @@ export function SensCalculator({ phoneModels }: Props) {
     const response = calculateSensitivity({
       baseValue: form.baseValue || 120,
       ramMultiplier: form.ramSize,
-      gyroMultiplier: form.gyro,
+      gyroType: form.gyro,
       ageMultiplier: form.age,
       fingerMultiplier: form.fingers,
       ipadView: form.ipadView,
-      fps90: form.fps90,
+      fpsMultiplier: form.fpsMode,
+      attachmentMultiplier: form.attachment,
+      playerRole: form.playerRole,
       modelName: form.modelSearch,
     });
     setResults(response);
@@ -72,7 +94,7 @@ export function SensCalculator({ phoneModels }: Props) {
         }}
       >
         <div className="form-group">
-          <label htmlFor="modelSearch">फोन मॉडल सर्च करें</label>
+          <label htmlFor="modelSearch">Search phone model</label>
           <input
             id="modelSearch"
             value={form.modelSearch}
@@ -82,6 +104,9 @@ export function SensCalculator({ phoneModels }: Props) {
               setShowSuggestions(true);
             }}
             onFocus={() => setShowSuggestions(true)}
+            onBlur={() => {
+              window.setTimeout(() => setShowSuggestions(false), 150);
+            }}
             autoComplete="off"
           />
           <div
@@ -96,6 +121,7 @@ export function SensCalculator({ phoneModels }: Props) {
                 type="button"
                 key={item}
                 className="suggestion-item"
+                onMouseDown={(event) => event.preventDefault()}
                 onClick={() => {
                   setForm((prev) => ({ ...prev, modelSearch: item }));
                   setShowSuggestions(false);
@@ -107,36 +133,104 @@ export function SensCalculator({ phoneModels }: Props) {
           </div>
         </div>
 
-        <div className="form-group">
-          <label htmlFor="ramSize">फोन की RAM चुनें (2GB - 24GB)</label>
-          <select
-            id="ramSize"
-            value={form.ramSize}
-            onChange={(event) =>
-              setForm((prev) => ({ ...prev, ramSize: Number(event.target.value) }))
-            }
-          >
-            {ramOptions.map((option) => (
-              <option key={option.label} value={option.value}>
-                {option.label}
-              </option>
-            ))}
-          </select>
+        <div className="grid-half">
+          <div className="form-group">
+            <label htmlFor="ramSize">Phone RAM</label>
+            <select
+              id="ramSize"
+              value={form.ramSize}
+              onChange={(event) =>
+                setForm((prev) => ({
+                  ...prev,
+                  ramSize: Number(event.target.value),
+                }))
+              }
+            >
+              {ramOptions.map((option) => (
+                <option key={option.label} value={option.value}>
+                  {option.label}
+                </option>
+              ))}
+            </select>
+          </div>
+          <div className="form-group">
+            <label htmlFor="fpsMode">Gaming FPS mode</label>
+            <select
+              id="fpsMode"
+              value={form.fpsMode}
+              onChange={(event) =>
+                setForm((prev) => ({
+                  ...prev,
+                  fpsMode: Number(event.target.value),
+                }))
+              }
+            >
+              {fpsOptions.map((option) => (
+                <option key={option.label} value={option.value}>
+                  {option.label}
+                </option>
+              ))}
+            </select>
+          </div>
+        </div>
+
+        <div className="grid-half">
+          <div className="form-group">
+            <label htmlFor="attachment">Attachment / Grip</label>
+            <select
+              id="attachment"
+              value={form.attachment}
+              onChange={(event) =>
+                setForm((prev) => ({
+                  ...prev,
+                  attachment: Number(event.target.value),
+                }))
+              }
+            >
+              {attachmentOptions.map((option) => (
+                <option key={option.label} value={option.value}>
+                  {option.label}
+                </option>
+              ))}
+            </select>
+          </div>
+          <div className="form-group">
+            <label htmlFor="playerRole">Play style (Player role)</label>
+            <select
+              id="playerRole"
+              value={form.playerRole}
+              onChange={(event) =>
+                setForm((prev) => ({
+                  ...prev,
+                  playerRole: event.target.value as PlayerRole,
+                }))
+              }
+            >
+              {playerRoleOptions.map((option) => (
+                <option key={option.value} value={option.value}>
+                  {option.label}
+                </option>
+              ))}
+            </select>
+          </div>
         </div>
 
         <div className="form-group">
-          <label htmlFor="baseValue">बेस नो-स्कोप वैल्यू (Base)</label>
+          <label htmlFor="baseValue">Base no-scope value</label>
           <input
             id="baseValue"
             type="number"
             value={form.baseValue}
             onChange={(event) =>
-              setForm((prev) => ({ ...prev, baseValue: Number(event.target.value) }))
+              setForm((prev) => ({
+                ...prev,
+                baseValue: Number(event.target.value),
+              }))
             }
           />
         </div>
 
-        <div className="checkbox-row">
+        <div className="checkbox-row checkbox-row--start">
           <label className="check-item">
             <input
               type="checkbox"
@@ -147,21 +241,11 @@ export function SensCalculator({ phoneModels }: Props) {
             />
             iPad View / 90 FOV
           </label>
-          <label className="check-item">
-            <input
-              type="checkbox"
-              checked={form.fps90}
-              onChange={(event) =>
-                setForm((prev) => ({ ...prev, fps90: event.target.checked }))
-              }
-            />
-            90 FPS Mode
-          </label>
         </div>
 
         <div className="grid-half">
           <div className="form-group">
-            <label htmlFor="age">डिवाइस की उम्र</label>
+            <label htmlFor="age">Device age</label>
             <select
               id="age"
               value={form.age}
@@ -177,12 +261,15 @@ export function SensCalculator({ phoneModels }: Props) {
             </select>
           </div>
           <div className="form-group">
-            <label htmlFor="fingers">फिंगर सेटअप</label>
+            <label htmlFor="fingers">Finger setup</label>
             <select
               id="fingers"
               value={form.fingers}
               onChange={(event) =>
-                setForm((prev) => ({ ...prev, fingers: Number(event.target.value) }))
+                setForm((prev) => ({
+                  ...prev,
+                  fingers: Number(event.target.value),
+                }))
               }
             >
               {fingerOptions.map((option) => (
@@ -195,16 +282,19 @@ export function SensCalculator({ phoneModels }: Props) {
         </div>
 
         <div className="form-group">
-          <label htmlFor="gyro">कंट्रोल (Type)</label>
+          <label htmlFor="gyro">Control type</label>
           <select
             id="gyro"
             value={form.gyro}
             onChange={(event) =>
-              setForm((prev) => ({ ...prev, gyro: Number(event.target.value) }))
+              setForm((prev) => ({
+                ...prev,
+                gyro: event.target.value as GyroType,
+              }))
             }
           >
             {gyroOptions.map((option) => (
-              <option key={option.label} value={option.value}>
+              <option key={option.value} value={option.value}>
                 {option.label}
               </option>
             ))}
@@ -213,15 +303,17 @@ export function SensCalculator({ phoneModels }: Props) {
 
         <div className="btn-group">
           <button className="btn-calc" type="button" onClick={runCalculate}>
-            कैलकुलेट करें
+            Calculate
           </button>
           <button className="btn-reset" type="button" onClick={resetForm}>
-            रिसेट
+            Reset
           </button>
         </div>
       </form>
 
-      <section className={`result-card${results ? " result-card--has-results" : ""}`}>
+      <section
+        className={`result-card${results ? " result-card--has-results" : ""}`}
+      >
         {results ? (
           <div id="res_section">
             <div className="tabs">
@@ -230,22 +322,26 @@ export function SensCalculator({ phoneModels }: Props) {
                 {results.map((item) => (
                   <div className="res-item" key={`camera-${item.name}`}>
                     <span>{item.name}</span>
-                    <b>{item.camera}</b>
+                    <b>{item.camera}%</b>
                   </div>
                 ))}
               </div>
               <div className="tab-box">
-                <div className="tab-title ads">ADS</div>
+                <div className="tab-title ads">ADS / GYRO</div>
                 {results.map((item) => (
                   <div className="res-item" key={`ads-${item.name}`}>
                     <span>{item.name}</span>
-                    <b>{item.ads}</b>
+                    <b>{item.ads}%</b>
                   </div>
                 ))}
               </div>
             </div>
           </div>
-        ) : null}
+        ) : (
+          <div className="result-pre-msg">
+            Fill in the details and tap Calculate for {gameLabel}
+          </div>
+        )}
       </section>
     </div>
   );

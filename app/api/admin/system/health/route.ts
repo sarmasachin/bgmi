@@ -1,10 +1,6 @@
 import { NextResponse } from "next/server";
-import { getEnvStatus } from "@/src/server/envStatus";
+import { getSystemHealthData } from "@/src/server/admin/getSystemHealthData";
 
 export async function GET() {
-  const env = getEnvStatus();
-  return NextResponse.json({
-    ok: env.present === env.total,
-    env,
-  });
+  return NextResponse.json(getSystemHealthData());
 }

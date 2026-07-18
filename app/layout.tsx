@@ -15,8 +15,8 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: {
-    default: "SENS MASTER PRO",
-    template: "%s | SENS MASTER PRO",
+    default: "Sensitivity Settings",
+    template: "%s | Sensitivity Settings",
   },
   description: "BGMI Best Sensitivity Calculator with pro presets and gaming news.",
 };

@@ -4,6 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
+    "dev:turbo": "next dev --turbo",
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
@@ -13,7 +14,9 @@
     "seed:ads": "node scripts/seed-ad-slots.mjs",
     "vapid:generate": "node scripts/generate-vapid.mjs",
     "env:check": "node scripts/check-env.mjs",
-    "setup:local": "node scripts/setup-local.mjs"
+    "setup:local": "node scripts/setup-local.mjs",
+    "setup:phase1": "node scripts/phase1-setup.mjs",
+    "setup:phase1:windows": "node scripts/phase1-windows.mjs"
   },
   "dependencies": {
     "@prisma/client": "6.8.2",

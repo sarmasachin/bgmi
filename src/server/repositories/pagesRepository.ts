@@ -1,3 +1,4 @@
+import { cache } from "react";
 import { mockStore } from "@/src/server/mockStore";
 import { prisma, tryPrisma } from "@/src/server/dbSafe";
 import type { Prisma } from "@prisma/client";
@@ -106,7 +107,7 @@ export async function listPages() {
   return dbData ?? mockStore.pages;
 }
 
-export async function getPublishedPageBySlug(slug: string) {
+export const getPublishedPageBySlug = cache(async function getPublishedPageBySlug(slug: string) {
   const dbData = await tryPrisma(async () =>
     prisma.pageTemplate.findFirst({
       where: { slug, status: "published" },
@@ -114,9 +115,9 @@ export async function getPublishedPageBySlug(slug: string) {
   );
   if (dbData) return dbData;
   return mockStore.pages.find((item) => item.slug === slug && item.status === "published") ?? null;
-}
+});
 
-export async function getPageBySlug(slug: string) {
+export const getPageBySlug = cache(async function getPageBySlug(slug: string) {
   const dbData = await tryPrisma(async () =>
     prisma.pageTemplate.findFirst({
       where: { slug },
@@ -124,7 +125,7 @@ export async function getPageBySlug(slug: string) {
   );
   if (dbData) return dbData;
   return mockStore.pages.find((item) => item.slug === slug) ?? null;
-}
+});
 
 export async function createPage(input: PageInput) {
   const dbData = await tryPrisma(async () => {

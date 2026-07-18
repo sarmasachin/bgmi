@@ -43,7 +43,7 @@ export const mockStore = {
       title: "BGMI Default Home",
       slug: "/",
       status: "published",
-      seoTitle: "SENS MASTER PRO",
+      seoTitle: "Sensitivity Settings",
       seoDescription: "Default homepage template for cloned pages.",
       content: { html: "<h2>Default Home Article</h2><p>Clone pages copy this article content.</p>" },
     },

@@ -1,15 +1,10 @@
 import { NextResponse } from "next/server";
-import { prisma, tryPrisma } from "@/src/server/dbSafe";
+import { getAdminAuditRows } from "@/src/server/repositories/adminAuditRepository";
 import { clearAllAuditLogs } from "@/src/server/repositories/auditRepository";
 
 export async function GET() {
-  const data = await tryPrisma(async () =>
-    prisma.auditLog.findMany({
-      orderBy: { createdAt: "desc" },
-      take: 100,
-    }),
-  );
-  return NextResponse.json({ data: data ?? [] });
+  const data = await getAdminAuditRows();
+  return NextResponse.json({ data });
 }
 
 export async function DELETE() {

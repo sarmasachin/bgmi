@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useLayoutEffect, useState } from "react";
+import type { RatingSummary } from "@/src/server/repositories/ratingSummaryRepository";
 
 export type RatingTargetType = "home" | "news" | "tool";
 
@@ -9,17 +10,28 @@ type Props = {
   targetType: RatingTargetType;
   /** News: post id. Tool: URL slug / page context (no leading slash). Omit for home. */
   targetId?: string;
+  /**
+   * Server-prefetched summary. When set (including `null` = DB unavailable),
+   * skips the client `/api/ratings` GET round-trip.
+   */
+  initialSummary?: RatingSummary | null;
 };
 
 function storageKey(targetType: RatingTargetType, targetId?: string) {
   return `bgmi_rated_v1:${targetType}:${targetId ?? "home"}`;
 }
 
-export function RatingWidget({ title, targetType, targetId }: Props) {
+export function RatingWidget({
+  title,
+  targetType,
+  targetId,
+  initialSummary,
+}: Props) {
+  const hasServerSummary = initialSummary !== undefined;
   const [value, setValue] = useState<number | null>(null);
-  const [average, setAverage] = useState<number | null>(null);
-  const [count, setCount] = useState(0);
-  const [loading, setLoading] = useState(true);
+  const [average, setAverage] = useState<number | null>(initialSummary?.average ?? null);
+  const [count, setCount] = useState(initialSummary?.count ?? 0);
+  const [loading, setLoading] = useState(!hasServerSummary);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
   /** null = not checked yet (render nothing: avoids SSR/refresh flash before localStorage). */
@@ -38,7 +50,7 @@ export function RatingWidget({ title, targetType, targetId }: Props) {
 
   useEffect(() => {
     let cancelled = false;
-    if (showUI !== true) {
+    if (hasServerSummary || showUI !== true) {
       return;
     }
     if (targetType === "news" && !targetId?.trim()) {
@@ -54,14 +66,22 @@ export function RatingWidget({ title, targetType, targetId }: Props) {
     if (targetId?.trim()) params.set("targetId", targetId.trim());
 
     void fetch(`/api/ratings?${params}`, { cache: "no-store" })
-      .then((r) => r.json())
-      .then((j: { average?: number | null; count?: number }) => {
+      .then(async (r) => {
+        if (!r.ok) {
+          return { average: null, count: 0 };
+        }
+        return r.json() as Promise<{ average?: number | null; count?: number }>;
+      })
+      .then((j) => {
         if (cancelled) return;
         setAverage(typeof j.average === "number" ? j.average : null);
         setCount(typeof j.count === "number" ? j.count : 0);
       })
       .catch(() => {
-        if (!cancelled) setAverage(null);
+        if (!cancelled) {
+          setAverage(null);
+          setCount(0);
+        }
       })
       .finally(() => {
         if (!cancelled) setLoading(false);
@@ -70,7 +90,7 @@ export function RatingWidget({ title, targetType, targetId }: Props) {
     return () => {
       cancelled = true;
     };
-  }, [showUI, targetType, targetId, key]);
+  }, [hasServerSummary, showUI, targetType, targetId]);
 
   async function submit(stars: number) {
     if (showUI !== true || submitting) return;

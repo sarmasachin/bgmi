@@ -1,3 +1,4 @@
+import { cache } from "react";
 import { prisma, tryPrisma } from "@/src/server/dbSafe";
 
 const KEY = "settings:adPlacements";
@@ -52,13 +53,13 @@ function mergeVisibility(raw: unknown): AdPlacementVisibility {
   return out;
 }
 
-export async function getAdPlacementVisibility(): Promise<AdPlacementVisibility> {
+export const getAdPlacementVisibility = cache(async function getAdPlacementVisibility() {
   if (!process.env.DATABASE_URL && process.env.NODE_ENV !== "production") {
     return structuredClone(mockVisibility);
   }
   const row = await tryPrisma(() => prisma.siteSetting.findUnique({ where: { key: KEY } }));
   return mergeVisibility(row?.value);
-}
+});
 
 export async function saveAdPlacementVisibility(input: AdPlacementVisibility): Promise<void> {
   const merged = mergeVisibility(input);

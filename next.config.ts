@@ -2,6 +2,7 @@ import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   distDir: ".next",
+  devIndicators: false,
   serverExternalPackages: ["sharp"],
   async rewrites() {
     return [

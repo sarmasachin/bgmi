@@ -4,12 +4,11 @@ import { notFound } from "next/navigation";
 import { AdSlot } from "@/src/components/AdSlot";
 import { RatingWidget } from "@/src/components/RatingWidget";
 import { ratingWidgetRemountKey } from "@/src/lib/ratingWidgetKey";
-import { ShareRail } from "@/src/components/ShareRail";
 import { SiteFooter } from "@/src/components/SiteFooter";
 import { SensCalculator } from "@/src/features/sensCalculator/SensCalculator";
 import { getCalculatorPhoneModels } from "@/src/server/repositories/calculatorPhoneModelsRepository";
 import { getPageBySlug, getPublishedPageBySlug } from "@/src/server/repositories/pagesRepository";
-import { getSettings, isShareRailEnabled } from "@/src/server/repositories/settingsRepository";
+import { getRatingSummary } from "@/src/server/repositories/ratingSummaryRepository";
 
 type TemplateType = "home" | "article" | "landing";
 
@@ -87,23 +86,20 @@ export default async function DynamicTemplatePage({ params, searchParams }: Prop
   const isAdmin = cookieStore.get("bgmi_admin_session")?.value === "active";
   const allowDraftPreview = query.preview === "1" && isAdmin;
 
-  const [page, settings, phoneModels] = await Promise.all([
+  const [page, phoneModels] = await Promise.all([
     getPageForSlug(slug, allowDraftPreview),
-    getSettings(),
     getCalculatorPhoneModels(),
   ]);
   if (!page) notFound();
 
-  const showShareRail = isShareRailEnabled(settings.integrations);
-
   const extracted = extractContentData(page.content);
   const articleHtml = extracted.html;
   const templateType = extracted.templateType;
+  const ratingSummary = await getRatingSummary("tool", slug);
 
   if (templateType === "article") {
     return (
       <div>
-        {showShareRail ? <ShareRail /> : null}
         <div className="light-content-wrapper" style={{ marginTop: 0 }}>
           <div className="content-inner">
             <h1 style={{ marginBottom: 20 }}>{page.title}</h1>
@@ -119,6 +115,7 @@ export default async function DynamicTemplatePage({ params, searchParams }: Prop
               title="Rate this page"
               targetType="tool"
               targetId={slug}
+              initialSummary={ratingSummary}
             />
           </div>
         </div>
@@ -146,6 +143,7 @@ export default async function DynamicTemplatePage({ params, searchParams }: Prop
                 title="Rate this page"
                 targetType="tool"
                 targetId={slug}
+                initialSummary={ratingSummary}
               />
             </div>
           </div>
@@ -157,7 +155,6 @@ export default async function DynamicTemplatePage({ params, searchParams }: Prop
 
   return (
     <div>
-      {showShareRail ? <ShareRail /> : null}
       <h1 className="main-title">{page.title}</h1>
       <main className="page-container">
         <AdSlot slotKey="home_above_calculator" />
@@ -168,6 +165,7 @@ export default async function DynamicTemplatePage({ params, searchParams }: Prop
           title="Rate this page"
           targetType="tool"
           targetId={slug}
+          initialSummary={ratingSummary}
         />
       </main>
       <div className="light-content-wrapper">

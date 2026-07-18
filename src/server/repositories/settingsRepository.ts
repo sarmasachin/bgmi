@@ -1,3 +1,4 @@
+import { cache } from "react";
 import { defaultSeoSettings, defaultThemeTokens } from "@/src/lib/siteSettings";
 import { prisma, tryPrisma } from "@/src/server/dbSafe";
 
@@ -35,13 +36,12 @@ const defaultSettings = {
     smtp: {},
     pushKeys: {},
     cdn: { provider: "supabase", baseUrl: "" },
-    /** When false, the floating social share rail is hidden on public pages. */
+    /** When false, footer social share links are hidden on public pages. */
     showShareRail: true,
   },
   navigation: [
-    { label: "Home", href: "/" },
-    { label: "News", href: "/news" },
-    { label: "Contact", href: "/contact" },
+    { label: "BGMI", href: "/" },
+    { label: "PUBG Mobile", href: "/pubg" },
   ],
   footerLinks: [
     { label: "Privacy", href: "/privacy" },
@@ -51,14 +51,14 @@ const defaultSettings = {
     { label: "News", href: "/news" },
     { label: "Sitemap", href: "/sitemap.xml" },
   ],
-  footerCopyright: "© 2026 SENS MASTER PRO. All rights reserved.",
+  footerCopyright: "© 2026 Sensitivity Settings. All rights reserved.",
   footerBranding: {
-    brandTitle: "SENS MASTER PRO",
-    tagline: "BGMI tools, news updates, and pro-level sensitivity insights.",
+    brandTitle: "Sensitivity Settings",
+    tagline: "BGMI & PUBG Mobile sensitivity calculator for better aim.",
   },
   homeDisplay: {
-    headerTitle: "SENS MASTER PRO",
-    heroTitle: "SENS MASTER PRO",
+    headerTitle: "Sensitivity Settings",
+    heroTitle: "BGMI Sensitivity Settings calculator",
   },
 };
 
@@ -108,7 +108,7 @@ function parseFooterBrandingValue(raw: unknown): { brandTitle: string; tagline: 
   };
 }
 
-export async function getSettings() {
+export const getSettings = cache(async function getSettings() {
   const rows = await tryPrisma(async () =>
     prisma.siteSetting.findMany({
       where: {
@@ -138,14 +138,16 @@ export async function getSettings() {
     footerBranding: parseFooterBrandingValue(map[SETTINGS_KEYS.footerBranding]),
     homeDisplay: parseHomeDisplayValue(map[SETTINGS_KEYS.homeDisplay]),
   };
-}
+});
+
+export type SiteSettings = Awaited<ReturnType<typeof getSettings>>;
 
 function parseFooterCopyright(raw: unknown): string {
   if (typeof raw === "string" && raw.trim()) return raw.trim();
   return defaultSettings.footerCopyright;
 }
 
-/** Public pages show ShareRail unless explicitly set to false in site settings. */
+/** Public pages show footer share links unless explicitly set to false in site settings. */
 export function isShareRailEnabled(integrations: unknown): boolean {
   if (!integrations || typeof integrations !== "object") return true;
   const obj = integrations as Record<string, unknown>;

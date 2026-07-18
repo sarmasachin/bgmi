@@ -2,7 +2,7 @@ export function organizationSchema(baseUrl: string) {
   return {
     "@context": "https://schema.org",
     "@type": "Organization",
-    name: "SENS MASTER PRO",
+    name: "Sensitivity Settings",
     url: baseUrl,
     sameAs: [
       "https://facebook.com/",
@@ -16,7 +16,7 @@ export function websiteSchema(baseUrl: string) {
   return {
     "@context": "https://schema.org",
     "@type": "WebSite",
-    name: "SENS MASTER PRO",
+    name: "Sensitivity Settings",
     url: baseUrl,
   };
 }
@@ -44,10 +44,10 @@ export function faqSchema() {
     mainEntity: [
       {
         "@type": "Question",
-        name: "क्या यह iPhone के लिए काम करता है?",
+        name: "Does this work for iPhone?",
         acceptedAnswer: {
           "@type": "Answer",
-          text: "हाँ, यह कैलकुलेटर फोन मॉडल के हिसाब से sensitivity adjust करता है।",
+          text: "Yes. The calculator adjusts sensitivity based on your phone model.",
         },
       },
     ],

@@ -3,6 +3,7 @@ import { RatingWidget } from "@/src/components/RatingWidget";
 import { ratingWidgetRemountKey } from "@/src/lib/ratingWidgetKey";
 import { getAdPlacementVisibility } from "@/src/server/repositories/adPlacementRepository";
 import { getPublishedNewsBySlug } from "@/src/server/repositories/newsRepository";
+import { getRatingSummary } from "@/src/server/repositories/ratingSummaryRepository";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 
@@ -33,7 +34,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       description,
       url: articleUrl,
       type: "article",
-      siteName: "SENS MASTER PRO",
+      siteName: "Sensitivity Settings",
       images: item.featureImage ? [{ url: item.featureImage, alt: item.title }] : undefined,
       publishedTime: item.publishedAt ? new Date(item.publishedAt).toISOString() : undefined,
       modifiedTime: item.updatedAt ? new Date(item.updatedAt).toISOString() : undefined,
@@ -52,7 +53,10 @@ export default async function NewsDetailPage({ params }: Props) {
   const item = await getPublishedNewsBySlug(slug);
   if (!item) notFound();
 
-  const adPlaces = await getAdPlacementVisibility();
+  const [adPlaces, ratingSummary] = await Promise.all([
+    getAdPlacementVisibility(),
+    getRatingSummary("news", item.id),
+  ]);
 
   const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
   const articleSchema = {
@@ -62,7 +66,7 @@ export default async function NewsDetailPage({ params }: Props) {
     datePublished: item.publishedAt ?? item.createdAt,
     dateModified: item.updatedAt,
     author: { "@type": "Person", name: "Admin" },
-    publisher: { "@type": "Organization", name: "SENS MASTER PRO" },
+    publisher: { "@type": "Organization", name: "Sensitivity Settings" },
     image: item.featureImage || `${baseUrl}/og-default.png`,
   };
 
@@ -90,6 +94,7 @@ export default async function NewsDetailPage({ params }: Props) {
           title="Rate this news article"
           targetType="news"
           targetId={item.id}
+          initialSummary={ratingSummary}
         />
       </article>
       <script

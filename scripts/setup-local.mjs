@@ -5,7 +5,7 @@ import webpush from "web-push";
 const envPath = path.join(process.cwd(), ".env.local");
 const keys = webpush.generateVAPIDKeys();
 
-const content = `DATABASE_URL="postgresql://postgres:postgres@localhost:5432/bgmi"
+const content = `DATABASE_URL="postgresql://postgres:postgres@localhost:5433/bgmi"
 SMTP_HOST="localhost"
 SMTP_PORT="1025"
 SMTP_USER=""

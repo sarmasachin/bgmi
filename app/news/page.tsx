@@ -13,7 +13,7 @@ export const metadata: Metadata = {
     title: "Gaming News",
     description: "Latest BGMI and gaming updates with featured stories.",
     url: `${baseUrl}/news`,
-    siteName: "SENS MASTER PRO",
+    siteName: "Sensitivity Settings",
     type: "website",
   },
   twitter: {

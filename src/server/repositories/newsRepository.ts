@@ -1,3 +1,4 @@
+import { cache } from "react";
 import { mockStore } from "@/src/server/mockStore";
 import { prisma, tryPrisma } from "@/src/server/dbSafe";
 
@@ -53,7 +54,7 @@ export async function getNewsById(id: string) {
   return mockStore.news.find((item) => item.id === id) ?? null;
 }
 
-export async function getPublishedNewsBySlug(slug: string) {
+export const getPublishedNewsBySlug = cache(async function getPublishedNewsBySlug(slug: string) {
   const dbResult = await tryPrisma(async () =>
     prisma.newsPost.findFirst({
       where: { slug, status: "published" },
@@ -61,7 +62,7 @@ export async function getPublishedNewsBySlug(slug: string) {
   );
   if (dbResult) return dbResult;
   return mockStore.news.find((item) => item.slug === slug && item.status === "published") ?? null;
-}
+});
 
 export async function createNews(input: {
   title: string;

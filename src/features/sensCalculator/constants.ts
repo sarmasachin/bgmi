@@ -26,18 +26,42 @@ export const ramOptions = [
   { label: "24 GB", value: 0.94 },
 ];
 
+export const fpsOptions = [
+  { label: "60 FPS", value: 1.0 },
+  { label: "90 FPS", value: 0.95 },
+  { label: "120 FPS", value: 0.9 },
+];
+
+export const attachmentOptions = [
+  { label: "Standard Grip", value: 1.0 },
+  { label: "Laser Sight", value: 1.06 },
+];
+
+export const playerRoleOptions = [
+  { label: "Balanced", value: "balanced" as const },
+  { label: "Assaulter (Spray / Attack)", value: "assaulter" as const },
+  { label: "Sniper", value: "sniper" as const },
+];
+
 export const ageOptions = [
-  { label: "1 साल", value: 1 },
-  { label: "2 साल", value: 1.05 },
-  { label: "4 साल+", value: 1.15 },
+  { label: "1 year (new)", value: 1.0 },
+  { label: "2 years old", value: 1.04 },
+  { label: "3 years old", value: 1.08 },
+  { label: "4 years old", value: 1.12 },
+  { label: "5 years old", value: 1.16 },
+  { label: "6 years old", value: 1.2 },
+  { label: "7 years old", value: 1.24 },
+  { label: "8 years old", value: 1.28 },
+  { label: "9 years old", value: 1.32 },
+  { label: "10 years old", value: 1.36 },
 ];
 
 export const fingerOptions = [
-  { label: "2-Finger", value: 1.2 },
+  { label: "2-Finger", value: 1.1 },
   { label: "4-Finger", value: 1.0 },
 ];
 
 export const gyroOptions = [
-  { label: "Non-Gyro", value: 1 },
-  { label: "Gyroscope", value: 3.5 },
+  { label: "Non-Gyro", value: "non-gyro" as const },
+  { label: "Gyroscope", value: "gyro" as const },
 ];

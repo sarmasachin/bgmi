@@ -12,6 +12,7 @@ type SidebarIconName =
   | "news"
   | "pages"
   | "comments"
+  | "testimonials"
   | "notifications"
   | "ratings"
   | "ads"
@@ -35,6 +36,7 @@ const items = [
   { label: "News", href: "/admin/news", icon: "news" as SidebarIconName },
   { label: "Pages", href: "/admin/pages", icon: "pages" as SidebarIconName },
   { label: "Comments", href: "/admin/comments", icon: "comments" as SidebarIconName },
+  { label: "Testimonials", href: "/admin/testimonials", icon: "testimonials" as SidebarIconName },
   { label: "Notifications", href: "/admin/notifications", icon: "notifications" as SidebarIconName },
   { label: "Ratings", href: "/admin/ratings", icon: "ratings" as SidebarIconName },
   { label: "Ads", href: "/admin/ad-placements", icon: "ads" as SidebarIconName },
@@ -68,6 +70,8 @@ function SidebarIcon({ name }: { name: SidebarIconName }) {
       return <svg {...shared}><rect x="4" y="3" width="16" height="18" rx="2" /><path d="M8 7h8M8 11h8M8 15h6" /></svg>;
     case "comments":
       return <svg {...shared}><path d="M21 11.5a8.5 8.5 0 0 1-8.5 8.5c-1.7 0-3.3-.5-4.6-1.3L3 20l1.5-4.1A8.5 8.5 0 1 1 21 11.5Z" /></svg>;
+    case "testimonials":
+      return <svg {...shared}><path d="M7 8h6M7 12h8M7 16h5" /><path d="M5 4h14a2 2 0 0 1 2 2v14l-4-3H5a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2Z" /></svg>;
     case "notifications":
       return <svg {...shared}><path d="M15 17h5l-1.4-1.4A2 2 0 0 1 18 14.2V11a6 6 0 1 0-12 0v3.2a2 2 0 0 1-.6 1.4L4 17h5" /><path d="M10 19a2 2 0 0 0 4 0" /></svg>;
     case "ratings":
@@ -137,7 +141,6 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
                   <Link
                     key={item.label}
                     href={item.href}
-                    prefetch={false}
                     className={`admin-nav-link ${isActive ? "is-active" : ""}`}
                     onClick={() => setMobileMenuOpen(false)}
                   >
