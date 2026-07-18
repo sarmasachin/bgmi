@@ -74,6 +74,8 @@ export default function GlobalError({ error, reset }: Props) {
               >
                 Try again
               </button>
+              {/* global-error may run without app router context — plain <a> is intentional */}
+              {/* eslint-disable-next-line @next/next/no-html-link-for-pages */}
               <a
                 href="/"
                 style={{
