@@ -13,6 +13,9 @@ import { getHomeFaqItems } from "@/src/server/repositories/homeFaqRepository";
 import { getSettings } from "@/src/server/repositories/settingsRepository";
 import { listApprovedTestimonials } from "@/src/server/repositories/testimonialsRepository";
 
+/** Always read fresh phone models / ads from DB (admin list can change anytime). */
+export const dynamic = "force-dynamic";
+
 /**
  * Shared chrome for BGMI (/) and PUBG (/pubg).
  * Hero title comes from {children} (per-page RSC) so LCP is not blocked by calculator data.

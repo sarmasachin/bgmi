@@ -59,7 +59,9 @@ export function SensCalculator({ phoneModels, game = "bgmi" }: Props) {
   const suggestions = useMemo(() => {
     const value = form.modelSearch.toLowerCase().trim();
     if (!value) return [];
-    return phoneModels.filter((phone) => phone.toLowerCase().includes(value));
+    const matched = phoneModels.filter((phone) => phone.toLowerCase().includes(value));
+    // Keep dropdown usable when hundreds of models match.
+    return matched.slice(0, 80);
   }, [form.modelSearch, phoneModels]);
 
   function runCalculate() {

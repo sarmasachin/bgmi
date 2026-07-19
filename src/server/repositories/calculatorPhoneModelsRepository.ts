@@ -3,13 +3,15 @@ import {
   dedupePhoneNamesPreserveOrder,
   expandCalculatorPhoneModelStrings,
 } from "@/src/lib/calculatorPhoneModelsInput";
-import { prisma, tryPrisma, tryPrismaLong } from "@/src/server/dbSafe";
+import { prisma, tryPrismaLong } from "@/src/server/dbSafe";
 
 const KEY = "settings:calculatorPhoneModels";
 
 /** Models shown in calculator search suggestions. Falls back to code defaults if DB empty / missing. */
 export async function getCalculatorPhoneModels(): Promise<string[]> {
-  const row = await tryPrisma(async () =>
+  // Must use long path: short tryPrisma timeout/cooldown was returning defaults
+  // even when 600+ custom names were saved in admin.
+  const row = await tryPrismaLong(async () =>
     prisma.siteSetting.findUnique({ where: { key: KEY } }),
   );
   if (row === null || !row?.value) {
