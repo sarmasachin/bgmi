@@ -145,6 +145,7 @@ export default function AdminBackupsPage() {
       <h1>Backup &amp; restore</h1>
       <p className="admin-dashboard-subtitle">
         Download is a JSON export of the database (news, pages, comments, ads, admin users, site settings).{" "}
+        <strong>Password hashes are not included</strong> (restore keeps current passwords for matching emails).{" "}
         <strong>Files in public/uploads are not included</strong> — copy that folder separately if needed.
       </p>
 

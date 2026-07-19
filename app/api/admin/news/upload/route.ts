@@ -18,6 +18,9 @@ export async function POST(request: Request) {
     if (e instanceof Error && e.message === "INVALID_TYPE") {
       return NextResponse.json({ error: "Only jpg, png, webp, avif are allowed." }, { status: 400 });
     }
+    if (e instanceof Error && e.message === "TOO_LARGE") {
+      return NextResponse.json({ error: "Image must be 8MB or smaller." }, { status: 400 });
+    }
     return NextResponse.json({ error: "Upload failed." }, { status: 500 });
   }
 }

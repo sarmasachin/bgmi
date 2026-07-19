@@ -12,15 +12,22 @@ import {
   adminSessionCookieOptions,
   createAdminSessionToken,
 } from "@/src/server/adminSession";
+import { checkRateLimit } from "@/src/server/rateLimit";
 import { z } from "zod";
 
 const schema = z.object({
   email: z.string().email(),
-  password: z.string().min(4),
+  // Accept stored passwords of any length; enforce min length on create/reset only.
+  password: z.string().min(1).max(200),
 });
 
 export async function POST(request: NextRequest) {
   const lockKey = getAdminLoginLockKey(request);
+  const rl = checkRateLimit(`admin-login:${lockKey}`, 30, 60_000);
+  if (!rl.ok) {
+    return NextResponse.json({ error: "Too many login attempts. Try again shortly." }, { status: 429 });
+  }
+
   const lock = getAdminLoginLockStatus(lockKey);
   if (lock.locked) {
     return NextResponse.json(

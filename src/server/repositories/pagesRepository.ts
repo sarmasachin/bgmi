@@ -2,6 +2,7 @@ import { cache } from "react";
 import { mockStore } from "@/src/server/mockStore";
 import { prisma, tryPrisma, tryPrismaLong } from "@/src/server/dbSafe";
 import type { Prisma } from "@prisma/client";
+import { sanitizeHtml } from "@/src/lib/sanitizeHtml";
 
 type TemplateType = "home" | "article" | "landing";
 type CloneGame = "bgmi" | "pubg";
@@ -76,9 +77,9 @@ function buildContent(input: { html?: string; existing?: unknown; metaPatch?: Pa
   };
 
   if (input.html !== undefined) {
-    base.html = input.html;
+    base.html = sanitizeHtml(input.html);
   } else if (!("html" in base) && typeof input.existing === "string") {
-    base.html = input.existing;
+    base.html = sanitizeHtml(input.existing);
   }
 
   if (

@@ -49,7 +49,7 @@ Production-ready foundation for:
 - Email: `admin@example.com`
 - Password: `admin1234`
 
-Use DB seed + password reset flow for production.
+Use DB seed / admin Users panel to set passwords in production.
 This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
 
 ## Getting Started

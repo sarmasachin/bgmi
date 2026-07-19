@@ -8,6 +8,23 @@ import { transcodeImageBuffer } from "@/src/server/media/imageEncode";
 
 export const ALLOWED_IMAGE_MIME = new Set(["image/jpeg", "image/png", "image/webp", "image/avif"]);
 
+/** Max upload size (bytes) for admin image uploads / convert. */
+export const MAX_UPLOAD_BYTES = 8 * 1024 * 1024;
+
+const IMAGE_MAGIC: { mime: string; test: (b: Buffer) => boolean }[] = [
+  { mime: "image/jpeg", test: (b) => b.length >= 3 && b[0] === 0xff && b[1] === 0xd8 && b[2] === 0xff },
+  { mime: "image/png", test: (b) => b.length >= 8 && b[0] === 0x89 && b[1] === 0x50 && b[2] === 0x4e && b[3] === 0x47 },
+  { mime: "image/webp", test: (b) => b.length >= 12 && b.toString("ascii", 0, 4) === "RIFF" && b.toString("ascii", 8, 12) === "WEBP" },
+  { mime: "image/avif", test: (b) => b.length >= 12 && b.toString("ascii", 4, 8) === "ftyp" },
+];
+
+export function detectImageMime(buf: Buffer): string | null {
+  for (const row of IMAGE_MAGIC) {
+    if (row.test(buf)) return row.mime;
+  }
+  return null;
+}
+
 export function getPublicUploadDir() {
   return path.join(process.cwd(), "public", "uploads");
 }
@@ -38,20 +55,32 @@ export function isSafeUploadFilename(name: string) {
 }
 
 export async function saveUploadedImage(file: File): Promise<{ filename: string; url: string }> {
-  if (!ALLOWED_IMAGE_MIME.has(file.type)) {
+  if (file.size > MAX_UPLOAD_BYTES) {
+    throw new Error("TOO_LARGE");
+  }
+
+  const raw = Buffer.from(await file.arrayBuffer());
+  if (raw.byteLength > MAX_UPLOAD_BYTES) {
+    throw new Error("TOO_LARGE");
+  }
+
+  const detected = detectImageMime(raw);
+  if (!detected || !ALLOWED_IMAGE_MIME.has(detected)) {
     throw new Error("INVALID_TYPE");
   }
+  // Prefer magic-bytes MIME over client-provided file.type.
+  const mime = detected;
+
   const uploadDir = getPublicUploadDir();
   await mkdir(uploadDir, { recursive: true });
 
   const base = sanitizeBaseName(file.name);
-  const raw = Buffer.from(await file.arrayBuffer());
 
   const pref = await getMediaImageOutputPreference();
   const target = resolveUploadFormat(pref);
 
   let outBuf: Buffer = raw;
-  let ext = extFromMime(file.type);
+  let ext = extFromMime(mime);
 
   if (target !== "original") {
     try {
@@ -61,7 +90,7 @@ export async function saveUploadedImage(file: File): Promise<{ filename: string;
     } catch {
       /* broken image or sharp fail — keep original */
       outBuf = raw;
-      ext = extFromMime(file.type);
+      ext = extFromMime(mime);
     }
   }
 

@@ -4,6 +4,7 @@ import {
   ADMIN_SESSION_COOKIE,
   verifyAdminSessionToken,
 } from "@/src/server/adminSession";
+import { isAdminMutationOriginAllowed } from "@/src/server/adminRequestOrigin";
 
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
@@ -19,14 +20,16 @@ export async function middleware(request: NextRequest) {
     return NextResponse.next();
   }
 
+  if (isAdminApi && !isAdminMutationOriginAllowed(request)) {
+    return NextResponse.json({ error: "Forbidden origin." }, { status: 403 });
+  }
+
   if (
     pathname === "/admin/login" ||
     pathname === "/api/admin/auth/login" ||
     pathname === "/api/admin/auth/logout" ||
     pathname === "/api/admin/auth/setup" ||
-    pathname === "/api/admin/auth/setup-status" ||
-    pathname === "/api/admin/auth/request-reset" ||
-    pathname === "/api/admin/auth/reset-password"
+    pathname === "/api/admin/auth/setup-status"
   ) {
     return NextResponse.next();
   }

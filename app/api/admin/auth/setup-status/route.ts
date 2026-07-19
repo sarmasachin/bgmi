@@ -6,7 +6,7 @@ function bootstrapEnabled() {
   return secret.length >= 16;
 }
 
-/** Public: whether the login page should show create/reset admin credentials. */
+/** Public: whether the login page should show first-admin setup. */
 export async function GET() {
   const count = await countAdminUsers();
   return NextResponse.json({

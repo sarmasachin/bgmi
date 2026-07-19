@@ -11,8 +11,11 @@ type LockState = {
 const byIp = new Map<string, LockState>();
 
 function clientIp(request: { headers: Headers }): string {
+  // Prefer proxy-set real IP; fall back to first X-Forwarded-For hop.
+  const real = request.headers.get("x-real-ip")?.trim();
+  if (real) return real;
   const forwarded = request.headers.get("x-forwarded-for")?.split(",")[0]?.trim();
-  return forwarded || request.headers.get("x-real-ip")?.trim() || "local";
+  return forwarded || "local";
 }
 
 export function getAdminLoginLockKey(request: { headers: Headers }): string {

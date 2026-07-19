@@ -3,7 +3,12 @@ import { mkdir, writeFile } from "node:fs/promises";
 import path from "node:path";
 import sharp from "sharp";
 import { addAuditLog } from "@/src/server/repositories/auditRepository";
-import { getPublicUploadDir, sanitizeBaseName } from "@/src/server/media/localImageUpload";
+import {
+  detectImageMime,
+  getPublicUploadDir,
+  MAX_UPLOAD_BYTES,
+  sanitizeBaseName,
+} from "@/src/server/media/localImageUpload";
 
 export const runtime = "nodejs";
 
@@ -32,11 +37,23 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Image file is required (multipart field: file)." }, { status: 400 });
   }
 
+  if (file.size > MAX_UPLOAD_BYTES) {
+    return NextResponse.json({ error: "Image must be 8MB or smaller." }, { status: 400 });
+  }
+
   const width = Math.min(Math.max(Number(widthRaw) || 1200, 64), 4096);
   const height = Math.min(Math.max(Number(heightRaw) || 628, 64), 4096);
   const formats = parseFormats(typeof formatsRaw === "string" ? formatsRaw : null);
 
   const buf = Buffer.from(await file.arrayBuffer());
+  if (buf.byteLength > MAX_UPLOAD_BYTES) {
+    return NextResponse.json({ error: "Image must be 8MB or smaller." }, { status: 400 });
+  }
+
+  if (!detectImageMime(buf)) {
+    return NextResponse.json({ error: "Only jpg, png, webp, avif are allowed." }, { status: 400 });
+  }
+
   let pipeline: sharp.Sharp;
   try {
     pipeline = sharp(buf).rotate();

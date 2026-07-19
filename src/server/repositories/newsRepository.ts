@@ -1,6 +1,7 @@
 import { cache } from "react";
 import { mockStore } from "@/src/server/mockStore";
 import { prisma, tryPrisma } from "@/src/server/dbSafe";
+import { sanitizeHtml } from "@/src/lib/sanitizeHtml";
 
 export async function listNews(page: number, pageSize: number) {
   const dbResult = await tryPrisma(async () => {
@@ -100,13 +101,13 @@ export async function createNews(input: {
         excerpt: input.excerpt,
         featureImage: input.featureImage,
         status: input.status,
-        content: { html: input.content ?? "" },
+        content: { html: sanitizeHtml(input.content ?? "") },
       },
     }),
   );
   if (dbResult) return dbResult;
 
-  const item = { id: `n${Date.now()}`, ...input };
+  const item = { id: `n${Date.now()}`, ...input, content: sanitizeHtml(input.content ?? "") };
   mockStore.news.unshift(item);
   return item;
 }
@@ -167,7 +168,7 @@ export async function updateNews(input: {
         slug: input.slug,
         excerpt: input.excerpt,
         featureImage: input.featureImage,
-        content: { html: input.content ?? "" },
+        content: { html: sanitizeHtml(input.content ?? "") },
         status: input.status ?? undefined,
         publishedAt: nextPublishedAt,
       },
@@ -180,7 +181,7 @@ export async function updateNews(input: {
   item.title = input.title;
   item.slug = input.slug;
   item.excerpt = input.excerpt ?? "";
-  item.content = input.content ?? "";
+  item.content = sanitizeHtml(input.content ?? "");
   item.featureImage = input.featureImage ?? "";
   if (input.status) {
     item.status = input.status;

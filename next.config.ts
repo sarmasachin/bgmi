@@ -1,6 +1,26 @@
 import type { NextConfig } from "next";
 import path from "path";
 
+const securityHeaders = [
+  { key: "X-Frame-Options", value: "SAMEORIGIN" },
+  { key: "X-Content-Type-Options", value: "nosniff" },
+  { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
+  { key: "Permissions-Policy", value: "camera=(), microphone=(), geolocation=()" },
+  { key: "X-DNS-Prefetch-Control", value: "on" },
+  // Intentionally narrow: analytics/adsense need inline scripts; block framing + plugins.
+  {
+    key: "Content-Security-Policy",
+    value: "frame-ancestors 'self'; base-uri 'self'; object-src 'none'; form-action 'self'",
+  },
+];
+
+if (process.env.NODE_ENV === "production") {
+  securityHeaders.push({
+    key: "Strict-Transport-Security",
+    value: "max-age=63072000; includeSubDomains; preload",
+  });
+}
+
 const nextConfig: NextConfig = {
   distDir: ".next",
   // Avoid picking C:\Users\DELL\package-lock.json as the workspace root.
@@ -22,6 +42,9 @@ const nextConfig: NextConfig = {
       "next/dist/build/polyfills/polyfill-module.js": empty,
     };
     return config;
+  },
+  async headers() {
+    return [{ source: "/:path*", headers: securityHeaders }];
   },
   async rewrites() {
     return [

@@ -2,10 +2,12 @@ import { NextResponse } from "next/server";
 import { NextRequest } from "next/server";
 import { z } from "zod";
 import type { Prisma } from "@prisma/client";
+import bcrypt from "bcryptjs";
 import { restoreMockBackup } from "@/src/server/mockStore";
 import { prisma, tryPrismaLong } from "@/src/server/dbSafe";
 import crypto from "crypto";
 import { addAuditLog } from "@/src/server/repositories/auditRepository";
+import { sanitizeHtml } from "@/src/lib/sanitizeHtml";
 
 function restoreStr(v: unknown): string {
   if (v == null) return "";
@@ -39,6 +41,32 @@ function restoreDateNull(v: unknown): Date | null {
 function restoreJson(v: unknown): Prisma.InputJsonValue {
   if (v != null && typeof v === "object") return v as Prisma.InputJsonValue;
   return {};
+}
+
+/** Restore article HTML content and strip dangerous markup. */
+function restoreContentJson(v: unknown): Prisma.InputJsonValue {
+  if (v != null && typeof v === "object" && !Array.isArray(v)) {
+    const obj = { ...(v as Record<string, unknown>) };
+    if (typeof obj.html === "string") obj.html = sanitizeHtml(obj.html);
+    return obj as Prisma.InputJsonValue;
+  }
+  if (typeof v === "string") {
+    return { html: sanitizeHtml(v) };
+  }
+  return {};
+}
+
+async function restoreUserPasswordHash(
+  item: Record<string, unknown>,
+  hashByEmail: Map<string, string>,
+): Promise<string> {
+  const existing = restoreStr(item.passwordHash);
+  if (existing.length >= 20) return existing;
+  const email = restoreStr(item.email).trim().toLowerCase();
+  const fromLive = email ? hashByEmail.get(email) : undefined;
+  if (fromLive) return fromLive;
+  // Unknown user with no hash — unusable until Admin → Users reset.
+  return bcrypt.hash(crypto.randomBytes(32).toString("hex"), 10);
 }
 
 function restoreAdminActive(item: Record<string, unknown>): boolean {
@@ -97,6 +125,13 @@ export async function POST(request: NextRequest) {
   }
 
   const restoredInDb = await tryPrismaLong(async () => {
+    const existingHashes = await prisma.adminUser.findMany({
+      select: { email: true, passwordHash: true },
+    });
+    const hashByEmail = new Map(
+      existingHashes.map((u) => [u.email.trim().toLowerCase(), u.passwordHash] as const),
+    );
+
     await prisma.$transaction([
       prisma.newsComment.deleteMany(),
       prisma.newsRating.deleteMany(),
@@ -121,7 +156,7 @@ export async function POST(request: NextRequest) {
           title: restoreStr(item.title),
           slug: restoreStr(item.slug),
           excerpt: restoreStrNull(item.excerpt),
-          content: restoreJson(item.content),
+          content: restoreContentJson(item.content),
           featureImage: restoreStrNull(item.featureImage),
           status: restoreStr(item.status) || "draft",
           seoTitle: restoreStrNull(item.seoTitle),
@@ -141,7 +176,7 @@ export async function POST(request: NextRequest) {
           title: restoreStr(item.title),
           slug: restoreStr(item.slug),
           status: restoreStr(item.status) || "draft",
-          content: restoreJson(item.content),
+          content: restoreContentJson(item.content),
           seoTitle: restoreStrNull(item.seoTitle),
           seoDescription: restoreStrNull(item.seoDescription),
           canonicalUrl: restoreStrNull(item.canonicalUrl),
@@ -186,7 +221,7 @@ export async function POST(request: NextRequest) {
         data: {
           id: restoreStr(item.id),
           email: restoreStr(item.email),
-          passwordHash: restoreStr(item.passwordHash),
+          passwordHash: await restoreUserPasswordHash(item, hashByEmail),
           name: restoreStrNull(item.name),
           role: restoreStr(item.role) || "admin",
           isActive: restoreAdminActive(item),
