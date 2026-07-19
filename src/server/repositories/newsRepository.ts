@@ -48,6 +48,26 @@ export async function listPublishedNews(page: number, pageSize: number) {
   };
 }
 
+/** All published news for sitemap.xml (slug + dates only). */
+export async function listPublishedNewsForSitemap() {
+  const dbResult = await tryPrisma(async () =>
+    prisma.newsPost.findMany({
+      where: { status: "published" },
+      select: { slug: true, updatedAt: true, publishedAt: true },
+      orderBy: [{ publishedAt: "desc" }, { updatedAt: "desc" }],
+    }),
+  );
+  if (dbResult) return dbResult;
+
+  return mockStore.news
+    .filter((item) => item.status === "published" && item.slug)
+    .map((item) => ({
+      slug: item.slug,
+      updatedAt: item.updatedAt ? new Date(item.updatedAt) : new Date(),
+      publishedAt: item.publishedAt ? new Date(item.publishedAt) : null,
+    }));
+}
+
 export async function getNewsById(id: string) {
   const dbResult = await tryPrisma(async () => prisma.newsPost.findUnique({ where: { id } }));
   if (dbResult) return dbResult;

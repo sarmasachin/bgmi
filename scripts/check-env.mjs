@@ -25,6 +25,7 @@ loadDotEnv(".env.local");
 const required = [
   "DATABASE_URL",
   "SESSION_SECRET",
+  "NEXT_PUBLIC_SITE_URL",
   "SMTP_HOST",
   "SMTP_PORT",
   "VAPID_PUBLIC_KEY",
@@ -39,6 +40,13 @@ const missing = required.filter((key) => !process.env[key]);
 if (missing.length > 0) {
   console.log("Missing env keys:");
   missing.forEach((key) => console.log(`- ${key}`));
+  process.exit(1);
+}
+
+const siteUrl = process.env.NEXT_PUBLIC_SITE_URL.trim();
+if (/localhost|127\.0\.0\.1/i.test(siteUrl)) {
+  console.log("NEXT_PUBLIC_SITE_URL must be your public https domain in production (not localhost).");
+  console.log(`Current value: ${siteUrl}`);
   process.exit(1);
 }
 

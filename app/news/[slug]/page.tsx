@@ -5,6 +5,8 @@ import { ratingWidgetRemountKey } from "@/src/lib/ratingWidgetKey";
 import { getAdPlacementVisibility } from "@/src/server/repositories/adPlacementRepository";
 import { getPublishedNewsBySlug } from "@/src/server/repositories/newsRepository";
 import { getRatingSummary } from "@/src/server/repositories/ratingSummaryRepository";
+import { getSiteUrl, toCanonicalUrl } from "@/src/lib/siteUrl";
+import { buildSocialMetadata, DEFAULT_OG_IMAGE_PATH } from "@/src/lib/socialMeta";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 
@@ -22,29 +24,26 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     };
   }
 
-  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
-  const articleUrl = `${baseUrl}/news/${item.slug}`;
+  const articleUrl = toCanonicalUrl(`/news/${item.slug}`);
   const description = item.excerpt?.trim() || "Latest BGMI and gaming updates.";
+  const social = buildSocialMetadata({
+    title: item.title,
+    description,
+    url: articleUrl,
+    image: item.featureImage,
+    imageAlt: item.title,
+    type: "article",
+  });
 
   return {
     title: item.title,
     description,
-    alternates: { canonical: `/news/${item.slug}` },
+    alternates: { canonical: articleUrl },
+    ...social,
     openGraph: {
-      title: item.title,
-      description,
-      url: articleUrl,
-      type: "article",
-      siteName: "Sensitivity Settings",
-      images: item.featureImage ? [{ url: item.featureImage, alt: item.title }] : undefined,
+      ...social.openGraph,
       publishedTime: item.publishedAt ? new Date(item.publishedAt).toISOString() : undefined,
       modifiedTime: item.updatedAt ? new Date(item.updatedAt).toISOString() : undefined,
-    },
-    twitter: {
-      card: "summary_large_image",
-      title: item.title,
-      description,
-      images: item.featureImage ? [item.featureImage] : undefined,
     },
   };
 }
@@ -59,7 +58,7 @@ export default async function NewsDetailPage({ params }: Props) {
     getRatingSummary("news", item.id),
   ]);
 
-  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
+  const baseUrl = getSiteUrl();
   const articleSchema = {
     "@context": "https://schema.org",
     "@type": "Article",
@@ -68,7 +67,8 @@ export default async function NewsDetailPage({ params }: Props) {
     dateModified: item.updatedAt,
     author: { "@type": "Person", name: "Admin" },
     publisher: { "@type": "Organization", name: "Sensitivity Settings" },
-    image: item.featureImage || `${baseUrl}/og-default.png`,
+    image: item.featureImage || `${baseUrl}${DEFAULT_OG_IMAGE_PATH}`,
+    mainEntityOfPage: toCanonicalUrl(`/news/${item.slug}`),
   };
 
   return (

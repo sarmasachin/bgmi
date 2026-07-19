@@ -21,6 +21,7 @@ VAPID_SUBJECT="mailto:admin@example.com"
 MEDIA_PROVIDER="s3"
 MEDIA_BUCKET="bgmi-media"
 MEDIA_CDN_BASE_URL="http://localhost:9000/bgmi-media"
+NEXT_PUBLIC_SITE_URL="http://localhost:3000"
 `;
 
 fs.writeFileSync(envPath, content, "utf8");

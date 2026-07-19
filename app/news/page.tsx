@@ -2,25 +2,19 @@ import { NewsSection } from "@/src/features/news/NewsSection";
 import Link from "next/link";
 import { AdSlot } from "@/src/components/AdSlot";
 import type { Metadata } from "next";
+import { toCanonicalUrl } from "@/src/lib/siteUrl";
+import { buildSocialMetadata } from "@/src/lib/socialMeta";
 
-const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
+const title = "BGMI & Gaming News";
+const description =
+  "Latest BGMI and PUBG Mobile news, updates, and gaming stories from Sensitivity Settings.";
+const newsCanonical = toCanonicalUrl("/news");
 
 export const metadata: Metadata = {
-  title: "Gaming News",
-  description: "Latest BGMI and gaming updates with featured stories.",
-  alternates: { canonical: "/news" },
-  openGraph: {
-    title: "Gaming News",
-    description: "Latest BGMI and gaming updates with featured stories.",
-    url: `${baseUrl}/news`,
-    siteName: "Sensitivity Settings",
-    type: "website",
-  },
-  twitter: {
-    card: "summary_large_image",
-    title: "Gaming News",
-    description: "Latest BGMI and gaming updates with featured stories.",
-  },
+  title,
+  description,
+  alternates: { canonical: newsCanonical },
+  ...buildSocialMetadata({ title, description, url: newsCanonical }),
 };
 
 type Props = {
@@ -33,7 +27,7 @@ export default async function NewsPage({ searchParams }: Props) {
 
   return (
     <main className="page-container" style={{ paddingBottom: 40 }}>
-      <h1 className="main-title">Gaming News</h1>
+      <h1 className="main-title">BGMI &amp; Gaming News</h1>
       <AdSlot slotKey="news_list_top" />
       <NewsSection />
       <AdSlot slotKey="news_list_bottom" />

@@ -257,7 +257,7 @@ export async function saveSettings(payload: SettingsPayload) {
   });
 }
 
-export async function getHeadSnippets() {
+export const getHeadSnippets = cache(async function getHeadSnippets() {
   const row = await tryPrisma(async () =>
     prisma.siteSetting.findUnique({ where: { key: SETTINGS_KEYS.headSnippets } }),
   );
@@ -270,7 +270,7 @@ export async function getHeadSnippets() {
       adsenseScript: "",
     }
   );
-}
+});
 
 export async function saveHeadSnippets(payload: {
   googleVerificationMeta?: string;

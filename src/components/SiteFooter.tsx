@@ -56,7 +56,7 @@ export async function SiteFooter({ settings: settingsProp }: SiteFooterProps = {
           </div>
 
           <div className="site-footer-col">
-            <h4 className="site-footer-col-title">Explore</h4>
+            <p className="site-footer-col-title">Explore</p>
             <ul className="site-footer-links">
               {exploreLinks.map((item) => (
                 <li key={`${item.href}-${item.label}`}>
@@ -69,7 +69,7 @@ export async function SiteFooter({ settings: settingsProp }: SiteFooterProps = {
           </div>
 
           <div className="site-footer-col">
-            <h4 className="site-footer-col-title">Resources</h4>
+            <p className="site-footer-col-title">Resources</p>
             <ul className="site-footer-links">
               {settings.footerLinks.map((page) => (
                 <li key={`${page.href}-${page.label}`}>
@@ -83,7 +83,7 @@ export async function SiteFooter({ settings: settingsProp }: SiteFooterProps = {
 
           {showShareLinks ? (
             <div className="site-footer-col site-footer-col--social">
-              <h4 className="site-footer-col-title">Connect</h4>
+              <p className="site-footer-col-title">Connect</p>
               <FooterShareLinks />
             </div>
           ) : null}

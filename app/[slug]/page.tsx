@@ -9,6 +9,8 @@ import { isAdminLoggedIn } from "@/src/server/auth";
 import { getCalculatorPhoneModels } from "@/src/server/repositories/calculatorPhoneModelsRepository";
 import { getPageBySlug, getPublishedPageBySlug } from "@/src/server/repositories/pagesRepository";
 import { getRatingSummary } from "@/src/server/repositories/ratingSummaryRepository";
+import { toCanonicalUrl } from "@/src/lib/siteUrl";
+import { buildSocialMetadata } from "@/src/lib/socialMeta";
 
 type TemplateType = "home" | "article" | "landing";
 
@@ -54,7 +56,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const extracted = extractContentData(page.content);
   const title = extracted.socialTitle.trim() || page.seoTitle?.trim() || page.title;
   const description = extracted.socialDescription.trim() || page.seoDescription?.trim() || "BGMI settings and gaming updates.";
-  const canonical = page.canonicalUrl?.trim() || `/${slug}`;
+  const canonical = toCanonicalUrl(page.canonicalUrl?.trim() || `/${slug}`);
   const imageUrl = page.ogImageUrl?.trim();
   const imageAlt = extracted.socialImageAlt?.trim() || title;
 
@@ -64,18 +66,13 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     alternates: {
       canonical,
     },
-    openGraph: {
+    ...buildSocialMetadata({
       title,
       description,
       url: canonical,
-      images: imageUrl ? [{ url: imageUrl, alt: imageAlt }] : undefined,
-    },
-    twitter: {
-      card: imageUrl ? "summary_large_image" : "summary",
-      title,
-      description,
-      images: imageUrl ? [imageUrl] : undefined,
-    },
+      image: imageUrl,
+      imageAlt,
+    }),
   };
 }
 

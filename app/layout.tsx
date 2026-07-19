@@ -1,6 +1,11 @@
-import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
-import { faqSchema, organizationSchema, softwareAppSchema, websiteSchema } from "@/src/lib/schema";
+import type { Metadata, Viewport } from "next";
+import { Geist, Geist_Mono, Noto_Sans_Devanagari } from "next/font/google";
+import { PublicSiteScripts } from "@/src/components/PublicSiteScripts";
+import { organizationSchema, softwareAppSchema, websiteSchema } from "@/src/lib/schema";
+import { parseGoogleSiteVerification } from "@/src/lib/headSnippets";
+import { getSiteUrl } from "@/src/lib/siteUrl";
+import { DEFAULT_OG_IMAGE_PATH } from "@/src/lib/socialMeta";
+import { getHeadSnippets } from "@/src/server/repositories/settingsRepository";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -15,23 +20,99 @@ const geistMono = Geist_Mono({
   display: "swap",
 });
 
-export const metadata: Metadata = {
-  title: {
-    default: "Sensitivity Settings",
-    template: "%s | Sensitivity Settings",
-  },
-  description: "BGMI Best Sensitivity Calculator with pro presets and gaming news.",
+/** Devanagari for Hindi article blocks marked with lang="hi". */
+const notoDevanagari = Noto_Sans_Devanagari({
+  variable: "--font-noto-devanagari",
+  subsets: ["devanagari"],
+  weight: ["400", "600", "700"],
+  display: "swap",
+});
+
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  themeColor: "#45c4b0",
+  colorScheme: "dark",
 };
 
-export default function RootLayout({
+export async function generateMetadata(): Promise<Metadata> {
+  const baseUrl = getSiteUrl();
+  const snippets = await getHeadSnippets();
+  const googleFromAdmin = parseGoogleSiteVerification(snippets.googleVerificationMeta);
+  const googleFromEnv = parseGoogleSiteVerification(process.env.GOOGLE_SITE_VERIFICATION);
+  const google = googleFromAdmin || googleFromEnv;
+
+  return {
+    metadataBase: new URL(baseUrl),
+    title: {
+      default: "BGMI Sensitivity Calculator | Sensitivity Settings",
+      template: "%s | Sensitivity Settings",
+    },
+    description:
+      "Free BGMI and PUBG Mobile sensitivity calculator with custom no-recoil settings, pro presets, and gaming news.",
+    applicationName: "Sensitivity Settings",
+    keywords: [
+      "BGMI sensitivity calculator",
+      "BGMI no recoil",
+      "PUBG Mobile sensitivity",
+      "gyroscope settings",
+      "ADS sensitivity",
+    ],
+    authors: [{ name: "Sensitivity Settings", url: baseUrl }],
+    creator: "Sensitivity Settings",
+    publisher: "Sensitivity Settings",
+    robots: {
+      index: true,
+      follow: true,
+      googleBot: {
+        index: true,
+        follow: true,
+      },
+    },
+    icons: {
+      icon: [{ url: "/favicon.ico", sizes: "any" }],
+      apple: [{ url: "/apple-icon.png", sizes: "180x180", type: "image/png" }],
+    },
+    manifest: "/manifest.webmanifest",
+    openGraph: {
+      type: "website",
+      siteName: "Sensitivity Settings",
+      locale: "en_US",
+      images: [
+        {
+          url: DEFAULT_OG_IMAGE_PATH,
+          width: 1200,
+          height: 630,
+          alt: "BGMI Sensitivity Calculator",
+        },
+      ],
+    },
+    twitter: {
+      card: "summary_large_image",
+      images: [DEFAULT_OG_IMAGE_PATH],
+    },
+    ...(google
+      ? {
+          verification: {
+            google,
+          },
+        }
+      : {}),
+  };
+}
+
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
+  const baseUrl = getSiteUrl();
 
   return (
-    <html lang="en" className={`${geistSans.variable} ${geistMono.variable}`}>
+    <html
+      lang="en"
+      className={`${geistSans.variable} ${geistMono.variable} ${notoDevanagari.variable}`}
+    >
       <body>
         {/* Critical above-the-fold styles so LCP title can paint before the CSS chunk */}
         <style
@@ -43,6 +124,7 @@ export default function RootLayout({
           }}
         />
         {children}
+        <PublicSiteScripts />
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{
@@ -59,12 +141,6 @@ export default function RootLayout({
           type="application/ld+json"
           dangerouslySetInnerHTML={{
             __html: JSON.stringify(softwareAppSchema(baseUrl)),
-          }}
-        />
-        <script
-          type="application/ld+json"
-          dangerouslySetInnerHTML={{
-            __html: JSON.stringify(faqSchema()),
           }}
         />
       </body>

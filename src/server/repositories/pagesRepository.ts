@@ -107,6 +107,27 @@ export async function listPages() {
   return dbData ?? mockStore.pages;
 }
 
+/** Published CMS pages for sitemap (excludes home slug "/"). */
+export async function listPublishedPagesForSitemap() {
+  const dbData = await tryPrisma(async () =>
+    prisma.pageTemplate.findMany({
+      where: { status: "published" },
+      select: { slug: true, updatedAt: true },
+      orderBy: { updatedAt: "desc" },
+    }),
+  );
+  const rows = dbData ?? mockStore.pages.filter((p) => p.status === "published");
+  return rows
+    .map((row) => ({
+      slug: row.slug,
+      updatedAt: row.updatedAt ? new Date(row.updatedAt) : new Date(),
+    }))
+    .filter((row) => {
+      const slug = (row.slug || "").trim();
+      return Boolean(slug) && slug !== "/";
+    });
+}
+
 export const getPublishedPageBySlug = cache(async function getPublishedPageBySlug(slug: string) {
   const dbData = await tryPrisma(async () =>
     prisma.pageTemplate.findFirst({
