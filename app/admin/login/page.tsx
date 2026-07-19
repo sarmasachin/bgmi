@@ -53,9 +53,10 @@ export default function AdminLoginPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, password }),
       });
+      const data = (await res.json().catch(() => ({}))) as { error?: string };
 
       if (!res.ok) {
-        setError("Invalid credentials");
+        setError(data.error || (res.status === 401 ? "Invalid credentials" : "Login failed"));
         return;
       }
       router.push("/admin");
