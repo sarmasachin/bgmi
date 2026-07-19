@@ -109,7 +109,7 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
     <AdminToastProvider>
       <div className="admin-shell">
         {isLoginPage ? (
-          <main className="admin-main">{children}</main>
+          <div className="admin-main">{children}</div>
         ) : (
           <div className="admin-layout">
             <div className="admin-mobile-topbar">

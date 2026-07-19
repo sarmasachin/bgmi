@@ -196,11 +196,9 @@ export default function AdminLoginPage() {
   const progressPct = alert && alertStartedAt ? Math.max(0, (leftMs / ALERT_MS) * 100) : 0;
 
   return (
-    <main className="admin-login-page">
+    <div className="admin-login-page">
       <form
         className="admin-login-card"
-        method="post"
-        action="#"
         noValidate
         onSubmit={onSubmit}
       >
@@ -298,7 +296,16 @@ export default function AdminLoginPage() {
           </>
         ) : null}
 
-        <button type="submit" className="admin-login-submit" disabled={busy}>
+        <button
+          type="button"
+          className="admin-login-submit"
+          disabled={busy}
+          onClick={() => {
+            if (busy) return;
+            if (showSetup) void runSetup();
+            else void runLogin();
+          }}
+        >
           {busy
             ? "Please wait…"
             : showSetup
@@ -338,6 +345,6 @@ export default function AdminLoginPage() {
           </button>
         ) : null}
       </form>
-    </main>
+    </div>
   );
 }
