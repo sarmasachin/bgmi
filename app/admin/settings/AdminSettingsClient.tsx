@@ -2,8 +2,8 @@
 
 import { FormEvent, useEffect, useState } from "react";
 import {
+  dedupePhoneNamesPreserveOrder,
   expandCalculatorPhoneModelStrings,
-  getDuplicatePhoneNamesInInput,
 } from "@/src/lib/calculatorPhoneModelsInput";
 import type { AdminSettingsPageData } from "@/src/server/admin/prefetchAdminSettingsPageData";
 import { useAdminFlash } from "@/src/components/admin/AdminToast";
@@ -110,12 +110,11 @@ export default function AdminSettingsClient({ initialData }: Props) {
             effectiveModels?: string[];
             storedModels?: string[] | null;
           };
-          const lines =
-            phone.storedModels === null
-              ? phone.effectiveModels
-              : phone.storedModels;
-          if (Array.isArray(lines)) {
-            setPhoneModelsText(lines.join("\n"));
+          // null = using built-in defaults; keep textarea empty (do not paste defaults back in).
+          if (phone.storedModels === null || phone.storedModels === undefined) {
+            setPhoneModelsText("");
+          } else if (Array.isArray(phone.storedModels)) {
+            setPhoneModelsText(phone.storedModels.join("\n"));
           }
         } else {
           setPhoneModelsMessage("Could not load calculator phone names.");
@@ -228,53 +227,45 @@ export default function AdminSettingsClient({ initialData }: Props) {
   }
 
   async function savePhoneModels() {
-    setPhoneModelsMessage("");
-    const duplicates = getDuplicatePhoneNamesInInput([phoneModelsText]);
-    if (duplicates.length > 0) {
-      const maxShow = 12;
-      const shown = duplicates.slice(0, maxShow);
-      const more = duplicates.length - shown.length;
-      const list =
-        more > 0
-          ? `${shown.join(", ")} (+${more} more duplicate name${more === 1 ? "" : "s"})`
-          : shown.join(", ");
-      setPhoneModelsMessage(
-        `Duplicate phone names are not allowed (ignoring capital letters): ${list}. Remove the extras and save again.`,
-      );
-      return;
-    }
-    const models = expandCalculatorPhoneModelStrings([phoneModelsText]);
+    const expanded = expandCalculatorPhoneModelStrings([phoneModelsText]);
+    const unique = dedupePhoneNamesPreserveOrder(expanded);
+    const removedDuplicates = Math.max(0, expanded.length - unique.length);
+
+    // Show cleaned list in the box immediately (duplicates removed once).
+    setPhoneModelsText(unique.join("\n"));
+
     try {
       const res = await fetch("/api/admin/calculator-phone-models", {
         method: "POST",
         credentials: "include",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ models }),
+        body: JSON.stringify({ models: unique }),
       });
-      const body = (await res.json().catch(() => ({}))) as { error?: string; savedCount?: number };
+      const body = (await res.json().catch(() => ({}))) as {
+        error?: string;
+        savedCount?: number;
+        removedDuplicates?: number;
+        models?: string[];
+      };
       if (!res.ok) {
         setPhoneModelsMessage(body.error?.trim() || `Save failed (${res.status}).`);
         return;
       }
-      if (models.length === 0) {
-        setPhoneModelsMessage("Custom list cleared. Calculator uses built-in default names.");
+
+      const savedModels = Array.isArray(body.models) ? body.models : unique;
+      setPhoneModelsText(savedModels.join("\n"));
+
+      const removed = body.removedDuplicates ?? removedDuplicates;
+      if (savedModels.length === 0) {
+        setPhoneModelsMessage(
+          "Custom list cleared. Calculator will use built-in default names until you save a new list.",
+        );
+      } else if (removed > 0) {
+        setPhoneModelsMessage(
+          `Saved ${body.savedCount ?? savedModels.length} phone name(s). Removed ${removed} duplicate${removed === 1 ? "" : "s"}.`,
+        );
       } else {
-        setPhoneModelsMessage(`Saved ${body.savedCount ?? models.length} phone name(s).`);
-      }
-      const reload = await fetch("/api/admin/calculator-phone-models", {
-        cache: "no-store",
-        credentials: "include",
-      });
-      if (reload.ok) {
-        const phone = (await reload.json()) as {
-          effectiveModels?: string[];
-          storedModels?: string[] | null;
-        };
-        const lines =
-          phone.storedModels === null ? phone.effectiveModels : phone.storedModels;
-        if (Array.isArray(lines)) {
-          setPhoneModelsText(lines.join("\n"));
-        }
+        setPhoneModelsMessage(`Saved ${body.savedCount ?? savedModels.length} phone name(s).`);
       }
     } catch {
       setPhoneModelsMessage("Network error. Please retry.");
@@ -634,9 +625,9 @@ export default function AdminSettingsClient({ initialData }: Props) {
       <h2 style={{ marginTop: 32, marginBottom: 12 }}>Calculator phone names</h2>
       <div className="form-group">
         <label htmlFor="calculatorPhoneModels">
-          Search suggestions: separate names with a new line and/or a comma (e.g. LG G8, LG V60 or one per
-          line). Same name twice is not allowed (capital letters ignored). Up to 2000 names after splitting.
-          Leave empty and save to use built-in defaults again.
+          Search suggestions: one name per line (or commas). Duplicates are removed automatically on
+          save (capital letters ignored). Up to 2000 names. Leave empty and save to use built-in
+          defaults again.
         </label>
         <textarea
           id="calculatorPhoneModels"

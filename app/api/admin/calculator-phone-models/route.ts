@@ -1,6 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
-import { getDuplicatePhoneNamesInInput } from "@/src/lib/calculatorPhoneModelsInput";
+import {
+  dedupePhoneNamesPreserveOrder,
+  expandCalculatorPhoneModelStrings,
+} from "@/src/lib/calculatorPhoneModelsInput";
 import { addAuditLog } from "@/src/server/repositories/auditRepository";
 import {
   getCalculatorPhoneModels,
@@ -34,25 +37,14 @@ export async function POST(request: NextRequest) {
   if (!parsed.success) {
     return NextResponse.json({ error: "Invalid payload" }, { status: 400 });
   }
-  const duplicates = getDuplicatePhoneNamesInInput(parsed.data.models);
-  if (duplicates.length > 0) {
-    const maxShow = 12;
-    const shown = duplicates.slice(0, maxShow);
-    const more = duplicates.length - shown.length;
-    const list =
-      more > 0
-        ? `${shown.join(", ")} (+${more} more duplicate name${more === 1 ? "" : "s"})`
-        : shown.join(", ");
-    return NextResponse.json(
-      {
-        error: `Duplicate phone names are not allowed (ignoring capital letters): ${list}. Remove the extras and save again.`,
-      },
-      { status: 400 },
-    );
-  }
+
+  const expanded = expandCalculatorPhoneModelStrings(parsed.data.models);
+  const unique = dedupePhoneNamesPreserveOrder(expanded);
+  const removedDuplicates = Math.max(0, expanded.length - unique.length);
+
   let saved: string[];
   try {
-    saved = await saveCalculatorPhoneModels(parsed.data.models);
+    saved = await saveCalculatorPhoneModels(unique);
   } catch {
     return NextResponse.json({ error: "Could not save phone models." }, { status: 503 });
   }
@@ -60,7 +52,12 @@ export async function POST(request: NextRequest) {
     actor: "admin",
     action: "calculator.phone-models.update",
     target: SETTINGS_KEY,
-    payload: { count: saved.length },
+    payload: { count: saved.length, removedDuplicates },
   });
-  return NextResponse.json({ ok: true, savedCount: saved.length });
+  return NextResponse.json({
+    ok: true,
+    savedCount: saved.length,
+    removedDuplicates,
+    models: saved,
+  });
 }

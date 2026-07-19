@@ -1,22 +1,11 @@
 import { DEFAULT_CALCULATOR_PHONE_MODELS } from "@/src/features/sensCalculator/constants";
-import { expandCalculatorPhoneModelStrings } from "@/src/lib/calculatorPhoneModelsInput";
+import {
+  dedupePhoneNamesPreserveOrder,
+  expandCalculatorPhoneModelStrings,
+} from "@/src/lib/calculatorPhoneModelsInput";
 import { prisma, tryPrisma } from "@/src/server/dbSafe";
 
 const KEY = "settings:calculatorPhoneModels";
-
-function dedupePreserveOrder(strings: string[]): string[] {
-  const lowerSeen = new Set<string>();
-  const out: string[] = [];
-  for (const s of strings) {
-    const t = s.trim();
-    if (!t) continue;
-    const k = t.toLowerCase();
-    if (lowerSeen.has(k)) continue;
-    lowerSeen.add(k);
-    out.push(t);
-  }
-  return out;
-}
 
 /** Models shown in calculator search suggestions. Falls back to code defaults if DB empty / missing. */
 export async function getCalculatorPhoneModels(): Promise<string[]> {
@@ -37,7 +26,7 @@ export async function getCalculatorPhoneModels(): Promise<string[]> {
   if (!parsed.length) {
     return [...DEFAULT_CALCULATOR_PHONE_MODELS];
   }
-  return dedupePreserveOrder(expandCalculatorPhoneModelStrings(parsed));
+  return dedupePhoneNamesPreserveOrder(parsed);
 }
 
 /** Raw list stored in DB (may be empty if admin cleared custom list). */
@@ -49,17 +38,19 @@ export async function getStoredCalculatorPhoneModelsRaw(): Promise<string[] | nu
   if (!row?.value) return null;
   const record = row.value as { models?: unknown };
   if (!Array.isArray(record.models)) return null;
-  return dedupePreserveOrder(
+  return dedupePhoneNamesPreserveOrder(
     record.models.filter((x): x is string => typeof x === "string").map((s) => s.trim()),
   );
 }
 
 /**
  * Replace custom list. Pass [] to clear DB entry (live site uses code defaults again).
- * Caps at 2000 entries.
+ * Caps at 2000 entries. Duplicates are removed automatically (first spelling kept).
  */
 export async function saveCalculatorPhoneModels(models: string[]): Promise<string[]> {
-  const normalized = dedupePreserveOrder(expandCalculatorPhoneModelStrings(models)).slice(0, 2000);
+  const normalized = dedupePhoneNamesPreserveOrder(
+    expandCalculatorPhoneModelStrings(models),
+  ).slice(0, 2000);
   const ok = await tryPrisma(async () => {
     if (!normalized.length) {
       await prisma.siteSetting.deleteMany({ where: { key: KEY } });

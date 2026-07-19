@@ -15,7 +15,20 @@ export function expandCalculatorPhoneModelStrings(models: string[]): string[] {
   return out;
 }
 
-/** First-seen spelling for each case-insensitive duplicate (for error messages). */
+/** Keep first spelling; drop later case-insensitive duplicates. */
+export function dedupePhoneNamesPreserveOrder(models: string[]): string[] {
+  const lowerSeen = new Set<string>();
+  const out: string[] = [];
+  for (const raw of expandCalculatorPhoneModelStrings(models)) {
+    const k = raw.toLowerCase();
+    if (lowerSeen.has(k)) continue;
+    lowerSeen.add(k);
+    out.push(raw);
+  }
+  return out;
+}
+
+/** First-seen spelling for each case-insensitive duplicate (for messages). */
 export function getDuplicatePhoneNamesInInput(models: string[]): string[] {
   const expanded = expandCalculatorPhoneModelStrings(models);
   const firstByLower = new Map<string, string>();
