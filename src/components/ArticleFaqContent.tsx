@@ -10,93 +10,89 @@ type Props = {
   game?: "bgmi" | "pubg";
 };
 
-function BgmiHindiArticle() {
+function BgmiEnglishArticle() {
   return (
-    <div className="article" lang="hi">
+    <div className="article" lang="en">
       <h2>BGMI Sensitivity Settings Calculator: Perfect No Recoil Code &amp; Guide (2026)</h2>
       <p>
-        क्या आप BGMI (Battlegrounds Mobile India) में लगातार क्लोज-रेंज फाइट्स हार रहे हैं? या जब आप
-        4x या 6x स्कोप से लॉन्ग-रेंज स्प्रे देते हैं, तो आपकी गन आसमान छूने लगती है? अगर हाँ, तो समस्या
-        आपके गेमप्ले में नहीं, बल्कि आपकी BGMI Sensitivity Settings में है।
+        Are you losing close-range fights in BGMI (Battlegrounds Mobile India) again and again? Or
+        when you spray with a 4x or 6x scope at long range, does your gun climb into the sky? If yes,
+        the problem is usually not your gameplay — it is your BGMI Sensitivity Settings.
       </p>
       <p>
-        इंटरनेट पर हज़ारों &quot;Best BGMI Sensitivity Codes&quot; मौजूद हैं, लेकिन वो आपके काम इसलिए नहीं
-        करते क्योंकि हर खिलाड़ी का फोन, खेलने का तरीका (Thumbs vs Claw) और रिफ्लेक्स अलग होते हैं। इसी
-        समस्या को हल करने के लिए हम लेकर आए हैं BGMI Sensitivity Settings Calculator—एक ऐसा टूल जो
-        विशेष रूप से आपके डिवाइस और गेमिंग स्टाइल के अनुसार परफेक्ट नो-रिकॉइल सेंसिटिविटी जेनरेट करता है।
+        There are thousands of &quot;Best BGMI Sensitivity Codes&quot; online, but they often fail
+        because every player has a different phone, play style (Thumbs vs Claw), and reflex speed. To
+        solve that, we built the BGMI Sensitivity Settings Calculator — a tool that generates perfect
+        no-recoil sensitivity values based on your device and gaming style.
       </p>
 
-      <h3>BGMI में Sensitivity Settings क्यों मायने रखती है?</h3>
+      <h3>Why Sensitivity Settings Matter in BGMI</h3>
       <p>
-        BGMI एक अत्यधिक प्रतिस्पर्धी (Competitive) बैटल रॉयल गेम है जहाँ एक मिलीसेकंड का अंतर भी आपकी
-        जीत या हार तय कर सकता है। सही सेंसिटिविटी होने से आपको निम्नलिखित फायदे मिलते हैं:
+        BGMI is a highly competitive battle royale game where even a millisecond can decide a win or
+        loss. The right sensitivity gives you these advantages:
       </p>
       <ul>
         <li>
-          <b>Zero Recoil (नो रिकॉइल):</b> गन का हिलना बंद हो जाता है, जिससे आपके स्प्रे सीधे दुश्मन पर
-          लगते हैं।
+          <b>Zero Recoil:</b> Gun shake is controlled, so your sprays land on the enemy.
         </li>
         <li>
-          <b>Fast Reflexes:</b> आप क्लोज-रेंज में दुश्मनों पर तेजी से ऐम (Aim) ट्रांसफर कर सकते हैं।
+          <b>Fast Reflexes:</b> You can transfer aim quickly in close-range fights.
         </li>
         <li>
-          <b>More Headshots:</b> सही सेंसिटिविटी आपके ऐम को दुश्मन के हेड पर लॉक करने में मदद करती है।
+          <b>More Headshots:</b> Proper sensitivity helps lock your aim on the enemy&apos;s head.
         </li>
       </ul>
 
-      <h3>BGMI Sensitivity Settings Calculator क्या है और यह कैसे काम करता है?</h3>
+      <h3>What Is the BGMI Sensitivity Settings Calculator and How Does It Work?</h3>
       <p>
-        हमारा BGMI Sensitivity Calculator एक स्मार्ट एल्गोरिदम पर काम करता है। यह किसी अन्य प्रो-प्लेयर
-        की सेटिंग्स को कॉपी करने के बजाय, आपकी व्यक्तिगत प्राथमिकताओं के आधार पर कस्टमाइज्ड सेटिंग्स
-        बनाता है।
+        Our BGMI Sensitivity Calculator uses a smart algorithm. Instead of copying another pro
+        player&apos;s setup, it builds customized settings from your preferences.
       </p>
-      <p>यह टूल आपसे कुछ बुनियादी जानकारियां मांगता है, जैसे:</p>
+      <p>The tool asks for a few basic inputs, such as:</p>
       <ul>
         <li>
-          <b>Device Type:</b> (Low-end Android, Premium Android, या iPhone/iPad)
+          <b>Device Type:</b> (Low-end Android, Premium Android, or iPhone/iPad)
         </li>
         <li>
-          <b>Playing Style:</b> (Non-Gyroscope, Full Gyroscope, या Scope-Only Gyro)
+          <b>Playing Style:</b> (Non-Gyroscope, Full Gyroscope, or Scope-Only Gyro)
         </li>
         <li>
-          <b>Control Layout:</b> (2-Finger, 3-Finger, या 4-Finger/Claw)
+          <b>Control Layout:</b> (2-Finger, 3-Finger, or 4-Finger/Claw)
         </li>
       </ul>
       <p>
-        इन इनपुट्स के आधार पर, कैलकुलेटर आपके लिए परफेक्ट Camera, ADS (Aim Down Sight), और Gyroscope
-        Sensitivity की गणना करता है।
+        Based on those inputs, the calculator computes the right Camera, ADS (Aim Down Sight), and
+        Gyroscope Sensitivity for you.
       </p>
 
-      <h3>BGMI Sensitivity के मुख्य प्रकार (Understanding the Basics)</h3>
+      <h3>Main Types of BGMI Sensitivity (Understanding the Basics)</h3>
       <p>
-        अगर आप हमारे कैलकुलेटर का अधिकतम लाभ उठाना चाहते हैं, तो आपको यह समझना होगा कि ये सेटिंग्स काम
-        कैसे करती हैं:
+        To get the most from our calculator, it helps to understand how these settings work:
       </p>
 
       <h4>1. Camera Sensitivity (Free Look &amp; Screen)</h4>
       <p>
-        यह सेटिंग तब काम आती है जब आप बिना फायर किए स्क्रीन को स्वाइप करके आसपास देखते हैं। &apos;आई
-        बटन&apos; (Eye Button) की स्पीड भी इसी से कंट्रोल होती है। स्पॉटिंग (Spotting) के लिए इसका सही
-        होना बहुत जरूरी है।
+        This setting controls how you look around by swiping the screen without firing. The Eye
+        Button speed is also tied to this. Correct camera sensitivity is important for spotting
+        enemies.
       </p>
 
       <h4>2. ADS (Aim Down Sight) Sensitivity</h4>
       <p>
-        जब आप फायरिंग बटन दबाकर अपनी उंगली से रिकॉइल को कंट्रोल करते हैं, तो ADS सेंसिटिविटी काम करती है।
-        यदि आप नॉन-जायरो (Non-Gyro) प्लेयर हैं, तो यह आपके लिए सबसे महत्वपूर्ण सेटिंग है।
+        ADS sensitivity works when you hold the fire button and control recoil with your finger. If
+        you are a non-gyro player, this is usually your most important setting.
       </p>
 
       <h4>3. Gyroscope Sensitivity</h4>
       <p>
-        जायरोस्कोप प्लेयर स्क्रीन को स्वाइप करने के बजाय अपने फोन को झुकाकर (Tilt करके) रिकॉइल कंट्रोल और
-        ऐम करते हैं। क्लोज-रेंज और लेजर-जैसे स्प्रे के लिए आजकल अधिकांश प्रो-प्लेयर्स Full Gyroscope का
-        उपयोग करते हैं।
+        Gyro players tilt the phone to control recoil and aim instead of only swiping the screen.
+        Most pro players use Full Gyroscope today for close-range fights and laser-like sprays.
       </p>
 
       <h3>BGMI Best Sensitivity Settings (Base Reference)</h3>
       <p>
-        यदि आप कैलकुलेटर का उपयोग करने से पहले एक आइडियल बेस सेटिंग देखना चाहते हैं, तो यहाँ 2026 की सबसे
-        संतुलित (Balanced) सेटिंग्स दी गई हैं:
+        If you want a balanced base before using the calculator, here are solid 2026 reference
+        ranges:
       </p>
 
       <h4>Camera Sensitivity (No-Firing)</h4>
@@ -135,64 +131,40 @@ function BgmiHindiArticle() {
         <li>8x Scope: 60-90%</li>
       </ul>
       <p>
-        <b>नोट:</b> ये केवल संदर्भ (Reference) के लिए हैं। अपने डिवाइस के लिए एकदम सटीक वैल्यू पाने के
-        लिए ऊपर दिए गए Sensitivity Calculator Tool का उपयोग करें।
+        <b>Note:</b> These are reference values only. Use the Sensitivity Calculator Tool above for
+        precise values matched to your device.
       </p>
 
-      <h3>कैलकुलेटर से मिली सेंसिटिविटी को BGMI में कैसे अप्लाई करें?</h3>
+      <h3>How to Apply Calculator Sensitivity in BGMI</h3>
       <ul>
-        <li>हमारी वेबसाइट के कैलकुलेटर से अपनी कस्टमाइज्ड सेटिंग्स जेनरेट करें।</li>
-        <li>BGMI गेम ओपन करें और Settings में जाएं।</li>
-        <li>Sensitivity टैब पर क्लिक करें।</li>
-        <li>कैलकुलेटर द्वारा दी गई Camera, ADS और Gyro की वैल्यूज को मैनुअली एंटर करें।</li>
+        <li>Generate your customized settings with our website calculator.</li>
+        <li>Open BGMI and go to Settings.</li>
+        <li>Open the Sensitivity tab.</li>
+        <li>Enter the Camera, ADS, and Gyro values from the calculator manually.</li>
         <li>
-          वैकल्पिक: आप कैलकुलेटर द्वारा जेनरेट किए गए BGMI Sensitivity Code को सीधे &apos;Upload to
-          Cloud&apos; सेक्शन में जाकर पेस्ट भी कर सकते हैं।
+          Optional: paste the generated BGMI Sensitivity Code in the Upload to Cloud section.
         </li>
       </ul>
 
-      <h3>परफेक्ट नो-रिकॉइल पाने के लिए प्रो-टिप्स</h3>
+      <h3>Pro Tips for Perfect No Recoil</h3>
       <ul>
         <li>
-          <b>ट्रेनिंग ग्राउंड में अभ्यास:</b> कैलकुलेटर से सेटिंग्स कॉपी करने के बाद सीधे क्लासिक मैच न
-          खेलें। कम से कम 15-20 मिनट ट्रेनिंग ग्राउंड में M416 + 6x (3x में कनवर्टेड) के साथ स्प्रे की
-          प्रैक्टिस करें।
+          <b>Practice in Training Ground:</b> After copying calculator settings, do not jump straight
+          into Classic. Practice spray for at least 15-20 minutes with M416 + 6x (converted to 3x).
         </li>
         <li>
-          <b>अटैचमेंट्स का सही इस्तेमाल:</b> बिना रिकॉइल के स्प्रे के लिए हमेशा Compensator, Tactical
-          Stock, और Half Grip या Ergonomic Grip का इस्तेमाल करें।
+          <b>Use the right attachments:</b> For low-recoil spray, prefer Compensator, Tactical Stock,
+          and Half Grip or Ergonomic Grip.
         </li>
         <li>
-          <b>क्रॉच एंड फायर (Crouch &amp; Fire):</b> बैठकर फायर करने से आपकी गन का रिकॉइल अपने आप 20-30%
-          तक कम हो जाता है।
+          <b>Crouch and Fire:</b> Firing while crouched can reduce gun recoil by about 20-30%.
         </li>
       </ul>
 
-      <h3>Q1. क्या दूसरों का BGMI Sensitivity Code कॉपी करना सही है?</h3>
+      <h3>Conclusion</h3>
       <p>
-        <b>उत्तर:</b> नहीं, दूसरों का कोड कॉपी करने से आपका गेमप्ले बेहतर नहीं होगा क्योंकि उनका डिवाइस,
-        पिंग (Ping) और हैंड-साइज आपसे अलग हो सकता है। हमेशा हमारे BGMI Sensitivity Calculator जैसी
-        कस्टमाइज्ड सेटिंग्स का उपयोग करें।
-      </p>
-
-      <h3>Q2. iOS और Android के लिए सेंसिटिविटी अलग क्यों होती है?</h3>
-      <p>
-        <b>उत्तर:</b> iOS डिवाइसेज (iPhones/iPads) का टच रिस्पॉन्स और जायरोस्कोप सेंसर एंड्रॉइड के
-        मुकाबले ज्यादा स्मूथ और तेज होता है। इसलिए एंड्रॉइड यूजर्स को आमतौर पर थोड़ी हाई (High)
-        सेंसिटिविटी की जरूरत होती है।
-      </p>
-
-      <h3>Q3. क्या यह कैलकुलेटर BGMI के नवीनतम अपडेट के लिए काम करता है?</h3>
-      <p>
-        <b>उत्तर:</b> जी हाँ, हमारा एल्गोरिदम BGMI के हर नए अपडेट (जैसे 2026 के लेटेस्ट वर्शन्स) के
-        अनुसार अपडेट होता रहता है ताकि आपको हमेशा नो-रिकॉइल सेटिंग्स मिल सकें।
-      </p>
-
-      <h3>निष्कर्ष</h3>
-      <p>
-        BGMI में कॉकरर (Conqueror) टियर तक पहुँचने का रास्ता सही सेटिंग्स से होकर जाता है। आज ही हमारे
-        BGMI Sensitivity Settings Calculator का इस्तेमाल करें, अपना खुद का परफेक्ट कोड बनाएं और गेम में
-        अपनी जीत का सिलसिला (Chicken Dinner) शुरू करें!
+        The path to Conqueror tier in BGMI starts with the right settings. Use our BGMI Sensitivity
+        Settings Calculator today, create your own perfect code, and start stacking Chicken Dinners.
       </p>
     </div>
   );
@@ -233,7 +205,7 @@ export function ArticleFaqContent({
   return (
     <div className={wrapClass}>
       <div className="content-inner">
-        {game === "pubg" ? <PubgEnglishArticle /> : <BgmiHindiArticle />}
+        {game === "pubg" ? <PubgEnglishArticle /> : <BgmiEnglishArticle />}
 
         <div className="faq-section" lang="en">
           <h2>Frequently Asked Questions (FAQ)</h2>

@@ -12,13 +12,7 @@ export const metadata: Metadata = {
   title: { absolute: title },
   description,
   alternates: { canonical },
-  ...buildSocialMetadata({
-    title,
-    description,
-    url: canonical,
-    // UI + meta are English; Hindi article on this URL is marked lang="hi" in HTML.
-    alternateLocales: ["hi_IN"],
-  }),
+  ...buildSocialMetadata({ title, description, url: canonical }),
 };
 
 export default async function HomePage() {

@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import { Geist, Geist_Mono, Noto_Sans_Devanagari } from "next/font/google";
+import { Geist, Geist_Mono } from "next/font/google";
 import { PublicSiteScripts } from "@/src/components/PublicSiteScripts";
 import { organizationSchema, softwareAppSchema, websiteSchema } from "@/src/lib/schema";
 import { parseGoogleSiteVerification } from "@/src/lib/headSnippets";
@@ -17,14 +17,6 @@ const geistSans = Geist({
 const geistMono = Geist_Mono({
   variable: "--font-geist-mono",
   subsets: ["latin"],
-  display: "swap",
-});
-
-/** Devanagari for Hindi article blocks marked with lang="hi". */
-const notoDevanagari = Noto_Sans_Devanagari({
-  variable: "--font-noto-devanagari",
-  subsets: ["devanagari"],
-  weight: ["400", "600", "700"],
   display: "swap",
 });
 
@@ -109,10 +101,7 @@ export default async function RootLayout({
   const baseUrl = getSiteUrl();
 
   return (
-    <html
-      lang="en"
-      className={`${geistSans.variable} ${geistMono.variable} ${notoDevanagari.variable}`}
-    >
+    <html lang="en" className={`${geistSans.variable} ${geistMono.variable}`}>
       <body>
         {/* Critical above-the-fold styles so LCP title can paint before the CSS chunk */}
         <style

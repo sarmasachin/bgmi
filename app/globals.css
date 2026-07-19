@@ -26,11 +26,6 @@ body {
   font-family: var(--font-geist-sans), "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
 }
 
-/* Mixed-language pages: Hindi blocks declare lang="hi" (W3C / a11y correct). */
-[lang="hi"] {
-  font-family: var(--font-noto-devanagari), "Noto Sans Devanagari", "Segoe UI", "Mangal", sans-serif;
-}
-
 a {
   color: inherit;
   text-decoration: none;

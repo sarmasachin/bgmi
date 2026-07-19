@@ -7,22 +7,22 @@ export type HomeFaqItem = { id: string; question: string; answer: string };
 
 export const DEFAULT_HOME_FAQ: HomeFaqItem[] = [
   {
-    id: "default-1",
-    question: "Does this work for iPhone?",
+    id: "bgmi-faq-1",
+    question: "Is it okay to copy someone else's BGMI Sensitivity Code?",
     answer:
-      "Yes. The calculator auto-adjusts sensitivity based on your phone model.",
+      "No. Copying another player's code usually will not improve your gameplay, because their device, ping, and hand size may be different from yours. Always use customized settings from a tool like our BGMI Sensitivity Calculator.",
   },
   {
-    id: "default-2",
-    question: "What role does FPS play?",
+    id: "bgmi-faq-2",
+    question: "Why is sensitivity different for iOS and Android?",
     answer:
-      "Higher FPS makes the game smoother and usually makes aiming feel more responsive.",
+      "iOS devices (iPhones/iPads) generally have smoother and faster touch response and gyroscope sensors than many Android phones. Android users often need slightly higher sensitivity.",
   },
   {
-    id: "default-3",
-    question: "Can this get my ID banned?",
+    id: "bgmi-faq-3",
+    question: "Does this calculator work with the latest BGMI updates?",
     answer:
-      "No. This is only a calculator that suggests in-game settings.",
+      "Yes. Our algorithm is kept up to date with new BGMI versions (including 2026 updates) so you can keep getting no-recoil friendly settings.",
   },
 ];
 
