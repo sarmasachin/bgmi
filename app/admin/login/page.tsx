@@ -2,22 +2,30 @@
 
 import { FormEvent, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { useAdminFlash } from "@/src/components/admin/AdminToast";
 
 type SetupStatus = {
   needsSetup: boolean;
   bootstrapEnabled: boolean;
 };
 
+type LoginAlert = {
+  type: "error" | "warning" | "success";
+  message: string;
+  createdAt: number;
+};
+
+const ALERT_MS = 4200;
+
 export default function AdminLoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [bootstrapSecret, setBootstrapSecret] = useState("");
-  const setError = useAdminFlash();
   const [status, setStatus] = useState<SetupStatus | null>(null);
   const [busy, setBusy] = useState(false);
   const [mode, setMode] = useState<"login" | "setup">("login");
+  const [alert, setAlert] = useState<LoginAlert | null>(null);
+  const [leftMs, setLeftMs] = useState(0);
   const router = useRouter();
 
   useEffect(() => {
@@ -40,12 +48,31 @@ export default function AdminLoginPage() {
     };
   }, []);
 
+  useEffect(() => {
+    if (!alert) {
+      setLeftMs(0);
+      return;
+    }
+    const tick = () => {
+      const left = Math.max(0, ALERT_MS - (Date.now() - alert.createdAt));
+      setLeftMs(left);
+      if (left <= 0) setAlert(null);
+    };
+    tick();
+    const id = window.setInterval(tick, 200);
+    return () => window.clearInterval(id);
+  }, [alert]);
+
   const showSetup =
     mode === "setup" && (status?.needsSetup || status?.bootstrapEnabled);
 
+  function showAlert(type: LoginAlert["type"], message: string) {
+    setAlert({ type, message, createdAt: Date.now() });
+  }
+
   async function handleLogin(event: FormEvent) {
     event.preventDefault();
-    setError("");
+    setAlert(null);
     setBusy(true);
     try {
       const res = await fetch("/api/admin/auth/login", {
@@ -56,12 +83,15 @@ export default function AdminLoginPage() {
       const data = (await res.json().catch(() => ({}))) as { error?: string };
 
       if (!res.ok) {
-        setError(data.error || (res.status === 401 ? "Invalid credentials" : "Login failed"));
+        showAlert(
+          "error",
+          data.error || (res.status === 401 ? "Invalid credentials" : "Login failed")
+        );
         return;
       }
       router.push("/admin");
     } catch {
-      setError("Network error. Please try again.");
+      showAlert("error", "Network error. Please try again.");
     } finally {
       setBusy(false);
     }
@@ -69,13 +99,13 @@ export default function AdminLoginPage() {
 
   async function handleSetup(event: FormEvent) {
     event.preventDefault();
-    setError("");
+    setAlert(null);
     if (password.length < 6) {
-      setError("Password must be at least 6 characters.");
+      showAlert("warning", "Password must be at least 6 characters.");
       return;
     }
     if (password !== confirmPassword) {
-      setError("Passwords do not match.");
+      showAlert("warning", "Passwords do not match.");
       return;
     }
     setBusy(true);
@@ -93,25 +123,27 @@ export default function AdminLoginPage() {
       });
       const data = (await res.json()) as { error?: string };
       if (!res.ok) {
-        setError(data.error ?? "Could not save credentials.");
+        showAlert("error", data.error ?? "Could not save credentials.");
         return;
       }
       router.push("/admin");
     } catch {
-      setError("Network error. Please try again.");
+      showAlert("error", "Network error. Please try again.");
     } finally {
       setBusy(false);
     }
   }
 
+  const timerSeconds = alert ? Math.max(1, Math.ceil(leftMs / 1000)) : 0;
+  const progressPct = alert ? Math.max(0, (leftMs / ALERT_MS) * 100) : 0;
+
   return (
-    <main className="page-container" style={{ minHeight: "80vh", justifyContent: "center" }}>
+    <main className="admin-login-page">
       <form
-        className="news-detail-card"
+        className="admin-login-card"
         onSubmit={showSetup ? handleSetup : handleLogin}
-        style={{ maxWidth: 420 }}
       >
-        <h1 style={{ marginBottom: 12 }}>
+        <h1 className="admin-login-title">
           {showSetup
             ? status?.needsSetup
               ? "Create admin account"
@@ -119,11 +151,28 @@ export default function AdminLoginPage() {
             : "Admin Login"}
         </h1>
         {showSetup ? (
-          <p style={{ marginBottom: 12, color: "#94a3b8", fontSize: 14, lineHeight: 1.5 }}>
+          <p className="admin-login-hint">
             {status?.needsSetup
               ? "Set your Gmail and password to manage the site."
               : "Enter your Gmail, new password, and the bootstrap secret from server env."}
           </p>
+        ) : null}
+
+        {alert ? (
+          <div
+            className={`admin-login-alert admin-login-alert-${alert.type}`}
+            role={alert.type === "error" ? "alert" : "status"}
+          >
+            <div className="admin-login-alert-row">
+              <p className="admin-login-alert-message">{alert.message}</p>
+              <span className="admin-login-alert-timer">{timerSeconds}s</span>
+            </div>
+            <span
+              className="admin-login-alert-progress"
+              style={{ width: `${progressPct}%` }}
+              aria-hidden
+            />
+          </div>
         ) : null}
 
         <div className="form-group">
@@ -180,7 +229,7 @@ export default function AdminLoginPage() {
           </>
         ) : null}
 
-        <button type="submit" className="btn-calc" disabled={busy}>
+        <button type="submit" className="admin-login-submit" disabled={busy}>
           {busy
             ? "Please wait…"
             : showSetup
@@ -193,12 +242,11 @@ export default function AdminLoginPage() {
         {!showSetup && status?.bootstrapEnabled ? (
           <button
             type="button"
-            className="btn-reset"
+            className="admin-login-secondary"
             onClick={() => {
               setMode("setup");
-              setError("");
+              setAlert(null);
             }}
-            style={{ marginTop: 8 }}
             disabled={busy}
           >
             Set email &amp; password
@@ -208,14 +256,13 @@ export default function AdminLoginPage() {
         {showSetup && status && !status.needsSetup ? (
           <button
             type="button"
-            className="btn-reset"
+            className="admin-login-secondary"
             onClick={() => {
               setMode("login");
-              setError("");
               setBootstrapSecret("");
               setConfirmPassword("");
+              setAlert(null);
             }}
-            style={{ marginTop: 8 }}
             disabled={busy}
           >
             Back to login
