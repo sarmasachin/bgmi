@@ -2454,11 +2454,15 @@ footer,
 }
 
 .admin-login-submit {
-  display: flex;
+  display: flex !important;
   align-items: center;
   justify-content: center;
-  width: 100%;
+  width: 100% !important;
+  max-width: 100% !important;
+  flex: 0 0 auto !important;
+  box-sizing: border-box;
   margin-top: 8px;
+  min-height: 52px;
   padding: 16px 20px;
   border: 0;
   border-radius: 12px;
@@ -2488,11 +2492,15 @@ footer,
 }
 
 .admin-login-secondary {
-  display: flex;
+  display: flex !important;
   align-items: center;
   justify-content: center;
-  width: 100%;
+  width: 100% !important;
+  max-width: 100% !important;
+  flex: 0 0 auto !important;
+  box-sizing: border-box;
   margin-top: 10px;
+  min-height: 46px;
   padding: 13px 18px;
   border: 1px solid #30363d;
   border-radius: 12px;
