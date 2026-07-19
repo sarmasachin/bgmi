@@ -1,4 +1,5 @@
 type TemplateType = "home" | "article" | "landing";
+export type CloneGame = "bgmi" | "pubg";
 
 export type AdminPageRow = {
   id: string;
@@ -11,6 +12,8 @@ export type AdminPageRow = {
   ogImageUrl?: string;
   contentHtml?: string;
   templateType: TemplateType;
+  /** Calculator game for home-style clones. Defaults to bgmi when missing. */
+  game: CloneGame;
   socialTitle?: string;
   socialDescription?: string;
   socialImageAlt?: string;
@@ -18,6 +21,7 @@ export type AdminPageRow = {
 
 type PageMeta = {
   templateType?: TemplateType;
+  game?: CloneGame;
   socialTitle?: string;
   socialDescription?: string;
   socialImageAlt?: string;
@@ -25,6 +29,10 @@ type PageMeta = {
 
 function coerceTemplateType(value: unknown): TemplateType {
   return value === "article" || value === "landing" || value === "home" ? value : "home";
+}
+
+function coerceCloneGame(value: unknown): CloneGame {
+  return value === "pubg" ? "pubg" : "bgmi";
 }
 
 function parseContent(content: unknown) {
@@ -38,6 +46,7 @@ function parseContent(content: unknown) {
       typeof maybeMeta === "object" && maybeMeta !== null
         ? (maybeMeta as {
             templateType?: unknown;
+            game?: unknown;
             socialTitle?: unknown;
             socialDescription?: unknown;
             socialImageAlt?: unknown;
@@ -50,6 +59,7 @@ function parseContent(content: unknown) {
           metaObj.templateType === "home" || metaObj.templateType === "article" || metaObj.templateType === "landing"
             ? metaObj.templateType
             : undefined,
+        game: metaObj.game === "pubg" || metaObj.game === "bgmi" ? metaObj.game : undefined,
         socialTitle: typeof metaObj.socialTitle === "string" ? metaObj.socialTitle : undefined,
         socialDescription: typeof metaObj.socialDescription === "string" ? metaObj.socialDescription : undefined,
         socialImageAlt: typeof metaObj.socialImageAlt === "string" ? metaObj.socialImageAlt : undefined,
@@ -85,6 +95,7 @@ export function mapAdminPageRows(
       ogImageUrl: item.ogImageUrl ?? "",
       contentHtml: parsed.html,
       templateType: coerceTemplateType(parsed.meta.templateType),
+      game: coerceCloneGame(parsed.meta.game),
       socialTitle: parsed.meta.socialTitle ?? "",
       socialDescription: parsed.meta.socialDescription ?? "",
       socialImageAlt: parsed.meta.socialImageAlt ?? "",

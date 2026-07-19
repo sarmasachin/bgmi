@@ -37,6 +37,10 @@ export async function middleware(request: NextRequest) {
     return NextResponse.next();
   }
 
+  if (isAdminApi) {
+    return NextResponse.json({ error: "Unauthorized. Please log in again." }, { status: 401 });
+  }
+
   const loginUrl = new URL("/admin/login", request.url);
   return NextResponse.redirect(loginUrl);
 }

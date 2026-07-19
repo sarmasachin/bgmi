@@ -2,6 +2,8 @@
 
 import { useEffect, useMemo, useState } from "react";
 import type { AdminCommentItem } from "@/src/server/admin/mapAdminComments";
+import { useAdminFlash } from "@/src/components/admin/AdminToast";
+import { readApiError } from "@/src/lib/userFacingError";
 
 type CommentItem = AdminCommentItem;
 
@@ -13,7 +15,7 @@ export default function AdminCommentsClient({ initialItems }: Props) {
   const [items, setItems] = useState<CommentItem[]>(initialItems ?? []);
   const [loading, setLoading] = useState(initialItems === undefined);
   const [workingId, setWorkingId] = useState<string | null>(null);
-  const [message, setMessage] = useState("");
+  const setMessage = useAdminFlash();
   const [visibleCount, setVisibleCount] = useState(10);
 
   const counts = useMemo(() => {
@@ -67,7 +69,11 @@ export default function AdminCommentsClient({ initialItems }: Props) {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ id, status }),
       });
-      setMessage(res.ok ? `Comment marked ${status}.` : "Action failed.");
+      setMessage(
+        res.ok
+          ? `Comment marked ${status}.`
+          : await readApiError(res, "Action failed."),
+      );
       if (res.ok) await loadComments();
     } catch {
       setMessage("Network error. Please retry.");
@@ -79,7 +85,7 @@ export default function AdminCommentsClient({ initialItems }: Props) {
     setWorkingId(id);
     try {
       const res = await fetch(`/api/admin/comments?id=${id}`, { method: "DELETE" });
-      setMessage(res.ok ? "Comment deleted." : "Delete failed.");
+      setMessage(res.ok ? "Comment deleted." : await readApiError(res, "Delete failed."));
       if (res.ok) await loadComments();
     } catch {
       setMessage("Network error. Please retry.");
@@ -103,7 +109,6 @@ export default function AdminCommentsClient({ initialItems }: Props) {
         </div>
       </div>
 
-      {message ? <p className="admin-comments-message">{message}</p> : null}
 
       <div className="admin-table-wrap">
         <table className="admin-table admin-comments-table">

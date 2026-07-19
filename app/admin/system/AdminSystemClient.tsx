@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import type { SystemHealthData } from "@/src/server/admin/getSystemHealthData";
+import { useAdminFlash } from "@/src/components/admin/AdminToast";
 
 type Health = SystemHealthData;
 
@@ -11,11 +12,12 @@ type Props = {
 
 export default function AdminSystemClient({ initialData }: Props) {
   const [data, setData] = useState<Health | null>(initialData ?? null);
-  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(initialData === undefined);
+  const flash = useAdminFlash();
 
   useEffect(() => {
     if (initialData !== undefined) return;
-    setError("");
+    setLoading(true);
     fetch("/api/admin/system/health", { cache: "no-store", credentials: "include" })
       .then(async (res) => {
         const json = (await res.json()) as Health;
@@ -24,9 +26,10 @@ export default function AdminSystemClient({ initialData }: Props) {
       })
       .catch(() => {
         setData(null);
-        setError("Could not load health data.");
-      });
-  }, [initialData]);
+        flash("Could not load health data.");
+      })
+      .finally(() => setLoading(false));
+  }, [initialData, flash]);
 
   return (
     <section className="admin-section">
@@ -34,8 +37,7 @@ export default function AdminSystemClient({ initialData }: Props) {
       <p className="admin-dashboard-subtitle">
         Shows which optional env vars are set (not a full DB/SMTP connectivity test).
       </p>
-      {error ? <p className="admin-ratings-message">{error}</p> : null}
-      {!data && !error ? (
+      {loading ? (
         <p>Loading…</p>
       ) : data ? (
         <>

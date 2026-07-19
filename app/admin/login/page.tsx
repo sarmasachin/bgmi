@@ -2,6 +2,7 @@
 
 import { FormEvent, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import { useAdminFlash } from "@/src/components/admin/AdminToast";
 
 type SetupStatus = {
   needsSetup: boolean;
@@ -13,7 +14,7 @@ export default function AdminLoginPage() {
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [bootstrapSecret, setBootstrapSecret] = useState("");
-  const [error, setError] = useState("");
+  const setError = useAdminFlash();
   const [status, setStatus] = useState<SetupStatus | null>(null);
   const [busy, setBusy] = useState(false);
   const [mode, setMode] = useState<"login" | "setup">("login");
@@ -178,8 +179,6 @@ export default function AdminLoginPage() {
             ) : null}
           </>
         ) : null}
-
-        {error ? <p style={{ color: "#ff7b7b", marginBottom: 10 }}>{error}</p> : null}
 
         <button type="submit" className="btn-calc" disabled={busy}>
           {busy

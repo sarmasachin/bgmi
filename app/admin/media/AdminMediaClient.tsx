@@ -3,6 +3,8 @@
 import Image from "next/image";
 import { FormEvent, useCallback, useEffect, useState } from "react";
 import type { AdminMediaPageData } from "@/src/server/admin/prefetchAdminMediaPageData";
+import { useAdminFlash } from "@/src/components/admin/AdminToast";
+import { readApiError } from "@/src/lib/userFacingError";
 
 type MediaRow = AdminMediaPageData["initialFiles"][number];
 
@@ -21,7 +23,7 @@ type Props = {
 
 export default function AdminMediaClient({ initialFiles, initialOutputPref }: Props) {
   const [files, setFiles] = useState<MediaRow[]>(initialFiles ?? []);
-  const [message, setMessage] = useState("");
+  const setMessage = useAdminFlash();
   const [loading, setLoading] = useState(initialFiles === undefined);
   const [uploading, setUploading] = useState(false);
   const [converting, setConverting] = useState(false);
@@ -34,24 +36,34 @@ export default function AdminMediaClient({ initialFiles, initialOutputPref }: Pr
     setLoading(true);
     try {
       const res = await fetch("/api/admin/media", { cache: "no-store" });
+      if (!res.ok) {
+        setMessage(await readApiError(res, "Could not load media library."));
+        setFiles([]);
+        return;
+      }
       const json = (await res.json()) as { data?: MediaRow[] };
       setFiles(json.data ?? []);
     } catch {
       setMessage("Could not load media library.");
+      setFiles([]);
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [setMessage]);
 
   const loadDefaults = useCallback(async () => {
     try {
       const res = await fetch("/api/admin/media/defaults", { cache: "no-store" });
+      if (!res.ok) {
+        setMessage(await readApiError(res, "Could not load media defaults."));
+        return;
+      }
       const json = (await res.json()) as { data?: OutputPref };
       if (json.data) setOutputPref(json.data);
     } catch {
-      /* keep defaults */
+      setMessage("Could not load media defaults.");
     }
-  }, []);
+  }, [setMessage]);
 
   useEffect(() => {
     if (initialFiles !== undefined && initialOutputPref !== undefined) return;
@@ -176,18 +188,22 @@ export default function AdminMediaClient({ initialFiles, initialOutputPref }: Pr
   async function deleteFile(filename: string) {
     if (!confirm(`Delete ${filename}?`)) return;
     setMessage("");
-    const res = await fetch("/api/admin/media", {
-      method: "DELETE",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ filename }),
-    });
-    const json = (await res.json()) as { ok?: boolean; error?: string };
-    if (!res.ok) {
-      setMessage(json.error ?? "Delete failed.");
-      return;
+    try {
+      const res = await fetch("/api/admin/media", {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ filename }),
+      });
+      const json = (await res.json().catch(() => ({}))) as { ok?: boolean; error?: string };
+      if (!res.ok) {
+        setMessage(json.error ?? "Delete failed.");
+        return;
+      }
+      setMessage("File deleted.");
+      await load();
+    } catch {
+      setMessage("Network error. Please retry.");
     }
-    setMessage("File deleted.");
-    await load();
   }
 
   return (
@@ -199,7 +215,6 @@ export default function AdminMediaClient({ initialFiles, initialOutputPref }: Pr
           (news feature image, media library, article editor images) is saved in <strong>one</strong> format chosen
           by priority: WebP → AVIF → JPEG. If none are checked, the original file is kept as-is.
         </p>
-        {message ? <p className="admin-ratings-message">{message}</p> : null}
 
         <div className="admin-card admin-media-pref-card">
           <h2>Default format for all uploads</h2>

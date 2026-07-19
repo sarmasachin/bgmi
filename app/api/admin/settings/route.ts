@@ -3,6 +3,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { getSettings, saveSettings } from "@/src/server/repositories/settingsRepository";
 import { addAuditLog } from "@/src/server/repositories/auditRepository";
+import { readAdminJsonBody } from "@/src/server/admin/adminApiHelpers";
 
 const CACHE_TTL_MS = 60_000;
 
@@ -70,18 +71,23 @@ const settingsSchema = z.object({
 });
 
 export async function POST(request: NextRequest) {
-  const body = await request.json();
-  const parsed = settingsSchema.safeParse(body);
+  const bodyResult = await readAdminJsonBody(request);
+  if (!bodyResult.ok) return bodyResult.response;
+  const parsed = settingsSchema.safeParse(bodyResult.data);
   if (!parsed.success) {
     return NextResponse.json({ error: "Invalid settings payload" }, { status: 400 });
   }
-  await saveSettings(parsed.data);
-  await addAuditLog({
-    actor: "admin",
-    action: "settings.update",
-    target: "site-settings",
-    payload: { keys: Object.keys(parsed.data) },
-  });
-  settingsCache = null;
-  return NextResponse.json({ ok: true, saved: true });
+  try {
+    await saveSettings(parsed.data);
+    await addAuditLog({
+      actor: "admin",
+      action: "settings.update",
+      target: "site-settings",
+      payload: { keys: Object.keys(parsed.data) },
+    });
+    settingsCache = null;
+    return NextResponse.json({ ok: true, saved: true });
+  } catch {
+    return NextResponse.json({ error: "Could not save settings." }, { status: 500 });
+  }
 }

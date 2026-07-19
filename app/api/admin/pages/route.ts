@@ -6,6 +6,7 @@ import {
   updatePage,
 } from "@/src/server/repositories/pagesRepository";
 import { addAuditLog } from "@/src/server/repositories/auditRepository";
+import { readAdminJsonBody } from "@/src/server/admin/adminApiHelpers";
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 
@@ -17,6 +18,7 @@ const schema = z.object({
   canonicalUrl: z.string().optional(),
   ogImageUrl: z.string().optional(),
   templateType: z.enum(["home", "article", "landing"]).optional(),
+  game: z.enum(["bgmi", "pubg"]).optional(),
   socialTitle: z.string().optional(),
   socialDescription: z.string().optional(),
   socialImageAlt: z.string().optional(),
@@ -24,6 +26,19 @@ const schema = z.object({
   status: z.enum(["draft", "published"]).default("draft"),
   publishAsNews: z.boolean().default(false),
 });
+
+function mapPageWriteError(error: unknown) {
+  if (error instanceof Error && error.message === "SLUG_EXISTS") {
+    return NextResponse.json({ error: "Slug already exists." }, { status: 409 });
+  }
+  if (error instanceof Error && error.message === "DB_UNAVAILABLE") {
+    return NextResponse.json(
+      { error: "Database temporarily unavailable. Please try again." },
+      { status: 503 },
+    );
+  }
+  return NextResponse.json({ error: "Could not save page." }, { status: 500 });
+}
 
 export async function GET(request: NextRequest) {
   const slug = request.nextUrl.searchParams.get("slug");
@@ -38,8 +53,10 @@ export async function GET(request: NextRequest) {
 }
 
 export async function POST(request: NextRequest) {
-  const body = await request.json();
-  const parsed = schema.safeParse(body);
+  const bodyResult = await readAdminJsonBody(request);
+  if (!bodyResult.ok) return bodyResult.response;
+
+  const parsed = schema.safeParse(bodyResult.data);
   if (!parsed.success) {
     return NextResponse.json({ error: "Invalid page payload" }, { status: 400 });
   }
@@ -47,10 +64,7 @@ export async function POST(request: NextRequest) {
   try {
     page = await createPage(parsed.data);
   } catch (error) {
-    if (error instanceof Error && error.message === "SLUG_EXISTS") {
-      return NextResponse.json({ error: "Slug already exists." }, { status: 409 });
-    }
-    throw error;
+    return mapPageWriteError(error);
   }
   await addAuditLog({
     actor: "admin",
@@ -62,7 +76,9 @@ export async function POST(request: NextRequest) {
 }
 
 export async function PATCH(request: NextRequest) {
-  const body = await request.json();
+  const bodyResult = await readAdminJsonBody(request);
+  if (!bodyResult.ok) return bodyResult.response;
+
   const parsed = z
     .object({
       id: z.string(),
@@ -73,22 +89,20 @@ export async function PATCH(request: NextRequest) {
       canonicalUrl: z.string().optional(),
       ogImageUrl: z.string().optional(),
       templateType: z.enum(["home", "article", "landing"]).optional(),
+      game: z.enum(["bgmi", "pubg"]).optional(),
       socialTitle: z.string().optional(),
       socialDescription: z.string().optional(),
       socialImageAlt: z.string().optional(),
       content: z.string().optional(),
       status: z.enum(["draft", "published"]).optional(),
     })
-    .safeParse(body);
+    .safeParse(bodyResult.data);
   if (!parsed.success) return NextResponse.json({ error: "Invalid update payload" }, { status: 400 });
   let page;
   try {
     page = await updatePage(parsed.data.id, parsed.data);
   } catch (error) {
-    if (error instanceof Error && error.message === "SLUG_EXISTS") {
-      return NextResponse.json({ error: "Slug already exists." }, { status: 409 });
-    }
-    throw error;
+    return mapPageWriteError(error);
   }
   if (!page) return NextResponse.json({ error: "Not found" }, { status: 404 });
   await addAuditLog({

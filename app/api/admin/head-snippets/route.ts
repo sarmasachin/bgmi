@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { getHeadSnippets, saveHeadSnippets } from "@/src/server/repositories/settingsRepository";
 import { addAuditLog } from "@/src/server/repositories/auditRepository";
+import { readAdminJsonBody } from "@/src/server/admin/adminApiHelpers";
 
 const CACHE_TTL_MS = 60_000;
 
@@ -37,22 +38,27 @@ export async function GET() {
 }
 
 export async function POST(request: NextRequest) {
-  const body = await request.json();
-  const parsed = schema.safeParse(body);
+  const bodyResult = await readAdminJsonBody(request);
+  if (!bodyResult.ok) return bodyResult.response;
+  const parsed = schema.safeParse(bodyResult.data);
   if (!parsed.success) {
     return NextResponse.json({ error: "Invalid snippet payload" }, { status: 400 });
   }
-  await saveHeadSnippets(parsed.data);
-  await addAuditLog({
-    actor: "admin",
-    action: "settings.head-snippets.update",
-    target: "head-snippets",
-    payload: {
-      hasGoogleVerification: Boolean(parsed.data.googleVerificationMeta),
-      hasAnalytics: Boolean(parsed.data.analyticsScript),
-      hasAdsense: Boolean(parsed.data.adsenseScript),
-    },
-  });
-  headSnippetsCache = null;
-  return NextResponse.json({ ok: true, saved: true });
+  try {
+    await saveHeadSnippets(parsed.data);
+    await addAuditLog({
+      actor: "admin",
+      action: "settings.head-snippets.update",
+      target: "head-snippets",
+      payload: {
+        hasGoogleVerification: Boolean(parsed.data.googleVerificationMeta),
+        hasAnalytics: Boolean(parsed.data.analyticsScript),
+        hasAdsense: Boolean(parsed.data.adsenseScript),
+      },
+    });
+    headSnippetsCache = null;
+    return NextResponse.json({ ok: true, saved: true });
+  } catch {
+    return NextResponse.json({ error: "Could not save head snippets." }, { status: 500 });
+  }
 }

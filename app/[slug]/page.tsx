@@ -13,6 +13,7 @@ import { toCanonicalUrl } from "@/src/lib/siteUrl";
 import { buildSocialMetadata } from "@/src/lib/socialMeta";
 
 type TemplateType = "home" | "article" | "landing";
+type CloneGame = "bgmi" | "pubg";
 
 type Props = {
   params: Promise<{ slug: string }>;
@@ -20,25 +21,51 @@ type Props = {
 };
 
 function extractContentData(content: unknown) {
-  if (!content) return { html: "", templateType: "home" as TemplateType, socialTitle: "", socialDescription: "", socialImageAlt: "" };
+  if (!content) {
+    return {
+      html: "",
+      templateType: "home" as TemplateType,
+      game: "bgmi" as CloneGame,
+      socialTitle: "",
+      socialDescription: "",
+      socialImageAlt: "",
+    };
+  }
   if (typeof content === "string") {
-    return { html: content, templateType: "home" as TemplateType, socialTitle: "", socialDescription: "", socialImageAlt: "" };
+    return {
+      html: content,
+      templateType: "home" as TemplateType,
+      game: "bgmi" as CloneGame,
+      socialTitle: "",
+      socialDescription: "",
+      socialImageAlt: "",
+    };
   }
   if (typeof content === "object" && content) {
     const record = content as Record<string, unknown>;
     const html = typeof record.html === "string" ? record.html : "";
     const meta = (record.meta as Record<string, unknown> | undefined) ?? {};
     const rawType = meta.templateType;
-    const templateType: TemplateType = rawType === "article" || rawType === "landing" || rawType === "home" ? rawType : "home";
+    const templateType: TemplateType =
+      rawType === "article" || rawType === "landing" || rawType === "home" ? rawType : "home";
+    const game: CloneGame = meta.game === "pubg" ? "pubg" : "bgmi";
     return {
       html,
       templateType,
+      game,
       socialTitle: typeof meta.socialTitle === "string" ? meta.socialTitle : "",
       socialDescription: typeof meta.socialDescription === "string" ? meta.socialDescription : "",
       socialImageAlt: typeof meta.socialImageAlt === "string" ? meta.socialImageAlt : "",
     };
   }
-  return { html: "", templateType: "home" as TemplateType, socialTitle: "", socialDescription: "", socialImageAlt: "" };
+  return {
+    html: "",
+    templateType: "home" as TemplateType,
+    game: "bgmi" as CloneGame,
+    socialTitle: "",
+    socialDescription: "",
+    socialImageAlt: "",
+  };
 }
 
 async function getPageForSlug(slug: string, allowDraftPreview = false) {
@@ -90,6 +117,7 @@ export default async function DynamicTemplatePage({ params, searchParams }: Prop
   const extracted = extractContentData(page.content);
   const articleHtml = extracted.html;
   const templateType = extracted.templateType;
+  const calculatorGame = extracted.game;
   const ratingSummary = await getRatingSummary("tool", slug);
 
   if (templateType === "article") {
@@ -153,7 +181,7 @@ export default async function DynamicTemplatePage({ params, searchParams }: Prop
       <h1 className="main-title">{page.title}</h1>
       <main className="page-container">
         <AdSlot slotKey="home_above_calculator" />
-        <SensCalculator phoneModels={phoneModels} />
+        <SensCalculator key={calculatorGame} phoneModels={phoneModels} game={calculatorGame} />
         <AdSlot slotKey="home_between_tool_and_article" />
         <RatingWidget
           key={ratingWidgetRemountKey("tool", slug)}

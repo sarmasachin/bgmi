@@ -1,5 +1,5 @@
 import { randomUUID } from "crypto";
-import { prisma, tryPrisma } from "@/src/server/dbSafe";
+import { prisma, tryPrisma, tryPrismaLong } from "@/src/server/dbSafe";
 
 /** Hard cap for publicly shown / approved testimonials (FIFO on approve). */
 export const MAX_APPROVED_TESTIMONIALS = 20;
@@ -243,12 +243,15 @@ export async function countApprovedTestimonials(): Promise<number | null> {
 export async function setTestimonialStatus(
   id: string,
   status: TestimonialStatus,
-): Promise<{ item: TestimonialRecord; trimmed: number } | null> {
+): Promise<
+  | { ok: true; item: TestimonialRecord; trimmed: number }
+  | { ok: false; error: "not_found" | "unavailable" }
+> {
   const now = new Date();
 
-  const dbResult = await tryPrisma(async () => {
+  const dbResult = await tryPrismaLong(async () => {
     const existing = await prisma.testimonial.findUnique({ where: { id } });
-    if (!existing) return null;
+    if (!existing) return { kind: "missing" as const };
 
     const updated = await prisma.testimonial.update({
       where: { id },
@@ -264,18 +267,28 @@ export async function setTestimonialStatus(
     }
 
     const mapped = mapRow(updated);
-    if (!mapped) return null;
-    return { item: mapped, trimmed };
+    if (!mapped) return { kind: "missing" as const };
+    return { kind: "ok" as const, item: mapped, trimmed };
   });
 
-  if (dbResult) return dbResult;
+  if (dbResult?.kind === "ok") {
+    return { ok: true, item: dbResult.item, trimmed: dbResult.trimmed };
+  }
+  if (dbResult?.kind === "missing") {
+    return { ok: false, error: "not_found" };
+  }
+
+  // DB timed out / unavailable — never pretend mock approve succeeded in production.
+  if (process.env.NODE_ENV === "production") {
+    return { ok: false, error: "unavailable" };
+  }
 
   const item = mockTestimonials.find((row) => row.id === id);
-  if (!item) return null;
+  if (!item) return { ok: false, error: "not_found" };
   item.status = status;
   item.approvedAt = status === "approved" ? now : null;
   const trimmed = status === "approved" ? trimApprovedOverflowMock() : 0;
-  return { item: { ...item }, trimmed };
+  return { ok: true, item: { ...item }, trimmed };
 }
 
 export async function deleteTestimonial(id: string): Promise<boolean> {

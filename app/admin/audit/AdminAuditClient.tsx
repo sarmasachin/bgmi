@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import type { AdminAuditRow } from "@/src/server/repositories/adminAuditRepository";
+import { useAdminFlash } from "@/src/components/admin/AdminToast";
 
 type Row = AdminAuditRow;
 
@@ -11,7 +12,7 @@ type Props = {
 
 export default function AdminAuditClient({ initialRows }: Props) {
   const [rows, setRows] = useState<Row[]>(initialRows ?? []);
-  const [message, setMessage] = useState("");
+  const setMessage = useAdminFlash();
   const [loading, setLoading] = useState(initialRows === undefined);
   const [clearing, setClearing] = useState(false);
 
@@ -72,7 +73,6 @@ export default function AdminAuditClient({ initialRows }: Props) {
       <p className="admin-dashboard-subtitle">
         Last 100 entries from the database. With no database connection, this list stays empty.
       </p>
-      {message ? <p className="admin-ratings-message">{message}</p> : null}
       <div className="admin-actions">
         <button
           type="button"

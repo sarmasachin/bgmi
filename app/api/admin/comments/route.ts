@@ -4,6 +4,7 @@ import {
   removeComment,
 } from "@/src/server/repositories/commentsRepository";
 import { addAuditLog } from "@/src/server/repositories/auditRepository";
+import { readAdminJsonBody } from "@/src/server/admin/adminApiHelpers";
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 
@@ -13,18 +14,25 @@ export async function GET() {
 }
 
 export async function PATCH(request: NextRequest) {
-  const body = await request.json();
-  const parsed = z.object({ id: z.string(), status: z.enum(["pending", "approved", "rejected", "spam"]) }).safeParse(body);
+  const bodyResult = await readAdminJsonBody(request);
+  if (!bodyResult.ok) return bodyResult.response;
+  const parsed = z
+    .object({ id: z.string(), status: z.enum(["pending", "approved", "rejected", "spam"]) })
+    .safeParse(bodyResult.data);
   if (!parsed.success) return NextResponse.json({ error: "Invalid moderation payload" }, { status: 400 });
-  const item = await moderateComment(parsed.data.id, parsed.data.status);
-  if (!item) return NextResponse.json({ error: "Not found" }, { status: 404 });
-  await addAuditLog({
-    actor: "admin",
-    action: "comment.moderate",
-    target: parsed.data.id,
-    payload: { status: parsed.data.status },
-  });
-  return NextResponse.json({ ok: true, data: item });
+  try {
+    const item = await moderateComment(parsed.data.id, parsed.data.status);
+    if (!item) return NextResponse.json({ error: "Not found" }, { status: 404 });
+    await addAuditLog({
+      actor: "admin",
+      action: "comment.moderate",
+      target: parsed.data.id,
+      payload: { status: parsed.data.status },
+    });
+    return NextResponse.json({ ok: true, data: item });
+  } catch {
+    return NextResponse.json({ error: "Could not update comment." }, { status: 500 });
+  }
 }
 
 export async function DELETE(request: NextRequest) {

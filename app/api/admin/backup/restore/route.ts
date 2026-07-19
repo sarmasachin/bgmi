@@ -3,7 +3,7 @@ import { NextRequest } from "next/server";
 import { z } from "zod";
 import type { Prisma } from "@prisma/client";
 import { restoreMockBackup } from "@/src/server/mockStore";
-import { prisma, tryPrisma } from "@/src/server/dbSafe";
+import { prisma, tryPrismaLong } from "@/src/server/dbSafe";
 import crypto from "crypto";
 import { addAuditLog } from "@/src/server/repositories/auditRepository";
 
@@ -96,7 +96,7 @@ export async function POST(request: NextRequest) {
     );
   }
 
-  const restoredInDb = await tryPrisma(async () => {
+  const restoredInDb = await tryPrismaLong(async () => {
     await prisma.$transaction([
       prisma.newsComment.deleteMany(),
       prisma.newsRating.deleteMany(),
@@ -211,6 +211,12 @@ export async function POST(request: NextRequest) {
   });
 
   if (!restoredInDb) {
+    if (process.env.NODE_ENV === "production" && process.env.DATABASE_URL) {
+      return NextResponse.json(
+        { error: "Database restore failed. Please try again shortly." },
+        { status: 503 },
+      );
+    }
     restoreMockBackup(payload as never);
   }
 

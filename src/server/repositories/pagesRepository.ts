@@ -1,9 +1,10 @@
 import { cache } from "react";
 import { mockStore } from "@/src/server/mockStore";
-import { prisma, tryPrisma } from "@/src/server/dbSafe";
+import { prisma, tryPrisma, tryPrismaLong } from "@/src/server/dbSafe";
 import type { Prisma } from "@prisma/client";
 
 type TemplateType = "home" | "article" | "landing";
+type CloneGame = "bgmi" | "pubg";
 
 type PageInput = {
   title: string;
@@ -13,6 +14,8 @@ type PageInput = {
   canonicalUrl?: string;
   ogImageUrl?: string;
   templateType?: TemplateType;
+  /** Calculator game for home-style clones. Defaults to bgmi. */
+  game?: CloneGame;
   socialTitle?: string;
   socialDescription?: string;
   socialImageAlt?: string;
@@ -23,6 +26,7 @@ type PageInput = {
 
 type PageMeta = {
   templateType?: TemplateType;
+  game?: CloneGame;
   socialTitle?: string;
   socialDescription?: string;
   socialImageAlt?: string;
@@ -30,6 +34,10 @@ type PageMeta = {
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null && !Array.isArray(value);
+}
+
+function coerceCloneGame(value: unknown): CloneGame | undefined {
+  return value === "pubg" || value === "bgmi" ? value : undefined;
 }
 
 function extractHtml(content: unknown) {
@@ -47,6 +55,7 @@ function extractMeta(content: unknown): PageMeta {
       rawMeta.templateType === "home" || rawMeta.templateType === "article" || rawMeta.templateType === "landing"
         ? rawMeta.templateType
         : undefined,
+    game: coerceCloneGame(rawMeta.game),
     socialTitle: typeof rawMeta.socialTitle === "string" ? rawMeta.socialTitle : undefined,
     socialDescription: typeof rawMeta.socialDescription === "string" ? rawMeta.socialDescription : undefined,
     socialImageAlt: typeof rawMeta.socialImageAlt === "string" ? rawMeta.socialImageAlt : undefined,
@@ -60,6 +69,7 @@ function buildContent(input: { html?: string; existing?: unknown; metaPatch?: Pa
   const currentMeta = extractMeta(input.existing);
   const nextMeta: PageMeta = {
     templateType: input.metaPatch?.templateType ?? currentMeta.templateType,
+    game: input.metaPatch?.game ?? currentMeta.game,
     socialTitle: input.metaPatch?.socialTitle ?? currentMeta.socialTitle,
     socialDescription: input.metaPatch?.socialDescription ?? currentMeta.socialDescription,
     socialImageAlt: input.metaPatch?.socialImageAlt ?? currentMeta.socialImageAlt,
@@ -71,9 +81,16 @@ function buildContent(input: { html?: string; existing?: unknown; metaPatch?: Pa
     base.html = input.existing;
   }
 
-  if (nextMeta.templateType || nextMeta.socialTitle || nextMeta.socialDescription || nextMeta.socialImageAlt) {
+  if (
+    nextMeta.templateType ||
+    nextMeta.game ||
+    nextMeta.socialTitle ||
+    nextMeta.socialDescription ||
+    nextMeta.socialImageAlt
+  ) {
     const metaJson: Record<string, unknown> = {};
     if (nextMeta.templateType) metaJson.templateType = nextMeta.templateType;
+    if (nextMeta.game) metaJson.game = nextMeta.game;
     if (nextMeta.socialTitle) metaJson.socialTitle = nextMeta.socialTitle;
     if (nextMeta.socialDescription) metaJson.socialDescription = nextMeta.socialDescription;
     if (nextMeta.socialImageAlt) metaJson.socialImageAlt = nextMeta.socialImageAlt;
@@ -158,7 +175,7 @@ export const getPageBySlug = cache(async function getPageBySlug(slug: string) {
 });
 
 export async function createPage(input: PageInput) {
-  const dbData = await tryPrisma(async () => {
+  const dbData = await tryPrismaLong(async () => {
     const existing = await prisma.pageTemplate.findUnique({
       where: { slug: input.slug },
       select: { id: true },
@@ -177,6 +194,7 @@ export async function createPage(input: PageInput) {
       existing: clonedContent,
       metaPatch: {
         templateType: input.templateType,
+        game: input.game ?? "bgmi",
         socialTitle: input.socialTitle,
         socialDescription: input.socialDescription,
         socialImageAlt: input.socialImageAlt,
@@ -213,6 +231,10 @@ export async function createPage(input: PageInput) {
 
   if (dbData) return dbData;
 
+  if (process.env.NODE_ENV === "production" && process.env.DATABASE_URL) {
+    throw new Error("DB_UNAVAILABLE");
+  }
+
   const homeTemplate = (mockStore.pages.find((item) => item.slug === "/") ??
     mockStore.pages[0]) as { content?: unknown } | undefined;
   const clonedContent = homeTemplate?.content ?? {};
@@ -221,6 +243,7 @@ export async function createPage(input: PageInput) {
     existing: clonedContent,
     metaPatch: {
       templateType: input.templateType,
+      game: input.game ?? "bgmi",
       socialTitle: input.socialTitle,
       socialDescription: input.socialDescription,
       socialImageAlt: input.socialImageAlt,
@@ -253,12 +276,12 @@ export async function createPage(input: PageInput) {
 }
 
 export async function updatePage(id: string, payload: Partial<PageInput>) {
-  const dbData = await tryPrisma(async () => {
+  const dbData = await tryPrismaLong(async () => {
     const current = await prisma.pageTemplate.findUnique({
       where: { id },
       select: { id: true, content: true, slug: true },
     });
-    if (!current) return null;
+    if (!current) return { kind: "not_found" as const };
 
     if (payload.slug && payload.slug !== current.slug) {
       const duplicate = await prisma.pageTemplate.findFirst({
@@ -271,11 +294,12 @@ export async function updatePage(id: string, payload: Partial<PageInput>) {
     const shouldPatchContent =
       payload.content !== undefined ||
       payload.templateType !== undefined ||
+      payload.game !== undefined ||
       payload.socialTitle !== undefined ||
       payload.socialDescription !== undefined ||
       payload.socialImageAlt !== undefined;
 
-    return prisma.pageTemplate.update({
+    const page = await prisma.pageTemplate.update({
       where: { id },
       data: {
         title: payload.title,
@@ -290,6 +314,7 @@ export async function updatePage(id: string, payload: Partial<PageInput>) {
               existing: current.content,
               metaPatch: {
                 templateType: payload.templateType,
+                game: payload.game,
                 socialTitle: payload.socialTitle,
                 socialDescription: payload.socialDescription,
                 socialImageAlt: payload.socialImageAlt,
@@ -299,8 +324,15 @@ export async function updatePage(id: string, payload: Partial<PageInput>) {
         status: payload.status,
       },
     });
+    return { kind: "ok" as const, page };
   });
-  if (dbData) return dbData;
+
+  if (dbData?.kind === "ok") return dbData.page;
+  if (dbData?.kind === "not_found") return null;
+
+  if (process.env.NODE_ENV === "production" && process.env.DATABASE_URL) {
+    throw new Error("DB_UNAVAILABLE");
+  }
 
   const page = mockStore.pages.find((item) => item.id === id);
   if (!page) return null;
@@ -320,6 +352,7 @@ export async function updatePage(id: string, payload: Partial<PageInput>) {
   const shouldPatchContent =
     payload.content !== undefined ||
     payload.templateType !== undefined ||
+    payload.game !== undefined ||
     payload.socialTitle !== undefined ||
     payload.socialDescription !== undefined ||
     payload.socialImageAlt !== undefined;
@@ -330,6 +363,7 @@ export async function updatePage(id: string, payload: Partial<PageInput>) {
       existing: page.content,
       metaPatch: {
         templateType: payload.templateType,
+        game: payload.game,
         socialTitle: payload.socialTitle,
         socialDescription: payload.socialDescription,
         socialImageAlt: payload.socialImageAlt,

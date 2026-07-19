@@ -7,6 +7,7 @@ import {
   updateNewsStatus,
 } from "@/src/server/repositories/newsRepository";
 import { addAuditLog } from "@/src/server/repositories/auditRepository";
+import { readAdminJsonBody } from "@/src/server/admin/adminApiHelpers";
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 
@@ -39,23 +40,30 @@ export async function GET(request: NextRequest) {
 }
 
 export async function POST(request: NextRequest) {
-  const body = await request.json();
-  const parsed = createSchema.safeParse(body);
+  const bodyResult = await readAdminJsonBody(request);
+  if (!bodyResult.ok) return bodyResult.response;
+  const parsed = createSchema.safeParse(bodyResult.data);
   if (!parsed.success) {
     return NextResponse.json({ error: "Invalid news payload" }, { status: 400 });
   }
-  const item = await createNews(parsed.data);
-  await addAuditLog({
-    actor: "admin",
-    action: "news.create",
-    target: item.id,
-    payload: { slug: parsed.data.slug },
-  });
-  return NextResponse.json({ ok: true, data: item });
+  try {
+    const item = await createNews(parsed.data);
+    await addAuditLog({
+      actor: "admin",
+      action: "news.create",
+      target: item.id,
+      payload: { slug: parsed.data.slug },
+    });
+    return NextResponse.json({ ok: true, data: item });
+  } catch {
+    return NextResponse.json({ error: "Could not create news." }, { status: 500 });
+  }
 }
 
 export async function PATCH(request: NextRequest) {
-  const body = await request.json();
+  const bodyResult = await readAdminJsonBody(request);
+  if (!bodyResult.ok) return bodyResult.response;
+  const body = bodyResult.data;
   const statusUpdateSchema = z.object({
     id: z.string(),
     status: z.enum(["draft", "published"]),
@@ -74,30 +82,38 @@ export async function PATCH(request: NextRequest) {
 
   const statusParsed = statusUpdateSchema.safeParse(body);
   if (statusParsed.success) {
-    const item = await updateNewsStatus(statusParsed.data.id, statusParsed.data.status);
-    if (!item) return NextResponse.json({ error: "Not found" }, { status: 404 });
-    await addAuditLog({
-      actor: "admin",
-      action: "news.status.update",
-      target: statusParsed.data.id,
-      payload: { status: statusParsed.data.status },
-    });
-    return NextResponse.json({ ok: true, data: item });
+    try {
+      const item = await updateNewsStatus(statusParsed.data.id, statusParsed.data.status);
+      if (!item) return NextResponse.json({ error: "Not found" }, { status: 404 });
+      await addAuditLog({
+        actor: "admin",
+        action: "news.status.update",
+        target: statusParsed.data.id,
+        payload: { status: statusParsed.data.status },
+      });
+      return NextResponse.json({ ok: true, data: item });
+    } catch {
+      return NextResponse.json({ error: "Could not update news status." }, { status: 500 });
+    }
   }
 
   const contentParsed = contentUpdateSchema.safeParse(body);
   if (!contentParsed.success) {
     return NextResponse.json({ error: "Invalid update" }, { status: 400 });
   }
-  const item = await updateNews(contentParsed.data);
-  if (!item) return NextResponse.json({ error: "Not found" }, { status: 404 });
-  await addAuditLog({
-    actor: "admin",
-    action: "news.update",
-    target: contentParsed.data.id,
-    payload: { slug: contentParsed.data.slug },
-  });
-  return NextResponse.json({ ok: true, data: item });
+  try {
+    const item = await updateNews(contentParsed.data);
+    if (!item) return NextResponse.json({ error: "Not found" }, { status: 404 });
+    await addAuditLog({
+      actor: "admin",
+      action: "news.update",
+      target: contentParsed.data.id,
+      payload: { slug: contentParsed.data.slug },
+    });
+    return NextResponse.json({ ok: true, data: item });
+  } catch {
+    return NextResponse.json({ error: "Could not update news." }, { status: 500 });
+  }
 }
 
 export async function DELETE(request: NextRequest) {

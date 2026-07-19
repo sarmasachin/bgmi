@@ -3,6 +3,8 @@
 import { FormEvent, useEffect, useRef, useState } from "react";
 import dynamic from "next/dynamic";
 import type { AdminNewsRow } from "@/src/server/admin/mapAdminNewsRows";
+import { useAdminFlash } from "@/src/components/admin/AdminToast";
+import { readApiError } from "@/src/lib/userFacingError";
 
 const RichTextEditor = dynamic(
   () => import("@/src/components/admin/RichTextEditor").then((mod) => mod.RichTextEditor),
@@ -15,7 +17,7 @@ type Props = {
 
 export default function AdminNewsClient({ initialRows }: Props) {
   const featureImageInputRef = useRef<HTMLInputElement | null>(null);
-  const [message, setMessage] = useState("");
+  const setMessage = useAdminFlash();
   const [title, setTitle] = useState("");
   const [slug, setSlug] = useState("");
   const [excerpt, setExcerpt] = useState("");
@@ -106,7 +108,13 @@ export default function AdminNewsClient({ initialRows }: Props) {
               body: JSON.stringify({ ...payload, status: "draft" as const }),
             },
       );
-      setMessage(res.ok ? (editingId ? "News updated." : "News created.") : "Failed to save news.");
+      setMessage(
+        res.ok
+          ? editingId
+            ? "News updated."
+            : "News created."
+          : await readApiError(res, "Failed to save news."),
+      );
       if (res.ok) {
         setEditingId(null);
         setTitle("");
@@ -124,7 +132,7 @@ export default function AdminNewsClient({ initialRows }: Props) {
   async function removeNews(id: string) {
     try {
       const res = await fetch(`/api/admin/news?id=${id}`, { method: "DELETE" });
-      setMessage(res.ok ? "News deleted." : "Delete failed.");
+      setMessage(res.ok ? "News deleted." : await readApiError(res, "Delete failed."));
       if (res.ok) await loadRows();
     } catch {
       setMessage("Network error. Please retry.");
@@ -138,7 +146,7 @@ export default function AdminNewsClient({ initialRows }: Props) {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ id, status: "published" }),
       });
-      setMessage(res.ok ? "News published." : "Publish failed.");
+      setMessage(res.ok ? "News published." : await readApiError(res, "Publish failed."));
       if (res.ok) await loadRows();
     } catch {
       setMessage("Network error. Please retry.");
@@ -412,7 +420,6 @@ export default function AdminNewsClient({ initialRows }: Props) {
             </button>
           ) : null}
         </form>
-        {message ? <p style={{ marginTop: 8 }}>{message}</p> : null}
       </section>
       ) : null}
     </>

@@ -1,6 +1,7 @@
 "use client";
 
 import { useRef, useState } from "react";
+import { useAdminFlash } from "@/src/components/admin/AdminToast";
 
 type BackupFileJson = {
   payload?: Record<string, unknown>;
@@ -26,7 +27,7 @@ function extractPayload(parsed: BackupFileJson): Record<string, unknown> {
 }
 
 export default function AdminBackupsPage() {
-  const [message, setMessage] = useState("");
+  const setMessage = useAdminFlash();
   const [busy, setBusy] = useState(false);
   const fileRef = useRef<HTMLInputElement>(null);
 
@@ -146,7 +147,6 @@ export default function AdminBackupsPage() {
         Download is a JSON export of the database (news, pages, comments, ads, admin users, site settings).{" "}
         <strong>Files in public/uploads are not included</strong> — copy that folder separately if needed.
       </p>
-      {message ? <p className="admin-ratings-message">{message}</p> : null}
 
       <div className="admin-backups-actions">
         <button

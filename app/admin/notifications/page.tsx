@@ -1,6 +1,8 @@
 "use client";
 
 import { FormEvent, useMemo, useState } from "react";
+import { useAdminFlash } from "@/src/components/admin/AdminToast";
+import { readApiError } from "@/src/lib/userFacingError";
 
 type CampaignStatus = "draft" | "queued" | "sent" | "failed";
 type Channel = "email" | "push";
@@ -30,7 +32,7 @@ const DEFAULT_CAMPAIGNS: CampaignItem[] = [
 ];
 
 export default function AdminNotificationsPage() {
-  const [message, setMessage] = useState("");
+  const setMessage = useAdminFlash();
   const [busy, setBusy] = useState(false);
   const [visibleCount, setVisibleCount] = useState(10);
   const [rows, setRows] = useState<CampaignItem[]>(DEFAULT_CAMPAIGNS);
@@ -54,21 +56,33 @@ export default function AdminNotificationsPage() {
       });
 
       const nextStatus: CampaignStatus = res.ok ? "queued" : "failed";
-      setMessage(res.ok ? "Campaign queued." : "Campaign failed.");
-      setRows((prev) => [
-        {
-          id: `new-${Date.now()}`,
-          campaign: payload.title,
-          segment: payload.segment,
-          channel: payload.channel === "push" ? "push" : "email",
-          status: nextStatus,
-          createdAt: new Date().toISOString().slice(0, 10),
-        },
-        ...prev,
-      ]);
+      setMessage(res.ok ? "Campaign queued." : await readApiError(res, "Campaign failed."));
       if (res.ok) {
+        setRows((prev) => [
+          {
+            id: `new-${Date.now()}`,
+            campaign: payload.title,
+            segment: payload.segment,
+            channel: payload.channel === "push" ? "push" : "email",
+            status: nextStatus,
+            createdAt: new Date().toISOString().slice(0, 10),
+          },
+          ...prev,
+        ]);
         event.currentTarget.reset();
         setVisibleCount(10);
+      } else {
+        setRows((prev) => [
+          {
+            id: `new-${Date.now()}`,
+            campaign: payload.title,
+            segment: payload.segment,
+            channel: payload.channel === "push" ? "push" : "email",
+            status: "failed",
+            createdAt: new Date().toISOString().slice(0, 10),
+          },
+          ...prev,
+        ]);
       }
     } catch {
       setMessage("Network error. Please retry.");
@@ -120,7 +134,6 @@ export default function AdminNotificationsPage() {
             {busy ? "Queueing..." : "Queue Campaign"}
           </button>
         </form>
-        {message ? <p className="admin-notifications-message">{message}</p> : null}
       </div>
 
       <div className="admin-notifications-card">

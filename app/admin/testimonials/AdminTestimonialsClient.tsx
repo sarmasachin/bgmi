@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import type { AdminTestimonialItem } from "@/src/server/admin/mapAdminTestimonials";
+import { useAdminFlash } from "@/src/components/admin/AdminToast";
 
 type StatusFilter = "all" | "pending" | "approved" | "rejected";
 
@@ -26,7 +27,7 @@ export default function AdminTestimonialsClient({
   const [filter, setFilter] = useState<StatusFilter>("pending");
   const [loading, setLoading] = useState(initialItems === undefined);
   const [workingId, setWorkingId] = useState<string | null>(null);
-  const [message, setMessage] = useState("");
+  const setMessage = useAdminFlash();
   const [visibleCount, setVisibleCount] = useState(10);
 
   const counts = useMemo(() => {
@@ -52,9 +53,16 @@ export default function AdminTestimonialsClient({
   async function loadTestimonials() {
     setLoading(true);
     try {
-      const res = await fetch("/api/admin/testimonials", { cache: "no-store" });
+      const res = await fetch("/api/admin/testimonials", {
+        cache: "no-store",
+        credentials: "include",
+      });
       if (!res.ok) {
-        setMessage("Failed to load testimonials.");
+        setMessage(
+          res.status === 401 || res.status === 307
+            ? "Session expired. Please log in again."
+            : "Failed to load testimonials.",
+        );
         setItems([]);
         return;
       }
@@ -112,10 +120,12 @@ export default function AdminTestimonialsClient({
 
   async function updateStatus(id: string, status: AdminTestimonialItem["status"]) {
     setWorkingId(id);
+    setMessage("");
     try {
       const res = await fetch("/api/admin/testimonials", {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
+        credentials: "include",
         body: JSON.stringify({ id, status }),
       });
       const json = (await res.json()) as {
@@ -142,6 +152,22 @@ export default function AdminTestimonialsClient({
       if (typeof json.approvedCount === "number") {
         setApprovedCount(json.approvedCount);
       }
+
+      // Optimistic local update so the row moves even if reload is slow.
+      setItems((prev) =>
+        prev.map((item) =>
+          item.id === id
+            ? {
+                ...item,
+                status,
+                approvedAt: status === "approved" ? new Date().toISOString() : "",
+              }
+            : item,
+        ),
+      );
+      if (status === "approved" || status === "rejected" || status === "pending") {
+        setFilter(status);
+      }
       await loadTestimonials();
     } catch {
       setMessage("Network error. Please retry.");
@@ -155,6 +181,7 @@ export default function AdminTestimonialsClient({
     try {
       const res = await fetch(`/api/admin/testimonials?id=${encodeURIComponent(id)}`, {
         method: "DELETE",
+        credentials: "include",
       });
       const json = (await res.json()) as {
         ok?: boolean;
@@ -219,7 +246,6 @@ export default function AdminTestimonialsClient({
         ))}
       </div>
 
-      {message ? <p className="admin-comments-message">{message}</p> : null}
 
       <div className="admin-table-wrap">
         <table className="admin-table admin-comments-table">

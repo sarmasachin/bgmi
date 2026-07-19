@@ -57,7 +57,13 @@ export async function PATCH(request: NextRequest) {
   }
 
   const result = await setTestimonialStatus(parsed.data.id, parsed.data.status);
-  if (!result) {
+  if (!result.ok) {
+    if (result.error === "unavailable") {
+      return NextResponse.json(
+        { error: "Database busy or unavailable. Please retry in a moment." },
+        { status: 503 },
+      );
+    }
     return NextResponse.json({ error: "Not found" }, { status: 404 });
   }
 

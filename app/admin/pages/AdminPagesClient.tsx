@@ -3,6 +3,7 @@
 import { FormEvent, useEffect, useMemo, useState } from "react";
 import dynamic from "next/dynamic";
 import type { AdminPageRow } from "@/src/server/admin/mapAdminPageRows";
+import { useAdminFlash } from "@/src/components/admin/AdminToast";
 
 const RichTextEditor = dynamic(
   () => import("@/src/components/admin/RichTextEditor").then((mod) => mod.RichTextEditor),
@@ -10,11 +11,13 @@ const RichTextEditor = dynamic(
 );
 
 type TemplateType = "home" | "article" | "landing";
+type CloneGame = "bgmi" | "pubg";
 
 type PageRow = AdminPageRow;
 
 type PageMeta = {
   templateType?: TemplateType;
+  game?: CloneGame;
   socialTitle?: string;
   socialDescription?: string;
   socialImageAlt?: string;
@@ -22,6 +25,10 @@ type PageMeta = {
 
 function coerceTemplateType(value: unknown): TemplateType {
   return value === "article" || value === "landing" || value === "home" ? value : "home";
+}
+
+function coerceCloneGame(value: unknown): CloneGame {
+  return value === "pubg" ? "pubg" : "bgmi";
 }
 
 function normalizeSlugInput(next: string) {
@@ -55,6 +62,7 @@ function parseContent(content: unknown) {
       typeof maybeMeta === "object" && maybeMeta !== null
         ? (maybeMeta as {
             templateType?: unknown;
+            game?: unknown;
             socialTitle?: unknown;
             socialDescription?: unknown;
             socialImageAlt?: unknown;
@@ -67,6 +75,7 @@ function parseContent(content: unknown) {
           metaObj.templateType === "home" || metaObj.templateType === "article" || metaObj.templateType === "landing"
             ? metaObj.templateType
             : undefined,
+        game: metaObj.game === "pubg" || metaObj.game === "bgmi" ? metaObj.game : undefined,
         socialTitle: typeof metaObj.socialTitle === "string" ? metaObj.socialTitle : undefined,
         socialDescription: typeof metaObj.socialDescription === "string" ? metaObj.socialDescription : undefined,
         socialImageAlt: typeof metaObj.socialImageAlt === "string" ? metaObj.socialImageAlt : undefined,
@@ -85,7 +94,7 @@ type Props = {
 };
 
 export default function AdminPagesClient({ initialRows }: Props) {
-  const [message, setMessage] = useState("");
+  const setMessage = useAdminFlash();
   const [title, setTitle] = useState("");
   const [slug, setSlug] = useState("");
   const [slugManualOverride, setSlugManualOverride] = useState(false);
@@ -97,6 +106,7 @@ export default function AdminPagesClient({ initialRows }: Props) {
   const [socialDescription, setSocialDescription] = useState("");
   const [socialImageAlt, setSocialImageAlt] = useState("");
   const [templateType, setTemplateType] = useState<TemplateType>("home");
+  const [game, setGame] = useState<CloneGame>("bgmi");
   const [content, setContent] = useState("");
   const [publishAsNews, setPublishAsNews] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -140,6 +150,7 @@ export default function AdminPagesClient({ initialRows }: Props) {
             ogImageUrl: item.ogImageUrl ?? "",
             contentHtml: parsed.html,
             templateType: coerceTemplateType(parsed.meta.templateType),
+            game: coerceCloneGame(parsed.meta.game),
             socialTitle: parsed.meta.socialTitle ?? "",
             socialDescription: parsed.meta.socialDescription ?? "",
             socialImageAlt: parsed.meta.socialImageAlt ?? "",
@@ -222,6 +233,7 @@ export default function AdminPagesClient({ initialRows }: Props) {
       canonicalUrl,
       ogImageUrl,
       templateType,
+      game,
       socialTitle,
       socialDescription,
       socialImageAlt,
@@ -246,6 +258,7 @@ export default function AdminPagesClient({ initialRows }: Props) {
                 canonicalUrl,
                 ogImageUrl,
                 templateType,
+                game,
                 socialTitle,
                 socialDescription,
                 socialImageAlt,
@@ -283,6 +296,7 @@ export default function AdminPagesClient({ initialRows }: Props) {
       setSocialDescription("");
       setSocialImageAlt("");
       setTemplateType("home");
+      setGame("bgmi");
       setContent("");
       setPublishAsNews(false);
       setEditingId(null);
@@ -340,6 +354,7 @@ export default function AdminPagesClient({ initialRows }: Props) {
                 <th>Status</th>
                 <th>Slug</th>
                 <th>Type</th>
+                <th>Game</th>
                 <th>SEO Title</th>
                 <th>SEO Description</th>
                 <th>Actions</th>
@@ -352,6 +367,7 @@ export default function AdminPagesClient({ initialRows }: Props) {
                   <td>{row.status}</td>
                   <td>{row.slug}</td>
                   <td>{row.templateType}</td>
+                  <td>{row.game === "pubg" ? "PUBG Mobile" : "BGMI"}</td>
                   <td>{row.seoTitle || "-"}</td>
                   <td>{row.seoDescription || "-"}</td>
                   <td className="admin-pages-actions">
@@ -384,6 +400,7 @@ export default function AdminPagesClient({ initialRows }: Props) {
                           setSocialDescription(row.socialDescription ?? "");
                           setSocialImageAlt(row.socialImageAlt ?? "");
                           setTemplateType(row.templateType ?? "home");
+                          setGame(row.game === "pubg" ? "pubg" : "bgmi");
                           setContent(row.contentHtml ?? "");
                         }}
                       >
@@ -421,6 +438,7 @@ export default function AdminPagesClient({ initialRows }: Props) {
               setSocialDescription("");
               setSocialImageAlt("");
               setTemplateType("home");
+              setGame("bgmi");
               setContent("");
               setPublishAsNews(false);
             }}
@@ -471,6 +489,15 @@ export default function AdminPagesClient({ initialRows }: Props) {
             <option value="home">Home style</option>
             <option value="article">Article style</option>
             <option value="landing">Landing style</option>
+          </select>
+          <select
+            value={game}
+            onChange={(e) => setGame(e.target.value as CloneGame)}
+            title="Calculator game"
+            aria-label="Calculator game"
+          >
+            <option value="bgmi">BGMI</option>
+            <option value="pubg">PUBG Mobile</option>
           </select>
           <label className="admin-pages-publish-toggle">
             <input
@@ -576,7 +603,6 @@ export default function AdminPagesClient({ initialRows }: Props) {
             )}
           </div>
         </form>
-        {message ? <p style={{ marginTop: 8 }}>{message}</p> : null}
       </section>
       ) : null}
     </>

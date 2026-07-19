@@ -5,6 +5,7 @@ import {
   ADMIN_RATINGS_FALLBACK,
   type AdminRatingRow,
 } from "@/src/server/repositories/adminRatingsRepository";
+import { useAdminFlash } from "@/src/components/admin/AdminToast";
 
 type RatingRow = AdminRatingRow;
 
@@ -15,7 +16,7 @@ type Props = {
 export default function AdminRatingsClient({ initialRows }: Props) {
   const [rows, setRows] = useState<RatingRow[]>(initialRows ?? ADMIN_RATINGS_FALLBACK);
   const [loading, setLoading] = useState(initialRows === undefined);
-  const [message, setMessage] = useState("");
+  const setMessage = useAdminFlash();
   const [visibleCount, setVisibleCount] = useState(10);
 
   async function loadRatings() {
@@ -83,7 +84,6 @@ export default function AdminRatingsClient({ initialRows }: Props) {
         </button>
       </div>
 
-      {message ? <p className="admin-ratings-message">{message}</p> : null}
 
       <div className="admin-ratings-stats">
         <div className="admin-ratings-stat-card">

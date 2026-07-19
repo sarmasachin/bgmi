@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useState } from "react";
+import { useAdminFlash } from "@/src/components/admin/AdminToast";
 
 const AD_UNITS_API = "/api/admin/ad-units";
 
@@ -39,7 +40,7 @@ export function AdminAdsForm({ initialRows, initialPlacements }: Props) {
   const [rows, setRows] = useState(initialRows);
   const [drafts, setDrafts] = useState(() => buildDrafts(initialRows));
   const [placements, setPlacements] = useState(initialPlacements);
-  const [message, setMessage] = useState("");
+  const setMessage = useAdminFlash();
   const [savingPlacements, setSavingPlacements] = useState(false);
 
   const reloadFromServer = useCallback(async () => {
@@ -92,19 +93,23 @@ export function AdminAdsForm({ initialRows, initialPlacements }: Props) {
     const d = drafts[id];
     if (!d) return;
     setMessage("");
-    const res = await fetch(AD_UNITS_API, {
-      method: "PATCH",
-      credentials: "include",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ id, enabled: d.enabled, code: d.code }),
-    });
-    if (!res.ok) {
-      const j = (await res.json()) as { error?: string };
-      setMessage(j.error ?? "Save failed");
-      return;
+    try {
+      const res = await fetch(AD_UNITS_API, {
+        method: "PATCH",
+        credentials: "include",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id, enabled: d.enabled, code: d.code }),
+      });
+      if (!res.ok) {
+        const j = (await res.json().catch(() => ({}))) as { error?: string };
+        setMessage(j.error ?? "Save failed.");
+        return;
+      }
+      setMessage("Saved.");
+      await reloadFromServer();
+    } catch {
+      setMessage("Network error. Please retry.");
     }
-    setMessage("Saved.");
-    await reloadFromServer();
   }
 
   return (
@@ -114,7 +119,6 @@ export function AdminAdsForm({ initialRows, initialPlacements }: Props) {
         Choose where slots may appear on the home page and news articles, then paste HTML per slot below. Only trusted admins should add snippets (they run as HTML/JS on the
         site). The sensitivity calculator layout is not changed.
       </p>
-      {message ? <p className="admin-ratings-message">{message}</p> : null}
 
       <div className="admin-card" style={{ marginBottom: 20, padding: 16 }}>
         <h2 style={{ marginTop: 0 }}>Where to show ads</h2>

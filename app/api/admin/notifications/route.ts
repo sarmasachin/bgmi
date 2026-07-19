@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { sendEmail } from "@/src/server/services/emailService";
 import { logError, logInfo } from "@/src/server/monitoring";
+import { readAdminJsonBody } from "@/src/server/admin/adminApiHelpers";
 
 const schema = z.object({
   title: z.string().min(2),
@@ -11,7 +12,9 @@ const schema = z.object({
 });
 
 export async function POST(request: NextRequest) {
-  const parsed = schema.safeParse(await request.json());
+  const bodyResult = await readAdminJsonBody(request);
+  if (!bodyResult.ok) return bodyResult.response;
+  const parsed = schema.safeParse(bodyResult.data);
   if (!parsed.success) {
     return NextResponse.json({ error: "Invalid campaign payload" }, { status: 400 });
   }

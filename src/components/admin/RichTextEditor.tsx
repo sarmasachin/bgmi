@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
+import { useAdminToast } from "@/src/components/admin/AdminToast";
 
 type Props = {
   value: string;
@@ -97,6 +98,7 @@ function toEmbedUrl(raw: string) {
 }
 
 export function RichTextEditor({ value, onChange }: Props) {
+  const toast = useAdminToast();
   const editorRef = useRef<HTMLDivElement | null>(null);
   const uploadInputRef = useRef<HTMLInputElement | null>(null);
   const findInputRef = useRef<HTMLInputElement | null>(null);
@@ -807,45 +809,59 @@ export function RichTextEditor({ value, onChange }: Props) {
     setHasRestorableDraft(false);
   }
 
-  async function uploadEditorImage(file: File): Promise<string | null> {
-    const fd = new FormData();
-    fd.set("file", file);
-    const res = await fetch("/api/admin/media/upload", {
-      method: "POST",
-      body: fd,
-      credentials: "include",
-    });
-    const json = (await res.json()) as { url?: string; error?: string };
-    if (!res.ok || !json.url) {
-      return null;
+  async function uploadEditorImage(file: File): Promise<{ url: string } | { error: string }> {
+    try {
+      const fd = new FormData();
+      fd.set("file", file);
+      const res = await fetch("/api/admin/media/upload", {
+        method: "POST",
+        body: fd,
+        credentials: "include",
+      });
+      const json = (await res.json().catch(() => ({}))) as { url?: string; error?: string };
+      if (!res.ok || !json.url) {
+        return { error: json.error?.trim() || "Image upload failed." };
+      }
+      return { url: json.url };
+    } catch {
+      return { error: "Network error during image upload." };
     }
-    return json.url;
   }
 
   async function handleFiles(fileList: FileList | null) {
     if (!fileList || fileList.length === 0) return;
 
     const valid = Array.from(fileList).filter((file) => file.type.startsWith("image/"));
-    if (!valid.length) return;
+    if (!valid.length) {
+      toast.warning("Please choose image files only.");
+      return;
+    }
 
     const nextItems: UploadedImage[] = [];
+    let lastError = "";
 
     for (const file of valid.slice(0, 8)) {
-      try {
-        const url = await uploadEditorImage(file);
-        if (!url) continue;
-        nextItems.push({
-          id: `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
-          name: file.name,
-          url,
-        });
-      } catch {
-        // Ignore individual file failures and continue with others.
+      const result = await uploadEditorImage(file);
+      if ("error" in result) {
+        lastError = result.error;
+        continue;
       }
+      nextItems.push({
+        id: `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+        name: file.name,
+        url: result.url,
+      });
     }
 
     if (nextItems.length) {
       setUploadedImages((prev) => [...nextItems, ...prev].slice(0, 12));
+      toast.success(
+        nextItems.length === 1
+          ? "Image uploaded."
+          : `${nextItems.length} images uploaded.`,
+      );
+    } else if (lastError) {
+      toast.error(lastError);
     }
   }
 

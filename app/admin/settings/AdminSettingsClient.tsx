@@ -6,6 +6,7 @@ import {
   getDuplicatePhoneNamesInInput,
 } from "@/src/lib/calculatorPhoneModelsInput";
 import type { AdminSettingsPageData } from "@/src/server/admin/prefetchAdminSettingsPageData";
+import { useAdminFlash } from "@/src/components/admin/AdminToast";
 
 type LinkItem = { label: string; href: string };
 
@@ -18,9 +19,9 @@ type Props = {
 export default function AdminSettingsClient({ initialData }: Props) {
   /** False until /api/admin/settings + head-snippets load — avoids showing default useState text then swapping. */
   const [settingsReady, setSettingsReady] = useState(!!initialData);
-  const [message, setMessage] = useState("");
+  const setMessage = useAdminFlash();
   const [phoneModelsText, setPhoneModelsText] = useState(initialData?.phoneModelsText ?? "");
-  const [phoneModelsMessage, setPhoneModelsMessage] = useState("");
+  const setPhoneModelsMessage = useAdminFlash();
   const [headerSiteTitle, setHeaderSiteTitle] = useState(
     initialData?.headerSiteTitle ?? "Sensitivity Settings",
   );
@@ -63,7 +64,7 @@ export default function AdminSettingsClient({ initialData }: Props) {
     ],
   );
   const [faqItems, setFaqItems] = useState<FaqItem[]>(initialData?.faqItems ?? []);
-  const [faqMessage, setFaqMessage] = useState("");
+  const setFaqMessage = useAdminFlash();
 
   useEffect(() => {
     if (initialData !== undefined) return;
@@ -334,7 +335,6 @@ export default function AdminSettingsClient({ initialData }: Props) {
         <p className="admin-ratings-message">Loading settings…</p>
       ) : (
         <>
-          {message ? <p className="admin-ratings-message">{message}</p> : null}
           <form onSubmit={saveSettings}>
         <div className="form-group">
           <label htmlFor="headerSiteTitle">Home — top bar title</label>
@@ -560,7 +560,6 @@ export default function AdminSettingsClient({ initialData }: Props) {
       </form>
 
       <h2 style={{ marginTop: 32, marginBottom: 12 }}>Home page — FAQ</h2>
-      {faqMessage ? <p className="admin-ratings-message">{faqMessage}</p> : null}
       <p style={{ marginBottom: 12, opacity: 0.9 }}>
         Questions and answers under “Frequently Asked Questions (FAQ)” on the home page. Both fields
         required for each card to appear. Remove all and save to show no FAQ cards.
@@ -633,9 +632,6 @@ export default function AdminSettingsClient({ initialData }: Props) {
       </button>
 
       <h2 style={{ marginTop: 32, marginBottom: 12 }}>Calculator phone names</h2>
-      {phoneModelsMessage ? (
-        <p className="admin-ratings-message">{phoneModelsMessage}</p>
-      ) : null}
       <div className="form-group">
         <label htmlFor="calculatorPhoneModels">
           Search suggestions: separate names with a new line and/or a comma (e.g. LG G8, LG V60 or one per

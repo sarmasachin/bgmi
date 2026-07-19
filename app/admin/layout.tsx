@@ -6,6 +6,7 @@ import { useEffect } from "react";
 import { useState } from "react";
 import { usePathname } from "next/navigation";
 import { AdminLogoutButton } from "@/src/components/admin/AdminLogoutButton";
+import { AdminToastProvider } from "@/src/components/admin/AdminToast";
 
 type SidebarIconName =
   | "dashboard"
@@ -105,58 +106,60 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
   }, [pathname]);
 
   return (
-    <div className="admin-shell">
-      {isLoginPage ? (
-        <main className="admin-main">{children}</main>
-      ) : (
-        <div className="admin-layout">
-          <div className="admin-mobile-topbar">
+    <AdminToastProvider>
+      <div className="admin-shell">
+        {isLoginPage ? (
+          <main className="admin-main">{children}</main>
+        ) : (
+          <div className="admin-layout">
+            <div className="admin-mobile-topbar">
+              <button
+                type="button"
+                className="admin-mobile-menu-btn"
+                onClick={() => setMobileMenuOpen((prev) => !prev)}
+                aria-label="Toggle admin menu"
+                aria-expanded={mobileMenuOpen}
+              >
+                <span className="admin-mobile-menu-icon" aria-hidden>
+                  <span />
+                  <span />
+                  <span />
+                </span>
+              </button>
+            </div>
             <button
               type="button"
-              className="admin-mobile-menu-btn"
-              onClick={() => setMobileMenuOpen((prev) => !prev)}
-              aria-label="Toggle admin menu"
-              aria-expanded={mobileMenuOpen}
-            >
-              <span className="admin-mobile-menu-icon" aria-hidden>
-                <span />
-                <span />
-                <span />
-              </span>
-            </button>
+              aria-label="Close menu overlay"
+              hidden={!mobileMenuOpen}
+              className={`admin-mobile-overlay ${mobileMenuOpen ? "is-open" : ""}`}
+              onClick={() => setMobileMenuOpen(false)}
+            />
+            <aside className={`admin-sidebar ${mobileMenuOpen ? "is-open" : ""}`}>
+              <div className="admin-sidebar-title">Admin Panel</div>
+              <nav className="admin-nav">
+                {items.map((item) => {
+                  const isActive = isNavItemActive(pathname, item.href);
+                  return (
+                    <Link
+                      key={item.label}
+                      href={item.href}
+                      className={`admin-nav-link ${isActive ? "is-active" : ""}`}
+                      onClick={() => setMobileMenuOpen(false)}
+                    >
+                      <span className="admin-nav-icon"><SidebarIcon name={item.icon} /></span>
+                      <span>{item.label}</span>
+                    </Link>
+                  );
+                })}
+              </nav>
+              <div className="admin-sidebar-footer">
+                <AdminLogoutButton />
+              </div>
+            </aside>
+            <main className="admin-main">{children}</main>
           </div>
-          <button
-            type="button"
-            aria-label="Close menu overlay"
-            hidden={!mobileMenuOpen}
-            className={`admin-mobile-overlay ${mobileMenuOpen ? "is-open" : ""}`}
-            onClick={() => setMobileMenuOpen(false)}
-          />
-          <aside className={`admin-sidebar ${mobileMenuOpen ? "is-open" : ""}`}>
-            <div className="admin-sidebar-title">Admin Panel</div>
-            <nav className="admin-nav">
-              {items.map((item) => {
-                const isActive = isNavItemActive(pathname, item.href);
-                return (
-                  <Link
-                    key={item.label}
-                    href={item.href}
-                    className={`admin-nav-link ${isActive ? "is-active" : ""}`}
-                    onClick={() => setMobileMenuOpen(false)}
-                  >
-                    <span className="admin-nav-icon"><SidebarIcon name={item.icon} /></span>
-                    <span>{item.label}</span>
-                  </Link>
-                );
-              })}
-            </nav>
-            <div className="admin-sidebar-footer">
-              <AdminLogoutButton />
-            </div>
-          </aside>
-          <main className="admin-main">{children}</main>
-        </div>
-      )}
-    </div>
+        )}
+      </div>
+    </AdminToastProvider>
   );
 }

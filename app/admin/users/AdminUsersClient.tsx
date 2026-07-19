@@ -2,6 +2,7 @@
 
 import { FormEvent, useCallback, useEffect, useState } from "react";
 import type { AdminUserRow } from "@/src/server/repositories/adminUsersRepository";
+import { useAdminFlash } from "@/src/components/admin/AdminToast";
 
 type Props = {
   initialRows?: AdminUserRow[];
@@ -10,7 +11,7 @@ type Props = {
 export default function AdminUsersClient({ initialRows }: Props) {
   const [rows, setRows] = useState<AdminUserRow[]>(initialRows ?? []);
   const [loading, setLoading] = useState(initialRows === undefined);
-  const [message, setMessage] = useState("");
+  const setMessage = useAdminFlash();
   const [busy, setBusy] = useState(false);
   const [newEmail, setNewEmail] = useState("");
   const [newPassword, setNewPassword] = useState("");
@@ -134,7 +135,6 @@ export default function AdminUsersClient({ initialRows }: Props) {
         <p className="admin-dashboard-subtitle">
           Create admins, activate or deactivate accounts, or reset passwords.
         </p>
-        {message ? <p className="admin-ratings-message">{message}</p> : null}
       </section>
 
       <section className="admin-section">

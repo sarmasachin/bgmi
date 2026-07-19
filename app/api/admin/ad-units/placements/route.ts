@@ -34,12 +34,16 @@ export async function PATCH(request: NextRequest) {
   if (!parsed.success) {
     return NextResponse.json({ error: "Invalid payload" }, { status: 400 });
   }
-  await saveAdPlacementVisibility(parsed.data);
-  await addAuditLog({
-    actor: "admin",
-    action: "ads.placements",
-    target: "visibility",
-    payload: parsed.data,
-  });
-  return NextResponse.json({ ok: true });
+  try {
+    await saveAdPlacementVisibility(parsed.data);
+    await addAuditLog({
+      actor: "admin",
+      action: "ads.placements",
+      target: "visibility",
+      payload: parsed.data,
+    });
+    return NextResponse.json({ ok: true });
+  } catch {
+    return NextResponse.json({ error: "Could not save placements." }, { status: 500 });
+  }
 }
