@@ -5,6 +5,7 @@ export type AdminAuditRow = {
   actor: string;
   action: string;
   target: string;
+  payload: unknown;
   createdAt: string;
 };
 
@@ -21,6 +22,7 @@ export async function getAdminAuditRows(): Promise<AdminAuditRow[]> {
     actor: row.actor,
     action: row.action,
     target: row.target,
+    payload: row.payload ?? null,
     createdAt: row.createdAt instanceof Date ? row.createdAt.toISOString() : String(row.createdAt),
   }));
 }

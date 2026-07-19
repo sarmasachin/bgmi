@@ -74,6 +74,8 @@ export async function PATCH(request: NextRequest) {
     payload: {
       status: parsed.data.status,
       trimmed: result.trimmed,
+      name: result.item?.name,
+      game: result.item?.game,
     },
   });
 

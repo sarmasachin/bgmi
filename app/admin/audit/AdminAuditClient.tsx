@@ -3,6 +3,11 @@
 import { useCallback, useEffect, useState } from "react";
 import type { AdminAuditRow } from "@/src/server/repositories/adminAuditRepository";
 import { useAdminFlash } from "@/src/components/admin/AdminToast";
+import {
+  formatAuditActor,
+  formatAuditDetails,
+  formatAuditWhatHappened,
+} from "@/src/lib/formatAuditLog";
 
 type Row = AdminAuditRow;
 
@@ -18,7 +23,6 @@ export default function AdminAuditClient({ initialRows }: Props) {
 
   const load = useCallback(async () => {
     setLoading(true);
-    setMessage("");
     try {
       const res = await fetch("/api/admin/audit", { cache: "no-store", credentials: "include" });
       const json = (await res.json()) as { data?: Row[] };
@@ -34,7 +38,7 @@ export default function AdminAuditClient({ initialRows }: Props) {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [setMessage]);
 
   useEffect(() => {
     if (initialRows !== undefined) return;
@@ -50,7 +54,6 @@ export default function AdminAuditClient({ initialRows }: Props) {
       return;
     }
     setClearing(true);
-    setMessage("");
     try {
       const res = await fetch("/api/admin/audit", { method: "DELETE", credentials: "include" });
       const json = (await res.json()) as { ok?: boolean; deleted?: number; error?: string };
@@ -71,7 +74,7 @@ export default function AdminAuditClient({ initialRows }: Props) {
     <section className="admin-section">
       <h1>Audit logs</h1>
       <p className="admin-dashboard-subtitle">
-        Last 100 entries from the database. With no database connection, this list stays empty.
+        Simple history of admin actions — who did what, and when. Showing the latest 100 entries.
       </p>
       <div className="admin-actions">
         <button
@@ -98,10 +101,10 @@ export default function AdminAuditClient({ initialRows }: Props) {
           <table className="admin-table">
             <thead>
               <tr>
-                <th>Actor</th>
-                <th>Action</th>
-                <th>Target</th>
-                <th>Time</th>
+                <th>Who</th>
+                <th>What happened</th>
+                <th>Details</th>
+                <th>When</th>
               </tr>
             </thead>
             <tbody>
@@ -112,9 +115,9 @@ export default function AdminAuditClient({ initialRows }: Props) {
               ) : (
                 rows.map((row) => (
                   <tr key={row.id}>
-                    <td>{row.actor}</td>
-                    <td>{row.action}</td>
-                    <td>{row.target}</td>
+                    <td>{formatAuditActor(row.actor)}</td>
+                    <td>{formatAuditWhatHappened(row.action, row.payload)}</td>
+                    <td>{formatAuditDetails(row.action, row.target, row.payload)}</td>
                     <td>{new Date(row.createdAt).toLocaleString()}</td>
                   </tr>
                 ))
