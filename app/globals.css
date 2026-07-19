@@ -1801,6 +1801,20 @@ footer,
   animation-play-state: paused;
 }
 
+.testimonials-marquee-viewport.is-static {
+  mask-image: none;
+  -webkit-mask-image: none;
+  overflow: visible;
+}
+
+.testimonials-marquee-track.is-static {
+  animation: none;
+  width: 100%;
+  max-width: 100%;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
 @keyframes testimonials-rtl {
   from {
     transform: translateX(0);

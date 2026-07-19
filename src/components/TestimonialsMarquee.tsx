@@ -61,6 +61,14 @@ export function TestimonialsMarquee({ game, initialItems }: Props) {
   const loopItems = useMemo(() => {
     if (items.length === 0) return [];
 
+    // One or two reviews: show as a static row (no fake duplicates).
+    if (items.length < 3) {
+      return items.map((item, index) => ({
+        ...item,
+        loopKey: `static-${index}-${item.id}`,
+      }));
+    }
+
     // Enough cards for a wide track, then exact 2 copies for a seamless -50% loop.
     let base = [...items];
     while (base.length < 4) {
@@ -75,6 +83,7 @@ export function TestimonialsMarquee({ game, initialItems }: Props) {
 
   const durationSec = Math.max(28, items.length * 6);
   const gameLabel = GAME_LABEL[game];
+  const isStatic = items.length > 0 && items.length < 3;
 
   if (!ready) {
     return null;
@@ -91,15 +100,15 @@ export function TestimonialsMarquee({ game, initialItems }: Props) {
       </div>
 
       <div
-        className={`testimonials-marquee-viewport${paused ? " is-paused" : ""}`}
+        className={`testimonials-marquee-viewport${paused ? " is-paused" : ""}${isStatic ? " is-static" : ""}`}
         onMouseEnter={() => setPaused(true)}
         onMouseLeave={() => setPaused(false)}
         onTouchStart={() => setPaused(true)}
         onTouchEnd={() => setPaused(false)}
       >
         <div
-          className="testimonials-marquee-track"
-          style={{ animationDuration: `${durationSec}s` }}
+          className={`testimonials-marquee-track${isStatic ? " is-static" : ""}`}
+          style={isStatic ? undefined : { animationDuration: `${durationSec}s` }}
         >
           {loopItems.map((item) => (
             <article className="testimonials-marquee-card" key={item.loopKey}>

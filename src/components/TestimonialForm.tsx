@@ -1,6 +1,6 @@
 "use client";
 
-import { FormEvent, useId, useState } from "react";
+import { FormEvent, useId, useRef, useState } from "react";
 import { UserErrorBanner } from "@/src/components/ui/UserErrorBanner";
 import { messageFromUnknownError, readApiError } from "@/src/lib/userFacingError";
 
@@ -18,6 +18,7 @@ const GAME_LABEL: Record<Game, string> = {
 
 export function TestimonialForm({ game }: Props) {
   const panelId = useId();
+  const submittingRef = useRef(false);
   const [open, setOpen] = useState(false);
   const [name, setName] = useState("");
   const [rating, setRating] = useState<number>(0);
@@ -33,7 +34,7 @@ export function TestimonialForm({ game }: Props) {
   const gameLabel = GAME_LABEL[game];
 
   function pickStar(star: number) {
-    if (submitting) return;
+    if (submitting || submittingRef.current) return;
     if (done) {
       setDone(false);
       setError("");
@@ -45,7 +46,8 @@ export function TestimonialForm({ game }: Props) {
 
   async function onSubmit(event: FormEvent) {
     event.preventDefault();
-    if (submitting) return;
+    // Sync guard — React state alone cannot block a fast double-click.
+    if (submittingRef.current || submitting) return;
 
     const trimmedName = name.trim();
     const trimmedMessage = message.trim();
@@ -69,6 +71,7 @@ export function TestimonialForm({ game }: Props) {
       return;
     }
 
+    submittingRef.current = true;
     setSubmitting(true);
     setError("");
 
@@ -102,6 +105,7 @@ export function TestimonialForm({ game }: Props) {
     } catch (err) {
       setError(messageFromUnknownError(err, "Could not submit your review. Please try again."));
     } finally {
+      submittingRef.current = false;
       setSubmitting(false);
     }
   }

@@ -44,6 +44,18 @@ type MockRow = TestimonialRecord;
 
 const mockTestimonials: MockRow[] = [];
 
+/** Coalesce concurrent identical submits in the same process (double-click race). */
+const inflightCreates = new Map<string, Promise<TestimonialRecord | null>>();
+
+function fingerprint(input: {
+  name: string;
+  rating: number;
+  message: string;
+  game: string;
+}) {
+  return `${input.name}|${input.rating}|${input.message}|${input.game}`;
+}
+
 function isGame(value: string): value is TestimonialGame {
   return value === "bgmi" || value === "pubg";
 }
@@ -144,31 +156,81 @@ export async function createTestimonial(
     status: "pending" as const,
   };
 
-  const dbRow = await tryPrisma(async () =>
-    prisma.testimonial.create({
-      data,
-    }),
-  );
-
-  if (dbRow) {
-    return mapRow(dbRow);
+  const key = fingerprint(data);
+  const existingInflight = inflightCreates.get(key);
+  if (existingInflight) {
+    return existingInflight;
   }
 
-  // Dev fallback when DB is down — still accept submissions in-memory.
-  if (process.env.NODE_ENV === "production") {
-    return null;
-  }
+  const run = (async (): Promise<TestimonialRecord | null> => {
+    // Deduplicate rapid double-submits (double-click / retry before response).
+    const since = new Date(Date.now() - 120_000);
+    const existing = await tryPrismaLong(async () =>
+      prisma.testimonial.findFirst({
+        where: {
+          name: data.name,
+          rating: data.rating,
+          message: data.message,
+          game: data.game,
+          status: "pending",
+          createdAt: { gte: since },
+        },
+        orderBy: { createdAt: "desc" },
+      }),
+    );
+    if (existing) {
+      const mapped = mapRow(existing);
+      if (mapped) return mapped;
+    }
 
-  const now = new Date();
-  const row: MockRow = {
-    id: randomUUID(),
-    ...data,
-    phoneModel: data.phoneModel,
-    createdAt: now,
-    approvedAt: null,
-  };
-  mockTestimonials.unshift(row);
-  return row;
+    // Use long timeout — short tryPrisma can time out after create already committed.
+    const dbRow = await tryPrismaLong(async () =>
+      prisma.testimonial.create({
+        data,
+      }),
+    );
+
+    if (dbRow) {
+      return mapRow(dbRow);
+    }
+
+    // Dev fallback when DB is down — still accept submissions in-memory.
+    if (process.env.NODE_ENV === "production") {
+      return null;
+    }
+
+    const mockDup = mockTestimonials.find(
+      (row) =>
+        row.status === "pending" &&
+        row.name === data.name &&
+        row.rating === data.rating &&
+        row.message === data.message &&
+        row.game === data.game &&
+        row.createdAt.getTime() >= since.getTime(),
+    );
+    if (mockDup) return { ...mockDup };
+
+    const now = new Date();
+    const row: MockRow = {
+      id: randomUUID(),
+      ...data,
+      phoneModel: data.phoneModel,
+      createdAt: now,
+      approvedAt: null,
+    };
+    mockTestimonials.unshift(row);
+    return row;
+  })();
+
+  inflightCreates.set(key, run);
+  try {
+    return await run;
+  } finally {
+    // Keep briefly so a sequential immediate retry still coalesces.
+    setTimeout(() => {
+      if (inflightCreates.get(key) === run) inflightCreates.delete(key);
+    }, 2000);
+  }
 }
 
 /** Public list: approved only, newest first, hard-capped at 20. */
