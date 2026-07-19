@@ -39,8 +39,8 @@ function base64UrlToBytes(value: string): Uint8Array {
   return out;
 }
 
-function utf8ToBytes(value: string): Uint8Array {
-  return new TextEncoder().encode(value);
+function utf8ToBytes(value: string): Uint8Array<ArrayBuffer> {
+  return new TextEncoder().encode(value) as Uint8Array<ArrayBuffer>;
 }
 
 async function importHmacKey(secret: string): Promise<CryptoKey> {

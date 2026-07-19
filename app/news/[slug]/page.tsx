@@ -34,14 +34,16 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     imageAlt: item.title,
     type: "article",
   });
+  const og = social.openGraph ?? {};
 
   return {
     title: item.title,
     description,
     alternates: { canonical: articleUrl },
-    ...social,
+    twitter: social.twitter,
     openGraph: {
-      ...social.openGraph,
+      ...og,
+      type: "article",
       publishedTime: item.publishedAt ? new Date(item.publishedAt).toISOString() : undefined,
       modifiedTime: item.updatedAt ? new Date(item.updatedAt).toISOString() : undefined,
     },
