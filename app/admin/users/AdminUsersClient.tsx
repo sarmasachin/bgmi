@@ -8,6 +8,11 @@ type Props = {
   initialRows?: AdminUserRow[];
 };
 
+type ResetTarget = {
+  id: string;
+  email: string;
+};
+
 export default function AdminUsersClient({ initialRows }: Props) {
   const [rows, setRows] = useState<AdminUserRow[]>(initialRows ?? []);
   const [loading, setLoading] = useState(initialRows === undefined);
@@ -16,10 +21,13 @@ export default function AdminUsersClient({ initialRows }: Props) {
   const [newEmail, setNewEmail] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [newName, setNewName] = useState("");
+  const [resetTarget, setResetTarget] = useState<ResetTarget | null>(null);
+  const [resetPasswordValue, setResetPasswordValue] = useState("");
+  const [resetConfirmValue, setResetConfirmValue] = useState("");
+  const [resetError, setResetError] = useState("");
 
   const load = useCallback(async () => {
     setLoading(true);
-    setMessage("");
     try {
       const res = await fetch("/api/admin/users", { cache: "no-store", credentials: "include" });
       const json = (await res.json()) as { data?: AdminUserRow[]; error?: string };
@@ -35,16 +43,44 @@ export default function AdminUsersClient({ initialRows }: Props) {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [setMessage]);
 
   useEffect(() => {
     if (initialRows !== undefined) return;
     void load();
   }, [initialRows, load]);
 
+  useEffect(() => {
+    if (!resetTarget) return;
+    const onKey = (event: KeyboardEvent) => {
+      if (event.key === "Escape" && !busy) closeResetModal();
+    };
+    document.addEventListener("keydown", onKey);
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.removeEventListener("keydown", onKey);
+      document.body.style.overflow = prev;
+    };
+  }, [resetTarget, busy]);
+
+  function openResetModal(row: AdminUserRow) {
+    setResetTarget({ id: row.id, email: row.email });
+    setResetPasswordValue("");
+    setResetConfirmValue("");
+    setResetError("");
+  }
+
+  function closeResetModal() {
+    if (busy) return;
+    setResetTarget(null);
+    setResetPasswordValue("");
+    setResetConfirmValue("");
+    setResetError("");
+  }
+
   async function onCreate(e: FormEvent) {
     e.preventDefault();
-    setMessage("");
     setBusy(true);
     try {
       const res = await fetch("/api/admin/users", {
@@ -76,7 +112,6 @@ export default function AdminUsersClient({ initialRows }: Props) {
 
   async function toggleActive(row: AdminUserRow) {
     const next = !row.isActive;
-    setMessage("");
     setBusy(true);
     try {
       const res = await fetch("/api/admin/users", {
@@ -99,30 +134,41 @@ export default function AdminUsersClient({ initialRows }: Props) {
     }
   }
 
-  async function resetPassword(row: AdminUserRow) {
-    const pwd = window.prompt(`New password for ${row.email} (min 6 characters):`, "");
-    if (pwd === null) return;
-    if (pwd.length < 6) {
-      setMessage("Password must be at least 6 characters.");
+  async function submitResetPassword(e: FormEvent) {
+    e.preventDefault();
+    if (!resetTarget) return;
+    if (resetPasswordValue.length < 6) {
+      setResetError("Password must be at least 6 characters.");
       return;
     }
-    setMessage("");
+    if (resetPasswordValue !== resetConfirmValue) {
+      setResetError("Passwords do not match.");
+      return;
+    }
+    setResetError("");
     setBusy(true);
     try {
       const res = await fetch("/api/admin/users", {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
-        body: JSON.stringify({ action: "resetPassword", id: row.id, newPassword: pwd }),
+        body: JSON.stringify({
+          action: "resetPassword",
+          id: resetTarget.id,
+          newPassword: resetPasswordValue,
+        }),
       });
       const json = (await res.json()) as { error?: string };
       if (!res.ok) {
-        setMessage(json.error ?? "Reset failed.");
+        setResetError(json.error ?? "Reset failed.");
         return;
       }
-      setMessage(`Password updated for ${row.email}.`);
+      setMessage(`Password updated for ${resetTarget.email}.`);
+      setResetTarget(null);
+      setResetPasswordValue("");
+      setResetConfirmValue("");
     } catch {
-      setMessage("Network error.");
+      setResetError("Network error.");
     } finally {
       setBusy(false);
     }
@@ -207,7 +253,7 @@ export default function AdminUsersClient({ initialRows }: Props) {
                         <button type="button" disabled={busy} onClick={() => void toggleActive(row)}>
                           {row.isActive ? "Deactivate" : "Activate"}
                         </button>
-                        <button type="button" disabled={busy} onClick={() => void resetPassword(row)}>
+                        <button type="button" disabled={busy} onClick={() => openResetModal(row)}>
                           Reset password
                         </button>
                       </div>
@@ -219,6 +265,61 @@ export default function AdminUsersClient({ initialRows }: Props) {
           </div>
         )}
       </section>
+
+      {resetTarget ? (
+        <div className="admin-modal-overlay" role="presentation" onClick={closeResetModal}>
+          <div
+            className="admin-modal"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="admin-reset-password-title"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <h2 id="admin-reset-password-title">Reset password</h2>
+            <p className="admin-modal-subtitle">{resetTarget.email}</p>
+            <form onSubmit={(e) => void submitResetPassword(e)}>
+              <div className="form-group">
+                <label htmlFor="adminResetPassword">New password</label>
+                <input
+                  id="adminResetPassword"
+                  type="password"
+                  autoComplete="new-password"
+                  minLength={6}
+                  required
+                  value={resetPasswordValue}
+                  onChange={(e) => setResetPasswordValue(e.target.value)}
+                  autoFocus
+                />
+              </div>
+              <div className="form-group">
+                <label htmlFor="adminResetPasswordConfirm">Confirm password</label>
+                <input
+                  id="adminResetPasswordConfirm"
+                  type="password"
+                  autoComplete="new-password"
+                  minLength={6}
+                  required
+                  value={resetConfirmValue}
+                  onChange={(e) => setResetConfirmValue(e.target.value)}
+                />
+              </div>
+              {resetError ? (
+                <p className="admin-modal-error" role="alert">
+                  {resetError}
+                </p>
+              ) : null}
+              <div className="admin-modal-actions">
+                <button type="button" className="admin-modal-btn-secondary" onClick={closeResetModal} disabled={busy}>
+                  Cancel
+                </button>
+                <button type="submit" className="admin-modal-btn-primary" disabled={busy}>
+                  {busy ? "Saving…" : "Update password"}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      ) : null}
     </>
   );
 }
