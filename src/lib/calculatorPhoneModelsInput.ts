@@ -1,12 +1,12 @@
 /**
- * Parse admin/API input: commas and newlines separate phone names.
+ * Parse admin/API input: commas, newlines, tabs, and semicolons separate phone names.
  * Safe for client and server (no DB).
  */
 export function expandCalculatorPhoneModelStrings(models: string[]): string[] {
   const out: string[] = [];
   for (const raw of models) {
     if (typeof raw !== "string") continue;
-    const pieces = raw.split(/,|\r?\n/);
+    const pieces = raw.split(/[,;\t|\r?\n]+/);
     for (const p of pieces) {
       const t = p.trim();
       if (t) out.push(t);
@@ -26,6 +26,11 @@ export function dedupePhoneNamesPreserveOrder(models: string[]): string[] {
     out.push(raw);
   }
   return out;
+}
+
+/** Count unique names currently in the admin textarea. */
+export function countPhoneNamesInInput(text: string): number {
+  return dedupePhoneNamesPreserveOrder([text]).length;
 }
 
 /** First-seen spelling for each case-insensitive duplicate (for messages). */

@@ -2,6 +2,7 @@
 
 import { FormEvent, useEffect, useState } from "react";
 import {
+  countPhoneNamesInInput,
   dedupePhoneNamesPreserveOrder,
   expandCalculatorPhoneModelStrings,
 } from "@/src/lib/calculatorPhoneModelsInput";
@@ -235,11 +236,12 @@ export default function AdminSettingsClient({ initialData }: Props) {
     setPhoneModelsText(unique.join(", "));
 
     try {
+      // Send as one text blob — more reliable for 500+ names than a huge JSON array.
       const res = await fetch("/api/admin/calculator-phone-models", {
         method: "POST",
         credentials: "include",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ models: unique }),
+        body: JSON.stringify({ text: unique.join(", ") }),
       });
       const body = (await res.json().catch(() => ({}))) as {
         error?: string;
@@ -630,9 +632,9 @@ export default function AdminSettingsClient({ initialData }: Props) {
       <h2 style={{ marginTop: 32, marginBottom: 12 }}>Calculator phone names</h2>
       <div className="form-group">
         <label htmlFor="calculatorPhoneModels">
-          Search suggestions: write names separated by commas (e.g. LG G8, LG V60, Pixel 8). New lines
-          also work. Duplicates are removed automatically on save. Up to 2000 names. Leave empty and save
-          to use built-in defaults again.
+          Search suggestions: write names separated by commas (e.g. Motorola Edge 40, Samsung S24, Pixel
+          8). New lines / tabs also work. Duplicates are removed on save. Up to 2000 names. Leave empty
+          and save to use built-in defaults again.
         </label>
         <textarea
           id="calculatorPhoneModels"
@@ -642,6 +644,10 @@ export default function AdminSettingsClient({ initialData }: Props) {
           style={{ width: "100%", fontFamily: "inherit", minHeight: 200 }}
           spellCheck={false}
         />
+        <p style={{ marginTop: 8, color: "#94a3b8", fontSize: 13 }}>
+          Names in box right now: <strong style={{ color: "#e6edf3" }}>{countPhoneNamesInInput(phoneModelsText)}</strong>
+          {" "}— after save, homepage search uses this exact list (Samsung, Motorola, etc.).
+        </p>
       </div>
       <button className="btn-calc" type="button" onClick={savePhoneModels}>
         Save phone list

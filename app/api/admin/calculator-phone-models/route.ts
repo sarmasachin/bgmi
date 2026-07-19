@@ -13,9 +13,15 @@ import {
 
 const SETTINGS_KEY = "settings:calculatorPhoneModels";
 
-const postSchema = z.object({
-  models: z.array(z.string()).max(2000),
-});
+const postSchema = z
+  .object({
+    /** Preferred for large lists (comma/newline separated). */
+    text: z.string().max(500_000).optional(),
+    models: z.array(z.string()).max(2000).optional(),
+  })
+  .refine((v) => typeof v.text === "string" || Array.isArray(v.models), {
+    message: "text or models required",
+  });
 
 export async function GET() {
   const stored = await getStoredCalculatorPhoneModelsRaw();
@@ -23,6 +29,8 @@ export async function GET() {
   return NextResponse.json({
     effectiveModels: effective,
     storedModels: stored,
+    storedCount: stored?.length ?? 0,
+    effectiveCount: effective.length,
   });
 }
 
@@ -38,7 +46,11 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "Invalid payload" }, { status: 400 });
   }
 
-  const expanded = expandCalculatorPhoneModelStrings(parsed.data.models);
+  const source =
+    typeof parsed.data.text === "string"
+      ? [parsed.data.text]
+      : (parsed.data.models ?? []);
+  const expanded = expandCalculatorPhoneModelStrings(source);
   const unique = dedupePhoneNamesPreserveOrder(expanded);
   const removedDuplicates = Math.max(0, expanded.length - unique.length);
 
