@@ -9,12 +9,12 @@ type SetupStatus = {
 };
 
 type LoginAlert = {
-  type: "error" | "warning" | "success";
+  type: "error" | "warning";
   message: string;
-  createdAt: number;
 };
 
-const ALERT_MS = 4200;
+const ALERT_KEY = "admin-login-alert";
+const ALERT_MS = 10000;
 
 export default function AdminLoginPage() {
   const [email, setEmail] = useState("");
@@ -26,7 +26,30 @@ export default function AdminLoginPage() {
   const [mode, setMode] = useState<"login" | "setup">("login");
   const [alert, setAlert] = useState<LoginAlert | null>(null);
   const [leftMs, setLeftMs] = useState(0);
+  const [alertStartedAt, setAlertStartedAt] = useState(0);
   const router = useRouter();
+
+  useEffect(() => {
+    try {
+      const raw = sessionStorage.getItem(ALERT_KEY);
+      if (!raw) return;
+      const parsed = JSON.parse(raw) as { type?: string; message?: string; at?: number };
+      if (
+        (parsed.type === "error" || parsed.type === "warning") &&
+        typeof parsed.message === "string" &&
+        parsed.message.trim() &&
+        typeof parsed.at === "number" &&
+        Date.now() - parsed.at < ALERT_MS
+      ) {
+        setAlert({ type: parsed.type, message: parsed.message.trim() });
+        setAlertStartedAt(parsed.at);
+      } else {
+        sessionStorage.removeItem(ALERT_KEY);
+      }
+    } catch {
+      sessionStorage.removeItem(ALERT_KEY);
+    }
+  }, []);
 
   useEffect(() => {
     let cancelled = false;
@@ -49,30 +72,56 @@ export default function AdminLoginPage() {
   }, []);
 
   useEffect(() => {
-    if (!alert) {
+    if (!alert || !alertStartedAt) {
       setLeftMs(0);
       return;
     }
     const tick = () => {
-      const left = Math.max(0, ALERT_MS - (Date.now() - alert.createdAt));
+      const left = Math.max(0, ALERT_MS - (Date.now() - alertStartedAt));
       setLeftMs(left);
-      if (left <= 0) setAlert(null);
+      if (left <= 0) {
+        setAlert(null);
+        setAlertStartedAt(0);
+        try {
+          sessionStorage.removeItem(ALERT_KEY);
+        } catch {
+          /* ignore */
+        }
+      }
     };
     tick();
     const id = window.setInterval(tick, 200);
     return () => window.clearInterval(id);
-  }, [alert]);
+  }, [alert, alertStartedAt]);
 
   const showSetup =
     mode === "setup" && (status?.needsSetup || status?.bootstrapEnabled);
 
-  function showAlert(type: LoginAlert["type"], message: string) {
-    setAlert({ type, message, createdAt: Date.now() });
+  function clearAlert() {
+    setAlert(null);
+    setAlertStartedAt(0);
+    try {
+      sessionStorage.removeItem(ALERT_KEY);
+    } catch {
+      /* ignore */
+    }
   }
 
-  async function handleLogin(event: FormEvent) {
-    event.preventDefault();
-    setAlert(null);
+  function showAlert(type: LoginAlert["type"], message: string) {
+    const text = message.trim();
+    if (!text) return;
+    const at = Date.now();
+    setAlert({ type, message: text });
+    setAlertStartedAt(at);
+    try {
+      sessionStorage.setItem(ALERT_KEY, JSON.stringify({ type, message: text, at }));
+    } catch {
+      /* ignore */
+    }
+  }
+
+  async function runLogin() {
+    clearAlert();
     setBusy(true);
     try {
       const res = await fetch("/api/admin/auth/login", {
@@ -89,6 +138,7 @@ export default function AdminLoginPage() {
         );
         return;
       }
+      clearAlert();
       router.push("/admin");
     } catch {
       showAlert("error", "Network error. Please try again.");
@@ -97,9 +147,8 @@ export default function AdminLoginPage() {
     }
   }
 
-  async function handleSetup(event: FormEvent) {
-    event.preventDefault();
-    setAlert(null);
+  async function runSetup() {
+    clearAlert();
     if (password.length < 6) {
       showAlert("warning", "Password must be at least 6 characters.");
       return;
@@ -121,11 +170,12 @@ export default function AdminLoginPage() {
             : {}),
         }),
       });
-      const data = (await res.json()) as { error?: string };
+      const data = (await res.json().catch(() => ({}))) as { error?: string };
       if (!res.ok) {
         showAlert("error", data.error ?? "Could not save credentials.");
         return;
       }
+      clearAlert();
       router.push("/admin");
     } catch {
       showAlert("error", "Network error. Please try again.");
@@ -134,14 +184,25 @@ export default function AdminLoginPage() {
     }
   }
 
+  function onSubmit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    event.stopPropagation();
+    if (busy) return;
+    if (showSetup) void runSetup();
+    else void runLogin();
+  }
+
   const timerSeconds = alert ? Math.max(1, Math.ceil(leftMs / 1000)) : 0;
-  const progressPct = alert ? Math.max(0, (leftMs / ALERT_MS) * 100) : 0;
+  const progressPct = alert && alertStartedAt ? Math.max(0, (leftMs / ALERT_MS) * 100) : 0;
 
   return (
     <main className="admin-login-page">
       <form
         className="admin-login-card"
-        onSubmit={showSetup ? handleSetup : handleLogin}
+        method="post"
+        action="#"
+        noValidate
+        onSubmit={onSubmit}
       >
         <h1 className="admin-login-title">
           {showSetup
@@ -161,7 +222,8 @@ export default function AdminLoginPage() {
         {alert ? (
           <div
             className={`admin-login-alert admin-login-alert-${alert.type}`}
-            role={alert.type === "error" ? "alert" : "status"}
+            role="alert"
+            aria-live="assertive"
           >
             <div className="admin-login-alert-row">
               <p className="admin-login-alert-message">{alert.message}</p>
@@ -179,6 +241,7 @@ export default function AdminLoginPage() {
           <label htmlFor="adminEmail">Email (Gmail)</label>
           <input
             id="adminEmail"
+            name="email"
             type="email"
             autoComplete="username"
             value={email}
@@ -190,6 +253,7 @@ export default function AdminLoginPage() {
           <label htmlFor="adminPassword">Password</label>
           <input
             id="adminPassword"
+            name="password"
             type="password"
             autoComplete={showSetup ? "new-password" : "current-password"}
             value={password}
@@ -197,6 +261,9 @@ export default function AdminLoginPage() {
             required
             minLength={showSetup ? 6 : 4}
           />
+          {alert?.type === "error" ? (
+            <p className="admin-login-field-error">{alert.message}</p>
+          ) : null}
         </div>
 
         {showSetup ? (
@@ -205,6 +272,7 @@ export default function AdminLoginPage() {
               <label htmlFor="adminPasswordConfirm">Confirm password</label>
               <input
                 id="adminPasswordConfirm"
+                name="confirmPassword"
                 type="password"
                 autoComplete="new-password"
                 value={confirmPassword}
@@ -218,6 +286,7 @@ export default function AdminLoginPage() {
                 <label htmlFor="adminBootstrap">Bootstrap secret</label>
                 <input
                   id="adminBootstrap"
+                  name="bootstrapSecret"
                   type="password"
                   autoComplete="off"
                   value={bootstrapSecret}
@@ -245,7 +314,7 @@ export default function AdminLoginPage() {
             className="admin-login-secondary"
             onClick={() => {
               setMode("setup");
-              setAlert(null);
+              clearAlert();
             }}
             disabled={busy}
           >
@@ -261,7 +330,7 @@ export default function AdminLoginPage() {
               setMode("login");
               setBootstrapSecret("");
               setConfirmPassword("");
-              setAlert(null);
+              clearAlert();
             }}
             disabled={busy}
           >

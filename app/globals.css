@@ -2453,6 +2453,14 @@ footer,
   background: #2ea464;
 }
 
+.admin-login-field-error {
+  margin: 8px 0 0;
+  color: #ff8b85;
+  font-size: 13px;
+  font-weight: 650;
+  line-height: 1.4;
+}
+
 .admin-login-submit {
   display: flex !important;
   align-items: center;
