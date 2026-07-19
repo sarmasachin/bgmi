@@ -10,7 +10,7 @@ type Props = {
 
 /** Client FAQ wrapper so game label updates instantly with / ↔ /pubg. */
 export function GameArticleFaq({ faqItems }: Props) {
-  const pathname = usePathname();
+  const pathname = usePathname() ?? "";
   const game = pathname === "/pubg" || pathname.startsWith("/pubg/") ? "pubg" : "bgmi";
 
   return (

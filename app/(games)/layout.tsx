@@ -23,7 +23,9 @@ export default async function GamesLayout({ children }: { children: React.ReactN
 
   return (
     <div>
-      <HomeHeader siteTitle={settings.homeDisplay.headerTitle} navigation={settings.navigation} />
+      <ClientErrorBoundary label="Header">
+        <HomeHeader siteTitle={settings.homeDisplay.headerTitle} navigation={settings.navigation} />
+      </ClientErrorBoundary>
       {children}
       <main className="page-container">
         <Suspense fallback={<div className="games-main-fallback" aria-hidden />}>

@@ -8,7 +8,7 @@ type Props = {
 };
 
 export function SensCalculatorHost({ phoneModels }: Props) {
-  const pathname = usePathname();
+  const pathname = usePathname() ?? "";
   const game = pathname === "/pubg" || pathname.startsWith("/pubg/") ? "pubg" : "bgmi";
 
   return <SensCalculator key={game} phoneModels={phoneModels} game={game} />;

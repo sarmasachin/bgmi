@@ -11,7 +11,7 @@ type Props = {
 };
 
 export function GameTestimonialsSection({ bgmiTestimonials, pubgTestimonials }: Props) {
-  const pathname = usePathname();
+  const pathname = usePathname() ?? "";
   const game = pathname === "/pubg" || pathname.startsWith("/pubg/") ? "pubg" : "bgmi";
   const initialItems = game === "pubg" ? pubgTestimonials : bgmiTestimonials;
 

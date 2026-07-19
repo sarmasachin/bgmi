@@ -3,7 +3,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { useEffect, useId, useOptimistic, useRef, useState, useTransition } from "react";
+import { useEffect, useId, useRef, useState, useTransition } from "react";
 import type { MouseEvent } from "react";
 
 type NavLink = { label: string; href: string };
@@ -19,8 +19,12 @@ function isGameHref(href: string) {
   return href === "/" || href === "/pubg";
 }
 
+function normalizePath(path: string | null | undefined) {
+  return typeof path === "string" ? path : "";
+}
+
 export function HomeHeader({ siteTitle, navigation }: HomeHeaderProps) {
-  const pathname = usePathname();
+  const pathname = normalizePath(usePathname());
   const router = useRouter();
   const [, startTransition] = useTransition();
   const links = navigation.map((item) => {
@@ -36,17 +40,22 @@ export function HomeHeader({ siteTitle, navigation }: HomeHeaderProps) {
   const [scrollHidden, setScrollHidden] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const [spacerHeight, setSpacerHeight] = useState(104);
-  const [optimisticPath, setOptimisticPath] = useOptimistic(pathname);
+  const [pendingPath, setPendingPath] = useState<string | null>(null);
   const lastScrollY = useRef(0);
   const headerRef = useRef<HTMLElement>(null);
   const sideMenuRef = useRef<HTMLElement>(null);
   const menuId = useId();
+  const activePath = pendingPath ?? pathname;
 
   // Prefetch game routes so BGMI ↔ PUBG feels instant.
   useEffect(() => {
     router.prefetch("/");
     router.prefetch("/pubg");
   }, [router]);
+
+  useEffect(() => {
+    setPendingPath(null);
+  }, [pathname]);
 
   useEffect(() => {
     const el = headerRef.current;
@@ -128,9 +137,8 @@ export function HomeHeader({ siteTitle, navigation }: HomeHeaderProps) {
   }
 
   function isActiveHref(href: string) {
-    const path = optimisticPath || pathname;
-    if (href === "/") return path === "/";
-    return path === href || path.startsWith(`${href}/`);
+    if (href === "/") return activePath === "/";
+    return activePath === href || activePath.startsWith(`${href}/`);
   }
 
   function onGameNavClick(event: MouseEvent<HTMLAnchorElement>, href: string) {
@@ -145,7 +153,7 @@ export function HomeHeader({ siteTitle, navigation }: HomeHeaderProps) {
     }
     event.preventDefault();
     startTransition(() => {
-      setOptimisticPath(href);
+      setPendingPath(href);
       router.push(href);
     });
   }
