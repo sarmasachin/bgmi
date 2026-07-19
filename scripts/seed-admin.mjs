@@ -27,17 +27,49 @@ loadDotEnv(".env");
 loadDotEnv(".env.local");
 
 async function main() {
-  const passwordHash = await bcrypt.hash("1234", 10);
-  await prisma.adminUser.upsert({
-    where: { email: "admin@example.com" },
-    update: { passwordHash, isActive: true },
-    create: {
-      email: "admin@example.com",
+  const email = (process.env.ADMIN_EMAIL || "admin@example.com").trim().toLowerCase();
+  const password = process.env.ADMIN_PASSWORD || "1234";
+  if (password.length < 6 && password !== "1234") {
+    throw new Error("ADMIN_PASSWORD must be at least 6 characters");
+  }
+  const passwordHash = await bcrypt.hash(password, 10);
+
+  const existingByEmail = await prisma.adminUser.findUnique({ where: { email } });
+  if (existingByEmail) {
+    await prisma.adminUser.update({
+      where: { id: existingByEmail.id },
+      data: { passwordHash, isActive: true, role: "admin" },
+    });
+    console.log(`Updated password for ${email}`);
+    return;
+  }
+
+  const primary = await prisma.adminUser.findFirst({ orderBy: { createdAt: "asc" } });
+  if (primary) {
+    await prisma.adminUser.update({
+      where: { id: primary.id },
+      data: {
+        email,
+        passwordHash,
+        isActive: true,
+        role: "admin",
+        name: primary.name || "Primary Admin",
+      },
+    });
+    console.log(`Updated primary admin → ${email}`);
+    return;
+  }
+
+  await prisma.adminUser.create({
+    data: {
+      email,
       passwordHash,
       name: "Primary Admin",
+      role: "admin",
+      isActive: true,
     },
   });
-  console.log("Seeded admin@example.com");
+  console.log(`Created admin ${email}`);
 }
 
 main()

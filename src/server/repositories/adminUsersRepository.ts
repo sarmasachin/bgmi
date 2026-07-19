@@ -168,3 +168,105 @@ export async function updateAdminUserPassword(id: string, newPassword: string): 
   u.passwordHash = passwordHash;
   return true;
 }
+
+/** How many admin rows exist (any status). null = DB unavailable. */
+export async function countAdminUsers(): Promise<number | null> {
+  const n = await tryPrisma(() => prisma.adminUser.count());
+  if (typeof n === "number") return n;
+  return (mockStore.users as MockUser[]).length;
+}
+
+/**
+ * Create the first admin, or replace the oldest admin when forceReplace is true.
+ * Used by first-time setup / bootstrap seed.
+ */
+export async function setPrimaryAdminCredentials(input: {
+  email: string;
+  password: string;
+  name?: string;
+  forceReplace?: boolean;
+}): Promise<AdminUserRow | { error: "exists" | "unavailable" | "duplicate" }> {
+  const email = input.email.trim().toLowerCase();
+  const passwordHash = await bcrypt.hash(input.password, 10);
+  const name = input.name?.trim() || "Primary Admin";
+
+  const db = await tryPrisma(async () => {
+    const count = await prisma.adminUser.count();
+    if (count === 0) {
+      const created = await prisma.adminUser.create({
+        data: {
+          email,
+          passwordHash,
+          name,
+          role: "admin",
+          isActive: true,
+        },
+        select: { id: true, email: true, name: true, role: true, isActive: true, createdAt: true },
+      });
+      return mapDbUser(created);
+    }
+
+    if (!input.forceReplace) {
+      return "exists" as const;
+    }
+
+    const primary = await prisma.adminUser.findFirst({
+      orderBy: { createdAt: "asc" },
+      select: { id: true },
+    });
+    if (!primary) return "unavailable" as const;
+
+    try {
+      const updated = await prisma.adminUser.update({
+        where: { id: primary.id },
+        data: {
+          email,
+          passwordHash,
+          name,
+          isActive: true,
+          role: "admin",
+        },
+        select: { id: true, email: true, name: true, role: true, isActive: true, createdAt: true },
+      });
+      return mapDbUser(updated);
+    } catch (e: unknown) {
+      const code = e && typeof e === "object" && "code" in e ? String((e as { code: string }).code) : "";
+      if (code === "P2002") return "duplicate" as const;
+      throw e;
+    }
+  });
+
+  if (db === "exists") return { error: "exists" };
+  if (db === "unavailable") return { error: "unavailable" };
+  if (db === "duplicate") return { error: "duplicate" };
+  if (db && typeof db === "object" && "email" in db) return db as AdminUserRow;
+
+  // Mock fallback (dev without DB)
+  const users = mockStore.users as MockUser[];
+  if (users.length === 0 || input.forceReplace) {
+    if (users.length === 0) {
+      users.push({
+        id: "u1",
+        email,
+        role: "admin",
+        active: true,
+        name,
+        passwordHash,
+      });
+    } else {
+      users[0]!.email = email;
+      users[0]!.passwordHash = passwordHash;
+      users[0]!.name = name;
+      users[0]!.active = true;
+    }
+    return {
+      id: users[0]!.id,
+      email,
+      name,
+      role: "admin",
+      isActive: true,
+      createdAt: new Date().toISOString(),
+    };
+  }
+  return { error: "exists" };
+}

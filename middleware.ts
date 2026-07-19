@@ -24,6 +24,8 @@ export async function middleware(request: NextRequest) {
     pathname === "/admin/ratings" ||
     pathname === "/api/admin/auth/login" ||
     pathname === "/api/admin/auth/logout" ||
+    pathname === "/api/admin/auth/setup" ||
+    pathname === "/api/admin/auth/setup-status" ||
     pathname === "/api/admin/ratings" ||
     pathname === "/api/admin/auth/request-reset" ||
     pathname === "/api/admin/auth/reset-password"
