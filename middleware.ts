@@ -1,9 +1,11 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
+import {
+  ADMIN_SESSION_COOKIE,
+  verifyAdminSessionToken,
+} from "@/src/server/adminSession";
 
-const ADMIN_SESSION_COOKIE = "bgmi_admin_session";
-
-export function middleware(request: NextRequest) {
+export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
   if (pathname === "/admin/ads" || pathname === "/admin/ads/") {
@@ -29,8 +31,9 @@ export function middleware(request: NextRequest) {
     return NextResponse.next();
   }
 
-  const session = request.cookies.get(ADMIN_SESSION_COOKIE)?.value;
-  if (session === "active") {
+  const raw = request.cookies.get(ADMIN_SESSION_COOKIE)?.value;
+  const session = await verifyAdminSessionToken(raw);
+  if (session) {
     return NextResponse.next();
   }
 

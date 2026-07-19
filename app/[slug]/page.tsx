@@ -1,11 +1,11 @@
 import type { Metadata } from "next";
-import { cookies } from "next/headers";
 import { notFound } from "next/navigation";
 import { AdSlot } from "@/src/components/AdSlot";
 import { RatingWidget } from "@/src/components/RatingWidget";
 import { ratingWidgetRemountKey } from "@/src/lib/ratingWidgetKey";
 import { SiteFooter } from "@/src/components/SiteFooter";
 import { SensCalculator } from "@/src/features/sensCalculator/SensCalculator";
+import { isAdminLoggedIn } from "@/src/server/auth";
 import { getCalculatorPhoneModels } from "@/src/server/repositories/calculatorPhoneModelsRepository";
 import { getPageBySlug, getPublishedPageBySlug } from "@/src/server/repositories/pagesRepository";
 import { getRatingSummary } from "@/src/server/repositories/ratingSummaryRepository";
@@ -82,9 +82,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 export default async function DynamicTemplatePage({ params, searchParams }: Props) {
   const { slug } = await params;
   const query = await searchParams;
-  const cookieStore = await cookies();
-  const isAdmin = cookieStore.get("bgmi_admin_session")?.value === "active";
-  const allowDraftPreview = query.preview === "1" && isAdmin;
+  const allowDraftPreview = query.preview === "1" && (await isAdminLoggedIn());
 
   const [page, phoneModels] = await Promise.all([
     getPageForSlug(slug, allowDraftPreview),

@@ -8,10 +8,13 @@ export async function POST(request: NextRequest) {
   const parsed = schema.safeParse(await request.json());
   if (!parsed.success) return NextResponse.json({ error: "Invalid email" }, { status: 400 });
   const result = await requestResetToken(parsed.data.email);
-  return NextResponse.json({
+  const payload: { ok: true; sent: boolean; token?: string } = {
     ok: true,
     sent: result.sent,
-    // For development visibility; remove in production response.
-    token: result.token,
-  });
+  };
+  // Never expose reset tokens outside local development.
+  if (process.env.NODE_ENV !== "production" && result.token) {
+    payload.token = result.token;
+  }
+  return NextResponse.json(payload);
 }

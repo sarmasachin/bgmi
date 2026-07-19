@@ -24,6 +24,7 @@ loadDotEnv(".env.local");
 
 const required = [
   "DATABASE_URL",
+  "SESSION_SECRET",
   "SMTP_HOST",
   "SMTP_PORT",
   "VAPID_PUBLIC_KEY",

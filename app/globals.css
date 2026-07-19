@@ -238,7 +238,9 @@ a {
   background: #0d1117;
   border-right: 1px solid var(--border-dark);
   transform: translateX(-102%);
-  transition: transform 0.22s ease;
+  visibility: hidden;
+  pointer-events: none;
+  transition: transform 0.22s ease, visibility 0s linear 0.22s;
   display: flex;
   flex-direction: column;
   padding: 18px 10px 20px;
@@ -247,6 +249,9 @@ a {
 
 .home-side-menu.is-open {
   transform: translateX(0);
+  visibility: visible;
+  pointer-events: auto;
+  transition: transform 0.22s ease, visibility 0s;
 }
 
 .home-side-menu-brand {
@@ -932,7 +937,7 @@ button {
   box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
 }
 
-.faq-card h4 {
+.faq-card h3 {
   margin: 0 0 10px;
   font-size: 18px;
   color: #000;
@@ -3789,7 +3794,7 @@ footer,
   }
 }
 
-/* —— User-facing error UI —— */
+/* ï¿½ï¿½ User-facing error UI ï¿½ï¿½ */
 .user-error-page {
   width: 100%;
   min-height: 70vh;

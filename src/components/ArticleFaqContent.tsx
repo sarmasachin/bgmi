@@ -51,7 +51,7 @@ export function ArticleFaqContent({
             <div className="faq-grid">
               {faqItems.map((item) => (
                 <div key={item.id} className="faq-card">
-                  <h4>{item.question}</h4>
+                  <h3>{item.question}</h3>
                   <p>{item.answer}</p>
                 </div>
               ))}

@@ -6,6 +6,6 @@ export const metadata: Metadata = {
 };
 
 export default function PubgPage() {
-  // Shared UI lives in (games)/layout — keeps BGMI↔PUBG switches instant.
-  return null;
+  // Shared UI lives in (games)/layout — title is RSC so LCP paints without client JS.
+  return <h1 className="main-title">PUBG Mobile Sensitivity Settings calculator</h1>;
 }

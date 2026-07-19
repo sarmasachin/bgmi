@@ -1,6 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
 import { checkRateLimit } from "@/src/server/rateLimit";
 import { verifyAdminCredentials } from "@/src/server/authService";
+import {
+  ADMIN_SESSION_COOKIE,
+  adminSessionCookieOptions,
+  createAdminSessionToken,
+} from "@/src/server/adminSession";
 import { z } from "zod";
 
 const schema = z.object({
@@ -20,16 +25,16 @@ export async function POST(request: NextRequest) {
   }
 
   const user = await verifyAdminCredentials(parsed.data.email, parsed.data.password);
-  if (!user) {
+  if (!user || !("id" in user) || !user.id) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const response = NextResponse.json({ ok: true });
-  response.cookies.set("bgmi_admin_session", "active", {
-    httpOnly: true,
-    sameSite: "lax",
-    secure: process.env.NODE_ENV === "production",
-    path: "/",
+  const token = await createAdminSessionToken({
+    userId: String(user.id),
+    email: String(user.email),
   });
+
+  const response = NextResponse.json({ ok: true });
+  response.cookies.set(ADMIN_SESSION_COOKIE, token, adminSessionCookieOptions());
   return response;
 }

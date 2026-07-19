@@ -39,6 +39,7 @@ export function HomeHeader({ siteTitle, navigation }: HomeHeaderProps) {
   const [optimisticPath, setOptimisticPath] = useOptimistic(pathname);
   const lastScrollY = useRef(0);
   const headerRef = useRef<HTMLElement>(null);
+  const sideMenuRef = useRef<HTMLElement>(null);
   const menuId = useId();
 
   // Prefetch game routes so BGMI ↔ PUBG feels instant.
@@ -91,6 +92,13 @@ export function HomeHeader({ siteTitle, navigation }: HomeHeaderProps) {
     };
     window.addEventListener("scroll", onScroll, { passive: true });
     return () => window.removeEventListener("scroll", onScroll);
+  }, [menuOpen]);
+
+  useEffect(() => {
+    const el = sideMenuRef.current;
+    if (!el) return;
+    // Keep closed drawer out of keyboard / AT focus while off-screen.
+    el.inert = !menuOpen;
   }, [menuOpen]);
 
   useEffect(() => {
@@ -221,12 +229,18 @@ export function HomeHeader({ siteTitle, navigation }: HomeHeaderProps) {
       />
 
       <aside
+        ref={sideMenuRef}
         id={menuId}
         className={`home-side-menu${menuOpen ? " is-open" : ""}`}
         aria-hidden={!menuOpen}
         aria-label="Site menu"
       >
-        <Link href="/" className="home-side-menu-brand" onClick={closeMenu}>
+        <Link
+          href="/"
+          className="home-side-menu-brand"
+          onClick={closeMenu}
+          tabIndex={menuOpen ? undefined : -1}
+        >
           <Image
             src="/sens-master-logo.svg"
             alt=""
@@ -244,6 +258,7 @@ export function HomeHeader({ siteTitle, navigation }: HomeHeaderProps) {
                 prefetch
                 className={`home-side-menu-link${isActiveHref(item.href) ? " is-active" : ""}`}
                 onClick={(event) => onGameNavClick(event, item.href)}
+                tabIndex={menuOpen ? undefined : -1}
               >
                 {item.label}
               </Link>

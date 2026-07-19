@@ -1,11 +1,15 @@
 import fs from "fs";
 import path from "path";
+import crypto from "crypto";
 import webpush from "web-push";
 
 const envPath = path.join(process.cwd(), ".env.local");
 const keys = webpush.generateVAPIDKeys();
 
+const sessionSecret = crypto.randomBytes(32).toString("hex");
+
 const content = `DATABASE_URL="postgresql://postgres:postgres@localhost:5433/bgmi"
+SESSION_SECRET="${sessionSecret}"
 SMTP_HOST="localhost"
 SMTP_PORT="1025"
 SMTP_USER=""
