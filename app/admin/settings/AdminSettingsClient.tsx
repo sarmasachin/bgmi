@@ -248,7 +248,12 @@ export default function AdminSettingsClient({ initialData }: Props) {
         models?: string[];
       };
       if (!res.ok) {
-        setPhoneModelsMessage(body.error?.trim() || `Save failed (${res.status}).`);
+        setPhoneModelsMessage(
+          body.error?.trim() ||
+            (res.status === 503
+              ? "Could not save phone models (database busy). Wait a few seconds and try again."
+              : `Save failed (${res.status}).`),
+        );
         return;
       }
 

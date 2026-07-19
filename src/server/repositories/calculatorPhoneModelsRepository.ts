@@ -3,7 +3,7 @@ import {
   dedupePhoneNamesPreserveOrder,
   expandCalculatorPhoneModelStrings,
 } from "@/src/lib/calculatorPhoneModelsInput";
-import { prisma, tryPrisma } from "@/src/server/dbSafe";
+import { prisma, tryPrisma, tryPrismaLong } from "@/src/server/dbSafe";
 
 const KEY = "settings:calculatorPhoneModels";
 
@@ -31,7 +31,8 @@ export async function getCalculatorPhoneModels(): Promise<string[]> {
 
 /** Raw list stored in DB (may be empty if admin cleared custom list). */
 export async function getStoredCalculatorPhoneModelsRaw(): Promise<string[] | null> {
-  const row = await tryPrisma(async () =>
+  // Admin settings must not be blocked by the short public-page DB cooldown.
+  const row = await tryPrismaLong(async () =>
     prisma.siteSetting.findUnique({ where: { key: KEY } }),
   );
   if (row === null) return null;
@@ -51,7 +52,8 @@ export async function saveCalculatorPhoneModels(models: string[]): Promise<strin
   const normalized = dedupePhoneNamesPreserveOrder(
     expandCalculatorPhoneModelStrings(models),
   ).slice(0, 2000);
-  const ok = await tryPrisma(async () => {
+  // Use long timeout + ignore public cooldown so admin save actually persists on live.
+  const ok = await tryPrismaLong(async () => {
     if (!normalized.length) {
       await prisma.siteSetting.deleteMany({ where: { key: KEY } });
       return true;
