@@ -1425,6 +1425,8 @@ footer,
 
   .site-footer-col--social {
     grid-column: 1 / -1;
+    align-items: center;
+    text-align: center;
   }
 
   .site-footer-bottom-inner {
@@ -1445,6 +1447,7 @@ footer,
 
   .footer-social-icons {
     gap: 8px;
+    justify-content: center;
   }
 
   .footer-social-btn {
