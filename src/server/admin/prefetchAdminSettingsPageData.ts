@@ -67,7 +67,7 @@ export async function prefetchAdminSettingsPageData(): Promise<AdminSettingsPage
     footerTagline: settings.footerBranding.tagline,
     navigationLinks: settings.navigation,
     footerLinks: settings.footerLinks,
-    phoneModelsText: Array.isArray(phoneLines) ? phoneLines.join("\n") : "",
+    phoneModelsText: Array.isArray(phoneLines) ? phoneLines.join(", ") : "",
     faqItems: faqList.map((row, i) => ({
       id: row.id?.trim() || `faq-load-${i}`,
       question: row.question ?? "",

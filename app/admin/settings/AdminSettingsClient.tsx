@@ -114,7 +114,7 @@ export default function AdminSettingsClient({ initialData }: Props) {
           if (phone.storedModels === null || phone.storedModels === undefined) {
             setPhoneModelsText("");
           } else if (Array.isArray(phone.storedModels)) {
-            setPhoneModelsText(phone.storedModels.join("\n"));
+            setPhoneModelsText(phone.storedModels.join(", "));
           }
         } else {
           setPhoneModelsMessage("Could not load calculator phone names.");
@@ -231,8 +231,8 @@ export default function AdminSettingsClient({ initialData }: Props) {
     const unique = dedupePhoneNamesPreserveOrder(expanded);
     const removedDuplicates = Math.max(0, expanded.length - unique.length);
 
-    // Show cleaned list in the box immediately (duplicates removed once).
-    setPhoneModelsText(unique.join("\n"));
+    // Show cleaned list with commas (same format admin prefers).
+    setPhoneModelsText(unique.join(", "));
 
     try {
       const res = await fetch("/api/admin/calculator-phone-models", {
@@ -253,7 +253,7 @@ export default function AdminSettingsClient({ initialData }: Props) {
       }
 
       const savedModels = Array.isArray(body.models) ? body.models : unique;
-      setPhoneModelsText(savedModels.join("\n"));
+      setPhoneModelsText(savedModels.join(", "));
 
       const removed = body.removedDuplicates ?? removedDuplicates;
       if (savedModels.length === 0) {
@@ -625,9 +625,9 @@ export default function AdminSettingsClient({ initialData }: Props) {
       <h2 style={{ marginTop: 32, marginBottom: 12 }}>Calculator phone names</h2>
       <div className="form-group">
         <label htmlFor="calculatorPhoneModels">
-          Search suggestions: one name per line (or commas). Duplicates are removed automatically on
-          save (capital letters ignored). Up to 2000 names. Leave empty and save to use built-in
-          defaults again.
+          Search suggestions: write names separated by commas (e.g. LG G8, LG V60, Pixel 8). New lines
+          also work. Duplicates are removed automatically on save. Up to 2000 names. Leave empty and save
+          to use built-in defaults again.
         </label>
         <textarea
           id="calculatorPhoneModels"
