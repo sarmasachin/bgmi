@@ -14,7 +14,6 @@ export default function AdminLoginPage() {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [bootstrapSecret, setBootstrapSecret] = useState("");
   const [error, setError] = useState("");
-  const [resetMessage, setResetMessage] = useState("");
   const [status, setStatus] = useState<SetupStatus | null>(null);
   const [busy, setBusy] = useState(false);
   const [mode, setMode] = useState<"login" | "setup">("login");
@@ -102,30 +101,6 @@ export default function AdminLoginPage() {
     } finally {
       setBusy(false);
     }
-  }
-
-  async function requestReset() {
-    setResetMessage("");
-    setError("");
-    if (!email.trim()) {
-      setResetMessage("Enter your email first.");
-      return;
-    }
-    const res = await fetch("/api/admin/auth/request-reset", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email }),
-    });
-    const data = await res.json();
-    if (!res.ok) {
-      setResetMessage("Reset request failed.");
-      return;
-    }
-    setResetMessage(
-      data.token
-        ? `Reset token (dev): ${data.token}`
-        : "If account exists, reset link was sent.",
-    );
   }
 
   return (
@@ -216,34 +191,22 @@ export default function AdminLoginPage() {
               : "Login"}
         </button>
 
-        {!showSetup ? (
-          <>
-            <button
-              type="button"
-              className="btn-reset"
-              onClick={requestReset}
-              style={{ marginTop: 8 }}
-              disabled={busy}
-            >
-              Request Password Reset
-            </button>
-            {status?.bootstrapEnabled ? (
-              <button
-                type="button"
-                className="btn-reset"
-                onClick={() => {
-                  setMode("setup");
-                  setError("");
-                  setResetMessage("");
-                }}
-                style={{ marginTop: 8 }}
-                disabled={busy}
-              >
-                Set email &amp; password
-              </button>
-            ) : null}
-          </>
-        ) : status && !status.needsSetup ? (
+        {!showSetup && status?.bootstrapEnabled ? (
+          <button
+            type="button"
+            className="btn-reset"
+            onClick={() => {
+              setMode("setup");
+              setError("");
+            }}
+            style={{ marginTop: 8 }}
+            disabled={busy}
+          >
+            Set email &amp; password
+          </button>
+        ) : null}
+
+        {showSetup && status && !status.needsSetup ? (
           <button
             type="button"
             className="btn-reset"
@@ -259,8 +222,6 @@ export default function AdminLoginPage() {
             Back to login
           </button>
         ) : null}
-
-        {resetMessage ? <p style={{ marginTop: 8 }}>{resetMessage}</p> : null}
       </form>
     </main>
   );

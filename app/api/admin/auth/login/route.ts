@@ -1,6 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
-import { checkRateLimit } from "@/src/server/rateLimit";
 import { verifyAdminCredentials } from "@/src/server/authService";
+import {
+  clearAdminLoginFailures,
+  formatLockMessage,
+  getAdminLoginLockKey,
+  getAdminLoginLockStatus,
+  recordAdminLoginFailure,
+} from "@/src/server/adminLoginLockout";
 import {
   ADMIN_SESSION_COOKIE,
   adminSessionCookieOptions,
@@ -14,9 +20,14 @@ const schema = z.object({
 });
 
 export async function POST(request: NextRequest) {
-  const ip = request.headers.get("x-forwarded-for") ?? "local";
-  const rl = checkRateLimit(`admin-login:${ip}`, 10, 60_000);
-  if (!rl.ok) return NextResponse.json({ error: "Too many attempts" }, { status: 429 });
+  const lockKey = getAdminLoginLockKey(request);
+  const lock = getAdminLoginLockStatus(lockKey);
+  if (lock.locked) {
+    return NextResponse.json(
+      { error: formatLockMessage(lock.retryAfterSec), retryAfterSec: lock.retryAfterSec },
+      { status: 429 },
+    );
+  }
 
   let body: unknown;
   try {
@@ -32,8 +43,29 @@ export async function POST(request: NextRequest) {
 
   const user = await verifyAdminCredentials(parsed.data.email, parsed.data.password);
   if (!user || !("id" in user) || !user.id) {
-    return NextResponse.json({ error: "Invalid credentials" }, { status: 401 });
+    const afterFail = recordAdminLoginFailure(lockKey);
+    if (afterFail.locked) {
+      return NextResponse.json(
+        {
+          error: formatLockMessage(afterFail.retryAfterSec),
+          retryAfterSec: afterFail.retryAfterSec,
+        },
+        { status: 429 },
+      );
+    }
+    const left = 5 - afterFail.fails;
+    return NextResponse.json(
+      {
+        error:
+          left > 0
+            ? `Invalid credentials. ${left} attempt${left === 1 ? "" : "s"} left before a 10-minute lock.`
+            : "Invalid credentials",
+      },
+      { status: 401 },
+    );
   }
+
+  clearAdminLoginFailures(lockKey);
 
   try {
     const token = await createAdminSessionToken({
@@ -45,16 +77,10 @@ export async function POST(request: NextRequest) {
     response.cookies.set(ADMIN_SESSION_COOKIE, token, adminSessionCookieOptions());
     return response;
   } catch (err) {
-    const message = err instanceof Error ? err.message : "Login failed";
-    if (/SESSION_SECRET/i.test(message)) {
-      return NextResponse.json(
-        {
-          error:
-            "Server misconfigured: set SESSION_SECRET (min 32 characters) in .env and restart with pm2 restart bgmi --update-env",
-        },
-        { status: 500 },
-      );
-    }
-    return NextResponse.json({ error: "Login failed. Check server logs." }, { status: 500 });
+    console.error("[admin-login] session create failed:", err);
+    return NextResponse.json(
+      { error: "Login temporarily unavailable. Please try again later." },
+      { status: 500 },
+    );
   }
 }

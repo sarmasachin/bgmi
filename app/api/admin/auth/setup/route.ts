@@ -26,7 +26,12 @@ function bootstrapEnabled() {
 function bootstrapSecretOk(provided: string | undefined) {
   if (!bootstrapEnabled()) return false;
   const expected = process.env.ADMIN_BOOTSTRAP_SECRET!.trim();
-  return Boolean(provided && provided === expected);
+  if (!provided || provided.length !== expected.length) return false;
+  let diff = 0;
+  for (let i = 0; i < expected.length; i++) {
+    diff |= provided.charCodeAt(i) ^ expected.charCodeAt(i);
+  }
+  return diff === 0;
 }
 
 /**
@@ -62,28 +67,25 @@ export async function POST(request: NextRequest) {
 
   const forceReplace = count > 0;
   if (forceReplace && !bootstrapSecretOk(parsed.data.bootstrapSecret)) {
-    return NextResponse.json(
-      {
-        error:
-          "Bootstrap secret required. Add ADMIN_BOOTSTRAP_SECRET to server .env, or run: ADMIN_EMAIL=you@gmail.com ADMIN_PASSWORD='yourpass' npm run seed:admin",
-      },
-      { status: 403 },
-    );
+    return NextResponse.json({ error: "Setup not allowed." }, { status: 403 });
   }
 
-  const result = await setPrimaryAdminCredentials({
-    email: parsed.data.email,
-    password: parsed.data.password,
-    name: parsed.data.name,
-    forceReplace,
-  });
+  let result;
+  try {
+    result = await setPrimaryAdminCredentials({
+      email: parsed.data.email,
+      password: parsed.data.password,
+      name: parsed.data.name,
+      forceReplace,
+    });
+  } catch (err) {
+    console.error("[admin-setup] failed:", err);
+    return NextResponse.json({ error: "Could not save admin credentials." }, { status: 503 });
+  }
 
   if ("error" in result) {
     if (result.error === "exists") {
-      return NextResponse.json(
-        { error: "Admin already exists. Use bootstrap secret to reset." },
-        { status: 403 },
-      );
+      return NextResponse.json({ error: "Setup not allowed." }, { status: 403 });
     }
     if (result.error === "duplicate") {
       return NextResponse.json({ error: "That email is already in use." }, { status: 409 });
@@ -91,12 +93,20 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "Could not save admin credentials." }, { status: 503 });
   }
 
-  const token = await createAdminSessionToken({
-    userId: result.id,
-    email: result.email,
-  });
+  try {
+    const token = await createAdminSessionToken({
+      userId: result.id,
+      email: result.email,
+    });
 
-  const response = NextResponse.json({ ok: true, email: result.email });
-  response.cookies.set(ADMIN_SESSION_COOKIE, token, adminSessionCookieOptions());
-  return response;
+    const response = NextResponse.json({ ok: true, email: result.email });
+    response.cookies.set(ADMIN_SESSION_COOKIE, token, adminSessionCookieOptions());
+    return response;
+  } catch (err) {
+    console.error("[admin-setup] session create failed:", err);
+    return NextResponse.json(
+      { error: "Account saved, but login session failed. Try logging in." },
+      { status: 500 },
+    );
+  }
 }
