@@ -56,6 +56,14 @@ a {
   width: 100%;
   flex-shrink: 0;
   display: block;
+  /* Static offsets — avoid JS height updates that jump the calculator on refresh */
+  height: 108px;
+}
+
+@media (min-width: 851px) {
+  .home-header-spacer {
+    height: 64px;
+  }
 }
 
 .home-site-header {

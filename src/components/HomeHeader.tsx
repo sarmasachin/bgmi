@@ -50,7 +50,6 @@ export function HomeHeader({ siteTitle, navigation }: HomeHeaderProps) {
   });
   const [scrollHidden, setScrollHidden] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
-  const [spacerHeight, setSpacerHeight] = useState(104);
   const [pendingPath, setPendingPath] = useState<string | null>(null);
   const lastScrollY = useRef(0);
   const headerRef = useRef<HTMLElement>(null);
@@ -69,30 +68,6 @@ export function HomeHeader({ siteTitle, navigation }: HomeHeaderProps) {
   useEffect(() => {
     setPendingPath(null);
   }, [pathname]);
-
-  useEffect(() => {
-    const el = headerRef.current;
-    if (!el) return;
-
-    const measure = () => {
-      setSpacerHeight(el.offsetHeight);
-    };
-
-    measure();
-    const ro = new ResizeObserver(measure);
-    ro.observe(el);
-    window.addEventListener("resize", measure);
-    // Fonts / first paint can change height after mount
-    const t1 = window.setTimeout(measure, 50);
-    const t2 = window.setTimeout(measure, 250);
-
-    return () => {
-      ro.disconnect();
-      window.removeEventListener("resize", measure);
-      window.clearTimeout(t1);
-      window.clearTimeout(t2);
-    };
-  }, [links, menuOpen]);
 
   useEffect(() => {
     lastScrollY.current = window.scrollY;
@@ -176,7 +151,7 @@ export function HomeHeader({ siteTitle, navigation }: HomeHeaderProps) {
 
   return (
     <>
-      <div className="home-header-spacer" style={{ height: spacerHeight }} aria-hidden />
+      <div className="home-header-spacer" aria-hidden />
       <header
         ref={headerRef}
         className={`home-site-header${scrollHidden ? " home-header--scroll-hidden" : ""}${
