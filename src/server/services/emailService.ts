@@ -5,7 +5,7 @@ export async function sendEmail(to: string, subject: string, html: string) {
   const port = Number(process.env.SMTP_PORT ?? "587");
   const user = process.env.SMTP_USER;
   const pass = process.env.SMTP_PASS;
-  const from = process.env.SMTP_FROM ?? "no-reply@example.com";
+  const from = process.env.SMTP_FROM?.trim() || "no-reply@sensitivitysettings.com";
 
   if (!host || !user || !pass) {
     return { sent: false, reason: "SMTP is not configured" };
@@ -15,9 +15,14 @@ export async function sendEmail(to: string, subject: string, html: string) {
     host,
     port,
     secure: port === 465,
-    auth: user && pass ? { user, pass } : undefined,
+    auth: { user, pass },
   });
 
-  await transporter.sendMail({ from, to, subject, html });
+  await transporter.sendMail({
+    from: `"Sensitivity Settings" <${from}>`,
+    to,
+    subject,
+    html,
+  });
   return { sent: true };
 }

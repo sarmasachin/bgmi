@@ -3,9 +3,13 @@ import { RatingWidget } from "@/src/components/RatingWidget";
 import { ClientErrorBoundary } from "@/src/components/ClientErrorBoundary";
 import { ratingWidgetRemountKey } from "@/src/lib/ratingWidgetKey";
 import { getAdPlacementVisibility } from "@/src/server/repositories/adPlacementRepository";
-import { getPublishedNewsBySlug } from "@/src/server/repositories/newsRepository";
+import {
+  extractNewsMeta,
+  getPublishedNewsBySlug,
+  resolveNewsCanonicalUrl,
+} from "@/src/server/repositories/newsRepository";
 import { getRatingSummary } from "@/src/server/repositories/ratingSummaryRepository";
-import { getSiteUrl, toCanonicalUrl } from "@/src/lib/siteUrl";
+import { getSiteUrl } from "@/src/lib/siteUrl";
 import { buildSocialMetadata, DEFAULT_OG_IMAGE_PATH } from "@/src/lib/socialMeta";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
@@ -24,21 +28,34 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     };
   }
 
-  const articleUrl = toCanonicalUrl(`/news/${item.slug}`);
-  const description = item.excerpt?.trim() || "Latest BGMI and gaming updates.";
+  const meta = extractNewsMeta(item.content);
+  const articleUrl = resolveNewsCanonicalUrl(item.slug, meta.canonicalUrl);
+  const pageTitle = item.seoTitle?.trim() || item.title;
+  const description =
+    item.seoDescription?.trim() || item.excerpt?.trim() || "Latest BGMI and gaming updates.";
+  const socialTitle = meta.socialTitle?.trim() || pageTitle;
+  const socialDescription = meta.socialDescription?.trim() || description;
+  const imageAlt = meta.socialImageAlt?.trim() || item.title;
+  const image = meta.ogImageUrl?.trim() || item.featureImage;
+  const keywords = (meta.keywords ?? "")
+    .split(",")
+    .map((item) => item.trim())
+    .filter(Boolean);
+
   const social = buildSocialMetadata({
-    title: item.title,
-    description,
+    title: socialTitle,
+    description: socialDescription,
     url: articleUrl,
-    image: item.featureImage,
-    imageAlt: item.title,
+    image,
+    imageAlt,
     type: "article",
   });
   const og = social.openGraph ?? {};
 
   return {
-    title: item.title,
+    title: pageTitle,
     description,
+    ...(keywords.length ? { keywords } : {}),
     alternates: { canonical: articleUrl },
     twitter: social.twitter,
     openGraph: {
@@ -55,6 +72,9 @@ export default async function NewsDetailPage({ params }: Props) {
   const item = await getPublishedNewsBySlug(slug);
   if (!item) notFound();
 
+  const meta = extractNewsMeta(item.content);
+  const imageAlt = meta.socialImageAlt?.trim() || item.title;
+
   const [adPlaces, ratingSummary] = await Promise.all([
     getAdPlacementVisibility(),
     getRatingSummary("news", item.id),
@@ -64,13 +84,14 @@ export default async function NewsDetailPage({ params }: Props) {
   const articleSchema = {
     "@context": "https://schema.org",
     "@type": "Article",
-    headline: item.title,
+    headline: item.seoTitle?.trim() || item.title,
+    description: item.seoDescription?.trim() || item.excerpt?.trim() || undefined,
     datePublished: item.publishedAt ?? item.createdAt,
     dateModified: item.updatedAt,
     author: { "@type": "Person", name: "Admin" },
     publisher: { "@type": "Organization", name: "Sensitivity Settings" },
-    image: item.featureImage || `${baseUrl}${DEFAULT_OG_IMAGE_PATH}`,
-    mainEntityOfPage: toCanonicalUrl(`/news/${item.slug}`),
+    image: meta.ogImageUrl?.trim() || item.featureImage || `${baseUrl}${DEFAULT_OG_IMAGE_PATH}`,
+    mainEntityOfPage: resolveNewsCanonicalUrl(item.slug, meta.canonicalUrl),
   };
 
   return (
@@ -82,7 +103,7 @@ export default async function NewsDetailPage({ params }: Props) {
           <img
             className="news-detail-hero"
             src={item.featureImage}
-            alt={item.title}
+            alt={imageAlt}
             loading="eager"
           />
         ) : null}
@@ -102,10 +123,7 @@ export default async function NewsDetailPage({ params }: Props) {
           />
         </ClientErrorBoundary>
       </article>
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(articleSchema) }}
-      />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(articleSchema) }} />
     </main>
   );
 }

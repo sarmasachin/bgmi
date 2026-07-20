@@ -8,10 +8,12 @@ import {
   recordAdminLoginFailure,
 } from "@/src/server/adminLoginLockout";
 import {
-  ADMIN_SESSION_COOKIE,
-  adminSessionCookieOptions,
-  createAdminSessionToken,
-} from "@/src/server/adminSession";
+  buildAdminOtpEmailHtml,
+  createAdminLoginOtp,
+  generateAdminOtpCode,
+  maskEmail,
+} from "@/src/server/adminLoginOtp";
+import { sendEmail } from "@/src/server/services/emailService";
 import { checkRateLimit } from "@/src/server/rateLimit";
 import { z } from "zod";
 
@@ -74,20 +76,60 @@ export async function POST(request: NextRequest) {
 
   clearAdminLoginFailures(lockKey);
 
+  const email = String(user.email).trim().toLowerCase();
+  const otp = generateAdminOtpCode();
+  let otpToken: string;
+  let expiresInSec: number;
   try {
-    const token = await createAdminSessionToken({
+    const created = createAdminLoginOtp({
       userId: String(user.id),
-      email: String(user.email),
+      email,
+      otp,
     });
-
-    const response = NextResponse.json({ ok: true });
-    response.cookies.set(ADMIN_SESSION_COOKIE, token, adminSessionCookieOptions());
-    return response;
+    otpToken = created.otpToken;
+    expiresInSec = created.expiresInSec;
   } catch (err) {
-    console.error("[admin-login] session create failed:", err);
+    console.error("[admin-login] otp create failed:", err);
     return NextResponse.json(
       { error: "Login temporarily unavailable. Please try again later." },
       { status: 500 },
     );
   }
+
+  try {
+    const mail = await sendEmail(
+      email,
+      "Your admin login OTP — Sensitivity Settings",
+      buildAdminOtpEmailHtml(otp),
+    );
+    if (!mail.sent) {
+      if (process.env.NODE_ENV !== "production") {
+        console.info(`[admin-login] SMTP not configured. DEV OTP for ${email}: ${otp}`);
+      } else {
+        console.error("[admin-login] OTP email not sent:", mail.reason);
+        return NextResponse.json(
+          { error: "Could not send OTP email. Check SMTP settings." },
+          { status: 503 },
+        );
+      }
+    }
+  } catch (err) {
+    console.error("[admin-login] OTP email failed:", err);
+    if (process.env.NODE_ENV !== "production") {
+      console.info(`[admin-login] DEV OTP for ${email}: ${otp}`);
+    } else {
+      return NextResponse.json(
+        { error: "Could not send OTP email. Please try again later." },
+        { status: 503 },
+      );
+    }
+  }
+
+  return NextResponse.json({
+    ok: true,
+    requiresOtp: true,
+    otpToken,
+    expiresInSec,
+    emailHint: maskEmail(email),
+  });
 }

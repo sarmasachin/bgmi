@@ -11,6 +11,17 @@ import { readAdminJsonBody } from "@/src/server/admin/adminApiHelpers";
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 
+const seoFields = {
+  seoTitle: z.string().optional(),
+  seoDescription: z.string().optional(),
+  canonicalUrl: z.string().optional(),
+  ogImageUrl: z.string().optional(),
+  socialTitle: z.string().optional(),
+  socialDescription: z.string().optional(),
+  socialImageAlt: z.string().optional(),
+  metaKeywords: z.string().optional(),
+};
+
 const createSchema = z.object({
   title: z.string().min(3),
   slug: z.string().min(1),
@@ -18,6 +29,7 @@ const createSchema = z.object({
   content: z.string().optional(),
   featureImage: z.string().optional(),
   status: z.enum(["draft", "published"]).default("draft"),
+  ...seoFields,
 });
 
 export async function GET(request: NextRequest) {
@@ -77,6 +89,7 @@ export async function PATCH(request: NextRequest) {
       content: z.string().optional(),
       featureImage: z.string().optional(),
       status: z.enum(["draft", "published"]).optional(),
+      ...seoFields,
     })
     .strict();
 

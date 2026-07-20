@@ -4022,6 +4022,70 @@ footer,
   z-index: 9999;
 }
 
+.rich-link-popover {
+  position: fixed;
+  z-index: 10000;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  width: 280px;
+  padding: 6px 8px;
+  border: 1px solid #334155;
+  border-radius: 8px;
+  background: #0b1220;
+  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.5);
+}
+
+.rich-link-popover-input {
+  flex: 1;
+  min-width: 0;
+  height: 30px;
+  padding: 0 10px;
+  border: 1px solid #334155;
+  border-radius: 6px;
+  background: #111827;
+  color: #e2e8f0;
+  font-size: 13px;
+  outline: none;
+}
+
+.rich-link-popover-input::placeholder {
+  color: #64748b;
+}
+
+.rich-link-popover-input:focus {
+  border-color: #38bdf8;
+}
+
+.rich-link-popover-apply,
+.rich-link-popover-cancel {
+  flex: 0 0 auto;
+  height: 30px;
+  min-width: 30px;
+  padding: 0 10px;
+  border: 1px solid #334155;
+  border-radius: 6px;
+  background: #1e293b;
+  color: #e2e8f0;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.rich-link-popover-apply {
+  background: #0ea5e9;
+  border-color: #0284c7;
+  color: #04101f;
+}
+
+.rich-link-popover-apply:hover {
+  background: #38bdf8;
+}
+
+.rich-link-popover-cancel:hover {
+  background: #334155;
+}
+
 .table-picker-grid {
   display: grid;
   grid-template-columns: repeat(10, 16px);

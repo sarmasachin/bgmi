@@ -32,6 +32,7 @@ export async function middleware(request: NextRequest) {
   if (
     pathname === "/admin/login" ||
     pathname === "/api/admin/auth/login" ||
+    pathname === "/api/admin/auth/verify-otp" ||
     pathname === "/api/admin/auth/logout" ||
     pathname === "/api/admin/auth/setup" ||
     pathname === "/api/admin/auth/setup-status"

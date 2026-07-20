@@ -110,6 +110,8 @@ export function RichTextEditor({
   const findInputRef = useRef<HTMLInputElement | null>(null);
   const tablePickerAnchorRef = useRef<HTMLDivElement | null>(null);
   const tablePickerHideTimerRef = useRef<number | null>(null);
+  const linkRangeRef = useRef<Range | null>(null);
+  const linkInputRef = useRef<HTMLInputElement | null>(null);
   const resizeStateRef = useRef<{ startY: number; startHeight: number } | null>(null);
   const tablePickerSelectionRef = useRef({
     active: false,
@@ -147,6 +149,12 @@ export function RichTextEditor({
   const [tablePickerRows, setTablePickerRows] = useState(0);
   const [tablePickerCols, setTablePickerCols] = useState(0);
   const [tablePickerPos, setTablePickerPos] = useState({ top: 0, left: 0 });
+  const [linkPopover, setLinkPopover] = useState({
+    open: false,
+    top: 0,
+    left: 0,
+    url: "",
+  });
   const [editorHeight, setEditorHeight] = useState(360);
   const [headingValue, setHeadingValue] = useState("");
   const [tableHandle, setTableHandle] = useState({
@@ -329,10 +337,51 @@ export function RichTextEditor({
     setHeadingValue("0");
   }
 
+  function closeLinkPopover() {
+    linkRangeRef.current = null;
+    setLinkPopover({ open: false, top: 0, left: 0, url: "" });
+  }
+
   function insertLink() {
-    const url = window.prompt("Enter URL");
+    const selection = window.getSelection();
+    if (!selection || selection.rangeCount === 0) return;
+
+    const range = selection.getRangeAt(0).cloneRange();
+    const editor = editorRef.current;
+    if (!editor || !editor.contains(range.commonAncestorContainer)) return;
+
+    linkRangeRef.current = range;
+
+    const rect = range.getBoundingClientRect();
+    const popoverWidth = 280;
+    const popoverHeight = 42;
+    const gap = 8;
+    const top =
+      rect.top > 0
+        ? Math.max(8, rect.top - popoverHeight - gap)
+        : Math.max(8, (editor.getBoundingClientRect().top || 80) - popoverHeight - gap);
+    const left = Math.min(
+      window.innerWidth - popoverWidth - 8,
+      Math.max(8, (rect.left || editor.getBoundingClientRect().left) + rect.width / 2 - popoverWidth / 2),
+    );
+
+    setLinkPopover({ open: true, top, left, url: "" });
+    window.setTimeout(() => linkInputRef.current?.focus(), 0);
+  }
+
+  function applyLink() {
+    const url = linkPopover.url.trim();
     if (!url) return;
+
+    const range = linkRangeRef.current;
+    const selection = window.getSelection();
+    if (range && selection) {
+      selection.removeAllRanges();
+      selection.addRange(range);
+    }
+
     runCommand("createLink", url);
+    closeLinkPopover();
   }
 
   function insertImageByUrl() {
@@ -1106,7 +1155,13 @@ export function RichTextEditor({
         >
           1.
         </button>
-        <button type="button" title="Insert Link" aria-label="Insert Link" onClick={insertLink}>
+        <button
+          type="button"
+          title="Insert Link"
+          aria-label="Insert Link"
+          onMouseDown={(e) => e.preventDefault()}
+          onClick={insertLink}
+        >
           {"\u221E"}
         </button>
         <button type="button" title="Insert Image URL" aria-label="Insert Image URL" onClick={insertImageByUrl}>
@@ -1281,6 +1336,40 @@ export function RichTextEditor({
               ? `${tablePickerRows} x ${tablePickerCols}`
               : "Drag to select"}
           </p>
+        </div>
+      ) : null}
+
+      {linkPopover.open ? (
+        <div
+          className="rich-link-popover"
+          style={{ top: linkPopover.top, left: linkPopover.left }}
+          onMouseDown={(e) => e.preventDefault()}
+        >
+          <input
+            ref={linkInputRef}
+            type="url"
+            className="rich-link-popover-input"
+            placeholder="https://example.com"
+            value={linkPopover.url}
+            onChange={(e) => setLinkPopover((prev) => ({ ...prev, url: e.target.value }))}
+            onKeyDown={(e) => {
+              if (e.key === "Enter") {
+                e.preventDefault();
+                applyLink();
+              }
+              if (e.key === "Escape") {
+                e.preventDefault();
+                closeLinkPopover();
+              }
+            }}
+            aria-label="Enter URL"
+          />
+          <button type="button" className="rich-link-popover-apply" onClick={applyLink} title="Apply link">
+            Link
+          </button>
+          <button type="button" className="rich-link-popover-cancel" onClick={closeLinkPopover} title="Cancel">
+            ✕
+          </button>
         </div>
       ) : null}
 

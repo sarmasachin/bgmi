@@ -5,6 +5,8 @@ import dynamic from "next/dynamic";
 import type { AdminNewsRow } from "@/src/server/admin/mapAdminNewsRows";
 import { useAdminFlash } from "@/src/components/admin/AdminToast";
 import { readApiError } from "@/src/lib/userFacingError";
+import { toCanonicalUrl } from "@/src/lib/siteUrl";
+import { extractNewsHtml, extractNewsMeta } from "@/src/lib/newsContent";
 
 const RichTextEditor = dynamic(
   () => import("@/src/components/admin/RichTextEditor").then((mod) => mod.RichTextEditor),
@@ -29,6 +31,14 @@ export default function AdminNewsClient({ initialRows }: Props) {
   const [slug, setSlug] = useState("");
   const [excerpt, setExcerpt] = useState("");
   const [featureImage, setFeatureImage] = useState("");
+  const [seoTitle, setSeoTitle] = useState("");
+  const [seoDescription, setSeoDescription] = useState("");
+  const [canonicalUrl, setCanonicalUrl] = useState("");
+  const [canonicalManualOverride, setCanonicalManualOverride] = useState(false);
+  const [ogImageUrl, setOgImageUrl] = useState("");
+  const [socialTitle, setSocialTitle] = useState("");
+  const [socialDescription, setSocialDescription] = useState("");
+  const [socialImageAlt, setSocialImageAlt] = useState("");
   const [isUploadingImage, setIsUploadingImage] = useState(false);
   const [content, setContent] = useState("");
   const [metaKeywords, setMetaKeywords] = useState("");
@@ -75,6 +85,14 @@ export default function AdminNewsClient({ initialRows }: Props) {
     setSlug("");
     setExcerpt("");
     setFeatureImage("");
+    setSeoTitle("");
+    setSeoDescription("");
+    setCanonicalUrl("");
+    setCanonicalManualOverride(false);
+    setOgImageUrl("");
+    setSocialTitle("");
+    setSocialDescription("");
+    setSocialImageAlt("");
     setContent("");
     setMetaKeywords("");
     setMetaKeywordDraft("");
@@ -122,10 +140,38 @@ export default function AdminNewsClient({ initialRows }: Props) {
     void loadRows();
   }, [initialRows]);
 
+  useEffect(() => {
+    if (canonicalManualOverride) return;
+    const safeSlug = slug.trim();
+    if (!safeSlug) {
+      setCanonicalUrl("");
+      return;
+    }
+    setCanonicalUrl(toCanonicalUrl(`/news/${safeSlug}`));
+  }, [slug, canonicalManualOverride]);
+
+  function buildSeoPayload() {
+    return {
+      title,
+      slug,
+      excerpt,
+      featureImage,
+      content,
+      seoTitle,
+      seoDescription,
+      canonicalUrl: canonicalUrl.trim() || toCanonicalUrl(`/news/${slug.trim()}`),
+      ogImageUrl,
+      socialTitle,
+      socialDescription,
+      socialImageAlt,
+      metaKeywords,
+    };
+  }
+
   async function onSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     try {
-      const payload = { title, slug, excerpt, featureImage, content };
+      const payload = buildSeoPayload();
       const res = await fetch(
         "/api/admin/news",
         editingId
@@ -199,24 +245,31 @@ export default function AdminNewsClient({ initialRows }: Props) {
         id: string;
         title: string;
         slug: string;
-        excerpt?: string;
-        featureImage?: string;
-        content?: { html?: string } | string;
+        excerpt?: string | null;
+        featureImage?: string | null;
+        seoTitle?: string | null;
+        seoDescription?: string | null;
+        content?: unknown;
       };
+      const meta = extractNewsMeta(item.content);
       clearNewsEditorDraft();
       setEditingId(item.id);
       setTitle(item.title ?? "");
       setSlug(item.slug ?? "");
       setExcerpt(item.excerpt ?? "");
       setFeatureImage(item.featureImage ?? "");
-      if (typeof item.content === "string") {
-        setContent(item.content);
-      } else {
-        setContent(item.content?.html ?? "");
-      }
-      setMetaKeywords("");
+      setSeoTitle(item.seoTitle ?? "");
+      setSeoDescription(item.seoDescription ?? "");
+      setCanonicalUrl(meta.canonicalUrl?.trim() || toCanonicalUrl(`/news/${item.slug}`));
+      setCanonicalManualOverride(Boolean(meta.canonicalUrl?.trim()));
+      setOgImageUrl(meta.ogImageUrl ?? "");
+      setSocialTitle(meta.socialTitle ?? "");
+      setSocialDescription(meta.socialDescription ?? "");
+      setSocialImageAlt(meta.socialImageAlt ?? "");
+      setContent(extractNewsHtml(item.content));
+      setMetaKeywords(meta.keywords ?? "");
       setMetaKeywordDraft("");
-      setShowMetaKeywords(false);
+      setShowMetaKeywords(Boolean((meta.keywords ?? "").trim()));
       setEditorNonce((n) => n + 1);
       setShowForm(true);
       setMessage("Editing mode enabled.");
@@ -252,6 +305,9 @@ export default function AdminNewsClient({ initialRows }: Props) {
       setIsUploadingImage(false);
     }
   }
+
+  const seoTitleLength = seoTitle.trim().length || title.trim().length;
+  const seoDescriptionLength = seoDescription.trim().length || excerpt.trim().length;
 
   return (
     <>
@@ -381,6 +437,53 @@ export default function AdminNewsClient({ initialRows }: Props) {
             >
               {isUploadingImage ? "Uploading..." : "Upload Feature Image"}
             </button>
+
+            <input
+              name="seoTitle"
+              placeholder="SEO title"
+              value={seoTitle}
+              onChange={(e) => setSeoTitle(e.target.value)}
+            />
+            <input
+              name="seoDescription"
+              placeholder="SEO description"
+              value={seoDescription}
+              onChange={(e) => setSeoDescription(e.target.value)}
+            />
+            <input
+              name="canonicalUrl"
+              placeholder="Canonical URL (auto from slug)"
+              value={canonicalUrl}
+              onChange={(e) => {
+                setCanonicalManualOverride(true);
+                setCanonicalUrl(e.target.value);
+              }}
+            />
+            <input
+              name="ogImageUrl"
+              placeholder="Social / OG image URL (optional)"
+              value={ogImageUrl}
+              onChange={(e) => setOgImageUrl(e.target.value)}
+            />
+            <input
+              name="socialTitle"
+              placeholder="Social title override"
+              value={socialTitle}
+              onChange={(e) => setSocialTitle(e.target.value)}
+            />
+            <input
+              name="socialDescription"
+              placeholder="Social description override"
+              value={socialDescription}
+              onChange={(e) => setSocialDescription(e.target.value)}
+            />
+            <input
+              name="socialImageAlt"
+              placeholder="Feature / social image alt text"
+              value={socialImageAlt}
+              onChange={(e) => setSocialImageAlt(e.target.value)}
+            />
+
             <div style={{ gridColumn: "1 / -1" }}>
               <RichTextEditor
                 key={`news-editor-${editingId ?? "new"}-${editorNonce}`}
@@ -450,6 +553,10 @@ export default function AdminNewsClient({ initialRows }: Props) {
                   />
                 </div>
               ) : null}
+            </div>
+            <div className="admin-pages-checks" style={{ gridColumn: "1 / -1" }}>
+              <p>SEO title length: {seoTitleLength} (ideal 50–60)</p>
+              <p>SEO description length: {seoDescriptionLength} (ideal 140–160)</p>
             </div>
             <button type="submit" className="admin-news-btn admin-news-btn-primary">
               {editingId ? "Update News" : "Create News"}

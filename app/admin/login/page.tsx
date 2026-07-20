@@ -21,6 +21,10 @@ export default function AdminLoginPage() {
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [bootstrapSecret, setBootstrapSecret] = useState("");
+  const [otp, setOtp] = useState("");
+  const [otpToken, setOtpToken] = useState("");
+  const [emailHint, setEmailHint] = useState("");
+  const [loginStep, setLoginStep] = useState<"credentials" | "otp">("credentials");
   const [status, setStatus] = useState<SetupStatus | null>(null);
   const [busy, setBusy] = useState(false);
   const [mode, setMode] = useState<"login" | "setup">("login");
@@ -96,6 +100,7 @@ export default function AdminLoginPage() {
 
   const showSetup =
     mode === "setup" && (status?.needsSetup || status?.bootstrapEnabled);
+  const showOtpStep = !showSetup && loginStep === "otp";
 
   function clearAlert() {
     setAlert(null);
@@ -120,6 +125,13 @@ export default function AdminLoginPage() {
     }
   }
 
+  function resetOtpState() {
+    setLoginStep("credentials");
+    setOtp("");
+    setOtpToken("");
+    setEmailHint("");
+  }
+
   async function runLogin() {
     clearAlert();
     setBusy(true);
@@ -129,15 +141,69 @@ export default function AdminLoginPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, password }),
       });
-      const data = (await res.json().catch(() => ({}))) as { error?: string };
+      const data = (await res.json().catch(() => ({}))) as {
+        error?: string;
+        requiresOtp?: boolean;
+        otpToken?: string;
+        emailHint?: string;
+      };
 
       if (!res.ok) {
         showAlert(
           "error",
-          data.error || (res.status === 401 ? "Invalid credentials" : "Login failed")
+          data.error || (res.status === 401 ? "Invalid credentials" : "Login failed"),
         );
         return;
       }
+
+      if (!data.requiresOtp || !data.otpToken) {
+        showAlert("error", "OTP step failed. Please try again.");
+        return;
+      }
+
+      setOtpToken(data.otpToken);
+      setEmailHint(data.emailHint || email);
+      setOtp("");
+      setLoginStep("otp");
+      clearAlert();
+      showAlert("warning", `OTP sent to ${data.emailHint || "your email"}.`);
+    } catch {
+      showAlert("error", "Network error. Please try again.");
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function runVerifyOtp() {
+    clearAlert();
+    const code = otp.trim();
+    if (!/^\d{6}$/.test(code)) {
+      showAlert("warning", "Enter the 6-digit OTP from your email.");
+      return;
+    }
+    if (!otpToken) {
+      showAlert("error", "OTP session expired. Please login again.");
+      resetOtpState();
+      return;
+    }
+
+    setBusy(true);
+    try {
+      const res = await fetch("/api/admin/auth/verify-otp", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ otpToken, otp: code }),
+      });
+      const data = (await res.json().catch(() => ({}))) as { error?: string };
+
+      if (!res.ok) {
+        showAlert("error", data.error || "Invalid OTP");
+        if (res.status === 410 || res.status === 429) {
+          resetOtpState();
+        }
+        return;
+      }
+
       clearAlert();
       router.push("/admin");
     } catch {
@@ -189,6 +255,7 @@ export default function AdminLoginPage() {
     event.stopPropagation();
     if (busy) return;
     if (showSetup) void runSetup();
+    else if (showOtpStep) void runVerifyOtp();
     else void runLogin();
   }
 
@@ -207,13 +274,21 @@ export default function AdminLoginPage() {
             ? status?.needsSetup
               ? "Create admin account"
               : "Set admin email & password"
-            : "Admin Login"}
+            : showOtpStep
+              ? "Enter OTP"
+              : "Admin Login"}
         </h1>
         {showSetup ? (
           <p className="admin-login-hint">
             {status?.needsSetup
               ? "Set your Gmail and password to manage the site."
               : "Enter your Gmail, new password, and the bootstrap secret from server env."}
+          </p>
+        ) : null}
+        {showOtpStep ? (
+          <p className="admin-login-hint">
+            We sent a 6-digit code to <strong>{emailHint || "your email"}</strong>. Enter it to
+            finish login.
           </p>
         ) : null}
 
@@ -235,34 +310,58 @@ export default function AdminLoginPage() {
           </div>
         ) : null}
 
-        <div className="form-group">
-          <label htmlFor="adminEmail">Email (Gmail)</label>
-          <input
-            id="adminEmail"
-            name="email"
-            type="email"
-            autoComplete="username"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            required
-          />
-        </div>
-        <div className="form-group">
-          <label htmlFor="adminPassword">Password</label>
-          <input
-            id="adminPassword"
-            name="password"
-            type="password"
-            autoComplete={showSetup ? "new-password" : "current-password"}
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            required
-            minLength={showSetup ? 6 : 4}
-          />
-          {alert?.type === "error" ? (
-            <p className="admin-login-field-error">{alert.message}</p>
-          ) : null}
-        </div>
+        {!showOtpStep ? (
+          <>
+            <div className="form-group">
+              <label htmlFor="adminEmail">Email (Gmail)</label>
+              <input
+                id="adminEmail"
+                name="email"
+                type="email"
+                autoComplete="username"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                required
+              />
+            </div>
+            <div className="form-group">
+              <label htmlFor="adminPassword">Password</label>
+              <input
+                id="adminPassword"
+                name="password"
+                type="password"
+                autoComplete={showSetup ? "new-password" : "current-password"}
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
+                minLength={showSetup ? 6 : 4}
+              />
+              {alert?.type === "error" && !showSetup ? (
+                <p className="admin-login-field-error">{alert.message}</p>
+              ) : null}
+            </div>
+          </>
+        ) : (
+          <div className="form-group">
+            <label htmlFor="adminOtp">One-time password</label>
+            <input
+              id="adminOtp"
+              name="otp"
+              type="text"
+              inputMode="numeric"
+              autoComplete="one-time-code"
+              pattern="\d{6}"
+              maxLength={6}
+              value={otp}
+              onChange={(e) => setOtp(e.target.value.replace(/\D/g, "").slice(0, 6))}
+              required
+              autoFocus
+            />
+            {alert?.type === "error" ? (
+              <p className="admin-login-field-error">{alert.message}</p>
+            ) : null}
+          </div>
+        )}
 
         {showSetup ? (
           <>
@@ -303,6 +402,7 @@ export default function AdminLoginPage() {
           onClick={() => {
             if (busy) return;
             if (showSetup) void runSetup();
+            else if (showOtpStep) void runVerifyOtp();
             else void runLogin();
           }}
         >
@@ -312,15 +412,32 @@ export default function AdminLoginPage() {
               ? status?.needsSetup
                 ? "Create & login"
                 : "Save & login"
-              : "Login"}
+              : showOtpStep
+                ? "Verify OTP"
+                : "Continue"}
         </button>
 
-        {!showSetup && status?.bootstrapEnabled ? (
+        {showOtpStep ? (
+          <button
+            type="button"
+            className="admin-login-secondary"
+            onClick={() => {
+              resetOtpState();
+              clearAlert();
+            }}
+            disabled={busy}
+          >
+            Back to login
+          </button>
+        ) : null}
+
+        {!showSetup && !showOtpStep && status?.bootstrapEnabled ? (
           <button
             type="button"
             className="admin-login-secondary"
             onClick={() => {
               setMode("setup");
+              resetOtpState();
               clearAlert();
             }}
             disabled={busy}
