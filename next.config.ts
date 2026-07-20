@@ -44,7 +44,19 @@ const nextConfig: NextConfig = {
     return config;
   },
   async headers() {
-    return [{ source: "/:path*", headers: securityHeaders }];
+    return [
+      { source: "/:path*", headers: securityHeaders },
+      {
+        source: "/admin/:path*",
+        headers: [
+          {
+            key: "Cache-Control",
+            value: "no-store, no-cache, must-revalidate, private, max-age=0",
+          },
+          { key: "Pragma", value: "no-cache" },
+        ],
+      },
+    ];
   },
   async rewrites() {
     return [

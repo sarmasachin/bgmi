@@ -105,6 +105,26 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
     setMobileMenuOpen(false);
   }, [pathname]);
 
+  // If browser restores a cached admin page (Back/Forward), re-check auth.
+  useEffect(() => {
+    if (isLoginPage) return;
+
+    const onPageShow = (event: PageTransitionEvent) => {
+      if (!event.persisted) return;
+      void fetch("/api/admin/system/health", {
+        cache: "no-store",
+        credentials: "same-origin",
+      }).then((res) => {
+        if (res.status === 401) {
+          window.location.replace("/admin/login");
+        }
+      });
+    };
+
+    window.addEventListener("pageshow", onPageShow);
+    return () => window.removeEventListener("pageshow", onPageShow);
+  }, [isLoginPage]);
+
   return (
     <AdminToastProvider>
       <div className="admin-shell">

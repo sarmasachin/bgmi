@@ -6,12 +6,20 @@ import {
 } from "@/src/server/adminSession";
 import { isAdminMutationOriginAllowed } from "@/src/server/adminRequestOrigin";
 
+/** Prevent browser/bfcache from restoring protected admin pages after logout. */
+function withAdminNoStore(response: NextResponse) {
+  response.headers.set("Cache-Control", "no-store, no-cache, must-revalidate, private, max-age=0");
+  response.headers.set("Pragma", "no-cache");
+  response.headers.set("Expires", "0");
+  return response;
+}
+
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
   const isPreview = request.nextUrl.searchParams.get("preview") === "1";
 
   if (pathname === "/admin/ads" || pathname === "/admin/ads/") {
-    return NextResponse.redirect(new URL("/admin/ad-placements", request.url));
+    return withAdminNoStore(NextResponse.redirect(new URL("/admin/ad-placements", request.url)));
   }
 
   const isAdminPage = pathname.startsWith("/admin");
@@ -38,13 +46,13 @@ export async function middleware(request: NextRequest) {
     pathname === "/api/admin/auth/setup" ||
     pathname === "/api/admin/auth/setup-status"
   ) {
-    return NextResponse.next();
+    return isAdminPage ? withAdminNoStore(NextResponse.next()) : NextResponse.next();
   }
 
   const raw = request.cookies.get(ADMIN_SESSION_COOKIE)?.value;
   const session = await verifyAdminSessionToken(raw);
   if (session) {
-    return NextResponse.next();
+    return isAdminPage ? withAdminNoStore(NextResponse.next()) : NextResponse.next();
   }
 
   if (isAdminApi) {
@@ -52,7 +60,7 @@ export async function middleware(request: NextRequest) {
   }
 
   const loginUrl = new URL("/admin/login", request.url);
-  return NextResponse.redirect(loginUrl);
+  return withAdminNoStore(NextResponse.redirect(loginUrl));
 }
 
 export const config = {

@@ -1,10 +1,6 @@
 "use client";
 
-import { useRouter } from "next/navigation";
-
 export function AdminLogoutButton() {
-  const router = useRouter();
-
   async function logout() {
     try {
       await fetch("/api/admin/auth/logout", {
@@ -13,8 +9,8 @@ export function AdminLogoutButton() {
         cache: "no-store",
       });
     } finally {
-      router.replace("/admin/login");
-      router.refresh();
+      // Hard navigation clears SPA history soft-cache of protected pages.
+      window.location.replace("/admin/login");
     }
   }
 
