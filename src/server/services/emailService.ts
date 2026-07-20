@@ -16,6 +16,9 @@ export async function sendEmail(to: string, subject: string, html: string) {
     port,
     secure: port === 465,
     auth: { user, pass },
+    connectionTimeout: 12_000,
+    greetingTimeout: 10_000,
+    socketTimeout: 20_000,
   });
 
   await transporter.sendMail({

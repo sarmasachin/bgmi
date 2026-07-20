@@ -134,12 +134,19 @@ export default function AdminLoginPage() {
 
   async function runLogin() {
     clearAlert();
+    if (!email.trim() || !password) {
+      showAlert("warning", "Enter email and password.");
+      return;
+    }
     setBusy(true);
+    const controller = new AbortController();
+    const timeoutId = window.setTimeout(() => controller.abort(), 25_000);
     try {
       const res = await fetch("/api/admin/auth/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, password }),
+        signal: controller.signal,
       });
       const data = (await res.json().catch(() => ({}))) as {
         error?: string;
@@ -151,7 +158,14 @@ export default function AdminLoginPage() {
       if (!res.ok) {
         showAlert(
           "error",
-          data.error || (res.status === 401 ? "Invalid credentials" : "Login failed"),
+          data.error ||
+            (res.status === 401
+              ? "Invalid credentials"
+              : res.status === 403
+                ? "Login blocked by security check. Refresh and try again."
+                : res.status === 503
+                  ? "Could not send OTP email. Check SMTP settings."
+                  : "Login failed"),
         );
         return;
       }
@@ -167,9 +181,16 @@ export default function AdminLoginPage() {
       setLoginStep("otp");
       clearAlert();
       showAlert("warning", `OTP sent to ${data.emailHint || "your email"}.`);
-    } catch {
-      showAlert("error", "Network error. Please try again.");
+    } catch (err) {
+      const aborted = err instanceof DOMException && err.name === "AbortError";
+      showAlert(
+        "error",
+        aborted
+          ? "Login timed out while sending OTP. Check SMTP and try again."
+          : "Network error. Please try again.",
+      );
     } finally {
+      window.clearTimeout(timeoutId);
       setBusy(false);
     }
   }
@@ -395,17 +416,7 @@ export default function AdminLoginPage() {
           </>
         ) : null}
 
-        <button
-          type="button"
-          className="admin-login-submit"
-          disabled={busy}
-          onClick={() => {
-            if (busy) return;
-            if (showSetup) void runSetup();
-            else if (showOtpStep) void runVerifyOtp();
-            else void runLogin();
-          }}
-        >
+        <button type="submit" className="admin-login-submit" disabled={busy}>
           {busy
             ? "Please wait…"
             : showSetup
@@ -414,7 +425,7 @@ export default function AdminLoginPage() {
                 : "Save & login"
               : showOtpStep
                 ? "Verify OTP"
-                : "Continue"}
+                : "Login"}
         </button>
 
         {showOtpStep ? (
