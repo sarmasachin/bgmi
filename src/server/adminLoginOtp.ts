@@ -192,51 +192,80 @@ export function buildAdminOtpEmailHtml(otp: string) {
   <meta name="color-scheme" content="light" />
   <title>Admin login OTP</title>
 </head>
-<body style="margin:0;padding:0;background:#eef2f6;font-family:Arial,Helvetica,sans-serif;-webkit-font-smoothing:antialiased;">
-  <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="background:#eef2f6;padding:28px 12px;">
+<body style="margin:0;padding:0;background:#e8edf3;font-family:Arial,Helvetica,sans-serif;-webkit-font-smoothing:antialiased;">
+  <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="background:#e8edf3;padding:32px 14px;">
     <tr>
       <td align="center">
-        <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="max-width:560px;background:#ffffff;border-radius:16px;overflow:hidden;border:1px solid #dbe3ec;box-shadow:0 10px 28px rgba(15,23,42,0.08);">
+        <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="max-width:580px;border-radius:18px;overflow:hidden;border:1px solid #d5dee8;background:#ffffff;">
+          <!-- Full-bleed dark brand bar -->
           <tr>
-            <td style="background:linear-gradient(180deg,#0f172a 0%,#152238 100%);padding:28px 28px 22px;text-align:center;">
-              <p style="margin:0 0 6px;font-size:12px;letter-spacing:0.14em;text-transform:uppercase;color:#7dd3c0;font-weight:700;">Sensitivity Settings</p>
-              <h1 style="margin:0;font-size:22px;line-height:1.3;color:#f8fafc;font-weight:700;">Admin login verification</h1>
-            </td>
-          </tr>
-          <tr>
-            <td style="padding:28px 28px 8px;color:#0f172a;">
-              <p style="margin:0 0 14px;font-size:15px;line-height:1.6;color:#334155;">
-                Use this one-time password to finish signing in to your admin account.
-              </p>
-              <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="margin:18px 0 8px;">
+            <td style="background:#0b1220;padding:0;">
+              <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0">
                 <tr>
-                  <td align="center" style="background:#f0fdfa;border:1px solid #99f6e4;border-radius:12px;padding:22px 16px;">
-                    <p style="margin:0 0 8px;font-size:12px;letter-spacing:0.12em;text-transform:uppercase;color:#0f766e;font-weight:700;">Your OTP code</p>
-                    <p style="margin:0;font-size:36px;line-height:1.2;letter-spacing:0.28em;font-weight:800;color:#042f2e;font-family:Consolas,'Courier New',monospace;">
-                      ${safeOtp}
+                  <td style="padding:26px 32px 22px;">
+                    <p style="margin:0;font-size:11px;letter-spacing:0.22em;text-transform:uppercase;color:#5eead4;font-weight:700;">
+                      Sensitivity Settings
+                    </p>
+                    <p style="margin:10px 0 0;font-size:26px;line-height:1.25;color:#f8fafc;font-weight:800;">
+                      Verify your login
+                    </p>
+                    <p style="margin:8px 0 0;font-size:14px;line-height:1.5;color:#94a3b8;">
+                      Admin access · one-time code
                     </p>
                   </td>
                 </tr>
+                <tr>
+                  <td style="height:3px;background:#2dd4bf;font-size:0;line-height:0;">&nbsp;</td>
+                </tr>
               </table>
-              <p style="margin:18px 0 0;font-size:14px;line-height:1.6;color:#475569;">
-                This code expires in <strong style="color:#0f172a;">10 minutes</strong>. For your security, do not share it with anyone.
+            </td>
+          </tr>
+
+          <!-- Clean white body -->
+          <tr>
+            <td style="padding:34px 32px 12px;background:#ffffff;">
+              <p style="margin:0;font-size:15px;line-height:1.65;color:#475569;">
+                Enter this code on the admin login screen to finish signing in.
               </p>
             </td>
           </tr>
+
+          <!-- OTP pill / code chip -->
           <tr>
-            <td style="padding:8px 28px 26px;">
-              <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:10px;">
+            <td align="center" style="padding:22px 32px 10px;background:#ffffff;">
+              <table role="presentation" cellspacing="0" cellpadding="0" border="0" style="margin:0 auto;">
+                <tr>
+                  <td align="center" style="background:#0b1220;border-radius:999px;padding:16px 34px;">
+                    <span style="display:inline-block;font-family:Consolas,'Courier New',monospace;font-size:30px;line-height:1;letter-spacing:0.34em;font-weight:800;color:#f8fafc;padding-left:0.34em;">
+                      ${safeOtp}
+                    </span>
+                  </td>
+                </tr>
+              </table>
+              <p style="margin:14px 0 0;font-size:12px;letter-spacing:0.08em;text-transform:uppercase;color:#94a3b8;font-weight:700;">
+                OTP code
+              </p>
+            </td>
+          </tr>
+
+          <tr>
+            <td style="padding:18px 32px 28px;background:#ffffff;">
+              <p style="margin:0 0 16px;font-size:14px;line-height:1.6;color:#64748b;">
+                This code expires in <strong style="color:#0f172a;">10 minutes</strong>. Don’t share it with anyone.
+              </p>
+              <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:12px;">
                 <tr>
                   <td style="padding:14px 16px;font-size:13px;line-height:1.55;color:#64748b;">
-                    If you did not try to log in, you can ignore this email. Your account stays secure.
+                    Didn’t request this? You can ignore this email — your account remains secure.
                   </td>
                 </tr>
               </table>
             </td>
           </tr>
+
           <tr>
-            <td style="padding:0 28px 24px;text-align:center;border-top:1px solid #eef2f7;">
-              <p style="margin:18px 0 0;font-size:12px;line-height:1.5;color:#94a3b8;">
+            <td style="padding:16px 32px 22px;background:#f8fafc;border-top:1px solid #eef2f7;text-align:center;">
+              <p style="margin:0;font-size:12px;line-height:1.5;color:#94a3b8;">
                 © ${year} Sensitivity Settings · sensitivitysettings.com
               </p>
             </td>
@@ -248,4 +277,5 @@ export function buildAdminOtpEmailHtml(otp: string) {
 </body>
 </html>`.trim();
 }
+
 
