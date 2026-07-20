@@ -1,6 +1,15 @@
 import nodemailer from "nodemailer";
 
-export async function sendEmail(to: string, subject: string, html: string) {
+type SendEmailOptions = {
+  replyTo?: string;
+};
+
+export async function sendEmail(
+  to: string,
+  subject: string,
+  html: string,
+  options?: SendEmailOptions,
+) {
   const host = process.env.SMTP_HOST;
   const port = Number(process.env.SMTP_PORT ?? "587");
   const user = process.env.SMTP_USER;
@@ -26,6 +35,7 @@ export async function sendEmail(to: string, subject: string, html: string) {
     to,
     subject,
     html,
+    ...(options?.replyTo?.trim() ? { replyTo: options.replyTo.trim() } : {}),
   });
   return { sent: true };
 }
