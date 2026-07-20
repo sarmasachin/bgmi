@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { FormEvent, useEffect, useState } from "react";
 import {
   countPhoneNamesInInput,
@@ -562,13 +563,13 @@ export default function AdminSettingsClient({ initialData }: Props) {
       <h2 style={{ marginTop: 32, marginBottom: 12 }}>Home page — FAQ</h2>
       <p style={{ marginBottom: 12, opacity: 0.9 }}>
         Per-game FAQs (BGMI, PUBG, Free Fire, Free Fire Max) ab yahan se move ho chuke hain:{" "}
-        <a href="/admin/game-faqs" style={{ color: "var(--primary)" }}>
+        <Link href="/admin/game-faqs" style={{ color: "var(--primary)" }}>
           Game FAQs
-        </a>
+        </Link>
         . Long articles:{" "}
-        <a href="/admin/game-articles" style={{ color: "var(--primary)" }}>
+        <Link href="/admin/game-articles" style={{ color: "var(--primary)" }}>
           Game Articles
-        </a>
+        </Link>
         .
       </p>
       <p style={{ marginBottom: 12, opacity: 0.75, fontSize: 13 }}>

@@ -1,6 +1,7 @@
 "use client";
 
 import dynamic from "next/dynamic";
+import Link from "next/link";
 import { FormEvent, useEffect, useState } from "react";
 import { useAdminFlash } from "@/src/components/admin/AdminToast";
 import { readApiError } from "@/src/lib/userFacingError";
@@ -157,13 +158,13 @@ export default function AdminGameArticlesClient({ initialData }: Props) {
       <p style={{ color: "#94a3b8", marginTop: 0, maxWidth: 720 }}>
         Edit the long guide article under the calculator on <strong>BGMI</strong> (/) and{" "}
         <strong>PUBG Mobile</strong> (/pubg).         FAQ cards are still managed in{" "}
-        <a href="/admin/game-faqs" style={{ color: "var(--primary)" }}>
+        <Link href="/admin/game-faqs" style={{ color: "var(--primary)" }}>
           Game FAQs
-        </a>
+        </Link>
         . Free Fire articles:{" "}
-        <a href="/admin/pages" style={{ color: "var(--primary)" }}>
+        <Link href="/admin/pages" style={{ color: "var(--primary)" }}>
           Pages
-        </a>
+        </Link>
         .
       </p>
 

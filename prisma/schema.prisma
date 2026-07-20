@@ -164,3 +164,21 @@ model LegalPage {
 
   @@index([status, updatedAt])
 }
+
+/// Home / PUBG public reviews (admin moderate)
+model Testimonial {
+  id         String    @id @default(cuid())
+  name       String
+  rating     Int
+  message    String
+  game       String
+  phoneModel String?
+  showName   Boolean   @default(true)
+  status     String    @default("pending")
+  createdAt  DateTime  @default(now())
+  approvedAt DateTime?
+
+  @@index([status, createdAt])
+  @@index([game, status, approvedAt])
+  @@index([status, approvedAt, createdAt])
+}
