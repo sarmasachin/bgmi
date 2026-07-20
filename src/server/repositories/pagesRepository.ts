@@ -3,6 +3,7 @@ import { mockStore } from "@/src/server/mockStore";
 import { prisma, tryPrisma, tryPrismaLong } from "@/src/server/dbSafe";
 import type { Prisma } from "@prisma/client";
 import { sanitizeHtml } from "@/src/lib/sanitizeHtml";
+import { toCanonicalUrl } from "@/src/lib/siteUrl";
 
 type TemplateType = "home" | "article" | "landing";
 type CloneGame = "bgmi" | "pubg";
@@ -20,6 +21,8 @@ type PageInput = {
   socialTitle?: string;
   socialDescription?: string;
   socialImageAlt?: string;
+  /** Comma-separated meta keywords. */
+  metaKeywords?: string;
   content?: string;
   status: "draft" | "published";
   publishAsNews?: boolean;
@@ -31,6 +34,7 @@ type PageMeta = {
   socialTitle?: string;
   socialDescription?: string;
   socialImageAlt?: string;
+  keywords?: string;
 };
 
 function isRecord(value: unknown): value is Record<string, unknown> {
@@ -46,6 +50,13 @@ function pageSlugVariants(slug: string) {
   const normalized = normalizePageSlug(slug);
   if (!normalized) return slug.trim() ? [slug.trim()] : [];
   return Array.from(new Set([normalized, `/${normalized}`]));
+}
+
+function resolveCanonicalUrl(slug: string, canonicalUrl?: string | null) {
+  const trimmed = canonicalUrl?.trim();
+  if (trimmed) return trimmed;
+  const normalized = normalizePageSlug(slug);
+  return toCanonicalUrl(normalized ? `/${normalized}` : "/");
 }
 
 function coerceCloneGame(value: unknown): CloneGame | undefined {
@@ -71,6 +82,7 @@ function extractMeta(content: unknown): PageMeta {
     socialTitle: typeof rawMeta.socialTitle === "string" ? rawMeta.socialTitle : undefined,
     socialDescription: typeof rawMeta.socialDescription === "string" ? rawMeta.socialDescription : undefined,
     socialImageAlt: typeof rawMeta.socialImageAlt === "string" ? rawMeta.socialImageAlt : undefined,
+    keywords: typeof rawMeta.keywords === "string" ? rawMeta.keywords : undefined,
   };
 }
 
@@ -85,6 +97,10 @@ function buildContent(input: { html?: string; existing?: unknown; metaPatch?: Pa
     socialTitle: input.metaPatch?.socialTitle ?? currentMeta.socialTitle,
     socialDescription: input.metaPatch?.socialDescription ?? currentMeta.socialDescription,
     socialImageAlt: input.metaPatch?.socialImageAlt ?? currentMeta.socialImageAlt,
+    keywords:
+      input.metaPatch && Object.prototype.hasOwnProperty.call(input.metaPatch, "keywords")
+        ? input.metaPatch.keywords
+        : currentMeta.keywords,
   };
 
   if (input.html !== undefined) {
@@ -98,7 +114,8 @@ function buildContent(input: { html?: string; existing?: unknown; metaPatch?: Pa
     nextMeta.game ||
     nextMeta.socialTitle ||
     nextMeta.socialDescription ||
-    nextMeta.socialImageAlt
+    nextMeta.socialImageAlt ||
+    nextMeta.keywords?.trim()
   ) {
     const metaJson: Record<string, unknown> = {};
     if (nextMeta.templateType) metaJson.templateType = nextMeta.templateType;
@@ -106,6 +123,7 @@ function buildContent(input: { html?: string; existing?: unknown; metaPatch?: Pa
     if (nextMeta.socialTitle) metaJson.socialTitle = nextMeta.socialTitle;
     if (nextMeta.socialDescription) metaJson.socialDescription = nextMeta.socialDescription;
     if (nextMeta.socialImageAlt) metaJson.socialImageAlt = nextMeta.socialImageAlt;
+    if (nextMeta.keywords?.trim()) metaJson.keywords = nextMeta.keywords.trim();
     base.meta = metaJson;
   } else {
     delete base.meta;
@@ -222,6 +240,7 @@ export async function createPage(input: PageInput) {
         socialTitle: input.socialTitle,
         socialDescription: input.socialDescription,
         socialImageAlt: input.socialImageAlt,
+        keywords: input.metaKeywords ?? "",
       },
     });
 
@@ -232,7 +251,7 @@ export async function createPage(input: PageInput) {
         status: input.status,
         seoTitle: input.seoTitle,
         seoDescription: input.seoDescription,
-        canonicalUrl: input.canonicalUrl,
+        canonicalUrl: resolveCanonicalUrl(slug, input.canonicalUrl),
         ogImageUrl: input.ogImageUrl,
         content: nextContent,
         publishAsNews: Boolean(input.publishAsNews),
@@ -271,6 +290,7 @@ export async function createPage(input: PageInput) {
       socialTitle: input.socialTitle,
       socialDescription: input.socialDescription,
       socialImageAlt: input.socialImageAlt,
+      keywords: input.metaKeywords ?? "",
     },
   });
 
@@ -283,7 +303,7 @@ export async function createPage(input: PageInput) {
     id: `p${Date.now()}`,
     ...input,
     slug,
-    canonicalUrl: input.canonicalUrl,
+    canonicalUrl: resolveCanonicalUrl(slug, input.canonicalUrl),
     ogImageUrl: input.ogImageUrl,
     content: nextContent,
   };
@@ -333,7 +353,13 @@ export async function updatePage(id: string, payload: Partial<PageInput>) {
       nextPayload.game !== undefined ||
       nextPayload.socialTitle !== undefined ||
       nextPayload.socialDescription !== undefined ||
-      nextPayload.socialImageAlt !== undefined;
+      nextPayload.socialImageAlt !== undefined ||
+      nextPayload.metaKeywords !== undefined;
+
+    const resolvedCanonical =
+      nextPayload.canonicalUrl !== undefined
+        ? resolveCanonicalUrl(nextPayload.slug ?? current.slug, nextPayload.canonicalUrl)
+        : undefined;
 
     const page = await prisma.pageTemplate.update({
       where: { id },
@@ -342,7 +368,7 @@ export async function updatePage(id: string, payload: Partial<PageInput>) {
         slug: nextPayload.slug,
         seoTitle: nextPayload.seoTitle,
         seoDescription: nextPayload.seoDescription,
-        canonicalUrl: nextPayload.canonicalUrl,
+        canonicalUrl: resolvedCanonical,
         ogImageUrl: nextPayload.ogImageUrl,
         content: shouldPatchContent
           ? buildContent({
@@ -354,6 +380,7 @@ export async function updatePage(id: string, payload: Partial<PageInput>) {
                 socialTitle: nextPayload.socialTitle,
                 socialDescription: nextPayload.socialDescription,
                 socialImageAlt: nextPayload.socialImageAlt,
+                keywords: nextPayload.metaKeywords,
               },
             })
           : undefined,
@@ -384,7 +411,9 @@ export async function updatePage(id: string, payload: Partial<PageInput>) {
   if (nextPayload.status !== undefined) page.status = nextPayload.status;
   if (nextPayload.seoTitle !== undefined) page.seoTitle = nextPayload.seoTitle;
   if (nextPayload.seoDescription !== undefined) page.seoDescription = nextPayload.seoDescription;
-  if (nextPayload.canonicalUrl !== undefined) page.canonicalUrl = nextPayload.canonicalUrl;
+  if (nextPayload.canonicalUrl !== undefined) {
+    page.canonicalUrl = resolveCanonicalUrl(nextPayload.slug ?? page.slug, nextPayload.canonicalUrl);
+  }
   if (nextPayload.ogImageUrl !== undefined) page.ogImageUrl = nextPayload.ogImageUrl;
 
   const shouldPatchContent =
@@ -393,7 +422,8 @@ export async function updatePage(id: string, payload: Partial<PageInput>) {
     nextPayload.game !== undefined ||
     nextPayload.socialTitle !== undefined ||
     nextPayload.socialDescription !== undefined ||
-    nextPayload.socialImageAlt !== undefined;
+    nextPayload.socialImageAlt !== undefined ||
+    nextPayload.metaKeywords !== undefined;
 
   if (shouldPatchContent) {
     page.content = buildContent({
@@ -405,6 +435,7 @@ export async function updatePage(id: string, payload: Partial<PageInput>) {
         socialTitle: nextPayload.socialTitle,
         socialDescription: nextPayload.socialDescription,
         socialImageAlt: nextPayload.socialImageAlt,
+        keywords: nextPayload.metaKeywords,
       },
     });
   }

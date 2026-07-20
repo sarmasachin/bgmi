@@ -284,7 +284,7 @@ export default async function AdminDashboardPage() {
         <article className="admin-card">
           <h3>SEO Missing (Pages)</h3>
           <p className="admin-card-value">{data.seoMissingPages}</p>
-          <small>Missing meta title/description/image</small>
+          <small>Missing meta title/description (social image optional)</small>
         </article>
         </div>
       </div>

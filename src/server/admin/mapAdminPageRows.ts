@@ -17,6 +17,7 @@ export type AdminPageRow = {
   socialTitle?: string;
   socialDescription?: string;
   socialImageAlt?: string;
+  metaKeywords?: string;
 };
 
 type PageMeta = {
@@ -25,6 +26,7 @@ type PageMeta = {
   socialTitle?: string;
   socialDescription?: string;
   socialImageAlt?: string;
+  keywords?: string;
 };
 
 function coerceTemplateType(value: unknown): TemplateType {
@@ -50,6 +52,7 @@ function parseContent(content: unknown) {
             socialTitle?: unknown;
             socialDescription?: unknown;
             socialImageAlt?: unknown;
+            keywords?: unknown;
           })
         : {};
     return {
@@ -63,6 +66,7 @@ function parseContent(content: unknown) {
         socialTitle: typeof metaObj.socialTitle === "string" ? metaObj.socialTitle : undefined,
         socialDescription: typeof metaObj.socialDescription === "string" ? metaObj.socialDescription : undefined,
         socialImageAlt: typeof metaObj.socialImageAlt === "string" ? metaObj.socialImageAlt : undefined,
+        keywords: typeof metaObj.keywords === "string" ? metaObj.keywords : undefined,
       },
     };
   }
@@ -99,6 +103,7 @@ export function mapAdminPageRows(
       socialTitle: parsed.meta.socialTitle ?? "",
       socialDescription: parsed.meta.socialDescription ?? "",
       socialImageAlt: parsed.meta.socialImageAlt ?? "",
+      metaKeywords: parsed.meta.keywords ?? "",
     };
   });
 }

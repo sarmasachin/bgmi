@@ -22,6 +22,7 @@ const schema = z.object({
   socialTitle: z.string().optional(),
   socialDescription: z.string().optional(),
   socialImageAlt: z.string().optional(),
+  metaKeywords: z.string().optional(),
   content: z.string().optional(),
   status: z.enum(["draft", "published"]).default("draft"),
   publishAsNews: z.boolean().default(false),
@@ -96,6 +97,7 @@ export async function PATCH(request: NextRequest) {
       socialTitle: z.string().optional(),
       socialDescription: z.string().optional(),
       socialImageAlt: z.string().optional(),
+      metaKeywords: z.string().optional(),
       content: z.string().optional(),
       status: z.enum(["draft", "published"]).optional(),
     })

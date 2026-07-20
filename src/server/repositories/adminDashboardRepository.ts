@@ -362,7 +362,6 @@ export async function getAdminDashboardData(): Promise<DashboardData> {
           OR: [
             ...missingStringOrEmpty("seoTitle"),
             ...missingStringOrEmpty("seoDescription"),
-            ...missingStringOrEmpty("ogImageUrl"),
           ],
         },
       }),

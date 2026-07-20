@@ -4,6 +4,7 @@ import { FormEvent, useEffect, useMemo, useState } from "react";
 import dynamic from "next/dynamic";
 import type { AdminPageRow } from "@/src/server/admin/mapAdminPageRows";
 import { useAdminFlash } from "@/src/components/admin/AdminToast";
+import { toCanonicalUrl } from "@/src/lib/siteUrl";
 
 const RichTextEditor = dynamic(
   () => import("@/src/components/admin/RichTextEditor").then((mod) => mod.RichTextEditor),
@@ -21,6 +22,7 @@ type PageMeta = {
   socialTitle?: string;
   socialDescription?: string;
   socialImageAlt?: string;
+  keywords?: string;
 };
 
 function coerceTemplateType(value: unknown): TemplateType {
@@ -68,6 +70,7 @@ function parseContent(content: unknown) {
             socialTitle?: unknown;
             socialDescription?: unknown;
             socialImageAlt?: unknown;
+            keywords?: unknown;
           })
         : {};
     return {
@@ -81,6 +84,7 @@ function parseContent(content: unknown) {
         socialTitle: typeof metaObj.socialTitle === "string" ? metaObj.socialTitle : undefined,
         socialDescription: typeof metaObj.socialDescription === "string" ? metaObj.socialDescription : undefined,
         socialImageAlt: typeof metaObj.socialImageAlt === "string" ? metaObj.socialImageAlt : undefined,
+        keywords: typeof metaObj.keywords === "string" ? metaObj.keywords : undefined,
       },
     };
   }
@@ -95,6 +99,13 @@ type Props = {
   initialRows?: PageRow[];
 };
 
+const PAGES_EDITOR_DRAFT_KEY = "bgmi_admin_pages_editor_draft_v1";
+
+function clearPagesEditorDraft() {
+  if (typeof window === "undefined") return;
+  window.localStorage.removeItem(PAGES_EDITOR_DRAFT_KEY);
+}
+
 export default function AdminPagesClient({ initialRows }: Props) {
   const setMessage = useAdminFlash();
   const [title, setTitle] = useState("");
@@ -103,10 +114,14 @@ export default function AdminPagesClient({ initialRows }: Props) {
   const [seoTitle, setSeoTitle] = useState("");
   const [seoDescription, setSeoDescription] = useState("");
   const [canonicalUrl, setCanonicalUrl] = useState("");
+  const [canonicalManualOverride, setCanonicalManualOverride] = useState(false);
   const [ogImageUrl, setOgImageUrl] = useState("");
   const [socialTitle, setSocialTitle] = useState("");
   const [socialDescription, setSocialDescription] = useState("");
   const [socialImageAlt, setSocialImageAlt] = useState("");
+  const [metaKeywords, setMetaKeywords] = useState("");
+  const [metaKeywordDraft, setMetaKeywordDraft] = useState("");
+  const [showMetaKeywords, setShowMetaKeywords] = useState(false);
   const [templateType, setTemplateType] = useState<TemplateType>("home");
   const [game, setGame] = useState<CloneGame>("bgmi");
   const [content, setContent] = useState("");
@@ -115,6 +130,62 @@ export default function AdminPagesClient({ initialRows }: Props) {
   const [rows, setRows] = useState<PageRow[]>(initialRows ?? []);
   const [showForm, setShowForm] = useState(false);
   const [previewDevice, setPreviewDevice] = useState<"desktop" | "tablet" | "mobile">("desktop");
+  const [editorNonce, setEditorNonce] = useState(0);
+
+  function splitMetaKeywords(raw: string) {
+    return raw
+      .split(",")
+      .map((item) => item.trim())
+      .filter(Boolean);
+  }
+
+  function setMetaKeywordList(list: string[]) {
+    setMetaKeywords(list.join(", "));
+  }
+
+  function addMetaKeyword(raw: string) {
+    const normalized = raw.replace(/,+$/g, "").trim();
+    if (!normalized) return;
+    const list = splitMetaKeywords(metaKeywords);
+    const exists = list.some((item) => item.toLowerCase() === normalized.toLowerCase());
+    if (!exists) {
+      setMetaKeywordList([...list, normalized]);
+    }
+  }
+
+  function removeMetaKeyword(keywordToRemove: string) {
+    const list = splitMetaKeywords(metaKeywords).filter((item) => item !== keywordToRemove);
+    setMetaKeywordList(list);
+  }
+
+  function resetFormFields() {
+    setEditingId(null);
+    setTitle("");
+    setSlug("");
+    setSlugManualOverride(false);
+    setSeoTitle("");
+    setSeoDescription("");
+    setCanonicalUrl("");
+    setCanonicalManualOverride(false);
+    setOgImageUrl("");
+    setSocialTitle("");
+    setSocialDescription("");
+    setSocialImageAlt("");
+    setMetaKeywords("");
+    setMetaKeywordDraft("");
+    setShowMetaKeywords(false);
+    setTemplateType("home");
+    setGame("bgmi");
+    setContent("");
+    setPublishAsNews(false);
+    clearPagesEditorDraft();
+    setEditorNonce((n) => n + 1);
+  }
+
+  function openCreateForm() {
+    resetFormFields();
+    setShowForm(true);
+  }
 
   async function loadRows() {
     try {
@@ -156,6 +227,7 @@ export default function AdminPagesClient({ initialRows }: Props) {
             socialTitle: parsed.meta.socialTitle ?? "",
             socialDescription: parsed.meta.socialDescription ?? "",
             socialImageAlt: parsed.meta.socialImageAlt ?? "",
+            metaKeywords: parsed.meta.keywords ?? "",
           };
         }),
       );
@@ -218,10 +290,20 @@ export default function AdminPagesClient({ initialRows }: Props) {
       : `/${previewSlug}?preview=1`
     : "";
 
+  // Keep canonical in sync with slug unless the admin typed a custom value.
+  useEffect(() => {
+    if (canonicalManualOverride) return;
+    if (!previewSlug) {
+      setCanonicalUrl("");
+      return;
+    }
+    setCanonicalUrl(toCanonicalUrl(`/${previewSlug}`));
+  }, [previewSlug, canonicalManualOverride]);
+
   const socialPreviewTitle = socialTitle.trim() || seoTitle.trim() || title.trim() || "Social title preview";
   const socialPreviewDescription =
     socialDescription.trim() || seoDescription.trim() || "Social description preview appears here.";
-  const socialPreviewUrl = canonicalUrl.trim() || (previewSlug ? `https://example.com/${previewSlug}` : "https://example.com/custom-url");
+  const socialPreviewUrl = canonicalUrl.trim() || (previewSlug ? toCanonicalUrl(`/${previewSlug}`) : "https://example.com/custom-url");
 
   async function onSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -241,13 +323,14 @@ export default function AdminPagesClient({ initialRows }: Props) {
       slug: safeSlug,
       seoTitle,
       seoDescription,
-      canonicalUrl,
+      canonicalUrl: canonicalUrl.trim() || toCanonicalUrl(`/${safeSlug}`),
       ogImageUrl,
       templateType,
       game,
       socialTitle,
       socialDescription,
       socialImageAlt,
+      metaKeywords,
       content: content.trim() ? content : undefined,
       publishAsNews,
       status: "draft" as const,
@@ -266,13 +349,14 @@ export default function AdminPagesClient({ initialRows }: Props) {
                 slug: safeSlug,
                 seoTitle,
                 seoDescription,
-                canonicalUrl,
+                canonicalUrl: canonicalUrl.trim() || toCanonicalUrl(`/${safeSlug}`),
                 ogImageUrl,
                 templateType,
                 game,
                 socialTitle,
                 socialDescription,
                 socialImageAlt,
+                metaKeywords,
                 content,
               }),
             }
@@ -296,21 +380,8 @@ export default function AdminPagesClient({ initialRows }: Props) {
       }
 
       setMessage(editingId ? "Clone updated." : "Clone created.");
-      setTitle("");
-      setSlug("");
-      setSlugManualOverride(false);
-      setSeoTitle("");
-      setSeoDescription("");
-      setCanonicalUrl("");
-      setOgImageUrl("");
-      setSocialTitle("");
-      setSocialDescription("");
-      setSocialImageAlt("");
-      setTemplateType("home");
-      setGame("bgmi");
-      setContent("");
-      setPublishAsNews(false);
-      setEditingId(null);
+      resetFormFields();
+      setShowForm(false);
       await loadRows();
     } catch {
       setMessage("Network error. Please retry.");
@@ -359,7 +430,7 @@ export default function AdminPagesClient({ initialRows }: Props) {
           <button
             type="button"
             className="admin-pages-btn admin-pages-btn-publish"
-            onClick={() => setShowForm(true)}
+            onClick={openCreateForm}
             onMouseEnter={() => {
               void import("@/src/components/admin/RichTextEditor");
             }}
@@ -426,6 +497,7 @@ export default function AdminPagesClient({ initialRows }: Props) {
                         type="button"
                         className="admin-pages-btn admin-pages-btn-edit"
                         onClick={() => {
+                          clearPagesEditorDraft();
                           setShowForm(true);
                           setEditingId(row.id);
                           setTitle(row.title);
@@ -433,14 +505,19 @@ export default function AdminPagesClient({ initialRows }: Props) {
                           setSlugManualOverride(true);
                           setSeoTitle(row.seoTitle ?? "");
                           setSeoDescription(row.seoDescription ?? "");
-                          setCanonicalUrl(row.canonicalUrl ?? "");
+                          setCanonicalUrl(row.canonicalUrl?.trim() || toCanonicalUrl(`/${normalizeSlugInput(row.slug)}`));
+                          setCanonicalManualOverride(Boolean(row.canonicalUrl?.trim()));
                           setOgImageUrl(row.ogImageUrl ?? "");
                           setSocialTitle(row.socialTitle ?? "");
                           setSocialDescription(row.socialDescription ?? "");
                           setSocialImageAlt(row.socialImageAlt ?? "");
+                          setMetaKeywords(row.metaKeywords ?? "");
+                          setMetaKeywordDraft("");
+                          setShowMetaKeywords(Boolean((row.metaKeywords ?? "").trim()));
                           setTemplateType(row.templateType ?? "home");
                           setGame(row.game === "pubg" ? "pubg" : "bgmi");
                           setContent(row.contentHtml ?? "");
+                          setEditorNonce((n) => n + 1);
                         }}
                       >
                         Edit
@@ -465,22 +542,8 @@ export default function AdminPagesClient({ initialRows }: Props) {
             type="button"
             className="admin-pages-btn admin-pages-btn-edit"
             onClick={() => {
+              resetFormFields();
               setShowForm(false);
-              setEditingId(null);
-              setTitle("");
-              setSlug("");
-              setSlugManualOverride(false);
-              setSeoTitle("");
-              setSeoDescription("");
-              setCanonicalUrl("");
-              setOgImageUrl("");
-              setSocialTitle("");
-              setSocialDescription("");
-              setSocialImageAlt("");
-              setTemplateType("home");
-              setGame("bgmi");
-              setContent("");
-              setPublishAsNews(false);
             }}
           >
             Close
@@ -551,9 +614,12 @@ export default function AdminPagesClient({ initialRows }: Props) {
 
           <input
             name="canonicalUrl"
-            placeholder="Canonical URL"
+            placeholder="Canonical URL (auto from slug)"
             value={canonicalUrl}
-            onChange={(e) => setCanonicalUrl(e.target.value)}
+            onChange={(e) => {
+              setCanonicalManualOverride(true);
+              setCanonicalUrl(e.target.value);
+            }}
           />
           <input
             name="ogImageUrl"
@@ -579,6 +645,62 @@ export default function AdminPagesClient({ initialRows }: Props) {
             value={socialImageAlt}
             onChange={(e) => setSocialImageAlt(e.target.value)}
           />
+          <div className="admin-news-meta-wrap" style={{ gridColumn: "1 / -1" }}>
+            <button
+              type="button"
+              className="admin-news-btn admin-news-btn-edit admin-news-meta-toggle"
+              onClick={() => setShowMetaKeywords((prev) => !prev)}
+              aria-expanded={showMetaKeywords}
+              aria-controls="admin-pages-meta-keywords"
+            >
+              <span className="admin-news-meta-plus" aria-hidden>
+                +
+              </span>
+              <span>Meta Keywords</span>
+            </button>
+            {showMetaKeywords ? (
+              <div className="admin-news-meta-input-box">
+                {splitMetaKeywords(metaKeywords).map((keyword) => (
+                  <span key={keyword} className="admin-news-meta-tag">
+                    {keyword}
+                    <button
+                      type="button"
+                      className="admin-news-meta-tag-remove"
+                      aria-label={`Remove ${keyword}`}
+                      onMouseDown={(e) => e.preventDefault()}
+                      onClick={() => removeMetaKeyword(keyword)}
+                    >
+                      ×
+                    </button>
+                  </span>
+                ))}
+                <input
+                  id="admin-pages-meta-keywords"
+                  name="metaKeywords"
+                  placeholder="Enter meta keywords"
+                  value={metaKeywordDraft}
+                  onChange={(e) => setMetaKeywordDraft(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === "," || e.key === "Enter") {
+                      e.preventDefault();
+                      addMetaKeyword(metaKeywordDraft);
+                      setMetaKeywordDraft("");
+                    } else if (e.key === "Backspace" && !metaKeywordDraft.trim()) {
+                      const list = splitMetaKeywords(metaKeywords);
+                      if (list.length > 0) {
+                        e.preventDefault();
+                        removeMetaKeyword(list[list.length - 1]);
+                      }
+                    }
+                  }}
+                  onBlur={() => {
+                    addMetaKeyword(metaKeywordDraft);
+                    setMetaKeywordDraft("");
+                  }}
+                />
+              </div>
+            ) : null}
+          </div>
           <button type="submit">{editingId ? "Update Clone" : "Create Clone"}</button>
 
           {duplicateSlugExists ? (
@@ -607,7 +729,12 @@ export default function AdminPagesClient({ initialRows }: Props) {
           </div>
 
           <div className="admin-pages-editor-wrap">
-            <RichTextEditor value={content || "<p>Start writing...</p>"} onChange={setContent} />
+            <RichTextEditor
+              key={`pages-editor-${editingId ?? "new"}-${editorNonce}`}
+              value={content}
+              onChange={setContent}
+              storageKey={PAGES_EDITOR_DRAFT_KEY}
+            />
           </div>
 
           <div className="admin-pages-preview-wrap">

@@ -1,11 +1,13 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { AdSlot } from "@/src/components/AdSlot";
+import { HomeHeader } from "@/src/components/HomeHeader";
 import { SiteFooter } from "@/src/components/SiteFooter";
 import { SensCalculator } from "@/src/features/sensCalculator/SensCalculator";
 import { isAdminLoggedIn } from "@/src/server/auth";
 import { getCalculatorPhoneModels } from "@/src/server/repositories/calculatorPhoneModelsRepository";
 import { getPageBySlug, getPublishedPageBySlug } from "@/src/server/repositories/pagesRepository";
+import { getSettings } from "@/src/server/repositories/settingsRepository";
 import { toCanonicalUrl } from "@/src/lib/siteUrl";
 import { buildSocialMetadata } from "@/src/lib/socialMeta";
 
@@ -26,6 +28,7 @@ function extractContentData(content: unknown) {
       socialTitle: "",
       socialDescription: "",
       socialImageAlt: "",
+      keywords: "",
     };
   }
   if (typeof content === "string") {
@@ -36,6 +39,7 @@ function extractContentData(content: unknown) {
       socialTitle: "",
       socialDescription: "",
       socialImageAlt: "",
+      keywords: "",
     };
   }
   if (typeof content === "object" && content) {
@@ -53,6 +57,7 @@ function extractContentData(content: unknown) {
       socialTitle: typeof meta.socialTitle === "string" ? meta.socialTitle : "",
       socialDescription: typeof meta.socialDescription === "string" ? meta.socialDescription : "",
       socialImageAlt: typeof meta.socialImageAlt === "string" ? meta.socialImageAlt : "",
+      keywords: typeof meta.keywords === "string" ? meta.keywords : "",
     };
   }
   return {
@@ -62,6 +67,7 @@ function extractContentData(content: unknown) {
     socialTitle: "",
     socialDescription: "",
     socialImageAlt: "",
+    keywords: "",
   };
 }
 
@@ -102,10 +108,15 @@ export async function generateMetadata({ params, searchParams }: Props): Promise
   const canonical = toCanonicalUrl(page.canonicalUrl?.trim() || `/${slug}`);
   const imageUrl = page.ogImageUrl?.trim();
   const imageAlt = extracted.socialImageAlt?.trim() || title;
+  const keywords = extracted.keywords
+    .split(",")
+    .map((item) => item.trim())
+    .filter(Boolean);
 
   return {
     title,
     description,
+    ...(keywords.length ? { keywords } : {}),
     alternates: {
       canonical,
     },
@@ -125,9 +136,10 @@ export default async function DynamicTemplatePage({ params, searchParams }: Prop
   const query = await searchParams;
   const allowDraftPreview = query.preview === "1" && (await isAdminLoggedIn());
 
-  const [page, phoneModels] = await Promise.all([
+  const [page, phoneModels, settings] = await Promise.all([
     getPageForSlug(slug, allowDraftPreview),
     getCalculatorPhoneModels(),
+    getSettings(),
   ]);
   if (!page) notFound();
 
@@ -135,10 +147,14 @@ export default async function DynamicTemplatePage({ params, searchParams }: Prop
   const articleHtml = extracted.html;
   const templateType = extracted.templateType;
   const calculatorGame = extracted.game;
+  const header = (
+    <HomeHeader siteTitle={settings.homeDisplay.headerTitle} navigation={settings.navigation} />
+  );
 
   if (templateType === "article") {
     return (
       <div>
+        {header}
         <div className="light-content-wrapper" style={{ marginTop: 0 }}>
           <div className="content-inner">
             <h1 style={{ marginBottom: 20 }}>{page.title}</h1>
@@ -151,7 +167,7 @@ export default async function DynamicTemplatePage({ params, searchParams }: Prop
             </div>
           </div>
         </div>
-        <SiteFooter />
+        <SiteFooter settings={settings} />
       </div>
     );
   }
@@ -159,6 +175,7 @@ export default async function DynamicTemplatePage({ params, searchParams }: Prop
   if (templateType === "landing") {
     return (
       <div>
+        {header}
         <div className="page-container" style={{ paddingTop: 32 }}>
           <h1 className="main-title">{page.title}</h1>
           <div className="light-content-wrapper" style={{ marginTop: 12 }}>
@@ -173,13 +190,14 @@ export default async function DynamicTemplatePage({ params, searchParams }: Prop
             </div>
           </div>
         </div>
-        <SiteFooter />
+        <SiteFooter settings={settings} />
       </div>
     );
   }
 
   return (
     <div>
+      {header}
       <h1 className="main-title">{page.title}</h1>
       <main className="page-container">
         <AdSlot slotKey="home_above_calculator" />
@@ -197,7 +215,7 @@ export default async function DynamicTemplatePage({ params, searchParams }: Prop
           </div>
         </div>
       </div>
-      <SiteFooter />
+      <SiteFooter settings={settings} />
     </div>
   );
 }

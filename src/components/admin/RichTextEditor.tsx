@@ -6,6 +6,8 @@ import { useAdminToast } from "@/src/components/admin/AdminToast";
 type Props = {
   value: string;
   onChange: (value: string) => void;
+  /** localStorage key for draft. Defaults to the shared news editor key. */
+  storageKey?: string;
 };
 
 type UploadedImage = {
@@ -14,7 +16,7 @@ type UploadedImage = {
   url: string;
 };
 
-const STORAGE_KEY = "bgmi_admin_news_editor_draft_v1";
+const DEFAULT_STORAGE_KEY = "bgmi_admin_news_editor_draft_v1";
 const TABLE_PICKER_ROWS = 8;
 const TABLE_PICKER_COLS = 10;
 
@@ -97,7 +99,11 @@ function toEmbedUrl(raw: string) {
   }
 }
 
-export function RichTextEditor({ value, onChange }: Props) {
+export function RichTextEditor({
+  value,
+  onChange,
+  storageKey = DEFAULT_STORAGE_KEY,
+}: Props) {
   const toast = useAdminToast();
   const editorRef = useRef<HTMLDivElement | null>(null);
   const uploadInputRef = useRef<HTMLInputElement | null>(null);
@@ -172,29 +178,29 @@ export function RichTextEditor({ value, onChange }: Props) {
   useEffect(() => {
     const timeout = window.setTimeout(() => {
       if (value.trim()) {
-        window.localStorage.setItem(STORAGE_KEY, value);
+        window.localStorage.setItem(storageKey, value);
       }
     }, 500);
 
     return () => window.clearTimeout(timeout);
-  }, [value]);
+  }, [value, storageKey]);
 
   useEffect(() => {
-    const draft = window.localStorage.getItem(STORAGE_KEY);
-    if (!draft) return;
-
-    const current = value.trim();
-    const isDefault = current === "" || current === "<p>Start writing...</p>";
-
-    if (isDefault) {
-      onChange(draft);
+    // Never auto-inject draft into a blank/new editor — only offer restore.
+    const draft = window.localStorage.getItem(storageKey);
+    if (!draft) {
+      setHasRestorableDraft(false);
       return;
     }
 
-    if (draft !== current) {
+    const current = value.trim();
+    const isDefault = current === "" || current === "<p>Start writing...</p>" || current === "<p><br></p>";
+    if (isDefault || draft !== current) {
       setHasRestorableDraft(true);
+    } else {
+      setHasRestorableDraft(false);
     }
-  }, [onChange, value]);
+  }, [storageKey, value]);
 
   const plainText = useMemo(() => {
     if (typeof window === "undefined") return "";
@@ -797,7 +803,7 @@ export function RichTextEditor({ value, onChange }: Props) {
   }
 
   function restoreDraft() {
-    const draft = window.localStorage.getItem(STORAGE_KEY);
+    const draft = window.localStorage.getItem(storageKey);
     if (!draft) return;
     commitHtml(draft);
     setSourceValue(draft);
@@ -805,7 +811,7 @@ export function RichTextEditor({ value, onChange }: Props) {
   }
 
   function clearDraft() {
-    window.localStorage.removeItem(STORAGE_KEY);
+    window.localStorage.removeItem(storageKey);
     setHasRestorableDraft(false);
   }
 
