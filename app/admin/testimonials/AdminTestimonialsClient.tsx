@@ -85,6 +85,7 @@ export default function AdminTestimonialsClient({
         return {
           id: String(item.id ?? ""),
           name: String(item.name ?? "Anonymous"),
+          email: item.email ? String(item.email) : "",
           rating: Number(item.rating ?? 0),
           message: String(item.message ?? ""),
           game,
@@ -277,6 +278,9 @@ export default function AdminTestimonialsClient({
                       <strong>{item.name}</strong>
                       {!item.showName ? (
                         <span className="admin-testimonials-anon">hidden on site</span>
+                      ) : null}
+                      {item.email ? (
+                        <span className="admin-testimonials-phone">{item.email}</span>
                       ) : null}
                       {item.phoneModel ? (
                         <span className="admin-testimonials-phone">{item.phoneModel}</span>

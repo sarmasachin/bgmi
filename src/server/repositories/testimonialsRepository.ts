@@ -10,6 +10,7 @@ export type TestimonialStatus = "pending" | "approved" | "rejected";
 export type TestimonialRecord = {
   id: string;
   name: string;
+  email: string | null;
   rating: number;
   message: string;
   game: TestimonialGame;
@@ -22,6 +23,7 @@ export type TestimonialRecord = {
 
 export type CreateTestimonialInput = {
   name: string;
+  email: string;
   rating: number;
   message: string;
   game: TestimonialGame;
@@ -67,6 +69,7 @@ function isStatus(value: string): value is TestimonialStatus {
 function mapRow(row: {
   id: string;
   name: string;
+  email?: string | null;
   rating: number;
   message: string;
   game: string;
@@ -80,6 +83,7 @@ function mapRow(row: {
   return {
     id: row.id,
     name: row.name,
+    email: row.email?.trim() ? row.email.trim().toLowerCase() : null,
     rating: row.rating,
     message: row.message,
     game: row.game,
@@ -148,6 +152,7 @@ export async function createTestimonial(
 ): Promise<TestimonialRecord | null> {
   const data = {
     name: displayNameForCreate(input.name),
+    email: input.email.trim().toLowerCase().slice(0, 200),
     rating: input.rating,
     message: input.message.trim().slice(0, 300),
     game: input.game,

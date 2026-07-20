@@ -1,14 +1,19 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
+import { buildHomeRatingThankYouEmailHtml } from "@/src/lib/contactEmailTemplates";
 import { checkRateLimit } from "@/src/server/rateLimit";
 import {
   createTestimonial,
   listApprovedTestimonials,
   type TestimonialGame,
 } from "@/src/server/repositories/testimonialsRepository";
+import { sendEmail } from "@/src/server/services/emailService";
+
+const SUPPORT_EMAIL = "support@sensitivitysettings.com";
 
 const postSchema = z.object({
   name: z.string().trim().min(1).max(80),
+  email: z.string().trim().email().max(200),
   rating: z.number().int().min(1).max(5),
   message: z.string().trim().min(2).max(300),
   game: z.enum(["bgmi", "pubg"]),
@@ -56,8 +61,10 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "Invalid testimonial payload" }, { status: 400 });
   }
 
+  const email = parsed.data.email.trim().toLowerCase();
   const created = await createTestimonial({
     name: parsed.data.name,
+    email,
     rating: parsed.data.rating,
     message: parsed.data.message,
     game: parsed.data.game,
@@ -68,6 +75,21 @@ export async function POST(request: NextRequest) {
   if (!created) {
     return NextResponse.json({ error: "Database unavailable" }, { status: 503 });
   }
+
+  // Background thank-you — never block the success response.
+  void (async () => {
+    try {
+      const mail = buildHomeRatingThankYouEmailHtml({ email, value: parsed.data.rating });
+      const result = await sendEmail(email, mail.subject, mail.html, {
+        replyTo: SUPPORT_EMAIL,
+      });
+      if (!result.sent) {
+        console.warn("[testimonials] thank-you email not sent:", result.reason);
+      }
+    } catch (err) {
+      console.error("[testimonials] thank-you email failed:", err);
+    }
+  })();
 
   return NextResponse.json({
     ok: true,

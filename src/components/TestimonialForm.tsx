@@ -16,11 +16,14 @@ const GAME_LABEL: Record<Game, string> = {
   pubg: "PUBG Mobile",
 };
 
+const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
 export function TestimonialForm({ game }: Props) {
   const panelId = useId();
   const submittingRef = useRef(false);
   const [open, setOpen] = useState(false);
   const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
   const [rating, setRating] = useState<number>(0);
   const [hoverRating, setHoverRating] = useState<number>(0);
   const [message, setMessage] = useState("");
@@ -50,11 +53,16 @@ export function TestimonialForm({ game }: Props) {
     if (submittingRef.current || submitting) return;
 
     const trimmedName = name.trim();
+    const trimmedEmail = email.trim().toLowerCase();
     const trimmedMessage = message.trim();
     const trimmedPhone = phoneModel.trim();
 
     if (!trimmedName) {
       setError("Please enter your name.");
+      return;
+    }
+    if (!trimmedEmail || !EMAIL_RE.test(trimmedEmail)) {
+      setError("Please enter a valid email.");
       return;
     }
     if (rating < 1 || rating > 5) {
@@ -81,6 +89,7 @@ export function TestimonialForm({ game }: Props) {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           name: trimmedName.slice(0, 80),
+          email: trimmedEmail.slice(0, 200),
           rating,
           message: trimmedMessage.slice(0, 300),
           game,
@@ -97,6 +106,7 @@ export function TestimonialForm({ game }: Props) {
       setDone(true);
       setOpen(false);
       setName("");
+      setEmail("");
       setRating(0);
       setHoverRating(0);
       setMessage("");
@@ -175,6 +185,24 @@ export function TestimonialForm({ game }: Props) {
                   aria-readonly="true"
                 />
               </div>
+            </div>
+
+            <div className="testimonial-form-group">
+              <label className="testimonial-form-label" htmlFor="testimonial-email">
+                Email <span className="testimonial-form-req">*</span>
+              </label>
+              <input
+                id="testimonial-email"
+                className="testimonial-form-input"
+                type="email"
+                name="email"
+                autoComplete="email"
+                value={email}
+                maxLength={200}
+                disabled={submitting}
+                placeholder="you@example.com"
+                onChange={(e) => setEmail(e.target.value)}
+              />
             </div>
 
             <div className="testimonial-form-group">

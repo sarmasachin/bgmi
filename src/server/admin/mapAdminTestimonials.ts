@@ -3,6 +3,7 @@ import type { TestimonialRecord } from "@/src/server/repositories/testimonialsRe
 export type AdminTestimonialItem = {
   id: string;
   name: string;
+  email: string;
   rating: number;
   message: string;
   game: "bgmi" | "pubg";
@@ -17,6 +18,7 @@ export function mapAdminTestimonials(items: TestimonialRecord[]): AdminTestimoni
   return items.map((item) => ({
     id: item.id,
     name: item.name,
+    email: item.email ?? "",
     rating: item.rating,
     message: item.message,
     game: item.game,

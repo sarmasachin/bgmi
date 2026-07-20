@@ -169,6 +169,7 @@ model LegalPage {
 model Testimonial {
   id         String    @id @default(cuid())
   name       String
+  email      String?
   rating     Int
   message    String
   game       String
