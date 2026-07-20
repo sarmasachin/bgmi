@@ -12,6 +12,9 @@ type SidebarIconName =
   | "dashboard"
   | "news"
   | "pages"
+  | "legal"
+  | "gameArticles"
+  | "gameFaqs"
   | "comments"
   | "contact"
   | "testimonials"
@@ -37,6 +40,9 @@ const items = [
   { label: "Dashboard", href: "/admin", icon: "dashboard" as SidebarIconName },
   { label: "News", href: "/admin/news", icon: "news" as SidebarIconName },
   { label: "Pages", href: "/admin/pages", icon: "pages" as SidebarIconName },
+  { label: "Game Articles", href: "/admin/game-articles", icon: "gameArticles" as SidebarIconName },
+  { label: "Game FAQs", href: "/admin/game-faqs", icon: "gameFaqs" as SidebarIconName },
+  { label: "Legal Pages", href: "/admin/legal-pages", icon: "legal" as SidebarIconName },
   { label: "Comments", href: "/admin/comments", icon: "comments" as SidebarIconName },
   { label: "Contact", href: "/admin/contact", icon: "contact" as SidebarIconName },
   { label: "Testimonials", href: "/admin/testimonials", icon: "testimonials" as SidebarIconName },
@@ -71,6 +77,12 @@ function SidebarIcon({ name }: { name: SidebarIconName }) {
       return <svg {...shared}><path d="M4 5h16v14H4z" /><path d="M8 9h8" /><path d="M8 13h8" /><path d="M8 17h5" /></svg>;
     case "pages":
       return <svg {...shared}><rect x="4" y="3" width="16" height="18" rx="2" /><path d="M8 7h8M8 11h8M8 15h6" /></svg>;
+    case "gameArticles":
+      return <svg {...shared}><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" /><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" /><path d="M8 7h8M8 11h8M8 15h5" /></svg>;
+    case "gameFaqs":
+      return <svg {...shared}><circle cx="12" cy="12" r="10" /><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3" /><path d="M12 17h.01" /></svg>;
+    case "legal":
+      return <svg {...shared}><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" /><path d="M14 2v6h6" /><path d="M9 13h6M9 17h6" /></svg>;
     case "comments":
       return <svg {...shared}><path d="M21 11.5a8.5 8.5 0 0 1-8.5 8.5c-1.7 0-3.3-.5-4.6-1.3L3 20l1.5-4.1A8.5 8.5 0 1 1 21 11.5Z" /></svg>;
     case "contact":

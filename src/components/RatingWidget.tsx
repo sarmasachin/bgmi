@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useLayoutEffect, useState } from "react";
+import { FormEvent, useEffect, useLayoutEffect, useState } from "react";
 import type { RatingSummary } from "@/src/server/repositories/ratingSummaryRepository";
 import { UserErrorBanner } from "@/src/components/ui/UserErrorBanner";
 import { messageFromHttpStatus, messageFromUnknownError } from "@/src/lib/userFacingError";
@@ -29,13 +29,16 @@ export function RatingWidget({
   targetId,
   initialSummary,
 }: Props) {
+  const isHome = targetType === "home";
   const hasServerSummary = initialSummary !== undefined;
   const [value, setValue] = useState<number | null>(null);
+  const [email, setEmail] = useState("");
   const [average, setAverage] = useState<number | null>(initialSummary?.average ?? null);
   const [count, setCount] = useState(initialSummary?.count ?? 0);
   const [loading, setLoading] = useState(!hasServerSummary);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
+  const [done, setDone] = useState(false);
   /** null = not checked yet (render nothing: avoids SSR/refresh flash before localStorage). */
   const [showUI, setShowUI] = useState<boolean | null>(null);
 
@@ -45,6 +48,7 @@ export function RatingWidget({
     try {
       const rated = typeof window !== "undefined" && window.localStorage.getItem(key) === "1";
       setShowUI(!rated);
+      if (rated) setDone(true);
     } catch {
       setShowUI(true);
     }
@@ -94,8 +98,8 @@ export function RatingWidget({
     };
   }, [hasServerSummary, showUI, targetType, targetId]);
 
-  async function submit(stars: number) {
-    if (showUI !== true || submitting) return;
+  async function submitRating(stars: number, emailValue?: string) {
+    if (showUI !== true || submitting || done) return;
     setSubmitting(true);
     setError("");
     try {
@@ -106,6 +110,7 @@ export function RatingWidget({
           targetType,
           ...(targetId?.trim() ? { targetId: targetId.trim() } : {}),
           value: stars,
+          ...(isHome && emailValue ? { email: emailValue } : {}),
         }),
       });
       let data: {
@@ -129,6 +134,7 @@ export function RatingWidget({
         return;
       }
       setValue(stars);
+      setDone(true);
       setShowUI(false);
       try {
         window.localStorage.setItem(key, "1");
@@ -144,8 +150,30 @@ export function RatingWidget({
     }
   }
 
-  if (showUI !== true) {
+  function onHomeSubmit(event: FormEvent) {
+    event.preventDefault();
+    if (!value || value < 1) {
+      setError("Please select a star rating.");
+      return;
+    }
+    const trimmed = email.trim();
+    if (!trimmed || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(trimmed)) {
+      setError("Please enter a valid email.");
+      return;
+    }
+    void submitRating(value, trimmed);
+  }
+
+  if (showUI === null) {
     return null;
+  }
+
+  if (done || showUI === false) {
+    return (
+      <section className="rating-widget" aria-live="polite">
+        <p className="rating-widget-thanks">Thanks — your rating was submitted successfully.</p>
+      </section>
+    );
   }
 
   const summaryLine =
@@ -167,7 +195,12 @@ export function RatingWidget({
             disabled={submitting}
             className={value != null && star <= value ? "active" : ""}
             onClick={() => {
-              void submit(star);
+              if (isHome) {
+                setValue(star);
+                setError("");
+                return;
+              }
+              void submitRating(star);
             }}
             aria-label={`Rate ${star} stars`}
           >
@@ -175,6 +208,31 @@ export function RatingWidget({
           </button>
         ))}
       </div>
+
+      {isHome ? (
+        <form className="rating-widget-home-form" onSubmit={onHomeSubmit} noValidate>
+          <label className="rating-widget-email-label" htmlFor="home-rating-email">
+            Email
+          </label>
+          <input
+            id="home-rating-email"
+            className="rating-widget-email-input"
+            type="email"
+            name="email"
+            autoComplete="email"
+            placeholder="you@example.com"
+            maxLength={200}
+            value={email}
+            disabled={submitting}
+            onChange={(e) => setEmail(e.target.value)}
+            required
+          />
+          <button className="rating-widget-submit" type="submit" disabled={submitting || !value}>
+            {submitting ? "Submitting…" : "Submit rating"}
+          </button>
+        </form>
+      ) : null}
+
       {error ? <UserErrorBanner message={error} /> : null}
     </section>
   );

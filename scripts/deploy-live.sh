@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
 # Deploy + keep Next.js alive on :3001 via PM2 (fixes nginx 502 after rebuild).
+# Website + admin are the same Next.js app. Run DB schema push before build.
 set -euo pipefail
 
 APP_DIR="${APP_DIR:-/var/www/bgmi}"
@@ -10,6 +11,10 @@ git pull origin main
 
 echo "==> Install"
 npm install --omit=dev
+
+echo "==> Prisma generate + DB schema push"
+npx prisma generate
+npx prisma db push
 
 echo "==> Build"
 npm run build

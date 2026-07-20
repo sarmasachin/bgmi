@@ -39,39 +39,73 @@ type ContactMessage = {
   email: string;
   subject: string;
   message: string;
+  topic?: string;
+  status: string;
+  etaHours?: number | null;
+  createdAt?: string | Date;
+  updatedAt?: string | Date;
+};
+
+type LegalPage = {
+  id: string;
+  title: string;
+  slug: string;
+  content: unknown;
+  seoTitle: string | null;
+  seoDescription: string | null;
   status: string;
   createdAt?: string | Date;
   updatedAt?: string | Date;
 };
 
-export const mockStore = {
-  news: [
-    { id: "n1", title: "RTX 5090 Benchmark Results Leaked", slug: "rtx-5090", status: "published" },
-  ] as News[],
-  pages: [
-    {
-      id: "p1",
-      title: "BGMI Default Home",
-      slug: "/",
-      status: "published",
-      seoTitle: "Sensitivity Settings",
-      seoDescription: "Default homepage template for cloned pages.",
-      content: { html: "<h2>Default Home Article</h2><p>Clone pages copy this article content.</p>" },
-    },
-  ] as PageClone[],
-  comments: [{ id: "c1", name: "User", message: "Nice post", status: "pending", newsId: "n1" }],
-  contactMessages: [] as ContactMessage[],
-  ads: [
-    { id: "a1", slotKey: "home_above_calculator", enabled: false, code: "" },
-    { id: "a2", slotKey: "home_between_tool_and_article", enabled: false, code: "" },
-    { id: "a3", slotKey: "news_list_top", enabled: false, code: "" },
-    { id: "a4", slotKey: "news_list_bottom", enabled: false, code: "" },
-    { id: "a5", slotKey: "news_detail_top", enabled: false, code: "" },
-    { id: "a6", slotKey: "news_detail_mid", enabled: false, code: "" },
-    { id: "a7", slotKey: "news_detail_bottom", enabled: false, code: "" },
-  ] as AdSlot[],
-  users: [{ id: "u1", email: "admin@example.com", role: "admin", active: true }],
+type MockStore = {
+  news: News[];
+  pages: PageClone[];
+  comments: Array<{ id: string; name: string; message: string; status: string; newsId: string }>;
+  contactMessages: ContactMessage[];
+  legalPages: LegalPage[];
+  ads: AdSlot[];
+  users: Array<{ id: string; email: string; role: string; active: boolean }>;
 };
+
+function createMockStore(): MockStore {
+  return {
+    news: [
+      { id: "n1", title: "RTX 5090 Benchmark Results Leaked", slug: "rtx-5090", status: "published" },
+    ],
+    pages: [
+      {
+        id: "p1",
+        title: "BGMI Default Home",
+        slug: "/",
+        status: "published",
+        seoTitle: "Sensitivity Settings",
+        seoDescription: "Default homepage template for cloned pages.",
+        content: { html: "<h2>Default Home Article</h2><p>Clone pages copy this article content.</p>" },
+      },
+    ],
+    comments: [{ id: "c1", name: "User", message: "Nice post", status: "pending", newsId: "n1" }],
+    contactMessages: [],
+    legalPages: [],
+    ads: [
+      { id: "a1", slotKey: "home_above_calculator", enabled: false, code: "" },
+      { id: "a2", slotKey: "home_between_tool_and_article", enabled: false, code: "" },
+      { id: "a3", slotKey: "news_list_top", enabled: false, code: "" },
+      { id: "a4", slotKey: "news_list_bottom", enabled: false, code: "" },
+      { id: "a5", slotKey: "news_detail_top", enabled: false, code: "" },
+      { id: "a6", slotKey: "news_detail_mid", enabled: false, code: "" },
+      { id: "a7", slotKey: "news_detail_bottom", enabled: false, code: "" },
+    ],
+    users: [{ id: "u1", email: "admin@example.com", role: "admin", active: true }],
+  };
+}
+
+const globalForMock = globalThis as typeof globalThis & { __bgmiMockStore?: MockStore };
+
+/** Shared across Next.js route module instances when DB is unavailable. */
+export const mockStore = globalForMock.__bgmiMockStore ?? createMockStore();
+if (!globalForMock.__bgmiMockStore) globalForMock.__bgmiMockStore = mockStore;
+if (!Array.isArray(mockStore.legalPages)) mockStore.legalPages = [];
 
 export function exportMockBackup() {
   return JSON.parse(JSON.stringify(mockStore));
@@ -82,6 +116,8 @@ export function restoreMockBackup(payload: typeof mockStore) {
   mockStore.pages = payload.pages ?? [];
   mockStore.comments = payload.comments ?? [];
   mockStore.contactMessages = payload.contactMessages ?? [];
+  mockStore.legalPages = payload.legalPages ?? [];
   mockStore.ads = payload.ads ?? [];
   mockStore.users = payload.users ?? [];
 }
+

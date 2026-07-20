@@ -52,6 +52,8 @@ export default function AdminSettingsClient({ initialData }: Props) {
     initialData?.navigationLinks ?? [
       { label: "BGMI", href: "/" },
       { label: "PUBG Mobile", href: "/pubg" },
+      { label: "Free Fire", href: "/free-fire-sensitivity-settings-calculator" },
+      { label: "Free Fire Max", href: "/free-fire-max-sensitivity-settings-calculator" },
     ],
   );
   const [footerLinks, setFooterLinks] = useState<LinkItem[]>(
@@ -559,8 +561,18 @@ export default function AdminSettingsClient({ initialData }: Props) {
 
       <h2 style={{ marginTop: 32, marginBottom: 12 }}>Home page — FAQ</h2>
       <p style={{ marginBottom: 12, opacity: 0.9 }}>
-        Questions and answers under “Frequently Asked Questions (FAQ)” on the home page. Both fields
-        required for each card to appear. Remove all and save to show no FAQ cards.
+        Per-game FAQs (BGMI, PUBG, Free Fire, Free Fire Max) ab yahan se move ho chuke hain:{" "}
+        <a href="/admin/game-faqs" style={{ color: "var(--primary)" }}>
+          Game FAQs
+        </a>
+        . Long articles:{" "}
+        <a href="/admin/game-articles" style={{ color: "var(--primary)" }}>
+          Game Articles
+        </a>
+        .
+      </p>
+      <p style={{ marginBottom: 12, opacity: 0.75, fontSize: 13 }}>
+        Neeche wala editor ab bhi BGMI FAQ save karta hai (legacy). Prefer Game FAQs for all games.
       </p>
       <div className="admin-faq-editor">
         {faqItems.map((item, index) => (

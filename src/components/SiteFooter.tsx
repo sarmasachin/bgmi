@@ -1,6 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { FooterShareLinks } from "@/src/components/FooterShareLinks";
+import { ensureFreeFireNavigation } from "@/src/lib/freeFirePages";
 import {
   getSettings,
   isShareRailEnabled,
@@ -19,36 +20,50 @@ export async function SiteFooter({ settings: settingsProp }: SiteFooterProps = {
   const copyrightLine = (settings.footerCopyright || "").trim() || FALLBACK_COPYRIGHT;
   const { brandTitle, tagline } = settings.footerBranding;
   const showShareLinks = isShareRailEnabled(settings.integrations);
-  const exploreLinks = settings.navigation.map((item) => {
-    const label = item.label.trim();
-    if (/pubg/i.test(label) && (item.href === "/" || !item.href.trim())) {
-      return { ...item, href: "/pubg" };
-    }
-    if (/^bgmi$/i.test(label)) {
-      return { ...item, href: "/" };
-    }
-    return item;
-  });
+  const exploreLinks = ensureFreeFireNavigation(
+    settings.navigation.map((item) => {
+      const label = item.label.trim();
+      if (/pubg/i.test(label) && (item.href === "/" || !item.href.trim())) {
+        return { ...item, href: "/pubg" };
+      }
+      if (/^bgmi$/i.test(label)) {
+        return { ...item, href: "/" };
+      }
+      return item;
+    }),
+  );
 
   const resourceLinks = (() => {
     const links = [...settings.footerLinks];
-    const hasReport = links.some(
+    const ensure = (label: string, href: string, match: (item: { label: string; href: string }) => boolean) => {
+      if (!links.some(match)) links.push({ label, href });
+    };
+    ensure("Contact", "/contact", (item) => /^contact$/i.test(item.label) || item.href === "/contact");
+    ensure("News", "/news", (item) => /^news$/i.test(item.label) || item.href === "/news");
+    ensure(
+      "Sitemap",
+      "/sitemap.xml",
+      (item) => /sitemap/i.test(item.label) || /sitemap/i.test(item.href),
+    );
+    ensure(
+      "Report Issue",
+      "/contact?topic=report",
       (item) =>
         /report\s*issue/i.test(item.label) ||
         /topic=report/i.test(item.href) ||
         /report-issue/i.test(item.href),
     );
-    if (!hasReport) {
-      links.push({ label: "Report Issue", href: "/contact?topic=report" });
-    }
-    const hasFeedback = links.some(
+    ensure(
+      "Feedback",
+      "/contact?topic=feedback",
       (item) => /feedback/i.test(item.label) || /topic=feedback/i.test(item.href),
     );
-    if (!hasFeedback) {
-      links.push({ label: "Feedback", href: "/contact?topic=feedback" });
-    }
     return links;
   })();
+
+  const bottomLinks = resourceLinks.filter((item) =>
+    /^(privacy|terms|disclaimer|contact|news|sitemap)$/i.test(item.label.trim()),
+  );
 
   return (
     <footer className="site-footer">
@@ -114,7 +129,7 @@ export async function SiteFooter({ settings: settingsProp }: SiteFooterProps = {
         <div className="site-footer-bottom-inner">
           <p className="site-footer-copyright">{copyrightLine}</p>
           <div className="site-footer-bottom-links">
-            {resourceLinks.slice(0, 4).map((page) => (
+            {bottomLinks.map((page) => (
               <Link key={`bottom-${page.href}-${page.label}`} href={page.href} className="site-footer-bottom-link">
                 {page.label}
               </Link>

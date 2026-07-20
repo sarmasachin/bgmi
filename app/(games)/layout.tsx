@@ -4,12 +4,16 @@ import { ClientErrorBoundary } from "@/src/components/ClientErrorBoundary";
 import { GameArticleFaq } from "@/src/components/GameArticleFaq";
 import { GameTestimonialsSection } from "@/src/components/GameTestimonialsSection";
 import { HomeHeader } from "@/src/components/HomeHeader";
+import { RatingWidget } from "@/src/components/RatingWidget";
 import { SensCalculatorHost } from "@/src/components/SensCalculatorHost";
 import { SiteFooter } from "@/src/components/SiteFooter";
 import { faqSchema } from "@/src/lib/schema";
+import { ratingWidgetRemountKey } from "@/src/lib/ratingWidgetKey";
 import { getAdPlacementVisibility } from "@/src/server/repositories/adPlacementRepository";
 import { getCalculatorPhoneModels } from "@/src/server/repositories/calculatorPhoneModelsRepository";
-import { getHomeFaqItems } from "@/src/server/repositories/homeFaqRepository";
+import { getGameFaqItems } from "@/src/server/repositories/homeFaqRepository";
+import { getGameArticleHtml } from "@/src/server/repositories/gameArticlesRepository";
+import { getRatingSummary } from "@/src/server/repositories/ratingSummaryRepository";
 import { getSettings } from "@/src/server/repositories/settingsRepository";
 import { listApprovedTestimonials } from "@/src/server/repositories/testimonialsRepository";
 
@@ -44,12 +48,14 @@ export default async function GamesLayout({ children }: { children: React.ReactN
 }
 
 async function GamesMainChrome() {
-  const [adPlaces, phoneModels, bgmiTestimonials, pubgTestimonials] = await Promise.all([
-    getAdPlacementVisibility(),
-    getCalculatorPhoneModels(),
-    listApprovedTestimonials({ game: "bgmi" }),
-    listApprovedTestimonials({ game: "pubg" }),
-  ]);
+  const [adPlaces, phoneModels, bgmiTestimonials, pubgTestimonials, homeRatingSummary] =
+    await Promise.all([
+      getAdPlacementVisibility(),
+      getCalculatorPhoneModels(),
+      listApprovedTestimonials({ game: "bgmi" }),
+      listApprovedTestimonials({ game: "pubg" }),
+      getRatingSummary("home"),
+    ]);
 
   return (
     <>
@@ -60,6 +66,14 @@ async function GamesMainChrome() {
       {adPlaces.home.home_between_tool_and_article ? (
         <AdSlot slotKey="home_between_tool_and_article" />
       ) : null}
+      <ClientErrorBoundary label="Rating">
+        <RatingWidget
+          key={ratingWidgetRemountKey("home")}
+          title="Rate this calculator"
+          targetType="home"
+          initialSummary={homeRatingSummary}
+        />
+      </ClientErrorBoundary>
       <ClientErrorBoundary label="Reviews">
         <GameTestimonialsSection
           bgmiTestimonials={bgmiTestimonials}
@@ -71,8 +85,13 @@ async function GamesMainChrome() {
 }
 
 async function GamesFaqChrome() {
-  const faqItems = await getHomeFaqItems();
-  const faqLd = faqSchema(faqItems);
+  const [bgmiFaqItems, pubgFaqItems, bgmiArticleHtml, pubgArticleHtml] = await Promise.all([
+    getGameFaqItems("bgmi"),
+    getGameFaqItems("pubg"),
+    getGameArticleHtml("bgmi"),
+    getGameArticleHtml("pubg"),
+  ]);
+  const faqLd = faqSchema(bgmiFaqItems);
 
   return (
     <>
@@ -83,7 +102,12 @@ async function GamesFaqChrome() {
         />
       ) : null}
       <ClientErrorBoundary label="Guide">
-        <GameArticleFaq faqItems={faqItems} />
+        <GameArticleFaq
+          bgmiFaqItems={bgmiFaqItems}
+          pubgFaqItems={pubgFaqItems}
+          bgmiArticleHtml={bgmiArticleHtml}
+          pubgArticleHtml={pubgArticleHtml}
+        />
       </ClientErrorBoundary>
     </>
   );

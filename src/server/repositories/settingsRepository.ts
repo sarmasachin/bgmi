@@ -1,5 +1,6 @@
 import { cache } from "react";
 import { defaultSeoSettings, defaultThemeTokens } from "@/src/lib/siteSettings";
+import { ensureFreeFireNavigation, FREE_FIRE_NAV } from "@/src/lib/freeFirePages";
 import { prisma, tryPrisma } from "@/src/server/dbSafe";
 
 type SettingsPayload = {
@@ -42,6 +43,7 @@ const defaultSettings = {
   navigation: [
     { label: "BGMI", href: "/" },
     { label: "PUBG Mobile", href: "/pubg" },
+    ...FREE_FIRE_NAV.map((item) => ({ label: item.label, href: item.href })),
   ],
   footerLinks: [
     { label: "Privacy", href: "/privacy" },
@@ -134,7 +136,9 @@ export const getSettings = cache(async function getSettings() {
       ...defaultSettings.integrations,
       ...(map[SETTINGS_KEYS.integrations] as Record<string, unknown> | undefined),
     },
-    navigation: parseLinkList(map[SETTINGS_KEYS.navigation], defaultSettings.navigation),
+    navigation: ensureFreeFireNavigation(
+      parseLinkList(map[SETTINGS_KEYS.navigation], defaultSettings.navigation),
+    ),
     footerLinks: parseLinkList(map[SETTINGS_KEYS.footerLinks], defaultSettings.footerLinks),
     footerCopyright: parseFooterCopyright(map[SETTINGS_KEYS.footerCopyright]),
     footerBranding: parseFooterBrandingValue(map[SETTINGS_KEYS.footerBranding]),

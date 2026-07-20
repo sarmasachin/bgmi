@@ -3,6 +3,9 @@ import { prisma, tryPrisma } from "@/src/server/dbSafe";
 
 export type RatingSummary = { average: number | null; count: number };
 
+/** Days after a home rating before the same email may submit site feedback. */
+export const RATING_FEEDBACK_COOLDOWN_DAYS = 20;
+
 const contextSchema = z
   .string()
   .trim()
@@ -13,6 +16,10 @@ const contextSchema = z
 function normalizeToolContext(raw: string | undefined) {
   const parsed = contextSchema.safeParse(raw?.replace(/^\/+/, "") ?? "");
   return parsed.success ? parsed.data : null;
+}
+
+function normalizeEmail(email: string) {
+  return email.trim().toLowerCase();
 }
 
 async function readSummary(
@@ -81,9 +88,13 @@ export async function persistRating(
   targetType: "home" | "news" | "tool",
   targetId: string | undefined,
   value: number,
+  options?: { email?: string },
 ) {
   if (targetType === "home") {
-    await prisma.homeRating.create({ data: { value } });
+    const email = options?.email ? normalizeEmail(options.email) : null;
+    await prisma.homeRating.create({
+      data: { value, ...(email ? { email } : {}) },
+    });
     return true;
   }
   if (targetType === "news") {
@@ -101,6 +112,31 @@ export async function persistRating(
   if (!ctx) return false;
   await prisma.toolRating.create({ data: { context: ctx, value } });
   return true;
+}
+
+/**
+ * After a home rating, the same email may submit feedback only once the cooldown elapses.
+ * Emails that never rated are always allowed.
+ * DB unavailable → allow (do not block).
+ */
+export async function canEmailSubmitFeedback(email: string): Promise<boolean> {
+  const normalized = normalizeEmail(email);
+  if (!normalized) return true;
+
+  const latest = await tryPrisma(() =>
+    prisma.homeRating.findFirst({
+      where: { email: normalized },
+      orderBy: { createdAt: "desc" },
+      select: { createdAt: true },
+    }),
+  );
+
+  if (latest === null) return true;
+  if (!latest) return true;
+
+  const unlockAt =
+    latest.createdAt.getTime() + RATING_FEEDBACK_COOLDOWN_DAYS * 24 * 60 * 60 * 1000;
+  return Date.now() >= unlockAt;
 }
 
 export function normalizeRatingToolContext(raw: string | undefined) {

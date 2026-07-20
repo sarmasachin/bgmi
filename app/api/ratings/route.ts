@@ -6,12 +6,17 @@ import {
   persistRating,
 } from "@/src/server/repositories/ratingSummaryRepository";
 import { tryPrisma } from "@/src/server/dbSafe";
+import { sendEmail } from "@/src/server/services/emailService";
+import { buildHomeRatingThankYouEmailHtml } from "@/src/lib/contactEmailTemplates";
 import { z } from "zod";
+
+const SUPPORT_EMAIL = "support@sensitivitysettings.com";
 
 const postSchema = z.object({
   targetType: z.enum(["home", "news", "tool"]),
   targetId: z.string().optional(),
   value: z.number().int().min(1).max(5),
+  email: z.string().trim().email().max(200).optional(),
 });
 
 /** Public read: average + count for a rating target */
@@ -64,8 +69,14 @@ export async function POST(request: NextRequest) {
 
   const { targetType, value } = parsed.data;
   let { targetId } = parsed.data;
+  const email = parsed.data.email?.trim().toLowerCase();
 
-  if (targetType === "news") {
+  if (targetType === "home") {
+    if (!email) {
+      return NextResponse.json({ error: "Email is required" }, { status: 400 });
+    }
+    targetId = undefined;
+  } else if (targetType === "news") {
     if (!targetId?.trim()) {
       return NextResponse.json({ error: "targetId required for news" }, { status: 400 });
     }
@@ -76,11 +87,11 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Invalid tool context" }, { status: 400 });
     }
     targetId = ctx;
-  } else {
-    targetId = undefined;
   }
 
-  const ok = await tryPrisma(() => persistRating(targetType, targetId, value));
+  const ok = await tryPrisma(() =>
+    persistRating(targetType, targetId, value, targetType === "home" ? { email } : undefined),
+  );
 
   if (ok === null) {
     if (process.env.NODE_ENV === "production") {
@@ -91,6 +102,23 @@ export async function POST(request: NextRequest) {
 
   if (!ok) {
     return NextResponse.json({ error: "Could not save rating" }, { status: 404 });
+  }
+
+  // Background: thank-you mail only (no feedback invite). Never block the success response.
+  if (targetType === "home" && email) {
+    void (async () => {
+      try {
+        const mail = buildHomeRatingThankYouEmailHtml({ email, value });
+        const result = await sendEmail(email, mail.subject, mail.html, {
+          replyTo: SUPPORT_EMAIL,
+        });
+        if (!result.sent) {
+          console.warn("[ratings] thank-you email not sent:", result.reason);
+        }
+      } catch (err) {
+        console.error("[ratings] thank-you email failed:", err);
+      }
+    })();
   }
 
   const after = await getRatingSummary(targetType, targetId);

@@ -80,7 +80,10 @@ model NewsRating {
 model HomeRating {
   id        String   @id @default(cuid())
   value     Int
+  email     String?
   createdAt DateTime @default(now())
+
+  @@index([email, createdAt])
 }
 
 /// Ratings for dynamic CMS pages (calculator clones, article pages on /[slug], etc.)
@@ -136,10 +139,28 @@ model ContactMessage {
   email     String
   subject   String
   message   String
+  topic     String   @default("general")
   status    String   @default("new")
+  etaHours  Int?
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   @@index([status, createdAt])
+  @@index([topic, createdAt])
   @@index([createdAt])
+}
+
+/// Privacy / Terms / Disclaimer (and other legal) pages — admin CMS
+model LegalPage {
+  id             String   @id @default(cuid())
+  title          String
+  slug           String   @unique
+  content        Json
+  seoTitle       String?
+  seoDescription String?
+  status         String   @default("draft")
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  @@index([status, updatedAt])
 }

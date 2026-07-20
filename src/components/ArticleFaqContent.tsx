@@ -8,29 +8,9 @@ type Props = {
   wrapperClassName?: string;
   faqItems: HomeFaqItem[];
   game?: "bgmi" | "pubg";
+  /** When set, replaces the built-in React article with CMS HTML. */
+  articleHtml?: string | null;
 };
-
-/** PUBG Mobile FAQ cards (shown only on /pubg). */
-const PUBG_FAQS: HomeFaqItem[] = [
-  {
-    id: "pubg-faq-1",
-    question: "Can using the sensitivity calculator get my account banned?",
-    answer:
-      "Absolutely not. This is not a hack, a 90 FPS config file, or a third-party tool that tampers with the game database. It is only a mathematical utility that helps you set the official in-game options correctly. It is 100% safe.",
-  },
-  {
-    id: "pubg-faq-2",
-    question: "Does the generated Sensitivity Code always work?",
-    answer:
-      "According to PUBG Mobile rules, sensitivity codes shared in-game have an expiry time. If a code shows as expired because of the game servers, come back to our website and press Calculate again — our algorithm will immediately generate a fresh, latest working code format for you.",
-  },
-  {
-    id: "pubg-faq-3",
-    question: "What is the difference between Gyroscope and Gyroscope ADS?",
-    answer:
-      "Normal gyroscope sensitivity works when you tilt the phone to look around or track enemies without firing. Gyroscope ADS sensitivity is active only while you hold the fire button and shoot — it mainly helps control vertical gun recoil and deliver a no-recoil spray.",
-  },
-];
 
 function BgmiEnglishArticle() {
   return (
@@ -355,18 +335,30 @@ export function ArticleFaqContent({
   wrapperClassName,
   faqItems,
   game = "bgmi",
+  articleHtml = null,
 }: Props) {
   const wrapClass = ["light-content-wrapper", wrapperClassName].filter(Boolean).join(" ");
-  const faqsForPage = game === "pubg" ? PUBG_FAQS : faqItems;
+  const faqsForPage = faqItems;
+  const customHtml = typeof articleHtml === "string" ? articleHtml.trim() : "";
 
   return (
     <div className={wrapClass}>
       <div className="content-inner">
-        {game === "pubg" ? <PubgEnglishArticle /> : <BgmiEnglishArticle />}
+        {customHtml ? (
+          <div
+            className="article"
+            lang="en"
+            dangerouslySetInnerHTML={{ __html: customHtml }}
+          />
+        ) : game === "pubg" ? (
+          <PubgEnglishArticle />
+        ) : (
+          <BgmiEnglishArticle />
+        )}
 
-        <div className="faq-section" lang="en">
-          <h2>Frequently Asked Questions (FAQ)</h2>
-          {faqsForPage.length > 0 ? (
+        {faqsForPage.length > 0 ? (
+          <div className="faq-section" lang="en">
+            <h2>Frequently Asked Questions (FAQ)</h2>
             <div className="faq-grid">
               {faqsForPage.map((item) => (
                 <div key={item.id} className="faq-card">
@@ -375,8 +367,8 @@ export function ArticleFaqContent({
                 </div>
               ))}
             </div>
-          ) : null}
-        </div>
+          </div>
+        ) : null}
       </div>
     </div>
   );

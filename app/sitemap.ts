@@ -16,6 +16,9 @@ const RESERVED_TOP_SEGMENTS = new Set([
   "terms",
   "contact",
   "disclaimer",
+  "legal",
+  "free-fire-sensitivity-settings-calculator",
+  "free-fire-max-sensitivity-settings-calculator",
 ]);
 
 function toPathFromCmsSlug(slug: string): string | null {
@@ -42,6 +45,18 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       lastModified: now,
       changeFrequency: "daily",
       priority: 0.95,
+    },
+    {
+      url: `${baseUrl}/free-fire-sensitivity-settings-calculator`,
+      lastModified: now,
+      changeFrequency: "weekly",
+      priority: 0.9,
+    },
+    {
+      url: `${baseUrl}/free-fire-max-sensitivity-settings-calculator`,
+      lastModified: now,
+      changeFrequency: "weekly",
+      priority: 0.9,
     },
     {
       url: `${baseUrl}/news`,

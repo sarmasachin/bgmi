@@ -5,6 +5,11 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useId, useRef, useState, useTransition } from "react";
 import type { MouseEvent } from "react";
+import {
+  FREE_FIRE_MAX_PATH,
+  FREE_FIRE_PATH,
+  isFreeFirePath,
+} from "@/src/lib/freeFirePages";
 
 type NavLink = { label: string; href: string };
 
@@ -16,7 +21,7 @@ type HomeHeaderProps = {
 };
 
 function isGameHref(href: string) {
-  return href === "/" || href === "/pubg";
+  return href === "/" || href === "/pubg" || href === FREE_FIRE_PATH || href === FREE_FIRE_MAX_PATH;
 }
 
 function normalizePath(path: string | null | undefined) {
@@ -35,6 +40,12 @@ export function HomeHeader({ siteTitle, navigation }: HomeHeaderProps) {
     if (/^bgmi$/i.test(label)) {
       return { ...item, href: "/" };
     }
+    if (/free\s*fire\s*max/i.test(label)) {
+      return { ...item, href: FREE_FIRE_MAX_PATH };
+    }
+    if (/free\s*fire/i.test(label) && !/max/i.test(label)) {
+      return { ...item, href: FREE_FIRE_PATH };
+    }
     return item;
   });
   const [scrollHidden, setScrollHidden] = useState(false);
@@ -47,10 +58,12 @@ export function HomeHeader({ siteTitle, navigation }: HomeHeaderProps) {
   const menuId = useId();
   const activePath = pendingPath ?? pathname;
 
-  // Prefetch game routes so BGMI ↔ PUBG feels instant.
+  // Prefetch game routes so switching feels instant.
   useEffect(() => {
     router.prefetch("/");
     router.prefetch("/pubg");
+    router.prefetch(FREE_FIRE_PATH);
+    router.prefetch(FREE_FIRE_MAX_PATH);
   }, [router]);
 
   useEffect(() => {
@@ -138,6 +151,9 @@ export function HomeHeader({ siteTitle, navigation }: HomeHeaderProps) {
 
   function isActiveHref(href: string) {
     if (href === "/") return activePath === "/";
+    if (isFreeFirePath(href) || href === "/pubg") {
+      return activePath === href || activePath.startsWith(`${href}/`);
+    }
     return activePath === href || activePath.startsWith(`${href}/`);
   }
 

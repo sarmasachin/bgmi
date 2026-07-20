@@ -455,3 +455,28 @@ export async function deletePage(id: string) {
   mockStore.pages.splice(index, 1);
   return true;
 }
+
+/** Ensure Free Fire CMS article pages exist so admin can edit content under Pages. */
+export async function ensureFreeFireCmsPages() {
+  const { freeFireConfig } = await import("@/src/lib/freeFirePages");
+  for (const variant of ["freefire", "freefire-max"] as const) {
+    const cfg = freeFireConfig(variant);
+    const existing =
+      (await getPageBySlug(cfg.slug)) ?? (await getPageBySlug(`/${cfg.slug}`));
+    if (existing) continue;
+    try {
+      await createPage({
+        title: cfg.title,
+        slug: cfg.slug,
+        seoTitle: cfg.title,
+        seoDescription: cfg.seoDescription,
+        templateType: "landing",
+        content: cfg.defaultArticleHtml,
+        status: "published",
+        publishAsNews: false,
+      });
+    } catch {
+      /* race / already exists */
+    }
+  }
+}

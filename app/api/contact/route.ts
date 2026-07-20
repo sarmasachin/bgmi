@@ -8,6 +8,7 @@ import {
   buildContactThankYouEmailHtml,
   resolveContactTopic,
 } from "@/src/lib/contactEmailTemplates";
+import { canEmailSubmitFeedback } from "@/src/server/repositories/ratingSummaryRepository";
 
 const SUPPORT_EMAIL = "support@sensitivitysettings.com";
 
@@ -41,9 +42,20 @@ export async function POST(request: NextRequest) {
   const { name, email, subject, message } = parsed.data;
   const topic = resolveContactTopic({ topic: parsed.data.topic, subject });
 
+  // Same email that rated on home must wait 20 days before feedback — no special UI copy.
+  if (topic === "feedback") {
+    const allowed = await canEmailSubmitFeedback(email);
+    if (!allowed) {
+      return NextResponse.json(
+        { error: "Unable to submit right now. Please try again later." },
+        { status: 429 },
+      );
+    }
+  }
+
   let saved: { id: string };
   try {
-    saved = await createContactMessage({ name, email, subject, message });
+    saved = await createContactMessage({ name, email, subject, message, topic });
   } catch (err) {
     console.error("[contact] db save failed:", err);
     return NextResponse.json({ error: "Could not save message. Please try again." }, { status: 500 });
