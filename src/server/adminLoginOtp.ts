@@ -1,6 +1,7 @@
 import { createHash, randomBytes, randomInt } from "crypto";
 
 const OTP_TTL_MS = 10 * 60 * 1000;
+const RESEND_COOLDOWN_MS = 30 * 1000;
 const MAX_ATTEMPTS = 5;
 
 type OtpRecord = {
@@ -10,6 +11,7 @@ type OtpRecord = {
   expiresAt: number;
   attempts: number;
   createdAt: number;
+  lastSentAt: number;
 };
 
 const pendingByToken = new Map<string, OtpRecord>();
@@ -42,6 +44,11 @@ function purgeExpired() {
   }
 }
 
+function cooldownLeftSec(record: OtpRecord) {
+  const leftMs = record.lastSentAt + RESEND_COOLDOWN_MS - Date.now();
+  return Math.max(0, Math.ceil(leftMs / 1000));
+}
+
 export function generateAdminOtpCode() {
   return String(randomInt(0, 1_000_000)).padStart(6, "0");
 }
@@ -63,11 +70,57 @@ export function createAdminLoginOtp(input: { userId: string; email: string; otp:
     expiresAt: now + OTP_TTL_MS,
     attempts: 0,
     createdAt: now,
+    lastSentAt: now,
   });
   tokenByEmail.set(email, token);
   return {
     otpToken: token,
     expiresInSec: Math.floor(OTP_TTL_MS / 1000),
+    resendCooldownSec: Math.floor(RESEND_COOLDOWN_MS / 1000),
+  };
+}
+
+export function resendAdminLoginOtp(input: { otpToken: string; otp: string }):
+  | { ok: true; otpToken: string; email: string; expiresInSec: number; resendCooldownSec: number }
+  | { ok: false; error: string; status: 400 | 410 | 429; retryAfterSec?: number } {
+  purgeExpired();
+  const token = input.otpToken.trim();
+  if (!token) {
+    return { ok: false, error: "OTP session expired. Please login again.", status: 410 };
+  }
+
+  const record = pendingByToken.get(token);
+  if (!record) {
+    return { ok: false, error: "OTP expired or invalid. Please login again.", status: 410 };
+  }
+  if (record.expiresAt <= Date.now()) {
+    pendingByToken.delete(token);
+    if (tokenByEmail.get(record.email) === token) tokenByEmail.delete(record.email);
+    return { ok: false, error: "OTP expired. Please login again.", status: 410 };
+  }
+
+  const waitSec = cooldownLeftSec(record);
+  if (waitSec > 0) {
+    return {
+      ok: false,
+      error: `Wait ${waitSec}s before resending OTP.`,
+      status: 429,
+      retryAfterSec: waitSec,
+    };
+  }
+
+  const now = Date.now();
+  record.otpHash = hashOtp(input.otp, token);
+  record.lastSentAt = now;
+  record.expiresAt = now + OTP_TTL_MS;
+  record.attempts = 0;
+
+  return {
+    ok: true,
+    otpToken: token,
+    email: record.email,
+    expiresInSec: Math.floor(OTP_TTL_MS / 1000),
+    resendCooldownSec: Math.floor(RESEND_COOLDOWN_MS / 1000),
   };
 }
 

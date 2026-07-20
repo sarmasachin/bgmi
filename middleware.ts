@@ -33,6 +33,7 @@ export async function middleware(request: NextRequest) {
     pathname === "/admin/login" ||
     pathname === "/api/admin/auth/login" ||
     pathname === "/api/admin/auth/verify-otp" ||
+    pathname === "/api/admin/auth/resend-otp" ||
     pathname === "/api/admin/auth/logout" ||
     pathname === "/api/admin/auth/setup" ||
     pathname === "/api/admin/auth/setup-status"

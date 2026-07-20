@@ -25,6 +25,7 @@ export default function AdminLoginPage() {
   const [otpToken, setOtpToken] = useState("");
   const [emailHint, setEmailHint] = useState("");
   const [loginStep, setLoginStep] = useState<"credentials" | "otp">("credentials");
+  const [resendInSec, setResendInSec] = useState(0);
   const [status, setStatus] = useState<SetupStatus | null>(null);
   const [busy, setBusy] = useState(false);
   const [mode, setMode] = useState<"login" | "setup">("login");
@@ -125,11 +126,24 @@ export default function AdminLoginPage() {
     }
   }
 
+  useEffect(() => {
+    if (resendInSec <= 0) return;
+    const id = window.setTimeout(() => {
+      setResendInSec((prev) => Math.max(0, prev - 1));
+    }, 1000);
+    return () => window.clearTimeout(id);
+  }, [resendInSec]);
+
+  function startResendCooldown(seconds = 30) {
+    setResendInSec(seconds);
+  }
+
   function resetOtpState() {
     setLoginStep("credentials");
     setOtp("");
     setOtpToken("");
     setEmailHint("");
+    setResendInSec(0);
   }
 
   async function runLogin() {
@@ -153,6 +167,7 @@ export default function AdminLoginPage() {
         requiresOtp?: boolean;
         otpToken?: string;
         emailHint?: string;
+        resendCooldownSec?: number;
       };
 
       if (!res.ok) {
@@ -179,6 +194,7 @@ export default function AdminLoginPage() {
       setEmailHint(data.emailHint || email);
       setOtp("");
       setLoginStep("otp");
+      startResendCooldown(data.resendCooldownSec ?? 30);
       clearAlert();
       showAlert("warning", `OTP sent to ${data.emailHint || "your email"}.`);
     } catch (err) {
@@ -227,6 +243,51 @@ export default function AdminLoginPage() {
 
       clearAlert();
       router.push("/admin");
+    } catch {
+      showAlert("error", "Network error. Please try again.");
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function runResendOtp() {
+    clearAlert();
+    if (!otpToken) {
+      showAlert("error", "OTP session expired. Please login again.");
+      resetOtpState();
+      return;
+    }
+    if (resendInSec > 0 || busy) return;
+
+    setBusy(true);
+    try {
+      const res = await fetch("/api/admin/auth/resend-otp", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ otpToken }),
+      });
+      const data = (await res.json().catch(() => ({}))) as {
+        error?: string;
+        otpToken?: string;
+        emailHint?: string;
+        resendCooldownSec?: number;
+        retryAfterSec?: number;
+      };
+
+      if (!res.ok) {
+        if (typeof data.retryAfterSec === "number" && data.retryAfterSec > 0) {
+          startResendCooldown(data.retryAfterSec);
+        }
+        showAlert("error", data.error || "Could not resend OTP.");
+        if (res.status === 410) resetOtpState();
+        return;
+      }
+
+      if (data.otpToken) setOtpToken(data.otpToken);
+      if (data.emailHint) setEmailHint(data.emailHint);
+      setOtp("");
+      startResendCooldown(data.resendCooldownSec ?? 30);
+      showAlert("warning", `OTP resent to ${data.emailHint || emailHint || "your email"}.`);
     } catch {
       showAlert("error", "Network error. Please try again.");
     } finally {
@@ -429,17 +490,27 @@ export default function AdminLoginPage() {
         </button>
 
         {showOtpStep ? (
-          <button
-            type="button"
-            className="admin-login-secondary"
-            onClick={() => {
-              resetOtpState();
-              clearAlert();
-            }}
-            disabled={busy}
-          >
-            Back to login
-          </button>
+          <>
+            <button
+              type="button"
+              className="admin-login-secondary"
+              onClick={() => void runResendOtp()}
+              disabled={busy || resendInSec > 0}
+            >
+              {resendInSec > 0 ? `Resend OTP in ${resendInSec}s` : "Resend OTP"}
+            </button>
+            <button
+              type="button"
+              className="admin-login-secondary"
+              onClick={() => {
+                resetOtpState();
+                clearAlert();
+              }}
+              disabled={busy}
+            >
+              Back to login
+            </button>
+          </>
         ) : null}
 
         {!showSetup && !showOtpStep && status?.bootstrapEnabled ? (

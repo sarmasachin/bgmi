@@ -80,6 +80,7 @@ export async function POST(request: NextRequest) {
   const otp = generateAdminOtpCode();
   let otpToken: string;
   let expiresInSec: number;
+  let resendCooldownSec = 30;
   try {
     const created = createAdminLoginOtp({
       userId: String(user.id),
@@ -88,6 +89,7 @@ export async function POST(request: NextRequest) {
     });
     otpToken = created.otpToken;
     expiresInSec = created.expiresInSec;
+    resendCooldownSec = created.resendCooldownSec;
   } catch (err) {
     console.error("[admin-login] otp create failed:", err);
     return NextResponse.json(
@@ -130,6 +132,7 @@ export async function POST(request: NextRequest) {
     requiresOtp: true,
     otpToken,
     expiresInSec,
+    resendCooldownSec,
     emailHint: maskEmail(email),
   });
 }
