@@ -33,6 +33,8 @@ const ACTION_LABELS: Record<string, string> = {
   "testimonial.delete": "Deleted a testimonial",
   "comment.moderate": "Updated a comment",
   "comment.delete": "Deleted a comment",
+  "contact.status": "Updated a contact message",
+  "contact.delete": "Deleted a contact message",
   "news.create": "Created a news post",
   "news.update": "Updated a news post",
   "news.status.update": "Changed news status",
