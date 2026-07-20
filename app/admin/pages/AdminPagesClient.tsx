@@ -34,7 +34,8 @@ function coerceCloneGame(value: unknown): CloneGame {
 function normalizeSlugInput(next: string) {
   const compact = next.replace(/\s+/g, "-").replace(/-+/g, "-");
   if (!compact) return "";
-  return compact.startsWith("/") ? compact : `/${compact}`;
+  // Leading "/" is not stored — the public URL path already includes it.
+  return compact.replace(/^\/+/, "").replace(/\/+$/, "").toLowerCase();
 }
 
 function slugifyFromTitle(input: string) {
@@ -47,8 +48,9 @@ function slugifyFromTitle(input: string) {
     .replace(/\/+/g, "/")
     .replace(/\/-/g, "/")
     .replace(/-\/+/g, "/")
-    .replace(/^-+|-+$/g, "");
-  return base ? `/${base}` : "";
+    .replace(/^-+|-+$/g, "")
+    .replace(/^\/+|\/+$/g, "");
+  return base;
 }
 
 function parseContent(content: unknown) {
@@ -205,12 +207,20 @@ export default function AdminPagesClient({ initialRows }: Props) {
   }, [title, seoDescription, content]);
 
   const previewSlug = useMemo(() => normalizeSlugInput(slug), [slug]);
-  const previewUrl = previewSlug ? `${previewSlug}?preview=1` : "";
+  const editingStatus = useMemo(
+    () => (editingId ? rows.find((row) => row.id === editingId)?.status : undefined),
+    [editingId, rows],
+  );
+  const previewUrl = previewSlug
+    ? editingStatus === "published"
+      ? `/${previewSlug}`
+      : `/${previewSlug}?preview=1`
+    : "";
 
   const socialPreviewTitle = socialTitle.trim() || seoTitle.trim() || title.trim() || "Social title preview";
   const socialPreviewDescription =
     socialDescription.trim() || seoDescription.trim() || "Social description preview appears here.";
-  const socialPreviewUrl = canonicalUrl.trim() || (previewSlug ? `https://example.com${previewSlug}` : "https://example.com/custom-url");
+  const socialPreviewUrl = canonicalUrl.trim() || (previewSlug ? `https://example.com/${previewSlug}` : "https://example.com/custom-url");
 
   async function onSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -306,14 +316,23 @@ export default function AdminPagesClient({ initialRows }: Props) {
     }
   }
 
-  async function publishPage(id: string) {
+  async function setPageStatus(id: string, status: "draft" | "published") {
+    const publishing = status === "published";
     try {
       const res = await fetch("/api/admin/pages", {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ id, status: "published" }),
+        body: JSON.stringify({ id, status }),
       });
-      setMessage(res.ok ? "Page published." : "Publish failed.");
+      setMessage(
+        res.ok
+          ? publishing
+            ? "Page published."
+            : "Page unpublished. It is no longer live."
+          : publishing
+            ? "Publish failed."
+            : "Unpublish failed.",
+      );
       if (res.ok) await loadRows();
     } catch {
       setMessage("Network error. Please retry.");
@@ -332,6 +351,7 @@ export default function AdminPagesClient({ initialRows }: Props) {
 
   return (
     <>
+      {!showForm ? (
       <section className="admin-section">
         <div className="admin-section-head-row">
           <h1>Home Template Clones</h1>
@@ -365,19 +385,37 @@ export default function AdminPagesClient({ initialRows }: Props) {
                 <tr key={row.id}>
                   <td>{row.title}</td>
                   <td>{row.status}</td>
-                  <td>{row.slug}</td>
+                  <td>{normalizeSlugInput(row.slug) || row.slug}</td>
                   <td>{row.templateType}</td>
                   <td>{row.game === "pubg" ? "PUBG Mobile" : "BGMI"}</td>
                   <td>{row.seoTitle || "-"}</td>
                   <td>{row.seoDescription || "-"}</td>
                   <td className="admin-pages-actions">
                     <div className="admin-pages-actions-wrap">
-                      <button type="button" className="admin-pages-btn admin-pages-btn-publish" onClick={() => void publishPage(row.id)}>
-                        Publish
-                      </button>
+                      {row.status === "published" ? (
+                        <button
+                          type="button"
+                          className="admin-pages-btn admin-pages-btn-edit"
+                          onClick={() => void setPageStatus(row.id, "draft")}
+                        >
+                          Unpublish
+                        </button>
+                      ) : (
+                        <button
+                          type="button"
+                          className="admin-pages-btn admin-pages-btn-publish"
+                          onClick={() => void setPageStatus(row.id, "published")}
+                        >
+                          Publish
+                        </button>
+                      )}
                       <a
                         className="admin-pages-btn admin-pages-btn-preview"
-                        href={`${row.slug.startsWith("/") ? row.slug : `/${row.slug}`}?preview=1`}
+                        href={
+                          row.status === "published"
+                            ? `/${normalizeSlugInput(row.slug)}`
+                            : `/${normalizeSlugInput(row.slug)}?preview=1`
+                        }
                         target="_blank"
                         rel="noreferrer"
                       >
@@ -390,7 +428,7 @@ export default function AdminPagesClient({ initialRows }: Props) {
                           setShowForm(true);
                           setEditingId(row.id);
                           setTitle(row.title);
-                          setSlug(row.slug);
+                          setSlug(normalizeSlugInput(row.slug));
                           setSlugManualOverride(true);
                           setSeoTitle(row.seoTitle ?? "");
                           setSeoDescription(row.seoDescription ?? "");
@@ -417,6 +455,7 @@ export default function AdminPagesClient({ initialRows }: Props) {
           </table>
         </div>
       </section>
+      ) : null}
       {showForm ? (
       <section className="admin-section">
         <div className="admin-section-head-row">
@@ -461,7 +500,7 @@ export default function AdminPagesClient({ initialRows }: Props) {
           />
           <input
             name="slug"
-            placeholder="/custom-url"
+            placeholder="custom-url"
             value={slug}
             onChange={(e) => {
               setSlugManualOverride(true);

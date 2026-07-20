@@ -8,6 +8,7 @@ import { isAdminMutationOriginAllowed } from "@/src/server/adminRequestOrigin";
 
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
+  const isPreview = request.nextUrl.searchParams.get("preview") === "1";
 
   if (pathname === "/admin/ads" || pathname === "/admin/ads/") {
     return NextResponse.redirect(new URL("/admin/ad-placements", request.url));
@@ -17,7 +18,11 @@ export async function middleware(request: NextRequest) {
   const isAdminApi = pathname.startsWith("/api/admin");
 
   if (!isAdminPage && !isAdminApi) {
-    return NextResponse.next();
+    const response = NextResponse.next();
+    if (isPreview) {
+      response.headers.set("X-Robots-Tag", "noindex, nofollow, noarchive");
+    }
+    return response;
   }
 
   if (isAdminApi && !isAdminMutationOriginAllowed(request)) {
@@ -49,5 +54,13 @@ export async function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/admin/:path*", "/api/admin/:path*"],
+  matcher: [
+    "/admin/:path*",
+    "/api/admin/:path*",
+    /*
+     * Public pages: attach X-Robots-Tag on ?preview=1 so draft preview URLs stay unindexed.
+     * Skip Next internals and static files.
+     */
+    "/((?!_next/static|_next/image|favicon.ico|.*\\..*).*)",
+  ],
 };

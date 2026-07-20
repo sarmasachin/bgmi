@@ -1,14 +1,11 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { AdSlot } from "@/src/components/AdSlot";
-import { RatingWidget } from "@/src/components/RatingWidget";
-import { ratingWidgetRemountKey } from "@/src/lib/ratingWidgetKey";
 import { SiteFooter } from "@/src/components/SiteFooter";
 import { SensCalculator } from "@/src/features/sensCalculator/SensCalculator";
 import { isAdminLoggedIn } from "@/src/server/auth";
 import { getCalculatorPhoneModels } from "@/src/server/repositories/calculatorPhoneModelsRepository";
 import { getPageBySlug, getPublishedPageBySlug } from "@/src/server/repositories/pagesRepository";
-import { getRatingSummary } from "@/src/server/repositories/ratingSummaryRepository";
 import { toCanonicalUrl } from "@/src/lib/siteUrl";
 import { buildSocialMetadata } from "@/src/lib/socialMeta";
 
@@ -75,10 +72,29 @@ async function getPageForSlug(slug: string, allowDraftPreview = false) {
   return (await getPublishedPageBySlug(`/${slug}`)) ?? (await getPublishedPageBySlug(slug));
 }
 
-export async function generateMetadata({ params }: Props): Promise<Metadata> {
+export async function generateMetadata({ params, searchParams }: Props): Promise<Metadata> {
   const { slug } = await params;
-  const page = await getPageForSlug(slug, false);
-  if (!page) return {};
+  const query = await searchParams;
+  const isPreview = query.preview === "1";
+  const allowDraftPreview = isPreview && (await isAdminLoggedIn());
+  const page = await getPageForSlug(slug, allowDraftPreview);
+
+  const previewRobots: Metadata["robots"] = isPreview
+    ? {
+        index: false,
+        follow: false,
+        nocache: true,
+        googleBot: {
+          index: false,
+          follow: false,
+          noimageindex: true,
+        },
+      }
+    : undefined;
+
+  if (!page) {
+    return previewRobots ? { robots: previewRobots } : {};
+  }
 
   const extracted = extractContentData(page.content);
   const title = extracted.socialTitle.trim() || page.seoTitle?.trim() || page.title;
@@ -93,6 +109,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     alternates: {
       canonical,
     },
+    ...(previewRobots ? { robots: previewRobots } : {}),
     ...buildSocialMetadata({
       title,
       description,
@@ -118,7 +135,6 @@ export default async function DynamicTemplatePage({ params, searchParams }: Prop
   const articleHtml = extracted.html;
   const templateType = extracted.templateType;
   const calculatorGame = extracted.game;
-  const ratingSummary = await getRatingSummary("tool", slug);
 
   if (templateType === "article") {
     return (
@@ -133,13 +149,6 @@ export default async function DynamicTemplatePage({ params, searchParams }: Prop
                 <p>No article content found for this clone.</p>
               )}
             </div>
-            <RatingWidget
-              key={ratingWidgetRemountKey("tool", slug)}
-              title="Rate this page"
-              targetType="tool"
-              targetId={slug}
-              initialSummary={ratingSummary}
-            />
           </div>
         </div>
         <SiteFooter />
@@ -161,13 +170,6 @@ export default async function DynamicTemplatePage({ params, searchParams }: Prop
                   <p>No article content found for this clone.</p>
                 )}
               </div>
-              <RatingWidget
-                key={ratingWidgetRemountKey("tool", slug)}
-                title="Rate this page"
-                targetType="tool"
-                targetId={slug}
-                initialSummary={ratingSummary}
-              />
             </div>
           </div>
         </div>
@@ -183,13 +185,6 @@ export default async function DynamicTemplatePage({ params, searchParams }: Prop
         <AdSlot slotKey="home_above_calculator" />
         <SensCalculator key={calculatorGame} phoneModels={phoneModels} game={calculatorGame} />
         <AdSlot slotKey="home_between_tool_and_article" />
-        <RatingWidget
-          key={ratingWidgetRemountKey("tool", slug)}
-          title="Rate this page"
-          targetType="tool"
-          targetId={slug}
-          initialSummary={ratingSummary}
-        />
       </main>
       <div className="light-content-wrapper">
         <div className="content-inner">

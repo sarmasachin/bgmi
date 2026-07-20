@@ -37,6 +37,17 @@ function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null && !Array.isArray(value);
 }
 
+/** Store clone slugs without a leading slash; public URLs already include `/`. */
+function normalizePageSlug(slug: string) {
+  return slug.trim().replace(/^\/+/, "").replace(/\/+$/, "").toLowerCase();
+}
+
+function pageSlugVariants(slug: string) {
+  const normalized = normalizePageSlug(slug);
+  if (!normalized) return slug.trim() ? [slug.trim()] : [];
+  return Array.from(new Set([normalized, `/${normalized}`]));
+}
+
 function coerceCloneGame(value: unknown): CloneGame | undefined {
   return value === "pubg" || value === "bgmi" ? value : undefined;
 }
@@ -104,16 +115,23 @@ function buildContent(input: { html?: string; existing?: unknown; metaPatch?: Pa
 }
 
 export async function pageSlugExists(slug: string, excludeId?: string) {
+  const variants = pageSlugVariants(slug);
+  if (!variants.length) return false;
+
   const dbData = await tryPrisma(async () => {
     const found = await prisma.pageTemplate.findFirst({
-      where: excludeId ? { slug, id: { not: excludeId } } : { slug },
+      where: excludeId
+        ? { slug: { in: variants }, id: { not: excludeId } }
+        : { slug: { in: variants } },
       select: { id: true },
     });
     return Boolean(found);
   });
 
   if (dbData !== null) return dbData;
-  return mockStore.pages.some((item) => item.slug === slug && item.id !== excludeId);
+  return mockStore.pages.some(
+    (item) => variants.includes(item.slug) && item.id !== excludeId,
+  );
 }
 
 export async function listPages() {
@@ -176,9 +194,14 @@ export const getPageBySlug = cache(async function getPageBySlug(slug: string) {
 });
 
 export async function createPage(input: PageInput) {
+  const slug = normalizePageSlug(input.slug);
+  if (!slug) {
+    throw new Error("INVALID_SLUG");
+  }
+
   const dbData = await tryPrismaLong(async () => {
-    const existing = await prisma.pageTemplate.findUnique({
-      where: { slug: input.slug },
+    const existing = await prisma.pageTemplate.findFirst({
+      where: { slug: { in: pageSlugVariants(slug) } },
       select: { id: true },
     });
     if (existing) {
@@ -205,7 +228,7 @@ export async function createPage(input: PageInput) {
     const page = await prisma.pageTemplate.create({
       data: {
         title: input.title,
-        slug: input.slug,
+        slug,
         status: input.status,
         seoTitle: input.seoTitle,
         seoDescription: input.seoDescription,
@@ -220,7 +243,7 @@ export async function createPage(input: PageInput) {
       await prisma.newsPost.create({
         data: {
           title: input.title,
-          slug: input.slug.replaceAll("/", "-").replace(/^-+/, "") || `page-${Date.now()}`,
+          slug: slug.replaceAll("/", "-").replace(/^-+/, "") || `page-${Date.now()}`,
           status: "published",
           content: typeof nextContent === "object" && nextContent ? nextContent : {},
         },
@@ -251,7 +274,7 @@ export async function createPage(input: PageInput) {
     },
   });
 
-  const slugExists = mockStore.pages.some((item) => item.slug === input.slug);
+  const slugExists = mockStore.pages.some((item) => pageSlugVariants(slug).includes(item.slug));
   if (slugExists) {
     throw new Error("SLUG_EXISTS");
   }
@@ -259,6 +282,7 @@ export async function createPage(input: PageInput) {
   const page = {
     id: `p${Date.now()}`,
     ...input,
+    slug,
     canonicalUrl: input.canonicalUrl,
     ogImageUrl: input.ogImageUrl,
     content: nextContent,
@@ -268,7 +292,7 @@ export async function createPage(input: PageInput) {
     mockStore.news.unshift({
       id: `n${Date.now()}`,
       title: input.title,
-      slug: input.slug.replaceAll("/", "-").replace(/^-+/, "") || `page-${Date.now()}`,
+      slug: slug.replaceAll("/", "-").replace(/^-+/, "") || `page-${Date.now()}`,
       status: "published",
       content: typeof nextContent === "object" && nextContent ? nextContent : {},
     });
@@ -277,6 +301,14 @@ export async function createPage(input: PageInput) {
 }
 
 export async function updatePage(id: string, payload: Partial<PageInput>) {
+  const normalizedSlug =
+    payload.slug !== undefined ? normalizePageSlug(payload.slug) : undefined;
+  if (payload.slug !== undefined && !normalizedSlug) {
+    throw new Error("INVALID_SLUG");
+  }
+  const nextPayload =
+    normalizedSlug !== undefined ? { ...payload, slug: normalizedSlug } : payload;
+
   const dbData = await tryPrismaLong(async () => {
     const current = await prisma.pageTemplate.findUnique({
       where: { id },
@@ -284,45 +316,48 @@ export async function updatePage(id: string, payload: Partial<PageInput>) {
     });
     if (!current) return { kind: "not_found" as const };
 
-    if (payload.slug && payload.slug !== current.slug) {
+    if (nextPayload.slug && nextPayload.slug !== current.slug) {
       const duplicate = await prisma.pageTemplate.findFirst({
-        where: { slug: payload.slug, id: { not: id } },
+        where: {
+          slug: { in: pageSlugVariants(nextPayload.slug) },
+          id: { not: id },
+        },
         select: { id: true },
       });
       if (duplicate) throw new Error("SLUG_EXISTS");
     }
 
     const shouldPatchContent =
-      payload.content !== undefined ||
-      payload.templateType !== undefined ||
-      payload.game !== undefined ||
-      payload.socialTitle !== undefined ||
-      payload.socialDescription !== undefined ||
-      payload.socialImageAlt !== undefined;
+      nextPayload.content !== undefined ||
+      nextPayload.templateType !== undefined ||
+      nextPayload.game !== undefined ||
+      nextPayload.socialTitle !== undefined ||
+      nextPayload.socialDescription !== undefined ||
+      nextPayload.socialImageAlt !== undefined;
 
     const page = await prisma.pageTemplate.update({
       where: { id },
       data: {
-        title: payload.title,
-        slug: payload.slug,
-        seoTitle: payload.seoTitle,
-        seoDescription: payload.seoDescription,
-        canonicalUrl: payload.canonicalUrl,
-        ogImageUrl: payload.ogImageUrl,
+        title: nextPayload.title,
+        slug: nextPayload.slug,
+        seoTitle: nextPayload.seoTitle,
+        seoDescription: nextPayload.seoDescription,
+        canonicalUrl: nextPayload.canonicalUrl,
+        ogImageUrl: nextPayload.ogImageUrl,
         content: shouldPatchContent
           ? buildContent({
-              html: payload.content,
+              html: nextPayload.content,
               existing: current.content,
               metaPatch: {
-                templateType: payload.templateType,
-                game: payload.game,
-                socialTitle: payload.socialTitle,
-                socialDescription: payload.socialDescription,
-                socialImageAlt: payload.socialImageAlt,
+                templateType: nextPayload.templateType,
+                game: nextPayload.game,
+                socialTitle: nextPayload.socialTitle,
+                socialDescription: nextPayload.socialDescription,
+                socialImageAlt: nextPayload.socialImageAlt,
               },
             })
           : undefined,
-        status: payload.status,
+        status: nextPayload.status,
       },
     });
     return { kind: "ok" as const, page };
@@ -337,37 +372,39 @@ export async function updatePage(id: string, payload: Partial<PageInput>) {
 
   const page = mockStore.pages.find((item) => item.id === id);
   if (!page) return null;
-  if (payload.slug && payload.slug !== page.slug) {
-    const duplicate = mockStore.pages.find((item) => item.slug === payload.slug && item.id !== id);
+  if (nextPayload.slug && nextPayload.slug !== page.slug) {
+    const duplicate = mockStore.pages.find(
+      (item) => pageSlugVariants(nextPayload.slug!).includes(item.slug) && item.id !== id,
+    );
     if (duplicate) throw new Error("SLUG_EXISTS");
   }
 
-  if (payload.title !== undefined) page.title = payload.title;
-  if (payload.slug !== undefined) page.slug = payload.slug;
-  if (payload.status !== undefined) page.status = payload.status;
-  if (payload.seoTitle !== undefined) page.seoTitle = payload.seoTitle;
-  if (payload.seoDescription !== undefined) page.seoDescription = payload.seoDescription;
-  if (payload.canonicalUrl !== undefined) page.canonicalUrl = payload.canonicalUrl;
-  if (payload.ogImageUrl !== undefined) page.ogImageUrl = payload.ogImageUrl;
+  if (nextPayload.title !== undefined) page.title = nextPayload.title;
+  if (nextPayload.slug !== undefined) page.slug = nextPayload.slug;
+  if (nextPayload.status !== undefined) page.status = nextPayload.status;
+  if (nextPayload.seoTitle !== undefined) page.seoTitle = nextPayload.seoTitle;
+  if (nextPayload.seoDescription !== undefined) page.seoDescription = nextPayload.seoDescription;
+  if (nextPayload.canonicalUrl !== undefined) page.canonicalUrl = nextPayload.canonicalUrl;
+  if (nextPayload.ogImageUrl !== undefined) page.ogImageUrl = nextPayload.ogImageUrl;
 
   const shouldPatchContent =
-    payload.content !== undefined ||
-    payload.templateType !== undefined ||
-    payload.game !== undefined ||
-    payload.socialTitle !== undefined ||
-    payload.socialDescription !== undefined ||
-    payload.socialImageAlt !== undefined;
+    nextPayload.content !== undefined ||
+    nextPayload.templateType !== undefined ||
+    nextPayload.game !== undefined ||
+    nextPayload.socialTitle !== undefined ||
+    nextPayload.socialDescription !== undefined ||
+    nextPayload.socialImageAlt !== undefined;
 
   if (shouldPatchContent) {
     page.content = buildContent({
-      html: payload.content,
+      html: nextPayload.content,
       existing: page.content,
       metaPatch: {
-        templateType: payload.templateType,
-        game: payload.game,
-        socialTitle: payload.socialTitle,
-        socialDescription: payload.socialDescription,
-        socialImageAlt: payload.socialImageAlt,
+        templateType: nextPayload.templateType,
+        game: nextPayload.game,
+        socialTitle: nextPayload.socialTitle,
+        socialDescription: nextPayload.socialDescription,
+        socialImageAlt: nextPayload.socialImageAlt,
       },
     });
   }

@@ -31,6 +31,9 @@ function mapPageWriteError(error: unknown) {
   if (error instanceof Error && error.message === "SLUG_EXISTS") {
     return NextResponse.json({ error: "Slug already exists." }, { status: 409 });
   }
+  if (error instanceof Error && error.message === "INVALID_SLUG") {
+    return NextResponse.json({ error: "Slug is required." }, { status: 400 });
+  }
   if (error instanceof Error && error.message === "DB_UNAVAILABLE") {
     return NextResponse.json(
       { error: "Database temporarily unavailable. Please try again." },
