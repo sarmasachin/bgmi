@@ -101,7 +101,7 @@ export async function POST(request: NextRequest) {
   try {
     const mail = await sendEmail(
       email,
-      "Your admin login OTP — Sensitivity Settings",
+      "Your admin login OTP",
       buildAdminOtpEmailHtml(otp),
     );
     if (!mail.sent) {
