@@ -30,6 +30,20 @@ export async function SiteFooter({ settings: settingsProp }: SiteFooterProps = {
     return item;
   });
 
+  const resourceLinks = (() => {
+    const links = [...settings.footerLinks];
+    const hasReport = links.some(
+      (item) =>
+        /report\s*issue/i.test(item.label) ||
+        /topic=report/i.test(item.href) ||
+        /report-issue/i.test(item.href),
+    );
+    if (!hasReport) {
+      links.push({ label: "Report Issue", href: "/contact?topic=report" });
+    }
+    return links;
+  })();
+
   return (
     <footer className="site-footer">
       <div className="site-footer-accent" aria-hidden />
@@ -71,7 +85,7 @@ export async function SiteFooter({ settings: settingsProp }: SiteFooterProps = {
           <div className="site-footer-col">
             <p className="site-footer-col-title">Resources</p>
             <ul className="site-footer-links">
-              {settings.footerLinks.map((page) => (
+              {resourceLinks.map((page) => (
                 <li key={`${page.href}-${page.label}`}>
                   <Link href={page.href} className="site-footer-link">
                     {page.label}
@@ -94,7 +108,7 @@ export async function SiteFooter({ settings: settingsProp }: SiteFooterProps = {
         <div className="site-footer-bottom-inner">
           <p className="site-footer-copyright">{copyrightLine}</p>
           <div className="site-footer-bottom-links">
-            {settings.footerLinks.slice(0, 3).map((page) => (
+            {resourceLinks.slice(0, 4).map((page) => (
               <Link key={`bottom-${page.href}-${page.label}`} href={page.href} className="site-footer-bottom-link">
                 {page.label}
               </Link>

@@ -1,6 +1,7 @@
 "use client";
 
-import { FormEvent, useState } from "react";
+import { FormEvent, useEffect, useState } from "react";
+import { useSearchParams } from "next/navigation";
 
 type FormState = {
   name: string;
@@ -16,11 +17,26 @@ const INITIAL: FormState = {
   message: "",
 };
 
+function subjectFromParams(searchParams: URLSearchParams) {
+  const subject = searchParams.get("subject")?.trim();
+  if (subject) return subject.slice(0, 120);
+  const topic = searchParams.get("topic")?.trim().toLowerCase();
+  if (topic === "report" || topic === "issue") return "Report an issue";
+  return "";
+}
+
 export function ContactForm() {
+  const searchParams = useSearchParams();
   const [form, setForm] = useState<FormState>(INITIAL);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState(false);
+
+  useEffect(() => {
+    const prefill = subjectFromParams(searchParams);
+    if (!prefill) return;
+    setForm((prev) => (prev.subject ? prev : { ...prev, subject: prefill }));
+  }, [searchParams]);
 
   function update<K extends keyof FormState>(key: K, value: FormState[K]) {
     setForm((prev) => ({ ...prev, [key]: value }));
@@ -42,7 +58,8 @@ export function ContactForm() {
         setError(data.error || "Could not send message. Please try again.");
         return;
       }
-      setForm(INITIAL);
+      const keepSubject = subjectFromParams(searchParams);
+      setForm({ ...INITIAL, subject: keepSubject });
       setSuccess(true);
     } catch {
       setError("Network error. Please try again.");

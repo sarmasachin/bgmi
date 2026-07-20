@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { Suspense } from "react";
 import { ContactForm } from "@/src/components/ContactForm";
 import { toCanonicalUrl } from "@/src/lib/siteUrl";
 import { buildSocialMetadata } from "@/src/lib/socialMeta";
@@ -41,7 +42,9 @@ export default function ContactPage() {
         <div className="contact-panel">
           <h2 className="contact-panel-title">Send a message</h2>
           <p className="contact-panel-lead">Fill the form below. All fields are required.</p>
-          <ContactForm />
+          <Suspense fallback={<p className="contact-panel-lead">Loading form…</p>}>
+            <ContactForm />
+          </Suspense>
         </div>
       </section>
     </main>
