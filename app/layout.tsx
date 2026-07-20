@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Geist } from "next/font/google";
 import { PublicSiteScripts } from "@/src/components/PublicSiteScripts";
 import { organizationSchema, softwareAppSchema, websiteSchema } from "@/src/lib/schema";
 import { parseGoogleSiteVerification } from "@/src/lib/headSnippets";
@@ -8,14 +8,9 @@ import { DEFAULT_OG_IMAGE_PATH } from "@/src/lib/socialMeta";
 import { getHeadSnippets } from "@/src/server/repositories/settingsRepository";
 import "./globals.css";
 
+/* Geist Mono was unused; keep variable Sans only (one file, weights used in CSS) */
 const geistSans = Geist({
   variable: "--font-geist-sans",
-  subsets: ["latin"],
-  display: "swap",
-});
-
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
   subsets: ["latin"],
   display: "swap",
 });
@@ -101,7 +96,7 @@ export default async function RootLayout({
   const baseUrl = getSiteUrl();
 
   return (
-    <html lang="en" className={`${geistSans.variable} ${geistMono.variable}`}>
+    <html lang="en" className={geistSans.variable}>
       <body>
         {/* Critical above-the-fold styles so LCP title can paint before the CSS chunk */}
         <style
