@@ -3,6 +3,10 @@ import { z } from "zod";
 import { checkRateLimit } from "@/src/server/rateLimit";
 import { createContactMessage } from "@/src/server/repositories/contactRepository";
 import { sendEmail } from "@/src/server/services/emailService";
+import {
+  buildContactAdminNotifyHtml,
+  buildContactThankYouEmailHtml,
+} from "@/src/lib/contactEmailTemplates";
 
 const SUPPORT_EMAIL = "support@sensitivitysettings.com";
 
@@ -12,14 +16,6 @@ const schema = z.object({
   subject: z.string().trim().min(3).max(120),
   message: z.string().trim().min(10).max(4000),
 });
-
-function escapeHtml(value: string) {
-  return value
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;");
-}
 
 export async function POST(request: NextRequest) {
   const ip = request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || "local";
@@ -50,24 +46,34 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "Could not save message. Please try again." }, { status: 500 });
   }
 
-  const html = `
-    <div style="font-family:Arial,Helvetica,sans-serif;line-height:1.55;color:#0f172a;">
-      <h2 style="margin:0 0 12px;">New contact message</h2>
-      <p style="margin:0 0 8px;"><strong>Name:</strong> ${escapeHtml(name)}</p>
-      <p style="margin:0 0 8px;"><strong>Email:</strong> ${escapeHtml(email)}</p>
-      <p style="margin:0 0 8px;"><strong>Subject:</strong> ${escapeHtml(subject)}</p>
-      <p style="margin:16px 0 8px;"><strong>Message:</strong></p>
-      <pre style="white-space:pre-wrap;font-family:Arial,Helvetica,sans-serif;background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;padding:12px;margin:0;">${escapeHtml(message)}</pre>
-    </div>
-  `.trim();
-
+  // 1) Notify support inbox
   try {
-    const result = await sendEmail(SUPPORT_EMAIL, `[Contact] ${subject}`, html, { replyTo: email });
-    if (!result.sent) {
-      console.warn("[contact] saved to DB but email not sent:", result.reason, saved.id);
+    const adminMail = await sendEmail(
+      SUPPORT_EMAIL,
+      `[Contact] ${subject}`,
+      buildContactAdminNotifyHtml({ name, email, subject, message }),
+      { replyTo: email },
+    );
+    if (!adminMail.sent) {
+      console.warn("[contact] saved to DB but support email not sent:", adminMail.reason, saved.id);
     }
   } catch (err) {
-    console.error("[contact] saved to DB but email failed:", err, saved.id);
+    console.error("[contact] saved to DB but support email failed:", err, saved.id);
+  }
+
+  // 2) Thank-you confirmation to the user
+  try {
+    const thanksMail = await sendEmail(
+      email,
+      "Thanks for contacting Sensitivity Settings",
+      buildContactThankYouEmailHtml({ name, subject }),
+      { replyTo: SUPPORT_EMAIL },
+    );
+    if (!thanksMail.sent) {
+      console.warn("[contact] thank-you email not sent:", thanksMail.reason, saved.id);
+    }
+  } catch (err) {
+    console.error("[contact] thank-you email failed:", err, saved.id);
   }
 
   return NextResponse.json({ ok: true, id: saved.id });
