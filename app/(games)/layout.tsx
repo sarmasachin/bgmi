@@ -20,10 +20,10 @@ export const dynamic = "force-dynamic";
 /**
  * Shared chrome for BGMI (/) and PUBG (/pubg).
  * Hero title comes from {children} (per-page RSC) so LCP is not blocked by calculator data.
- * Layout stays mounted on game switch so the calculator updates instantly.
  *
- * Calculator + article + footer share one Suspense so refresh cannot show footer/article
- * in the calculator slot before the tool paints.
+ * Calculator loads first (outer Suspense). Article streams in a nested Suspense BELOW the tool
+ * so it cannot paint above the calculator — without waiting on article/FAQ before showing the tool.
+ * Calculator feature code is not touched here.
  */
 export default async function GamesLayout({ children }: { children: React.ReactNode }) {
   const settings = await getSettings();
@@ -35,33 +35,20 @@ export default async function GamesLayout({ children }: { children: React.ReactN
       </ClientErrorBoundary>
       {children}
       <Suspense fallback={<div className="games-main-fallback" aria-hidden />}>
-        <GamesBelowTitleChrome settings={settings} />
+        <GamesCalculatorChrome settings={settings} />
       </Suspense>
     </div>
   );
 }
 
-async function GamesBelowTitleChrome({ settings }: { settings: SiteSettings }) {
-  const [
-    adPlaces,
-    phoneModels,
-    bgmiTestimonials,
-    pubgTestimonials,
-    bgmiFaqItems,
-    pubgFaqItems,
-    bgmiArticleHtml,
-    pubgArticleHtml,
-  ] = await Promise.all([
+/** Fast path: only data needed to show the calculator + reviews. */
+async function GamesCalculatorChrome({ settings }: { settings: SiteSettings }) {
+  const [adPlaces, phoneModels, bgmiTestimonials, pubgTestimonials] = await Promise.all([
     getAdPlacementVisibility(),
     getCalculatorPhoneModels(),
     listApprovedTestimonials({ game: "bgmi" }),
     listApprovedTestimonials({ game: "pubg" }),
-    getGameFaqItems("bgmi"),
-    getGameFaqItems("pubg"),
-    getGameArticleHtml("bgmi"),
-    getGameArticleHtml("pubg"),
   ]);
-  const faqLd = faqSchema(bgmiFaqItems);
 
   return (
     <>
@@ -80,6 +67,26 @@ async function GamesBelowTitleChrome({ settings }: { settings: SiteSettings }) {
           />
         </ClientErrorBoundary>
       </main>
+      {/* Nested: article can only appear after calculator is already in the tree (DOM order fixed). */}
+      <Suspense fallback={null}>
+        <GamesArticleChrome />
+      </Suspense>
+      <SiteFooter settings={settings} />
+    </>
+  );
+}
+
+async function GamesArticleChrome() {
+  const [bgmiFaqItems, pubgFaqItems, bgmiArticleHtml, pubgArticleHtml] = await Promise.all([
+    getGameFaqItems("bgmi"),
+    getGameFaqItems("pubg"),
+    getGameArticleHtml("bgmi"),
+    getGameArticleHtml("pubg"),
+  ]);
+  const faqLd = faqSchema(bgmiFaqItems);
+
+  return (
+    <>
       {faqLd ? (
         <script
           type="application/ld+json"
@@ -94,7 +101,6 @@ async function GamesBelowTitleChrome({ settings }: { settings: SiteSettings }) {
           pubgArticleHtml={pubgArticleHtml}
         />
       </ClientErrorBoundary>
-      <SiteFooter settings={settings} />
     </>
   );
 }
