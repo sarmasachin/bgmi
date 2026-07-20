@@ -22,6 +22,7 @@ function subjectFromParams(searchParams: URLSearchParams) {
   if (subject) return subject.slice(0, 120);
   const topic = searchParams.get("topic")?.trim().toLowerCase();
   if (topic === "report" || topic === "issue") return "Report an issue";
+  if (topic === "feedback") return "Website feedback";
   return "";
 }
 

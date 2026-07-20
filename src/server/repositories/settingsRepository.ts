@@ -49,6 +49,7 @@ const defaultSettings = {
     { label: "Disclaimer", href: "/disclaimer" },
     { label: "Contact", href: "/contact" },
     { label: "Report Issue", href: "/contact?topic=report" },
+    { label: "Feedback", href: "/contact?topic=feedback" },
     { label: "News", href: "/news" },
     { label: "Sitemap", href: "/sitemap.xml" },
   ],

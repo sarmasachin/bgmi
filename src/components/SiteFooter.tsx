@@ -41,6 +41,12 @@ export async function SiteFooter({ settings: settingsProp }: SiteFooterProps = {
     if (!hasReport) {
       links.push({ label: "Report Issue", href: "/contact?topic=report" });
     }
+    const hasFeedback = links.some(
+      (item) => /feedback/i.test(item.label) || /topic=feedback/i.test(item.href),
+    );
+    if (!hasFeedback) {
+      links.push({ label: "Feedback", href: "/contact?topic=feedback" });
+    }
     return links;
   })();
 
