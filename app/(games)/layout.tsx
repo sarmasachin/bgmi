@@ -24,6 +24,8 @@ export const dynamic = "force-dynamic";
  * Shared chrome for BGMI (/) and PUBG (/pubg).
  * Hero title comes from {children} (per-page RSC) so LCP is not blocked by calculator data.
  * Layout stays mounted on game switch so the calculator updates instantly.
+ *
+ * Calculator + article share one Suspense so article cannot stream above the tool on refresh.
  */
 export default async function GamesLayout({ children }: { children: React.ReactNode }) {
   const settings = await getSettings();
@@ -34,58 +36,31 @@ export default async function GamesLayout({ children }: { children: React.ReactN
         <HomeHeader siteTitle={settings.homeDisplay.headerTitle} navigation={settings.navigation} />
       </ClientErrorBoundary>
       {children}
-      <main className="page-container">
-        <Suspense fallback={<div className="games-main-fallback" aria-hidden />}>
-          <GamesMainChrome />
-        </Suspense>
-      </main>
-      <Suspense fallback={null}>
-        <GamesFaqChrome />
+      <Suspense fallback={<div className="games-main-fallback" aria-hidden />}>
+        <GamesBelowTitleChrome />
       </Suspense>
       <SiteFooter settings={settings} />
     </div>
   );
 }
 
-async function GamesMainChrome() {
-  const [adPlaces, phoneModels, bgmiTestimonials, pubgTestimonials, homeRatingSummary] =
-    await Promise.all([
-      getAdPlacementVisibility(),
-      getCalculatorPhoneModels(),
-      listApprovedTestimonials({ game: "bgmi" }),
-      listApprovedTestimonials({ game: "pubg" }),
-      getRatingSummary("home"),
-    ]);
-
-  return (
-    <>
-      {adPlaces.home.home_above_calculator ? <AdSlot slotKey="home_above_calculator" /> : null}
-      <ClientErrorBoundary label="Calculator">
-        <SensCalculatorHost phoneModels={phoneModels} />
-      </ClientErrorBoundary>
-      {adPlaces.home.home_between_tool_and_article ? (
-        <AdSlot slotKey="home_between_tool_and_article" />
-      ) : null}
-      <ClientErrorBoundary label="Rating">
-        <RatingWidget
-          key={ratingWidgetRemountKey("home")}
-          title="Rate this calculator"
-          targetType="home"
-          initialSummary={homeRatingSummary}
-        />
-      </ClientErrorBoundary>
-      <ClientErrorBoundary label="Reviews">
-        <GameTestimonialsSection
-          bgmiTestimonials={bgmiTestimonials}
-          pubgTestimonials={pubgTestimonials}
-        />
-      </ClientErrorBoundary>
-    </>
-  );
-}
-
-async function GamesFaqChrome() {
-  const [bgmiFaqItems, pubgFaqItems, bgmiArticleHtml, pubgArticleHtml] = await Promise.all([
+async function GamesBelowTitleChrome() {
+  const [
+    adPlaces,
+    phoneModels,
+    bgmiTestimonials,
+    pubgTestimonials,
+    homeRatingSummary,
+    bgmiFaqItems,
+    pubgFaqItems,
+    bgmiArticleHtml,
+    pubgArticleHtml,
+  ] = await Promise.all([
+    getAdPlacementVisibility(),
+    getCalculatorPhoneModels(),
+    listApprovedTestimonials({ game: "bgmi" }),
+    listApprovedTestimonials({ game: "pubg" }),
+    getRatingSummary("home"),
     getGameFaqItems("bgmi"),
     getGameFaqItems("pubg"),
     getGameArticleHtml("bgmi"),
@@ -95,6 +70,29 @@ async function GamesFaqChrome() {
 
   return (
     <>
+      <main className="page-container">
+        {adPlaces.home.home_above_calculator ? <AdSlot slotKey="home_above_calculator" /> : null}
+        <ClientErrorBoundary label="Calculator">
+          <SensCalculatorHost phoneModels={phoneModels} />
+        </ClientErrorBoundary>
+        {adPlaces.home.home_between_tool_and_article ? (
+          <AdSlot slotKey="home_between_tool_and_article" />
+        ) : null}
+        <ClientErrorBoundary label="Rating">
+          <RatingWidget
+            key={ratingWidgetRemountKey("home")}
+            title="Rate this calculator"
+            targetType="home"
+            initialSummary={homeRatingSummary}
+          />
+        </ClientErrorBoundary>
+        <ClientErrorBoundary label="Reviews">
+          <GameTestimonialsSection
+            bgmiTestimonials={bgmiTestimonials}
+            pubgTestimonials={pubgTestimonials}
+          />
+        </ClientErrorBoundary>
+      </main>
       {faqLd ? (
         <script
           type="application/ld+json"
