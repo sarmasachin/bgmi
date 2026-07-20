@@ -13,6 +13,7 @@ type SidebarIconName =
   | "news"
   | "pages"
   | "comments"
+  | "contact"
   | "testimonials"
   | "notifications"
   | "ratings"
@@ -37,6 +38,7 @@ const items = [
   { label: "News", href: "/admin/news", icon: "news" as SidebarIconName },
   { label: "Pages", href: "/admin/pages", icon: "pages" as SidebarIconName },
   { label: "Comments", href: "/admin/comments", icon: "comments" as SidebarIconName },
+  { label: "Contact", href: "/admin/contact", icon: "contact" as SidebarIconName },
   { label: "Testimonials", href: "/admin/testimonials", icon: "testimonials" as SidebarIconName },
   { label: "Notifications", href: "/admin/notifications", icon: "notifications" as SidebarIconName },
   { label: "Ratings", href: "/admin/ratings", icon: "ratings" as SidebarIconName },
@@ -71,6 +73,8 @@ function SidebarIcon({ name }: { name: SidebarIconName }) {
       return <svg {...shared}><rect x="4" y="3" width="16" height="18" rx="2" /><path d="M8 7h8M8 11h8M8 15h6" /></svg>;
     case "comments":
       return <svg {...shared}><path d="M21 11.5a8.5 8.5 0 0 1-8.5 8.5c-1.7 0-3.3-.5-4.6-1.3L3 20l1.5-4.1A8.5 8.5 0 1 1 21 11.5Z" /></svg>;
+    case "contact":
+      return <svg {...shared}><rect x="3" y="5" width="18" height="14" rx="2" /><path d="m3 7 9 6 9-6" /></svg>;
     case "testimonials":
       return <svg {...shared}><path d="M7 8h6M7 12h8M7 16h5" /><path d="M5 4h14a2 2 0 0 1 2 2v14l-4-3H5a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2Z" /></svg>;
     case "notifications":

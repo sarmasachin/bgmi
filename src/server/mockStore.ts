@@ -33,6 +33,17 @@ type AdSlot = {
   code?: string;
 };
 
+type ContactMessage = {
+  id: string;
+  name: string;
+  email: string;
+  subject: string;
+  message: string;
+  status: string;
+  createdAt?: string | Date;
+  updatedAt?: string | Date;
+};
+
 export const mockStore = {
   news: [
     { id: "n1", title: "RTX 5090 Benchmark Results Leaked", slug: "rtx-5090", status: "published" },
@@ -49,6 +60,7 @@ export const mockStore = {
     },
   ] as PageClone[],
   comments: [{ id: "c1", name: "User", message: "Nice post", status: "pending", newsId: "n1" }],
+  contactMessages: [] as ContactMessage[],
   ads: [
     { id: "a1", slotKey: "home_above_calculator", enabled: false, code: "" },
     { id: "a2", slotKey: "home_between_tool_and_article", enabled: false, code: "" },
@@ -69,6 +81,7 @@ export function restoreMockBackup(payload: typeof mockStore) {
   mockStore.news = payload.news ?? [];
   mockStore.pages = payload.pages ?? [];
   mockStore.comments = payload.comments ?? [];
+  mockStore.contactMessages = payload.contactMessages ?? [];
   mockStore.ads = payload.ads ?? [];
   mockStore.users = payload.users ?? [];
 }

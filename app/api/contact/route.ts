@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { checkRateLimit } from "@/src/server/rateLimit";
+import { createContactMessage } from "@/src/server/repositories/contactRepository";
 import { sendEmail } from "@/src/server/services/emailService";
 
 const SUPPORT_EMAIL = "support@sensitivitysettings.com";
@@ -40,6 +41,15 @@ export async function POST(request: NextRequest) {
   }
 
   const { name, email, subject, message } = parsed.data;
+
+  let saved: { id: string };
+  try {
+    saved = await createContactMessage({ name, email, subject, message });
+  } catch (err) {
+    console.error("[contact] db save failed:", err);
+    return NextResponse.json({ error: "Could not save message. Please try again." }, { status: 500 });
+  }
+
   const html = `
     <div style="font-family:Arial,Helvetica,sans-serif;line-height:1.55;color:#0f172a;">
       <h2 style="margin:0 0 12px;">New contact message</h2>
@@ -52,26 +62,13 @@ export async function POST(request: NextRequest) {
   `.trim();
 
   try {
-    const result = await sendEmail(
-      SUPPORT_EMAIL,
-      `[Contact] ${subject}`,
-      html,
-      { replyTo: email },
-    );
+    const result = await sendEmail(SUPPORT_EMAIL, `[Contact] ${subject}`, html, { replyTo: email });
     if (!result.sent) {
-      if (process.env.NODE_ENV !== "production") {
-        console.info("[contact] SMTP not configured. Message accepted for local testing.", {
-          name,
-          email,
-          subject,
-        });
-        return NextResponse.json({ ok: true });
-      }
-      return NextResponse.json({ error: "Could not send message right now." }, { status: 503 });
+      console.warn("[contact] saved to DB but email not sent:", result.reason, saved.id);
     }
-    return NextResponse.json({ ok: true });
   } catch (err) {
-    console.error("[contact] send failed:", err);
-    return NextResponse.json({ error: "Could not send message. Please try again." }, { status: 503 });
+    console.error("[contact] saved to DB but email failed:", err, saved.id);
   }
+
+  return NextResponse.json({ ok: true, id: saved.id });
 }

@@ -129,19 +129,17 @@ model AuditLog {
   createdAt DateTime @default(now())
 }
 
-/// User testimonials (pending → approved). Max 20 approved; oldest approved removed on overflow.
-model Testimonial {
-  id          String    @id @default(cuid())
-  name        String
-  rating      Int
-  message     String
-  game        String
-  phoneModel  String?
-  showName    Boolean   @default(true)
-  status      String    @default("pending")
-  createdAt   DateTime  @default(now())
-  approvedAt  DateTime?
+/// Contact form submissions from /contact
+model ContactMessage {
+  id        String   @id @default(cuid())
+  name      String
+  email     String
+  subject   String
+  message   String
+  status    String   @default("new")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
-  @@index([status, approvedAt])
   @@index([status, createdAt])
+  @@index([createdAt])
 }
