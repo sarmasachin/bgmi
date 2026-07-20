@@ -166,9 +166,10 @@ export default function AdminPagesClient({ initialRows }: Props) {
   }
 
   useEffect(() => {
-    if (initialRows !== undefined) return;
     void loadRows();
-  }, [initialRows]);
+    // Always refresh from API so list is not stuck on a stale/empty SSR snapshot.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const duplicateSlugExists = useMemo(() => {
     const current = comparableSlug(slug);

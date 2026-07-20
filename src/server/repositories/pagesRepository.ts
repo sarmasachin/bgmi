@@ -135,7 +135,7 @@ export async function pageSlugExists(slug: string, excludeId?: string) {
 }
 
 export async function listPages() {
-  const dbData = await tryPrisma(async () =>
+  const dbData = await tryPrismaLong(async () =>
     prisma.pageTemplate.findMany({
       orderBy: { createdAt: "desc" },
     }),
