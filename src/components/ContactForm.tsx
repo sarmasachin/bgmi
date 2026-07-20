@@ -17,11 +17,18 @@ const INITIAL: FormState = {
   message: "",
 };
 
+function topicFromParams(searchParams: URLSearchParams): "report" | "feedback" | "general" {
+  const topic = searchParams.get("topic")?.trim().toLowerCase();
+  if (topic === "report" || topic === "issue") return "report";
+  if (topic === "feedback") return "feedback";
+  return "general";
+}
+
 function subjectFromParams(searchParams: URLSearchParams) {
   const subject = searchParams.get("subject")?.trim();
   if (subject) return subject.slice(0, 120);
-  const topic = searchParams.get("topic")?.trim().toLowerCase();
-  if (topic === "report" || topic === "issue") return "Report an issue";
+  const topic = topicFromParams(searchParams);
+  if (topic === "report") return "Report an issue";
   if (topic === "feedback") return "Website feedback";
   return "";
 }
@@ -32,6 +39,7 @@ export function ContactForm() {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState(false);
+  const topic = topicFromParams(searchParams);
 
   useEffect(() => {
     const prefill = subjectFromParams(searchParams);
@@ -52,7 +60,7 @@ export function ContactForm() {
       const res = await fetch("/api/contact", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(form),
+        body: JSON.stringify({ ...form, topic }),
       });
       const data = (await res.json().catch(() => ({}))) as { error?: string };
       if (!res.ok) {

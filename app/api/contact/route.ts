@@ -6,6 +6,7 @@ import { sendEmail } from "@/src/server/services/emailService";
 import {
   buildContactAdminNotifyHtml,
   buildContactThankYouEmailHtml,
+  resolveContactTopic,
 } from "@/src/lib/contactEmailTemplates";
 
 const SUPPORT_EMAIL = "support@sensitivitysettings.com";
@@ -15,6 +16,7 @@ const schema = z.object({
   email: z.string().trim().email().max(200),
   subject: z.string().trim().min(3).max(120),
   message: z.string().trim().min(10).max(4000),
+  topic: z.enum(["report", "feedback", "general"]).optional(),
 });
 
 export async function POST(request: NextRequest) {
@@ -37,6 +39,7 @@ export async function POST(request: NextRequest) {
   }
 
   const { name, email, subject, message } = parsed.data;
+  const topic = resolveContactTopic({ topic: parsed.data.topic, subject });
 
   let saved: { id: string };
   try {
@@ -46,12 +49,15 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "Could not save message. Please try again." }, { status: 500 });
   }
 
+  const adminPrefix =
+    topic === "report" ? "[Report]" : topic === "feedback" ? "[Feedback]" : "[Contact]";
+
   // 1) Notify support inbox
   try {
     const adminMail = await sendEmail(
       SUPPORT_EMAIL,
-      `[Contact] ${subject}`,
-      buildContactAdminNotifyHtml({ name, email, subject, message }),
+      `${adminPrefix} ${subject}`,
+      buildContactAdminNotifyHtml({ name, email, subject, message, topic }),
       { replyTo: email },
     );
     if (!adminMail.sent) {
@@ -61,14 +67,12 @@ export async function POST(request: NextRequest) {
     console.error("[contact] saved to DB but support email failed:", err, saved.id);
   }
 
-  // 2) Thank-you confirmation to the user
+  // 2) Premium thank-you to the user (report / feedback / general)
   try {
-    const thanksMail = await sendEmail(
-      email,
-      "Thanks for contacting Sensitivity Settings",
-      buildContactThankYouEmailHtml({ name, subject }),
-      { replyTo: SUPPORT_EMAIL },
-    );
+    const thanks = buildContactThankYouEmailHtml({ name, subject, topic });
+    const thanksMail = await sendEmail(email, thanks.subject, thanks.html, {
+      replyTo: SUPPORT_EMAIL,
+    });
     if (!thanksMail.sent) {
       console.warn("[contact] thank-you email not sent:", thanksMail.reason, saved.id);
     }
