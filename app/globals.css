@@ -1006,6 +1006,40 @@ button {
   padding-left: 15px;
 }
 
+.article .ff-table-wrap {
+  overflow-x: auto;
+  margin: 0 0 24px;
+}
+
+.article table {
+  width: 100%;
+  min-width: 560px;
+  border-collapse: collapse;
+  font-size: 16px;
+}
+
+.article th,
+.article td {
+  border: 1px solid #d1d5db;
+  padding: 10px 12px;
+  text-align: left;
+  line-height: 1.5;
+}
+
+.article th {
+  background: #f3f4f6;
+  color: #111;
+  font-weight: 700;
+}
+
+.article td {
+  color: #333;
+}
+
+.article tbody tr:nth-child(even) {
+  background: #fafafa;
+}
+
 .faq-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));

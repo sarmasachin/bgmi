@@ -15,6 +15,8 @@ type Props = {
 const GAME_LABEL: Record<AdminTestimonialItem["game"], string> = {
   bgmi: "BGMI",
   pubg: "PUBG Mobile",
+  freefire: "Free Fire",
+  "freefire-max": "Free Fire Max",
 };
 
 export default function AdminTestimonialsClient({
@@ -75,7 +77,11 @@ export default function AdminTestimonialsClient({
       const next: AdminTestimonialItem[] = (json.data ?? []).map((item) => {
         const gameRaw = String(item.game ?? "bgmi");
         const game: AdminTestimonialItem["game"] =
-          gameRaw === "pubg" ? "pubg" : "bgmi";
+          gameRaw === "pubg" ||
+          gameRaw === "freefire" ||
+          gameRaw === "freefire-max"
+            ? gameRaw
+            : "bgmi";
         const statusRaw = String(item.status ?? "pending");
         const status: AdminTestimonialItem["status"] =
           statusRaw === "approved" || statusRaw === "rejected"

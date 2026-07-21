@@ -1,5 +1,8 @@
 import { HomeHeader } from "@/src/components/HomeHeader";
 import { SiteFooter } from "@/src/components/SiteFooter";
+import { TestimonialForm } from "@/src/components/TestimonialForm";
+import { TestimonialsMarquee } from "@/src/components/TestimonialsMarquee";
+import { FfCalculator } from "@/src/features/ffCalculator/FfCalculator";
 import {
   freeFireConfig,
   type FreeFireVariant,
@@ -14,6 +17,7 @@ import {
 } from "@/src/server/repositories/pagesRepository";
 import { getGameFaqItems } from "@/src/server/repositories/homeFaqRepository";
 import { getSettings } from "@/src/server/repositories/settingsRepository";
+import { listApprovedTestimonials } from "@/src/server/repositories/testimonialsRepository";
 import { isAdminLoggedIn } from "@/src/server/auth";
 import type { Metadata } from "next";
 import Link from "next/link";
@@ -50,8 +54,9 @@ export async function FreeFireComingSoonPage({ variant }: { variant: FreeFireVar
   const cfg = freeFireConfig(variant);
   await ensureFreeFireCmsPages();
   const faqGame = variant === "freefire-max" ? "freefire-max" : "freefire";
+  const testimonialGame = variant === "freefire-max" ? "freefire-max" : "freefire";
 
-  const [settings, published, draft, faqItems] = await Promise.all([
+  const [settings, published, draft, faqItems, testimonials] = await Promise.all([
     getSettings(),
     getPublishedPageBySlug(cfg.slug).then(
       (p) => p ?? getPublishedPageBySlug(`/${cfg.slug}`),
@@ -61,6 +66,7 @@ export async function FreeFireComingSoonPage({ variant }: { variant: FreeFireVar
       return (await getPageBySlug(cfg.slug)) ?? (await getPageBySlug(`/${cfg.slug}`));
     }),
     getGameFaqItems(faqGame),
+    listApprovedTestimonials({ game: variant === "freefire-max" ? "freefire-max" : "freefire" }),
   ]);
 
   const page = published ?? (draft?.status === "draft" ? null : draft);
@@ -72,15 +78,11 @@ export async function FreeFireComingSoonPage({ variant }: { variant: FreeFireVar
   return (
     <div>
       <HomeHeader siteTitle={settings.homeDisplay.headerTitle} navigation={settings.navigation} />
-      <h1 className="main-title">{title}</h1>
+      <h1 className="main-title ff-gradient-title">{title}</h1>
       <main className="page-container">
-        <section className="ff-soon-banner" aria-live="polite">
-          <p className="ff-soon-eyebrow">Coming soon</p>
-          <p className="ff-soon-message">{cfg.soonMessage}</p>
-          <p className="ff-soon-note">
-            The calculator for this game is under development. You can still read the guide below.
-          </p>
-        </section>
+        <FfCalculator isMax={variant === "freefire-max"} />
+        <TestimonialsMarquee game={testimonialGame} initialItems={testimonials} />
+        <TestimonialForm game={testimonialGame} />
       </main>
       <div className="light-content-wrapper">
         <div className="content-inner">

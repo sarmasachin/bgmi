@@ -16,7 +16,7 @@ const postSchema = z.object({
   email: z.string().trim().email().max(200),
   rating: z.number().int().min(1).max(5),
   message: z.string().trim().min(2).max(300),
-  game: z.enum(["bgmi", "pubg"]),
+  game: z.enum(["bgmi", "pubg", "freefire", "freefire-max"]),
   phoneModel: z.string().trim().max(80).optional().nullable(),
   showName: z.boolean().default(true),
 });
@@ -31,7 +31,12 @@ export async function GET(request: NextRequest) {
 
   const gameParam = request.nextUrl.searchParams.get("game");
   let game: TestimonialGame | undefined;
-  if (gameParam === "bgmi" || gameParam === "pubg") {
+  if (
+    gameParam === "bgmi" ||
+    gameParam === "pubg" ||
+    gameParam === "freefire" ||
+    gameParam === "freefire-max"
+  ) {
     game = gameParam;
   } else if (gameParam) {
     return NextResponse.json({ error: "Invalid game" }, { status: 400 });

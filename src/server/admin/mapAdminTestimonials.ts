@@ -6,7 +6,7 @@ export type AdminTestimonialItem = {
   email: string;
   rating: number;
   message: string;
-  game: "bgmi" | "pubg";
+  game: "bgmi" | "pubg" | "freefire" | "freefire-max";
   phoneModel: string;
   showName: boolean;
   status: "pending" | "approved" | "rejected";

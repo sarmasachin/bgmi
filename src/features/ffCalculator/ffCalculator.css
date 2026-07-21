@@ -1,0 +1,459 @@
+/* Free Fire / FF Max sensitivity calculator — scoped styles (ffc- prefix). */
+
+/* Multicolor gradient for the big page title (FF pages only) */
+h1.main-title.ff-gradient-title {
+  background: linear-gradient(
+    90deg,
+    #ef4444 0%,
+    #f97316 20%,
+    #facc15 40%,
+    #8bc34a 60%,
+    #4dd0a1 80%,
+    #4fc3f7 100%
+  );
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  font-weight: 900;
+}
+
+.ffc-root {
+  width: 100%;
+  color: #ffffff;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 12px;
+}
+
+/* Header */
+.ffc-header {
+  text-align: center;
+  margin: 12px 0;
+  width: 100%;
+  max-width: 768px;
+}
+
+.ffc-title {
+  font-size: 24px;
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  background: linear-gradient(to right, #dc2626, #f97316, #facc15);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.ffc-title .ffc-title-icon {
+  color: #ef4444;
+  -webkit-text-fill-color: #ef4444;
+  margin-right: 8px;
+}
+
+.ffc-subtitle {
+  color: #94a3b8;
+  margin-top: 4px;
+  font-size: 12px;
+}
+
+/* Two separate cards on all screen sizes: inputs card + results card */
+.ffc-card {
+  width: 100%;
+  max-width: 768px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+.ffc-form-col,
+.ffc-results {
+  background: #0f172a;
+  border: 1px solid rgba(30, 41, 59, 0.9);
+  border-radius: 16px;
+  padding: 16px;
+  box-shadow: 0 0 25px rgba(220, 38, 38, 0.15);
+}
+
+.ffc-divider {
+  display: none;
+}
+
+/* Inputs grid */
+.ffc-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.ffc-span-2 {
+  grid-column: span 2 / span 2;
+}
+
+.ffc-label {
+  display: block;
+  font-size: 12px;
+  font-weight: 700;
+  color: #cbd5e1;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 6px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.ffc-label i {
+  color: #ef4444;
+  margin-right: 4px;
+}
+
+.ffc-field {
+  width: 100%;
+  height: 40px;
+  background: #020617;
+  border: 1px solid #1e293b;
+  border-radius: 12px;
+  padding: 0 12px;
+  color: #ffffff;
+  font-size: 12px;
+  font-weight: 500;
+  font-family: inherit;
+  transition: border-color 0.2s;
+}
+
+.ffc-field:focus {
+  outline: none;
+  border-color: #ef4444;
+}
+
+.ffc-field-error {
+  border-color: #ef4444;
+}
+
+/* Device suggestion dropdown (below the search box) */
+.ffc-device-wrap {
+  position: relative;
+}
+
+.ffc-device-list {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0;
+  right: 0;
+  z-index: 30;
+  background: #0f172a;
+  border: 1px solid #1e293b;
+  border-radius: 12px;
+  max-height: 260px;
+  overflow-y: auto;
+  list-style: none;
+  margin: 0;
+  padding: 6px;
+  box-shadow: 0 12px 25px rgba(0, 0, 0, 0.55);
+}
+
+.ffc-device-list li {
+  padding: 8px 10px;
+  font-size: 12px;
+  font-weight: 500;
+  color: #e2e8f0;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.ffc-device-list li:hover {
+  background: #1e293b;
+  color: #ffffff;
+}
+
+.ffc-detect-badge {
+  font-size: 10px;
+  color: #34d399;
+  margin-top: 4px;
+  display: block;
+  font-weight: 600;
+}
+
+.ffc-detect-badge i {
+  margin-right: 4px;
+}
+
+.ffc-age-error {
+  color: #ef4444;
+  font-size: 10px;
+  margin-top: 4px;
+  font-weight: 600;
+}
+
+/* Calculate button */
+.ffc-calc-btn {
+  width: 100%;
+  margin-top: 16px;
+  background: linear-gradient(to right, #dc2626, #f97316);
+  color: #ffffff;
+  font-weight: 900;
+  height: 44px;
+  border: none;
+  border-radius: 12px;
+  box-shadow: 0 10px 15px -3px rgba(127, 29, 29, 0.4);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  font-size: 12px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.2s, background 0.2s;
+  font-family: inherit;
+}
+
+.ffc-calc-btn:hover {
+  background: linear-gradient(to right, #b91c1c, #ea580c);
+}
+
+.ffc-calc-btn:active {
+  transform: scale(0.98);
+}
+
+.ffc-calc-btn i {
+  margin-right: 8px;
+}
+
+.ffc-divider {
+  border: none;
+  border-top: 1px solid #1e293b;
+  margin: 16px 0;
+}
+
+/* Results */
+.ffc-results {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.ffc-results-title {
+  font-size: 12px;
+  font-weight: 700;
+  color: #ef4444;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  display: flex;
+  align-items: center;
+}
+
+.ffc-results-title i {
+  margin-right: 8px;
+}
+
+.ffc-results-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.ffc-result-box {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: #020617;
+  padding: 10px 12px;
+  border-radius: 12px;
+  border: 1px solid #1e293b;
+}
+
+.ffc-result-label {
+  color: #94a3b8;
+  font-weight: 600;
+  font-size: 12px;
+}
+
+.ffc-result-value {
+  color: #ef4444;
+  font-weight: 900;
+  font-size: 14px;
+}
+
+/* Fire button size row */
+.ffc-firebtn {
+  background: linear-gradient(
+    to right,
+    rgba(69, 10, 10, 0.4),
+    rgba(67, 20, 7, 0.4)
+  );
+  border: 1px solid rgba(239, 68, 68, 0.3);
+  padding: 12px 14px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 12px;
+}
+
+.ffc-firebtn-left {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.ffc-firebtn-left i {
+  color: #ef4444;
+  font-size: 16px;
+}
+
+.ffc-firebtn-label {
+  font-size: 12px;
+  font-weight: 700;
+  color: #ffffff;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.ffc-firebtn-value {
+  font-size: 18px;
+  font-weight: 900;
+  color: #facc15;
+}
+
+/* Visual fire button below the size row (display only) */
+.ffc-fire-visual {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-top: 16px;
+  min-height: 140px;
+}
+
+.ffc-fire-circle {
+  border-radius: 50%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  color: #ffffff;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  transition:
+    width 0.45s ease,
+    height 0.45s ease,
+    background 0.45s ease,
+    box-shadow 0.45s ease;
+}
+
+.ffc-fire-circle i {
+  font-size: 20px;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
+}
+
+.ffc-fire-circle-value {
+  font-size: 13px;
+  font-weight: 900;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
+}
+
+/* Phone: hide the whole results card until the user calculates */
+@media (max-width: 899px) {
+  .ffc-results--empty {
+    display: none;
+  }
+}
+
+/* Desktop: keep the card visible, hide its fields/buttons until calculate */
+@media (min-width: 900px) {
+  .ffc-results--empty .ffc-results-grid,
+  .ffc-results--empty .ffc-firebtn,
+  .ffc-results--empty .ffc-fire-visual {
+    display: none;
+  }
+}
+
+/* Responsive (sm / md breakpoints like the original) */
+@media (min-width: 640px) {
+  .ffc-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .ffc-results-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+/* Desktop: the two cards sit side by side — inputs left, results right */
+@media (min-width: 900px) {
+  .ffc-card {
+    max-width: 1100px;
+    flex-direction: row;
+    align-items: stretch;
+    gap: 25px;
+  }
+
+  .ffc-form-col,
+  .ffc-results {
+    padding: 24px;
+  }
+
+  .ffc-form-col {
+    flex: 1.25;
+    min-width: 0;
+  }
+
+  .ffc-results {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .ffc-results-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  /* Desktop only: bigger result text (like the 42% value), kept inside the card */
+  .ffc-result-box {
+    padding: 12px 14px;
+  }
+
+  .ffc-result-label {
+    font-size: 14px;
+  }
+
+  .ffc-result-value {
+    font-size: 20px;
+  }
+}
+
+@media (min-width: 768px) {
+  .ffc-root {
+    padding: 24px;
+  }
+
+  .ffc-header {
+    margin: 20px 0;
+  }
+
+  .ffc-title {
+    font-size: 36px;
+  }
+
+  .ffc-subtitle {
+    font-size: 14px;
+  }
+
+  .ffc-grid {
+    gap: 16px;
+  }
+
+  .ffc-calc-btn {
+    margin-top: 20px;
+    height: 48px;
+    font-size: 14px;
+  }
+
+  .ffc-results-title {
+    font-size: 14px;
+  }
+
+  .ffc-firebtn-value {
+    font-size: 20px;
+  }
+}
