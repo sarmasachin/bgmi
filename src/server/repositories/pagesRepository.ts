@@ -456,14 +456,24 @@ export async function deletePage(id: string) {
   return true;
 }
 
-/** Ensure Free Fire CMS article pages exist so admin can edit content under Pages. */
+/** Ensure Free Fire CMS article pages exist and stay in sync with code defaults. */
 export async function ensureFreeFireCmsPages() {
   const { freeFireConfig } = await import("@/src/lib/freeFirePages");
   for (const variant of ["freefire", "freefire-max"] as const) {
     const cfg = freeFireConfig(variant);
     const existing =
       (await getPageBySlug(cfg.slug)) ?? (await getPageBySlug(`/${cfg.slug}`));
-    if (existing) continue;
+    if (existing) {
+      const currentHtml = extractHtml(existing.content);
+      if (currentHtml !== cfg.defaultArticleHtml) {
+        try {
+          await updatePage(existing.id, { content: cfg.defaultArticleHtml });
+        } catch {
+          /* DB unavailable — page still uses code default on render */
+        }
+      }
+      continue;
+    }
     try {
       await createPage({
         title: cfg.title,

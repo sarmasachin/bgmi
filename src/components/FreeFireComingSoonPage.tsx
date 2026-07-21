@@ -70,7 +70,8 @@ export async function FreeFireComingSoonPage({ variant }: { variant: FreeFireVar
   ]);
 
   const page = published ?? (draft?.status === "draft" ? null : draft);
-  const html = extractHtml(page?.content) || cfg.defaultArticleHtml;
+  // Code article is source of truth after deploy; CMS is only a fallback.
+  const html = cfg.defaultArticleHtml || extractHtml(page?.content);
   const title = page?.title?.trim() || cfg.title;
   const isAdmin = Boolean(draft);
   const faqLd = faqSchema(faqItems);
