@@ -20,7 +20,6 @@ import { getSettings } from "@/src/server/repositories/settingsRepository";
 import { listApprovedTestimonials } from "@/src/server/repositories/testimonialsRepository";
 import { isAdminLoggedIn } from "@/src/server/auth";
 import type { Metadata } from "next";
-import Link from "next/link";
 
 function extractHtml(content: unknown) {
   if (!content) return "";
@@ -73,7 +72,6 @@ export async function FreeFireComingSoonPage({ variant }: { variant: FreeFireVar
   // Code article is source of truth after deploy; CMS is only a fallback.
   const html = cfg.defaultArticleHtml || extractHtml(page?.content);
   const title = page?.title?.trim() || cfg.title;
-  const isAdmin = Boolean(draft);
   const faqLd = faqSchema(faqItems);
 
   return (
@@ -109,12 +107,6 @@ export async function FreeFireComingSoonPage({ variant }: { variant: FreeFireVar
             </div>
           ) : null}
 
-          {isAdmin ? (
-            <p className="ff-admin-edit-hint">
-              Admin: article in <Link href="/admin/pages">Pages</Link> (slug: <code>{cfg.slug}</code>
-              ). FAQs in <Link href="/admin/game-faqs">Game FAQs</Link>.
-            </p>
-          ) : null}
         </div>
       </div>
       {faqLd ? (
