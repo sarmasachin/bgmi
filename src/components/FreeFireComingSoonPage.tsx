@@ -1,3 +1,4 @@
+import { FaqAccordion } from "@/src/components/FaqAccordion";
 import { HomeHeader } from "@/src/components/HomeHeader";
 import { SiteFooter } from "@/src/components/SiteFooter";
 import { TestimonialForm } from "@/src/components/TestimonialForm";
@@ -107,19 +108,7 @@ export async function FreeFireComingSoonPage({ variant }: { variant: FreeFireVar
             )}
           </div>
 
-          {faqItems.length > 0 ? (
-            <div className="faq-section" lang="en">
-              <h2>Frequently Asked Questions (FAQ)</h2>
-              <div className="faq-grid">
-                {faqItems.map((item) => (
-                  <div key={item.id} className="faq-card">
-                    <h3>{item.question}</h3>
-                    <p>{item.answer}</p>
-                  </div>
-                ))}
-              </div>
-            </div>
-          ) : null}
+          {faqItems.length > 0 ? <FaqAccordion items={faqItems} /> : null}
 
         </div>
       </div>

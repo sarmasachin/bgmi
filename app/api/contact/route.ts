@@ -58,7 +58,16 @@ export async function POST(request: NextRequest) {
     saved = await createContactMessage({ name, email, subject, message, topic });
   } catch (err) {
     console.error("[contact] db save failed:", err);
-    return NextResponse.json({ error: "Could not save message. Please try again." }, { status: 500 });
+    const unavailable =
+      err instanceof Error && (err.message === "DB_UNAVAILABLE" || /database|prisma|timeout/i.test(err.message));
+    return NextResponse.json(
+      {
+        error: unavailable
+          ? "Service temporarily unavailable. Please try again shortly."
+          : "Could not save message. Please try again.",
+      },
+      { status: unavailable ? 503 : 500 },
+    );
   }
 
   const adminPrefix =

@@ -1,3 +1,5 @@
+import { FaqAccordion } from "@/src/components/FaqAccordion";
+
 type HomeFaqItem = {
   id: string;
   question: string;
@@ -357,17 +359,7 @@ export function ArticleFaqContent({
         )}
 
         {faqsForPage.length > 0 ? (
-          <div className="faq-section" lang="en">
-            <h2>Frequently Asked Questions (FAQ)</h2>
-            <div className="faq-grid">
-              {faqsForPage.map((item) => (
-                <div key={item.id} className="faq-card">
-                  <h3>{item.question}</h3>
-                  <p>{item.answer}</p>
-                </div>
-              ))}
-            </div>
-          </div>
+          <FaqAccordion items={faqsForPage} />
         ) : null}
       </div>
     </div>

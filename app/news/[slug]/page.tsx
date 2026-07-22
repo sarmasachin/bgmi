@@ -2,9 +2,11 @@ import { AdSlot } from "@/src/components/AdSlot";
 import { RatingWidget } from "@/src/components/RatingWidget";
 import { ClientErrorBoundary } from "@/src/components/ClientErrorBoundary";
 import { HomeHeader } from "@/src/components/HomeHeader";
+import { NewsCommentSection } from "@/src/components/NewsCommentSection";
 import { SiteFooter } from "@/src/components/SiteFooter";
 import { ratingWidgetRemountKey } from "@/src/lib/ratingWidgetKey";
 import { getAdPlacementVisibility } from "@/src/server/repositories/adPlacementRepository";
+import { listApprovedCommentsByNewsId } from "@/src/server/repositories/commentsRepository";
 import {
   extractNewsMeta,
   getPublishedNewsBySlug,
@@ -78,10 +80,11 @@ export default async function NewsDetailPage({ params }: Props) {
   const meta = extractNewsMeta(item.content);
   const imageAlt = meta.socialImageAlt?.trim() || item.title;
 
-  const [adPlaces, ratingSummary, settings] = await Promise.all([
+  const [adPlaces, ratingSummary, settings, comments] = await Promise.all([
     getAdPlacementVisibility(),
     getRatingSummary("news", item.id),
     getSettings(),
+    listApprovedCommentsByNewsId(item.id),
   ]);
 
   const baseUrl = getSiteUrl();
@@ -129,6 +132,9 @@ export default async function NewsDetailPage({ params }: Props) {
             />
           </ClientErrorBoundary>
         </article>
+        <ClientErrorBoundary label="Comments">
+          <NewsCommentSection newsId={item.id} initialComments={comments} />
+        </ClientErrorBoundary>
         <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(articleSchema) }} />
       </main>
       <SiteFooter settings={settings} />

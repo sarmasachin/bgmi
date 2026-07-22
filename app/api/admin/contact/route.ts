@@ -111,16 +111,30 @@ export async function PATCH(request: NextRequest) {
       emailSent,
       ...(emailReason && !emailSent ? { emailWarning: emailReason } : {}),
     });
-  } catch {
-    return NextResponse.json({ error: "Could not update message." }, { status: 500 });
+  } catch (err) {
+    console.error("[admin/contact] update failed:", err);
+    const unavailable = err instanceof Error && err.message === "DB_UNAVAILABLE";
+    return NextResponse.json(
+      { error: unavailable ? "Database unavailable. Please try again." : "Could not update message." },
+      { status: unavailable ? 503 : 500 },
+    );
   }
 }
 
 export async function DELETE(request: NextRequest) {
   const id = request.nextUrl.searchParams.get("id");
   if (!id) return NextResponse.json({ error: "id required" }, { status: 400 });
-  const ok = await deleteContactMessage(id);
-  if (!ok) return NextResponse.json({ error: "Not found" }, { status: 404 });
+  try {
+    const ok = await deleteContactMessage(id);
+    if (!ok) return NextResponse.json({ error: "Not found" }, { status: 404 });
+  } catch (err) {
+    console.error("[admin/contact] delete failed:", err);
+    const unavailable = err instanceof Error && err.message === "DB_UNAVAILABLE";
+    return NextResponse.json(
+      { error: unavailable ? "Database unavailable. Please try again." : "Could not delete message." },
+      { status: unavailable ? 503 : 500 },
+    );
+  }
   await addAuditLog({
     actor: "admin",
     action: "contact.delete",

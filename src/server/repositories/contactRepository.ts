@@ -1,5 +1,5 @@
 import { mockStore } from "@/src/server/mockStore";
-import { prisma, tryPrisma } from "@/src/server/dbSafe";
+import { prisma, tryPrismaLong } from "@/src/server/dbSafe";
 
 export type ContactStatus = "new" | "read" | "archived" | "in_progress" | "solved";
 export type ContactTopic = "report" | "feedback" | "general";
@@ -13,6 +13,12 @@ export type ContactMessageInput = {
   topic?: ContactTopic;
 };
 
+function requireDbOrMockDisabled() {
+  if (process.env.DATABASE_URL) {
+    throw new Error("DB_UNAVAILABLE");
+  }
+}
+
 export async function createContactMessage(input: ContactMessageInput) {
   const data = {
     name: input.name.trim(),
@@ -24,12 +30,16 @@ export async function createContactMessage(input: ContactMessageInput) {
     etaHours: null as number | null,
   };
 
-  const dbData = await tryPrisma(async () =>
+  // Use long timeout — short tryPrisma was silently falling back to in-memory mock,
+  // so the API returned 200 while admin (DB) never saw the message.
+  const dbData = await tryPrismaLong(async () =>
     prisma.contactMessage.create({
       data,
     }),
   );
   if (dbData) return dbData;
+
+  requireDbOrMockDisabled();
 
   const item = {
     id: `cm${Date.now()}`,
@@ -42,19 +52,28 @@ export async function createContactMessage(input: ContactMessageInput) {
 }
 
 export async function listContactMessages() {
-  const dbData = await tryPrisma(async () =>
+  const dbData = await tryPrismaLong(async () =>
     prisma.contactMessage.findMany({
       orderBy: { createdAt: "desc" },
     }),
   );
-  return dbData ?? mockStore.contactMessages;
+  if (dbData) return dbData;
+
+  if (process.env.DATABASE_URL) {
+    // Prefer empty over mixed mock/DB ghosts when DB is temporarily down.
+    console.error("[contact] listContactMessages: database unavailable");
+    return [];
+  }
+
+  return mockStore.contactMessages;
 }
 
 export async function getContactMessageById(id: string) {
-  const dbData = await tryPrisma(async () =>
+  const dbData = await tryPrismaLong(async () =>
     prisma.contactMessage.findUnique({ where: { id } }),
   );
   if (dbData) return dbData;
+  if (process.env.DATABASE_URL) return null;
   return mockStore.contactMessages.find((row) => row.id === id) ?? null;
 }
 
@@ -75,13 +94,17 @@ export async function updateContactMessageStatus(
   const data: { status: ContactStatus; etaHours?: number | null } = { status };
   if (etaHours !== undefined) data.etaHours = etaHours;
 
-  const dbData = await tryPrisma(async () =>
+  const dbData = await tryPrismaLong(async () =>
     prisma.contactMessage.update({
       where: { id },
       data,
     }),
   );
   if (dbData) return dbData;
+
+  if (process.env.DATABASE_URL) {
+    throw new Error("DB_UNAVAILABLE");
+  }
 
   const item = mockStore.contactMessages.find((row) => row.id === id);
   if (!item) return null;
@@ -92,11 +115,15 @@ export async function updateContactMessageStatus(
 }
 
 export async function deleteContactMessage(id: string) {
-  const dbResult = await tryPrisma(async () => {
+  const dbResult = await tryPrismaLong(async () => {
     await prisma.contactMessage.delete({ where: { id } });
     return true;
   });
   if (dbResult) return true;
+
+  if (process.env.DATABASE_URL) {
+    throw new Error("DB_UNAVAILABLE");
+  }
 
   const index = mockStore.contactMessages.findIndex((row) => row.id === id);
   if (index === -1) return false;
