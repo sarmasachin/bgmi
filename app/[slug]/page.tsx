@@ -4,6 +4,7 @@ import { AdSlot } from "@/src/components/AdSlot";
 import { HomeHeader } from "@/src/components/HomeHeader";
 import { SiteFooter } from "@/src/components/SiteFooter";
 import { FfCalculator } from "@/src/features/ffCalculator/FfCalculator";
+import "@/src/features/ffCalculator/ffCalculator.css";
 import { SensCalculator } from "@/src/features/sensCalculator/SensCalculator";
 import { isAdminLoggedIn } from "@/src/server/auth";
 import { getCalculatorPhoneModels } from "@/src/server/repositories/calculatorPhoneModelsRepository";

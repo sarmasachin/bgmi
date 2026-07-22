@@ -52,6 +52,23 @@ a {
   box-sizing: border-box;
 }
 
+/* Free Fire / FF Max page title — keep in globals so it paints with first CSS (no client-chunk flash) */
+h1.main-title.ff-gradient-title {
+  background: linear-gradient(
+    90deg,
+    #ef4444 0%,
+    #f97316 20%,
+    #facc15 40%,
+    #8bc34a 60%,
+    #4dd0a1 80%,
+    #4fc3f7 100%
+  );
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  font-weight: 900;
+}
+
 .home-header-spacer {
   width: 100%;
   flex-shrink: 0;

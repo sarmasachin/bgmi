@@ -1,22 +1,5 @@
 /* Free Fire / FF Max sensitivity calculator — scoped styles (ffc- prefix). */
 
-/* Multicolor gradient for the big page title (FF pages only) */
-h1.main-title.ff-gradient-title {
-  background: linear-gradient(
-    90deg,
-    #ef4444 0%,
-    #f97316 20%,
-    #facc15 40%,
-    #8bc34a 60%,
-    #4dd0a1 80%,
-    #4fc3f7 100%
-  );
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
-  font-weight: 900;
-}
-
 .ffc-root {
   width: 100%;
   color: #ffffff;

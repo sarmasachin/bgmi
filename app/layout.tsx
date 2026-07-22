@@ -104,6 +104,7 @@ export default async function RootLayout({
             __html:
               "body{background:#0b0e14;color:#e6edf3;margin:0}" +
               ".main-title{color:#45c4b0;text-transform:uppercase;font-size:clamp(18px,4.6vw,36px);margin:24px auto 20px;text-align:center;letter-spacing:1px;line-height:1.25;width:100%;max-width:1100px;padding:0 16px;box-sizing:border-box}" +
+              "h1.main-title.ff-gradient-title{background:linear-gradient(90deg,#ef4444 0%,#f97316 20%,#facc15 40%,#8bc34a 60%,#4dd0a1 80%,#4fc3f7 100%);-webkit-background-clip:text;background-clip:text;color:transparent;font-weight:900}" +
               ".home-header-spacer{width:100%;display:block;height:108px}" +
               "@media (min-width:851px){.home-header-spacer{height:64px}}",
           }}
