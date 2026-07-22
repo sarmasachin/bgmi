@@ -170,9 +170,10 @@ export default function AdminContactClient({ initialItems }: Props) {
   }
 
   useEffect(() => {
-    if (initialItems !== undefined) return;
+    // Always re-fetch on mount so SSR/stale rows cannot linger after DB deletes.
     void loadMessages();
-  }, [initialItems]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   async function updateStatus(
     id: string,
@@ -268,14 +269,18 @@ export default function AdminContactClient({ initialItems }: Props) {
         },
         body: JSON.stringify({ id }),
       });
-      setMessage(res.ok ? "Message deleted." : await readApiError(res, "Delete failed."));
-      if (res.ok) {
-        // Optimistic remove so refresh cannot “bring back” a just-deleted row.
+
+      // 404 = already gone from DB (stale UI). Still drop the row locally.
+      if (res.ok || res.status === 404) {
         setItems((prev) => prev.filter((item) => item.id !== id));
         if (expandedId === id) setExpandedId(null);
+        setMessage(res.ok ? "Message deleted." : "Message already removed. List refreshed.");
         await loadMessages();
+        return true;
       }
-      return res.ok;
+
+      setMessage(await readApiError(res, "Delete failed."));
+      return false;
     } catch {
       setMessage("Network error. Please retry.");
       return false;

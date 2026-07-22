@@ -132,15 +132,37 @@ export async function deleteContactMessage(id: string) {
   }
 
   try {
-    // deleteMany avoids P2025 throw; count===0 means truly missing.
-    const result = await prisma.contactMessage.deleteMany({ where: { id: targetId } });
-    if (result.count === 0) {
+    const existing = await prisma.contactMessage.findUnique({
+      where: { id: targetId },
+      select: { id: true },
+    });
+    if (!existing) {
+      // Stale admin UI row — already gone from DB.
       console.warn("[contact] deleteContactMessage miss:", targetId);
       return false;
     }
+
+    await prisma.contactMessage.delete({ where: { id: targetId } });
     return true;
   } catch (error) {
+    const code =
+      error && typeof error === "object" && "code" in error
+        ? String((error as { code?: unknown }).code ?? "")
+        : "";
+    // Concurrent delete — treat as success for UI.
+    if (code === "P2025") return false;
+
     console.error("[contact] deleteContactMessage failed:", targetId, error);
+    // Last resort raw delete (helps if client/engine mismatch).
+    try {
+      const deleted = await prisma.$executeRawUnsafe(
+        `DELETE FROM "ContactMessage" WHERE id = $1`,
+        targetId,
+      );
+      if (typeof deleted === "number" && deleted > 0) return true;
+    } catch (rawErr) {
+      console.error("[contact] raw delete failed:", targetId, rawErr);
+    }
     throw new Error("DB_UNAVAILABLE");
   }
 }
