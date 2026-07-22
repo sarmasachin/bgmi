@@ -156,15 +156,14 @@ export default function AdminContactClient({ initialItems }: Props) {
     try {
       const res = await fetch("/api/admin/contact", { cache: "no-store", credentials: "include" });
       if (!res.ok) {
-        setMessage("Failed to load contact messages.");
-        setItems([]);
+        // Keep current rows — clearing made it look like "all deleted" until refresh.
+        setMessage(await readApiError(res, "Failed to load contact messages."));
         return;
       }
       const json = (await res.json()) as { data?: Array<Record<string, unknown>> };
       setItems((json.data ?? []).map(mapLoadedItem));
     } catch {
       setMessage("Network error. Please retry.");
-      setItems([]);
     } finally {
       setLoading(false);
     }
