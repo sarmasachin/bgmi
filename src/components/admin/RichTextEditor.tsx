@@ -3212,7 +3212,15 @@ export function RichTextEditor({
       ) : (
         <div className="rich-editor-editable-wrap">
           <div
-            ref={editorRef}
+            ref={(node) => {
+              editorRef.current = node;
+              // Seed HTML on first attach so refresh does not flash empty → content.
+              if (node && node.dataset.seeded !== "1") {
+                node.innerHTML = value || "";
+                lastEmittedHtmlRef.current = value || "";
+                node.dataset.seeded = "1";
+              }
+            }}
             className="rich-editor-content"
             style={{ height: `${editorHeight}px` }}
             contentEditable

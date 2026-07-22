@@ -1,15 +1,24 @@
 "use client";
 
-import dynamic from "next/dynamic";
 import Link from "next/link";
 import { FormEvent, useEffect, useState } from "react";
 import { useAdminFlash } from "@/src/components/admin/AdminToast";
 import { readApiError } from "@/src/lib/userFacingError";
 
-const RichTextEditor = dynamic(
-  () => import("@/src/components/admin/RichTextEditor").then((mod) => mod.RichTextEditor),
-  { ssr: false, loading: () => <p>Loading editor…</p> },
-);
+function EditorBootSkeleton({ html }: { html?: string }) {
+  return (
+    <div className="rich-editor" aria-busy="true">
+      <div className="rich-editor-toolbar" style={{ minHeight: 48, opacity: 0.35, pointerEvents: "none" }} />
+      <div className="rich-editor-editable-wrap">
+        <div
+          className="rich-editor-content"
+          style={{ height: 360, overflow: "auto" }}
+          dangerouslySetInnerHTML={{ __html: html || "<p></p>" }}
+        />
+      </div>
+    </div>
+  );
+}
 
 type Game = "bgmi" | "pubg";
 
@@ -33,10 +42,23 @@ export default function AdminGameArticlesClient({ initialData }: Props) {
   const [editorNonce, setEditorNonce] = useState(0);
   const [loading, setLoading] = useState(initialData === undefined);
   const [saving, setSaving] = useState(false);
+  const [Editor, setEditor] = useState<null | typeof import("@/src/components/admin/RichTextEditor").RichTextEditor>(
+    null,
+  );
   const setMessage = useAdminFlash();
 
   const html = game === "bgmi" ? bgmiHtml : pubgHtml;
   const usingDefault = game === "bgmi" ? bgmiDefault : pubgDefault;
+
+  useEffect(() => {
+    let cancelled = false;
+    void import("@/src/components/admin/RichTextEditor").then((mod) => {
+      if (!cancelled) setEditor(() => mod.RichTextEditor);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   async function load() {
     setLoading(true);
@@ -157,7 +179,7 @@ export default function AdminGameArticlesClient({ initialData }: Props) {
 
       <p style={{ color: "#94a3b8", marginTop: 0, maxWidth: 720 }}>
         Edit the long guide article under the calculator on <strong>BGMI</strong> (/) and{" "}
-        <strong>PUBG Mobile</strong> (/pubg).         FAQ cards are still managed in{" "}
+        <strong>PUBG Mobile</strong> (/pubg). FAQ cards are still managed in{" "}
         <Link href="/admin/game-faqs" style={{ color: "var(--primary)" }}>
           Game FAQs
         </Link>
@@ -186,7 +208,7 @@ export default function AdminGameArticlesClient({ initialData }: Props) {
       </div>
 
       {loading ? (
-        <p>Loading…</p>
+        <EditorBootSkeleton html="" />
       ) : (
         <form onSubmit={onSave}>
           <p style={{ fontSize: 13, color: usingDefault ? "#fbbf24" : "#5eead4", marginBottom: 10 }}>
@@ -195,12 +217,16 @@ export default function AdminGameArticlesClient({ initialData }: Props) {
               : "Custom article is live on the site."}
           </p>
 
-          <RichTextEditor
-            key={`game-article-${game}-${editorNonce}`}
-            value={html}
-            onChange={setHtml}
-            storageKey={`bgmi_admin_game_article_${game}_v1`}
-          />
+          {Editor ? (
+            <Editor
+              key={`game-article-${game}-${editorNonce}`}
+              value={html}
+              onChange={setHtml}
+              storageKey={`bgmi_admin_game_article_${game}_v1`}
+            />
+          ) : (
+            <EditorBootSkeleton html={html} />
+          )}
 
           <div className="admin-news-actions-wrap" style={{ marginTop: 14, gap: 8 }}>
             <button type="submit" className="admin-news-btn admin-news-btn-primary" disabled={saving}>
