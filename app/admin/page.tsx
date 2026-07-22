@@ -1,8 +1,14 @@
+import { redirect } from "next/navigation";
 import { PublishDraftButton } from "@/src/components/admin/PublishDraftButton";
+import { AdminAccessDenied } from "@/src/components/admin/AdminAccessDenied";
 import {
   getAdminDashboardData,
   type IntegrationMetric,
 } from "@/src/server/repositories/adminDashboardRepository";
+import {
+  firstAllowedAdminPath,
+  requireAdminPageAccess,
+} from "@/src/server/rbac/requireAdminPage";
 
 function formatDateTime(value?: Date | string | null) {
   if (!value) return "-";
@@ -28,6 +34,17 @@ function IntegrationCard({ title, metric }: { title: string; metric: Integration
 }
 
 export default async function AdminDashboardPage() {
+  const access = await requireAdminPageAccess("dashboard.view");
+  if (!access.ok) {
+    const fallback = firstAllowedAdminPath(access.subject);
+    if (fallback === "/admin/login" || fallback === "/admin") {
+      return (
+        <AdminAccessDenied message="No modules assigned to your account. Ask a superadmin to grant access." />
+      );
+    }
+    redirect(fallback);
+  }
+
   const data = await getAdminDashboardData();
 
   return (

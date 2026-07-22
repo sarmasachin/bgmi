@@ -8,6 +8,10 @@ export const ADMIN_SESSION_MAX_AGE_SEC = 60 * 60 * 24 * 7;
 export type AdminSessionPayload = {
   sub: string;
   email: string;
+  /** Present on sessions created after RBAC Phase 1. */
+  role?: string;
+  /** Effective permission list at login time. */
+  permissions?: string[];
   iat: number;
   exp: number;
 };
@@ -69,11 +73,15 @@ function timingSafeEqual(a: string, b: string): boolean {
 export async function createAdminSessionToken(input: {
   userId: string;
   email: string;
+  role?: string;
+  permissions?: string[];
 }): Promise<string> {
   const now = Math.floor(Date.now() / 1000);
   const payload: AdminSessionPayload = {
     sub: input.userId,
     email: input.email.trim().toLowerCase(),
+    role: input.role ?? "superadmin",
+    permissions: Array.isArray(input.permissions) ? input.permissions : [],
     iat: now,
     exp: now + ADMIN_SESSION_MAX_AGE_SEC,
   };
@@ -116,6 +124,12 @@ export async function verifyAdminSessionToken(
     }
     const now = Math.floor(Date.now() / 1000);
     if (payload.exp < now) return null;
+    // role / permissions optional for backward-compatible legacy cookies.
+    if (payload.role !== undefined && typeof payload.role !== "string") return null;
+    if (payload.permissions !== undefined && !Array.isArray(payload.permissions)) return null;
+    if (Array.isArray(payload.permissions)) {
+      payload.permissions = payload.permissions.filter((p) => typeof p === "string");
+    }
     return payload;
   } catch {
     return null;

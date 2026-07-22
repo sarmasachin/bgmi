@@ -58,6 +58,15 @@ type LegalPage = {
   updatedAt?: string | Date;
 };
 
+type MockRoleDefinition = {
+  id: string;
+  name: string;
+  permissions: unknown;
+  isSystem: boolean;
+  createdAt: string;
+  updatedAt: string;
+};
+
 type MockStore = {
   news: News[];
   pages: PageClone[];
@@ -65,10 +74,21 @@ type MockStore = {
   contactMessages: ContactMessage[];
   legalPages: LegalPage[];
   ads: AdSlot[];
-  users: Array<{ id: string; email: string; role: string; active: boolean }>;
+  users: Array<{
+    id: string;
+    email: string;
+    role: string;
+    active: boolean;
+    name?: string | null;
+    passwordHash?: string;
+    permissions?: unknown;
+    roleDefinitionId?: string | null;
+  }>;
+  roleDefinitions: MockRoleDefinition[];
 };
 
 function createMockStore(): MockStore {
+  const now = new Date().toISOString();
   return {
     news: [
       { id: "n1", title: "RTX 5090 Benchmark Results Leaked", slug: "rtx-5090", status: "published" },
@@ -96,7 +116,34 @@ function createMockStore(): MockStore {
       { id: "a6", slotKey: "news_detail_mid", enabled: false, code: "" },
       { id: "a7", slotKey: "news_detail_bottom", enabled: false, code: "" },
     ],
-    users: [{ id: "u1", email: "admin@example.com", role: "admin", active: true }],
+    users: [
+      {
+        id: "u1",
+        email: "admin@example.com",
+        role: "superadmin",
+        active: true,
+        permissions: [],
+        roleDefinitionId: "role-superadmin",
+      },
+    ],
+    roleDefinitions: [
+      {
+        id: "role-superadmin",
+        name: "superadmin",
+        permissions: [],
+        isSystem: true,
+        createdAt: now,
+        updatedAt: now,
+      },
+      {
+        id: "role-subadmin",
+        name: "subadmin",
+        permissions: ["dashboard.view", "contact.view", "contact.reply"],
+        isSystem: true,
+        createdAt: now,
+        updatedAt: now,
+      },
+    ],
   };
 }
 
@@ -106,6 +153,27 @@ const globalForMock = globalThis as typeof globalThis & { __bgmiMockStore?: Mock
 export const mockStore = globalForMock.__bgmiMockStore ?? createMockStore();
 if (!globalForMock.__bgmiMockStore) globalForMock.__bgmiMockStore = mockStore;
 if (!Array.isArray(mockStore.legalPages)) mockStore.legalPages = [];
+if (!Array.isArray(mockStore.roleDefinitions) || mockStore.roleDefinitions.length === 0) {
+  const now = new Date().toISOString();
+  mockStore.roleDefinitions = [
+    {
+      id: "role-superadmin",
+      name: "superadmin",
+      permissions: [],
+      isSystem: true,
+      createdAt: now,
+      updatedAt: now,
+    },
+    {
+      id: "role-subadmin",
+      name: "subadmin",
+      permissions: ["dashboard.view", "contact.view", "contact.reply"],
+      isSystem: true,
+      createdAt: now,
+      updatedAt: now,
+    },
+  ];
+}
 
 export function exportMockBackup() {
   return JSON.parse(JSON.stringify(mockStore));
@@ -119,5 +187,6 @@ export function restoreMockBackup(payload: typeof mockStore) {
   mockStore.legalPages = payload.legalPages ?? [];
   mockStore.ads = payload.ads ?? [];
   mockStore.users = payload.users ?? [];
+  mockStore.roleDefinitions = payload.roleDefinitions ?? mockStore.roleDefinitions;
 }
 

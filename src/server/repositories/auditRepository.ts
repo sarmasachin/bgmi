@@ -1,15 +1,19 @@
 import { prisma, tryPrisma } from "@/src/server/dbSafe";
+import { resolveAuditActor } from "@/src/server/rbac/auditActor";
 
 export async function addAuditLog(input: {
-  actor: string;
+  /** Prefer email; `"admin"` is replaced with live session actor. */
+  actor?: string;
   action: string;
   target: string;
   payload?: unknown;
 }) {
+  const actor = await resolveAuditActor(input.actor);
+
   await tryPrisma(async () =>
     prisma.auditLog.create({
       data: {
-        actor: input.actor,
+        actor,
         action: input.action,
         target: input.target,
         payload: (input.payload ?? {}) as object,
@@ -25,4 +29,8 @@ export async function clearAllAuditLogs(): Promise<number> {
     return result.count;
   });
   return count ?? 0;
+}
+
+export async function currentAuditActorLabel(): Promise<string> {
+  return resolveAuditActor();
 }

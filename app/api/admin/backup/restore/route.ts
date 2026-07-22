@@ -223,7 +223,7 @@ export async function POST(request: NextRequest) {
           email: restoreStr(item.email),
           passwordHash: await restoreUserPasswordHash(item, hashByEmail),
           name: restoreStrNull(item.name),
-          role: restoreStr(item.role) || "admin",
+          role: restoreStr(item.role) || "superadmin",
           isActive: restoreAdminActive(item),
           createdAt: restoreDate(item.createdAt),
           updatedAt: restoreDate(item.updatedAt),

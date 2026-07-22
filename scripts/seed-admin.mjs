@@ -38,7 +38,7 @@ async function main() {
   if (existingByEmail) {
     await prisma.adminUser.update({
       where: { id: existingByEmail.id },
-      data: { passwordHash, isActive: true, role: "admin" },
+      data: { passwordHash, isActive: true, role: "superadmin", permissions: [] },
     });
     console.log(`Updated password for ${email}`);
     return;
@@ -52,7 +52,8 @@ async function main() {
         email,
         passwordHash,
         isActive: true,
-        role: "admin",
+        role: "superadmin",
+        permissions: [],
         name: primary.name || "Primary Admin",
       },
     });
@@ -65,7 +66,8 @@ async function main() {
       email,
       passwordHash,
       name: "Primary Admin",
-      role: "admin",
+      role: "superadmin",
+      permissions: [],
       isActive: true,
     },
   });

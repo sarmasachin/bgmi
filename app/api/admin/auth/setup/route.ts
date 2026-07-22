@@ -8,8 +8,12 @@ import {
 import {
   ADMIN_SESSION_COOKIE,
   adminSessionCookieOptions,
-  createAdminSessionToken,
 } from "@/src/server/adminSession";
+import { createSessionTokenFromAuthSnapshot } from "@/src/server/rbac/sessionFromUser";
+import {
+  normalizeAdminRole,
+  resolvePermissions,
+} from "@/src/server/rbac/permissions";
 
 const schema = z.object({
   email: z.string().email().max(200),
@@ -94,9 +98,12 @@ export async function POST(request: NextRequest) {
   }
 
   try {
-    const token = await createAdminSessionToken({
-      userId: result.id,
+    const token = await createSessionTokenFromAuthSnapshot({
+      id: result.id,
       email: result.email,
+      role: normalizeAdminRole(result.role),
+      permissions: resolvePermissions(result.role, result.permissions),
+      isActive: true,
     });
 
     const response = NextResponse.json({ ok: true, email: result.email });

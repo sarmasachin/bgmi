@@ -5,6 +5,9 @@ import {
   verifyAdminSessionToken,
 } from "@/src/server/adminSession";
 import { isAdminMutationOriginAllowed } from "@/src/server/adminRequestOrigin";
+import { resolveAdminApiPermission } from "@/src/server/rbac/routeAccess";
+import { subjectFromSessionPayload } from "@/src/server/rbac/sessionSubject";
+import { can, canAny } from "@/src/server/rbac/permissions";
 
 /** Prevent browser/bfcache from restoring protected admin pages after logout. */
 function withAdminNoStore(response: NextResponse) {
@@ -12,6 +15,13 @@ function withAdminNoStore(response: NextResponse) {
   response.headers.set("Pragma", "no-cache");
   response.headers.set("Expires", "0");
   return response;
+}
+
+function forbiddenJson() {
+  return NextResponse.json(
+    { error: "Forbidden. You do not have permission for this action." },
+    { status: 403 },
+  );
 }
 
 export async function middleware(request: NextRequest) {
@@ -60,16 +70,32 @@ export async function middleware(request: NextRequest) {
 
   const raw = request.cookies.get(ADMIN_SESSION_COOKIE)?.value;
   const session = await verifyAdminSessionToken(raw);
-  if (session) {
-    return isAdminPage ? withAdminNoStore(NextResponse.next()) : NextResponse.next();
+  if (!session) {
+    if (isAdminApi) {
+      return NextResponse.json({ error: "Unauthorized. Please log in again." }, { status: 401 });
+    }
+    const loginUrl = new URL("/admin/login", request.url);
+    return withAdminNoStore(NextResponse.redirect(loginUrl));
   }
 
+  // Phase 3: enforce RBAC on admin APIs (pages are guarded in server components).
   if (isAdminApi) {
-    return NextResponse.json({ error: "Unauthorized. Please log in again." }, { status: 401 });
+    const subject = subjectFromSessionPayload(session);
+    const rule = resolveAdminApiPermission(pathname, request.method);
+
+    if (rule.type === "deny") {
+      return forbiddenJson();
+    }
+    if (rule.type === "permission" && !can(subject, rule.permission)) {
+      return forbiddenJson();
+    }
+    if (rule.type === "any" && !canAny(subject, rule.permissions)) {
+      return forbiddenJson();
+    }
+    // auth-only → allowed for any valid session
   }
 
-  const loginUrl = new URL("/admin/login", request.url);
-  return withAdminNoStore(NextResponse.redirect(loginUrl));
+  return isAdminPage ? withAdminNoStore(NextResponse.next()) : NextResponse.next();
 }
 
 export const config = {

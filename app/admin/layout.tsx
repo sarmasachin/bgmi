@@ -1,12 +1,12 @@
 "use client";
 
 import Link from "next/link";
-import { ReactNode } from "react";
-import { useEffect } from "react";
-import { useState } from "react";
+import { ReactNode, useEffect, useMemo, useState } from "react";
 import { usePathname } from "next/navigation";
 import { AdminLogoutButton } from "@/src/components/admin/AdminLogoutButton";
 import { AdminToastProvider } from "@/src/components/admin/AdminToast";
+import { ADMIN_NAV_ACCESS } from "@/src/server/rbac/routeAccess";
+import { canAny, type AdminPermission, type AdminRole } from "@/src/server/rbac/permissions";
 
 type SidebarIconName =
   | "dashboard"
@@ -28,6 +28,13 @@ type SidebarIconName =
   | "system"
   | "settings";
 
+type MeState = {
+  id: string;
+  email: string;
+  role: AdminRole;
+  permissions: AdminPermission[];
+};
+
 /** Avoid prefix bugs e.g. /admin/notifications matching /admin/news via startsWith("news"). */
 function isNavItemActive(pathname: string, href: string) {
   if (href === "/admin") {
@@ -35,27 +42,6 @@ function isNavItemActive(pathname: string, href: string) {
   }
   return pathname === href || pathname.startsWith(`${href}/`);
 }
-
-const items = [
-  { label: "Dashboard", href: "/admin", icon: "dashboard" as SidebarIconName },
-  { label: "News", href: "/admin/news", icon: "news" as SidebarIconName },
-  { label: "Pages", href: "/admin/pages", icon: "pages" as SidebarIconName },
-  { label: "Game Articles", href: "/admin/game-articles", icon: "gameArticles" as SidebarIconName },
-  { label: "Game FAQs", href: "/admin/game-faqs", icon: "gameFaqs" as SidebarIconName },
-  { label: "Legal Pages", href: "/admin/legal-pages", icon: "legal" as SidebarIconName },
-  { label: "Comments", href: "/admin/comments", icon: "comments" as SidebarIconName },
-  { label: "Contact", href: "/admin/contact", icon: "contact" as SidebarIconName },
-  { label: "Testimonials", href: "/admin/testimonials", icon: "testimonials" as SidebarIconName },
-  { label: "Notifications", href: "/admin/notifications", icon: "notifications" as SidebarIconName },
-  { label: "Ratings", href: "/admin/ratings", icon: "ratings" as SidebarIconName },
-  { label: "Ads", href: "/admin/ad-placements", icon: "ads" as SidebarIconName },
-  { label: "Media", href: "/admin/media", icon: "media" as SidebarIconName },
-  { label: "Backups", href: "/admin/backups", icon: "backups" as SidebarIconName },
-  { label: "Users", href: "/admin/users", icon: "users" as SidebarIconName },
-  { label: "Audit", href: "/admin/audit", icon: "audit" as SidebarIconName },
-  { label: "System", href: "/admin/system", icon: "system" as SidebarIconName },
-  { label: "Settings", href: "/admin/settings", icon: "settings" as SidebarIconName },
-];
 
 function SidebarIcon({ name }: { name: SidebarIconName }) {
   const shared = {
@@ -116,18 +102,55 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
   const pathname = usePathname();
   const isLoginPage = pathname === "/admin/login";
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [me, setMe] = useState<MeState | null>(null);
+  const [meLoaded, setMeLoaded] = useState(false);
 
   useEffect(() => {
     setMobileMenuOpen(false);
   }, [pathname]);
 
-  // If browser restores a cached admin page (Back/Forward), re-check auth.
+  useEffect(() => {
+    if (isLoginPage) {
+      setMe(null);
+      setMeLoaded(true);
+      return;
+    }
+
+    let cancelled = false;
+    setMeLoaded(false);
+    void fetch("/api/admin/me", { cache: "no-store", credentials: "include" })
+      .then(async (res) => {
+        if (res.status === 401) {
+          window.location.replace("/admin/login");
+          return null;
+        }
+        if (!res.ok) return null;
+        const json = (await res.json()) as { me?: MeState };
+        return json.me ?? null;
+      })
+      .then((next) => {
+        if (cancelled) return;
+        setMe(next);
+        setMeLoaded(true);
+      })
+      .catch(() => {
+        if (cancelled) return;
+        setMe(null);
+        setMeLoaded(true);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [isLoginPage]);
+
+  // If browser restores a cached admin page (Back/Forward), re-check auth via /me (auth-only).
   useEffect(() => {
     if (isLoginPage) return;
 
     const onPageShow = (event: PageTransitionEvent) => {
       if (!event.persisted) return;
-      void fetch("/api/admin/system/health", {
+      void fetch("/api/admin/me", {
         cache: "no-store",
         credentials: "same-origin",
       }).then((res) => {
@@ -140,6 +163,17 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
     window.addEventListener("pageshow", onPageShow);
     return () => window.removeEventListener("pageshow", onPageShow);
   }, [isLoginPage]);
+
+  const visibleNav = useMemo(() => {
+    if (!meLoaded) return [];
+    // Until /me loads, hide links to avoid flashing forbidden modules.
+    if (!me) return [];
+    return ADMIN_NAV_ACCESS.filter((item) => canAny(me, item.anyOf)).map((item) => ({
+      label: item.label,
+      href: item.href,
+      icon: item.icon as SidebarIconName,
+    }));
+  }, [me, meLoaded]);
 
   return (
     <AdminToastProvider>
@@ -173,20 +207,28 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
             <aside className={`admin-sidebar ${mobileMenuOpen ? "is-open" : ""}`}>
               <div className="admin-sidebar-title">Admin Panel</div>
               <nav className="admin-nav">
-                {items.map((item) => {
-                  const isActive = isNavItemActive(pathname, item.href);
-                  return (
-                    <Link
-                      key={item.label}
-                      href={item.href}
-                      className={`admin-nav-link ${isActive ? "is-active" : ""}`}
-                      onClick={() => setMobileMenuOpen(false)}
-                    >
-                      <span className="admin-nav-icon"><SidebarIcon name={item.icon} /></span>
-                      <span>{item.label}</span>
-                    </Link>
-                  );
-                })}
+                {!meLoaded ? (
+                  <p style={{ padding: "8px 12px", opacity: 0.7, fontSize: 13 }}>Loading menu…</p>
+                ) : visibleNav.length === 0 ? (
+                  <p style={{ padding: "8px 12px", opacity: 0.7, fontSize: 13 }}>No modules assigned.</p>
+                ) : (
+                  visibleNav.map((item) => {
+                    const isActive = isNavItemActive(pathname, item.href);
+                    return (
+                      <Link
+                        key={item.label}
+                        href={item.href}
+                        className={`admin-nav-link ${isActive ? "is-active" : ""}`}
+                        onClick={() => setMobileMenuOpen(false)}
+                      >
+                        <span className="admin-nav-icon">
+                          <SidebarIcon name={item.icon} />
+                        </span>
+                        <span>{item.label}</span>
+                      </Link>
+                    );
+                  })
+                )}
               </nav>
               <div className="admin-sidebar-footer">
                 <AdminLogoutButton />

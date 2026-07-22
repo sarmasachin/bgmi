@@ -12,10 +12,29 @@ model AdminUser {
   email        String   @unique
   passwordHash String
   name         String?
-  role         String   @default("admin")
+  /** "superadmin" | "subadmin" (legacy "admin" treated as superadmin). */
+  role         String   @default("superadmin")
+  /** Checkbox permissions for subadmin. Ignored for superadmin (full access). */
+  permissions  Json     @default("[]")
+  /** Optional link to a role template (Roles & Permissions page). */
+  roleDefinitionId String?
+  roleDefinition   AdminRoleDefinition? @relation(fields: [roleDefinitionId], references: [id], onDelete: SetNull)
   isActive     Boolean  @default(true)
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
+
+  @@index([roleDefinitionId])
+}
+
+/** Reusable role templates shown on Admin → Roles & Permissions. */
+model AdminRoleDefinition {
+  id          String   @id @default(cuid())
+  name        String   @unique
+  permissions Json     @default("[]")
+  isSystem    Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  users       AdminUser[]
 }
 
 model SiteSetting {

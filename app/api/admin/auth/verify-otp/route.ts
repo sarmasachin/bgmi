@@ -3,8 +3,9 @@ import { consumeAdminLoginOtp } from "@/src/server/adminLoginOtp";
 import {
   ADMIN_SESSION_COOKIE,
   adminSessionCookieOptions,
-  createAdminSessionToken,
 } from "@/src/server/adminSession";
+import { getAdminUserAuthSnapshot } from "@/src/server/repositories/adminUsersRepository";
+import { createSessionTokenFromAuthSnapshot } from "@/src/server/rbac/sessionFromUser";
 import { checkRateLimit } from "@/src/server/rateLimit";
 import { getAdminLoginLockKey } from "@/src/server/adminLoginLockout";
 import { z } from "zod";
@@ -39,11 +40,20 @@ export async function POST(request: NextRequest) {
   }
 
   try {
-    const token = await createAdminSessionToken({
-      userId: result.userId,
-      email: result.email,
+    const snapshot = await getAdminUserAuthSnapshot(result.userId);
+    if (!snapshot) {
+      return NextResponse.json(
+        { error: "Account inactive or not found. Please login again." },
+        { status: 401 },
+      );
+    }
+
+    const token = await createSessionTokenFromAuthSnapshot(snapshot);
+    const response = NextResponse.json({
+      ok: true,
+      role: snapshot.role,
+      permissions: snapshot.permissions,
     });
-    const response = NextResponse.json({ ok: true });
     response.cookies.set(ADMIN_SESSION_COOKIE, token, adminSessionCookieOptions());
     return response;
   } catch (err) {
