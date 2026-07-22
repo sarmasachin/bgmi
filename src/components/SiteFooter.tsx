@@ -65,6 +65,10 @@ export async function SiteFooter({ settings: settingsProp }: SiteFooterProps = {
     /^(privacy|terms|disclaimer|contact|news|sitemap)$/i.test(item.label.trim()),
   );
 
+  const resourcesColumnLinks = resourceLinks.filter(
+    (item) => !/^(privacy|terms|disclaimer|contact|sitemap)$/i.test(item.label.trim()),
+  );
+
   return (
     <footer className="site-footer">
       <div className="site-footer-accent" aria-hidden />
@@ -106,7 +110,7 @@ export async function SiteFooter({ settings: settingsProp }: SiteFooterProps = {
           <div className="site-footer-col">
             <p className="site-footer-col-title">Resources</p>
             <ul className="site-footer-links">
-              {resourceLinks.map((page) => (
+              {resourcesColumnLinks.map((page) => (
                 <li key={`${page.href}-${page.label}`}>
                   <Link href={page.href} className="site-footer-link">
                     {page.label}

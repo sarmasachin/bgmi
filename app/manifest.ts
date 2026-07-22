@@ -20,18 +20,18 @@ export default function manifest(): MetadataRoute.Manifest {
     categories: ["games", "utilities"],
     icons: [
       {
-        src: "/favicon.ico",
+        src: "/favicon.ico?v=3",
         sizes: "48x48",
         type: "image/x-icon",
       },
       {
-        src: "/icon.png",
+        src: "/icon.png?v=3",
         sizes: "192x192",
         type: "image/png",
         purpose: "any",
       },
       {
-        src: "/apple-icon.png",
+        src: "/apple-icon.png?v=3",
         sizes: "180x180",
         type: "image/png",
         purpose: "any",

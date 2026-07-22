@@ -28,10 +28,12 @@ function subjectFromParams(searchParams: URLSearchParams) {
   const subject = searchParams.get("subject")?.trim();
   if (subject) return subject.slice(0, 120);
   const topic = topicFromParams(searchParams);
-  if (topic === "report") return "Report an issue";
+  if (topic === "report") return "Report Issue";
   if (topic === "feedback") return "Website feedback";
   return "";
 }
+
+const TOPIC_DEFAULT_SUBJECTS = new Set(["report issue", "report an issue", "website feedback"]);
 
 export function ContactForm() {
   const searchParams = useSearchParams();
@@ -43,8 +45,13 @@ export function ContactForm() {
 
   useEffect(() => {
     const prefill = subjectFromParams(searchParams);
-    if (!prefill) return;
-    setForm((prev) => (prev.subject ? prev : { ...prev, subject: prefill }));
+    setForm((prev) => {
+      const current = prev.subject.trim().toLowerCase();
+      const isTopicDefault = !current || TOPIC_DEFAULT_SUBJECTS.has(current);
+      if (!isTopicDefault) return prev;
+      if (prev.subject === prefill) return prev;
+      return { ...prev, subject: prefill };
+    });
   }, [searchParams]);
 
   function update<K extends keyof FormState>(key: K, value: FormState[K]) {

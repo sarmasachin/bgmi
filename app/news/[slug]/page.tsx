@@ -1,6 +1,8 @@
 import { AdSlot } from "@/src/components/AdSlot";
 import { RatingWidget } from "@/src/components/RatingWidget";
 import { ClientErrorBoundary } from "@/src/components/ClientErrorBoundary";
+import { HomeHeader } from "@/src/components/HomeHeader";
+import { SiteFooter } from "@/src/components/SiteFooter";
 import { ratingWidgetRemountKey } from "@/src/lib/ratingWidgetKey";
 import { getAdPlacementVisibility } from "@/src/server/repositories/adPlacementRepository";
 import {
@@ -9,6 +11,7 @@ import {
   resolveNewsCanonicalUrl,
 } from "@/src/server/repositories/newsRepository";
 import { getRatingSummary } from "@/src/server/repositories/ratingSummaryRepository";
+import { getSettings } from "@/src/server/repositories/settingsRepository";
 import { getSiteUrl } from "@/src/lib/siteUrl";
 import { buildSocialMetadata, DEFAULT_OG_IMAGE_PATH } from "@/src/lib/socialMeta";
 import { notFound } from "next/navigation";
@@ -75,9 +78,10 @@ export default async function NewsDetailPage({ params }: Props) {
   const meta = extractNewsMeta(item.content);
   const imageAlt = meta.socialImageAlt?.trim() || item.title;
 
-  const [adPlaces, ratingSummary] = await Promise.all([
+  const [adPlaces, ratingSummary, settings] = await Promise.all([
     getAdPlacementVisibility(),
     getRatingSummary("news", item.id),
+    getSettings(),
   ]);
 
   const baseUrl = getSiteUrl();
@@ -95,35 +99,39 @@ export default async function NewsDetailPage({ params }: Props) {
   };
 
   return (
-    <main className="page-container news-detail-page">
-      <article className="news-detail-card">
-        <h1>{item.title}</h1>
-        {adPlaces.newsArticle.news_detail_top ? <AdSlot slotKey="news_detail_top" /> : null}
-        {item.featureImage ? (
-          <img
-            className="news-detail-hero"
-            src={item.featureImage}
-            alt={imageAlt}
-            loading="eager"
-          />
-        ) : null}
-        <p>{item.excerpt ?? ""}</p>
-        {item.content && typeof item.content === "object" && "html" in item.content ? (
-          <div dangerouslySetInnerHTML={{ __html: String(item.content.html ?? "") }} />
-        ) : null}
-        {adPlaces.newsArticle.news_detail_mid ? <AdSlot slotKey="news_detail_mid" /> : null}
-        {adPlaces.newsArticle.news_detail_bottom ? <AdSlot slotKey="news_detail_bottom" /> : null}
-        <ClientErrorBoundary label="Rating">
-          <RatingWidget
-            key={ratingWidgetRemountKey("news", item.id)}
-            title="Rate this news article"
-            targetType="news"
-            targetId={item.id}
-            initialSummary={ratingSummary}
-          />
-        </ClientErrorBoundary>
-      </article>
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(articleSchema) }} />
-    </main>
+    <div>
+      <HomeHeader siteTitle={settings.homeDisplay.headerTitle} navigation={settings.navigation} />
+      <main className="page-container news-detail-page">
+        <article className="news-detail-card">
+          <h1>{item.title}</h1>
+          {adPlaces.newsArticle.news_detail_top ? <AdSlot slotKey="news_detail_top" /> : null}
+          {item.featureImage ? (
+            <img
+              className="news-detail-hero"
+              src={item.featureImage}
+              alt={imageAlt}
+              loading="eager"
+            />
+          ) : null}
+          <p>{item.excerpt ?? ""}</p>
+          {item.content && typeof item.content === "object" && "html" in item.content ? (
+            <div dangerouslySetInnerHTML={{ __html: String(item.content.html ?? "") }} />
+          ) : null}
+          {adPlaces.newsArticle.news_detail_mid ? <AdSlot slotKey="news_detail_mid" /> : null}
+          {adPlaces.newsArticle.news_detail_bottom ? <AdSlot slotKey="news_detail_bottom" /> : null}
+          <ClientErrorBoundary label="Rating">
+            <RatingWidget
+              key={ratingWidgetRemountKey("news", item.id)}
+              title="Rate this news article"
+              targetType="news"
+              targetId={item.id}
+              initialSummary={ratingSummary}
+            />
+          </ClientErrorBoundary>
+        </article>
+        <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(articleSchema) }} />
+      </main>
+      <SiteFooter settings={settings} />
+    </div>
   );
 }
