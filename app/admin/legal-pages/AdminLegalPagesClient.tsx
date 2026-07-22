@@ -1,6 +1,5 @@
 "use client";
 
-import dynamic from "next/dynamic";
 import { FormEvent, useEffect, useMemo, useState } from "react";
 import type { AdminLegalPageRow } from "@/src/server/admin/mapAdminLegalPages";
 import { useAdminFlash } from "@/src/components/admin/AdminToast";
@@ -12,12 +11,39 @@ import {
   legalPublicPath,
 } from "@/src/lib/legalPages";
 
-const RichTextEditor = dynamic(
-  () => import("@/src/components/admin/RichTextEditor").then((mod) => mod.RichTextEditor),
-  { ssr: false, loading: () => <p>Loading editor…</p> },
-);
-
 const EDITOR_DRAFT_KEY = "bgmi_admin_legal_editor_draft_v1";
+
+function EditorBootSkeleton({ html }: { html?: string }) {
+  return (
+    <div className="rich-editor" aria-busy="true">
+      <div className="rich-editor-toolbar" style={{ minHeight: 48, opacity: 0.35, pointerEvents: "none" }} />
+      <div className="rich-editor-editable-wrap">
+        <div
+          className="rich-editor-content"
+          style={{ height: 360, overflow: "auto" }}
+          dangerouslySetInnerHTML={{ __html: html || "<p></p>" }}
+        />
+      </div>
+    </div>
+  );
+}
+
+function formatWhen(value: string) {
+  if (!value) return "—";
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return value;
+  // Fixed locale/timeZone so SSR + client match (avoids React hydration #418).
+  return date.toLocaleString("en-IN", {
+    timeZone: "Asia/Kolkata",
+    day: "numeric",
+    month: "numeric",
+    year: "numeric",
+    hour: "numeric",
+    minute: "2-digit",
+    second: "2-digit",
+    hour12: true,
+  });
+}
 
 type Props = {
   initialRows?: AdminLegalPageRow[];
@@ -85,6 +111,9 @@ export default function AdminLegalPagesClient({ initialRows }: Props) {
   const [saving, setSaving] = useState(false);
   const [confirmAction, setConfirmAction] = useState<ConfirmAction | null>(null);
   const [confirmBusy, setConfirmBusy] = useState(false);
+  const [Editor, setEditor] = useState<null | typeof import("@/src/components/admin/RichTextEditor").RichTextEditor>(
+    null,
+  );
   const setMessage = useAdminFlash();
 
   const missingCore = useMemo(() => {
@@ -92,8 +121,22 @@ export default function AdminLegalPagesClient({ initialRows }: Props) {
     return CORE_LEGAL_SLUGS.filter((slug) => !have.has(slug));
   }, [rows]);
 
-  async function loadRows(ensure = false) {
-    setLoading(true);
+  useEffect(() => {
+    let cancelled = false;
+    void import("@/src/components/admin/RichTextEditor").then((mod) => {
+      if (!cancelled) setEditor(() => mod.RichTextEditor);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  async function loadRows(opts?: { ensure?: boolean; soft?: boolean }) {
+    const ensure = opts?.ensure === true;
+    // Soft refresh keeps the table mounted — avoids Loading… blink on Refresh/Save.
+    const soft =
+      opts?.soft === true ? true : opts?.soft === false ? false : rows.length > 0;
+    if (!soft) setLoading(true);
     try {
       const qs = ensure ? "?ensure=1" : "";
       const res = await fetch(`/api/admin/legal-pages${qs}`, {
@@ -102,22 +145,22 @@ export default function AdminLegalPagesClient({ initialRows }: Props) {
       });
       if (!res.ok) {
         setMessage("Failed to load legal pages.");
-        setRows([]);
+        // Keep current rows — clearing made the table flash empty.
         return;
       }
       const json = (await res.json()) as { data?: Array<Record<string, unknown>> };
       setRows((json.data ?? []).map(mapLoaded));
     } catch {
       setMessage("Network error. Please retry.");
-      setRows([]);
     } finally {
-      setLoading(false);
+      if (!soft) setLoading(false);
     }
   }
 
   useEffect(() => {
     if (initialRows !== undefined) return;
-    void loadRows(true);
+    void loadRows({ ensure: true, soft: false });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [initialRows]);
 
   function openCreate(slugHint?: string) {
@@ -197,7 +240,7 @@ export default function AdminLegalPagesClient({ initialRows }: Props) {
       }
       setMessage(editingId ? "Legal page updated." : "Legal page created.");
       closeForm();
-      await loadRows();
+      await loadRows({ soft: true });
     } catch {
       setMessage("Network error. Please retry.");
     } finally {
@@ -215,7 +258,7 @@ export default function AdminLegalPagesClient({ initialRows }: Props) {
         body: JSON.stringify({ id, status }),
       });
       setMessage(res.ok ? `Marked as ${status}.` : await readApiError(res, "Update failed."));
-      if (res.ok) await loadRows();
+      if (res.ok) await loadRows({ soft: true });
       return res.ok;
     } catch {
       setMessage("Network error. Please retry.");
@@ -235,7 +278,7 @@ export default function AdminLegalPagesClient({ initialRows }: Props) {
       setMessage(res.ok ? "Legal page deleted." : await readApiError(res, "Delete failed."));
       if (res.ok) {
         if (editingId === id) closeForm();
-        await loadRows();
+        await loadRows({ soft: true });
       }
       return res.ok;
     } catch {
@@ -272,20 +315,21 @@ export default function AdminLegalPagesClient({ initialRows }: Props) {
             type="button"
             className="admin-news-btn admin-news-btn-primary"
             onClick={() => openCreate("privacy")}
-            onMouseEnter={() => {
-              void import("@/src/components/admin/RichTextEditor");
-            }}
           >
             New page
           </button>
           <button
             type="button"
             className="admin-news-btn admin-news-btn-edit"
-            onClick={() => void loadRows(true)}
+            onClick={() => void loadRows({ ensure: true, soft: true })}
           >
             Ensure Privacy / Terms / Disclaimer
           </button>
-          <button type="button" className="admin-news-btn admin-news-btn-edit" onClick={() => void loadRows()}>
+          <button
+            type="button"
+            className="admin-news-btn admin-news-btn-edit"
+            onClick={() => void loadRows({ soft: true })}
+          >
             Refresh
           </button>
         </div>
@@ -393,12 +437,16 @@ export default function AdminLegalPagesClient({ initialRows }: Props) {
 
           <div style={{ marginTop: 12 }}>
             <p style={{ marginBottom: 8, fontWeight: 700 }}>Page content</p>
-            <RichTextEditor
-              key={`legal-editor-${editingId ?? "new"}-${editorNonce}`}
-              value={form.content}
-              onChange={(value) => setForm((f) => ({ ...f, content: value }))}
-              storageKey={EDITOR_DRAFT_KEY}
-            />
+            {Editor ? (
+              <Editor
+                key={`legal-editor-${editingId ?? "new"}-${editorNonce}`}
+                value={form.content}
+                onChange={(value) => setForm((f) => ({ ...f, content: value }))}
+                storageKey={EDITOR_DRAFT_KEY}
+              />
+            ) : (
+              <EditorBootSkeleton html={form.content} />
+            )}
           </div>
 
           <div className="admin-news-actions-wrap" style={{ marginTop: 14, gap: 8 }}>
@@ -447,9 +495,7 @@ export default function AdminLegalPagesClient({ initialRows }: Props) {
                     </td>
                     <td>{row.status}</td>
                     <td>
-                      {row.updatedAt
-                        ? new Date(row.updatedAt).toLocaleString()
-                        : "—"}
+                      {row.updatedAt ? formatWhen(row.updatedAt) : "—"}
                     </td>
                     <td className="admin-news-actions">
                       <div className="admin-news-actions-wrap">

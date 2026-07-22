@@ -15,6 +15,23 @@ type ResetTarget = {
 
 const PAGE_SIZE = 10;
 
+function formatWhen(value: string) {
+  if (!value) return "—";
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return value;
+  // Fixed locale/timeZone so SSR + client match (avoids text shift / hydration #418).
+  return date.toLocaleString("en-IN", {
+    timeZone: "Asia/Kolkata",
+    day: "numeric",
+    month: "numeric",
+    year: "numeric",
+    hour: "numeric",
+    minute: "2-digit",
+    second: "2-digit",
+    hour12: true,
+  });
+}
+
 export default function AdminUsersClient({ initialRows }: Props) {
   const [rows, setRows] = useState<AdminUserRow[]>(initialRows ?? []);
   const [loading, setLoading] = useState(initialRows === undefined);
@@ -35,29 +52,35 @@ export default function AdminUsersClient({ initialRows }: Props) {
     return rows.slice(start, start + PAGE_SIZE);
   }, [rows, safeListPage]);
 
-  const load = useCallback(async () => {
-    setLoading(true);
-    try {
-      const res = await fetch("/api/admin/users", { cache: "no-store", credentials: "include" });
-      const json = (await res.json()) as { data?: AdminUserRow[]; error?: string };
-      if (!res.ok) {
-        setMessage(json.error ?? "Could not load users.");
-        setRows([]);
-        return;
+  const load = useCallback(
+    async (opts?: { soft?: boolean }) => {
+      // Soft refresh keeps the table mounted — avoids Loading… blink + layout jump.
+      const soft =
+        opts?.soft === true ? true : opts?.soft === false ? false : rows.length > 0;
+      if (!soft) setLoading(true);
+      try {
+        const res = await fetch("/api/admin/users", { cache: "no-store", credentials: "include" });
+        const json = (await res.json()) as { data?: AdminUserRow[]; error?: string };
+        if (!res.ok) {
+          setMessage(json.error ?? "Could not load users.");
+          // Keep current rows — clearing made the table flash empty.
+          return;
+        }
+        setRows(json.data ?? []);
+      } catch {
+        setMessage("Network error loading users.");
+      } finally {
+        if (!soft) setLoading(false);
       }
-      setRows(json.data ?? []);
-    } catch {
-      setMessage("Network error loading users.");
-      setRows([]);
-    } finally {
-      setLoading(false);
-    }
-  }, [setMessage]);
+    },
+    [rows.length, setMessage],
+  );
 
   useEffect(() => {
     if (initialRows !== undefined) return;
-    void load();
-  }, [initialRows, load]);
+    void load({ soft: false });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [initialRows]);
 
   useEffect(() => {
     if (!resetTarget) return;
@@ -111,7 +134,7 @@ export default function AdminUsersClient({ initialRows }: Props) {
       setNewEmail("");
       setNewPassword("");
       setNewName("");
-      await load();
+      await load({ soft: true });
     } catch {
       setMessage("Network error.");
     } finally {
@@ -135,7 +158,8 @@ export default function AdminUsersClient({ initialRows }: Props) {
         return;
       }
       setMessage(next ? "User activated." : "User deactivated.");
-      await load();
+      setRows((prev) => prev.map((r) => (r.id === row.id ? { ...r, isActive: next } : r)));
+      await load({ soft: true });
     } catch {
       setMessage("Network error.");
     } finally {
@@ -257,7 +281,7 @@ export default function AdminUsersClient({ initialRows }: Props) {
                       <td>{row.name ?? "—"}</td>
                       <td>{row.role}</td>
                       <td>{row.isActive ? "Yes" : "No"}</td>
-                      <td>{new Date(row.createdAt).toLocaleString()}</td>
+                      <td>{formatWhen(row.createdAt)}</td>
                       <td>
                         <div className="admin-actions" style={{ marginBottom: 0 }}>
                           <button type="button" disabled={busy} onClick={() => void toggleActive(row)}>

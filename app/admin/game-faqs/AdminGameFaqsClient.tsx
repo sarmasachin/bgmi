@@ -55,8 +55,15 @@ export default function AdminGameFaqsClient({ initialData }: Props) {
 
   const current = bundles.find((b) => b.game === game) ?? bundles[0]!;
 
-  async function load() {
-    setLoading(true);
+  async function load(opts?: { soft?: boolean }) {
+    // Soft refresh keeps the form mounted — avoids Loading… blink on Refresh/Save.
+    const soft =
+      opts?.soft === true
+        ? true
+        : opts?.soft === false
+          ? false
+          : bundles.some((b) => b.items.length > 0);
+    if (!soft) setLoading(true);
     try {
       const res = await fetch("/api/admin/game-faqs", {
         cache: "no-store",
@@ -71,13 +78,14 @@ export default function AdminGameFaqsClient({ initialData }: Props) {
     } catch {
       setMessage("Network error. Please retry.");
     } finally {
-      setLoading(false);
+      if (!soft) setLoading(false);
     }
   }
 
   useEffect(() => {
     if (initialData !== undefined) return;
-    void load();
+    void load({ soft: false });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [initialData]);
 
   function updateItems(updater: (items: HomeFaqItem[]) => HomeFaqItem[]) {
@@ -120,8 +128,11 @@ export default function AdminGameFaqsClient({ initialData }: Props) {
         return;
       }
       const json = (await res.json()) as { savedCount?: number };
+      setBundles((prev) =>
+        prev.map((b) => (b.game === game ? { ...b, usingDefault: false } : b)),
+      );
       setMessage(`Saved ${json.savedCount ?? 0} FAQ item(s) for ${current.label}.`);
-      await load();
+      await load({ soft: true });
     } catch {
       setMessage("Network error. Please retry.");
     } finally {
@@ -134,7 +145,11 @@ export default function AdminGameFaqsClient({ initialData }: Props) {
     <section className="admin-section">
       <div className="admin-comments-head">
         <h1>Game FAQs</h1>
-        <button type="button" className="admin-news-btn admin-news-btn-edit" onClick={() => void load()}>
+        <button
+          type="button"
+          className="admin-news-btn admin-news-btn-edit"
+          onClick={() => void load({ soft: true })}
+        >
           Refresh
         </button>
       </div>

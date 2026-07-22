@@ -102,6 +102,16 @@ function defaultsFor(game: GameFaqGame): HomeFaqItem[] {
   return DEFAULT_BGMI_FAQ;
 }
 
+/** Stable id when older DB rows lack one — randomUUID() remounted admin inputs on every refresh. */
+function stableFallbackFaqId(question: string, index: number): string {
+  let h = 2166136261;
+  for (let i = 0; i < question.length; i++) {
+    h ^= question.charCodeAt(i);
+    h = Math.imul(h, 16777619);
+  }
+  return `faq-${index}-${(h >>> 0).toString(36)}`.slice(0, 80);
+}
+
 function parseStoredItems(raw: unknown): HomeFaqItem[] | null {
   if (!raw || typeof raw !== "object") return null;
   const items = (raw as { items?: unknown }).items;
@@ -114,7 +124,9 @@ function parseStoredItems(raw: unknown): HomeFaqItem[] | null {
     const answer = typeof r.answer === "string" ? r.answer.trim() : "";
     if (!question || !answer) continue;
     const id =
-      typeof r.id === "string" && r.id.trim() ? r.id.trim().slice(0, 80) : randomUUID();
+      typeof r.id === "string" && r.id.trim()
+        ? r.id.trim().slice(0, 80)
+        : stableFallbackFaqId(question, out.length);
     out.push({ id, question: question.slice(0, 500), answer: answer.slice(0, 4000) });
   }
   return out;
