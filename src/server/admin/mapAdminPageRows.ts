@@ -1,5 +1,5 @@
 type TemplateType = "home" | "article" | "landing";
-export type CloneGame = "bgmi" | "pubg";
+export type CloneGame = "bgmi" | "pubg" | "freefire" | "freefire-max";
 
 export type AdminPageRow = {
   id: string;
@@ -34,7 +34,8 @@ function coerceTemplateType(value: unknown): TemplateType {
 }
 
 function coerceCloneGame(value: unknown): CloneGame {
-  return value === "pubg" ? "pubg" : "bgmi";
+  if (value === "pubg" || value === "freefire" || value === "freefire-max") return value;
+  return "bgmi";
 }
 
 function parseContent(content: unknown) {
@@ -62,7 +63,13 @@ function parseContent(content: unknown) {
           metaObj.templateType === "home" || metaObj.templateType === "article" || metaObj.templateType === "landing"
             ? metaObj.templateType
             : undefined,
-        game: metaObj.game === "pubg" || metaObj.game === "bgmi" ? metaObj.game : undefined,
+        game:
+          metaObj.game === "pubg" ||
+          metaObj.game === "bgmi" ||
+          metaObj.game === "freefire" ||
+          metaObj.game === "freefire-max"
+            ? metaObj.game
+            : undefined,
         socialTitle: typeof metaObj.socialTitle === "string" ? metaObj.socialTitle : undefined,
         socialDescription: typeof metaObj.socialDescription === "string" ? metaObj.socialDescription : undefined,
         socialImageAlt: typeof metaObj.socialImageAlt === "string" ? metaObj.socialImageAlt : undefined,

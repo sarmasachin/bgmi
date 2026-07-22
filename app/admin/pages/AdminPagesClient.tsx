@@ -12,7 +12,7 @@ const RichTextEditor = dynamic(
 );
 
 type TemplateType = "home" | "article" | "landing";
-type CloneGame = "bgmi" | "pubg";
+type CloneGame = "bgmi" | "pubg" | "freefire" | "freefire-max";
 
 type PageRow = AdminPageRow;
 
@@ -30,7 +30,15 @@ function coerceTemplateType(value: unknown): TemplateType {
 }
 
 function coerceCloneGame(value: unknown): CloneGame {
-  return value === "pubg" ? "pubg" : "bgmi";
+  if (value === "pubg" || value === "freefire" || value === "freefire-max") return value;
+  return "bgmi";
+}
+
+function cloneGameLabel(game: CloneGame) {
+  if (game === "pubg") return "PUBG Mobile";
+  if (game === "freefire") return "Free Fire";
+  if (game === "freefire-max") return "Free Fire Max";
+  return "BGMI";
 }
 
 function normalizeSlugInput(next: string) {
@@ -80,7 +88,13 @@ function parseContent(content: unknown) {
           metaObj.templateType === "home" || metaObj.templateType === "article" || metaObj.templateType === "landing"
             ? metaObj.templateType
             : undefined,
-        game: metaObj.game === "pubg" || metaObj.game === "bgmi" ? metaObj.game : undefined,
+        game:
+          metaObj.game === "pubg" ||
+          metaObj.game === "bgmi" ||
+          metaObj.game === "freefire" ||
+          metaObj.game === "freefire-max"
+            ? metaObj.game
+            : undefined,
         socialTitle: typeof metaObj.socialTitle === "string" ? metaObj.socialTitle : undefined,
         socialDescription: typeof metaObj.socialDescription === "string" ? metaObj.socialDescription : undefined,
         socialImageAlt: typeof metaObj.socialImageAlt === "string" ? metaObj.socialImageAlt : undefined,
@@ -488,7 +502,7 @@ export default function AdminPagesClient({ initialRows }: Props) {
                   <td>{row.status}</td>
                   <td>{normalizeSlugInput(row.slug) || row.slug}</td>
                   <td>{row.templateType}</td>
-                  <td>{row.game === "pubg" ? "PUBG Mobile" : "BGMI"}</td>
+                  <td>{cloneGameLabel(row.game)}</td>
                   <td>{row.seoTitle || "-"}</td>
                   <td>{row.seoDescription || "-"}</td>
                   <td className="admin-pages-actions">
@@ -551,7 +565,7 @@ export default function AdminPagesClient({ initialRows }: Props) {
                           setMetaKeywordDraft("");
                           setShowMetaKeywords(Boolean((row.metaKeywords ?? "").trim()));
                           setTemplateType(row.templateType ?? "home");
-                          setGame(row.game === "pubg" ? "pubg" : "bgmi");
+                          setGame(coerceCloneGame(row.game));
                           setContent(row.contentHtml ?? "");
                           setEditorNonce((n) => n + 1);
                         }}
@@ -648,6 +662,8 @@ export default function AdminPagesClient({ initialRows }: Props) {
           >
             <option value="bgmi">BGMI</option>
             <option value="pubg">PUBG Mobile</option>
+            <option value="freefire">Free Fire</option>
+            <option value="freefire-max">Free Fire Max</option>
           </select>
           <label className="admin-pages-publish-toggle">
             <input

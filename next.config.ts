@@ -64,6 +64,16 @@ const nextConfig: NextConfig = {
       { source: "/api/admin/ads", destination: "/api/admin/ad-units" },
     ];
   },
+  async redirects() {
+    return [
+      {
+        source: "/:path*",
+        has: [{ type: "host", value: "www.sensitivitysettings.com" }],
+        destination: "https://sensitivitysettings.com/:path*",
+        permanent: true,
+      },
+    ];
+  },
 };
 
 export default nextConfig;

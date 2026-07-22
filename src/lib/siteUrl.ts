@@ -33,7 +33,10 @@ export function getSiteUrl(): string {
   const fromEnv = raw && isAbsoluteHttpUrl(raw) ? stripTrailingSlash(raw) : "";
 
   if (process.env.NODE_ENV === "production") {
-    if (fromEnv && !isLocalhostUrl(fromEnv)) return fromEnv;
+    if (fromEnv && !isLocalhostUrl(fromEnv)) {
+      // Always prefer apex host in production canonicals.
+      return stripTrailingSlash(fromEnv.replace("://www.", "://"));
+    }
     return PRODUCTION_SITE_URL;
   }
 

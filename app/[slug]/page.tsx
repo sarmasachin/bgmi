@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { AdSlot } from "@/src/components/AdSlot";
 import { HomeHeader } from "@/src/components/HomeHeader";
 import { SiteFooter } from "@/src/components/SiteFooter";
+import { FfCalculator } from "@/src/features/ffCalculator/FfCalculator";
 import { SensCalculator } from "@/src/features/sensCalculator/SensCalculator";
 import { isAdminLoggedIn } from "@/src/server/auth";
 import { getCalculatorPhoneModels } from "@/src/server/repositories/calculatorPhoneModelsRepository";
@@ -12,7 +13,7 @@ import { toCanonicalUrl } from "@/src/lib/siteUrl";
 import { buildSocialMetadata } from "@/src/lib/socialMeta";
 
 type TemplateType = "home" | "article" | "landing";
-type CloneGame = "bgmi" | "pubg";
+type CloneGame = "bgmi" | "pubg" | "freefire" | "freefire-max";
 
 type Props = {
   params: Promise<{ slug: string }>;
@@ -49,7 +50,8 @@ function extractContentData(content: unknown) {
     const rawType = meta.templateType;
     const templateType: TemplateType =
       rawType === "article" || rawType === "landing" || rawType === "home" ? rawType : "home";
-    const game: CloneGame = meta.game === "pubg" ? "pubg" : "bgmi";
+    const game: CloneGame =
+      meta.game === "pubg" || meta.game === "freefire" || meta.game === "freefire-max" ? meta.game : "bgmi";
     return {
       html,
       templateType,
@@ -201,7 +203,11 @@ export default async function DynamicTemplatePage({ params, searchParams }: Prop
       <h1 className="main-title">{page.title}</h1>
       <main className="page-container">
         <AdSlot slotKey="home_above_calculator" />
-        <SensCalculator key={calculatorGame} phoneModels={phoneModels} game={calculatorGame} />
+        {calculatorGame === "freefire" || calculatorGame === "freefire-max" ? (
+          <FfCalculator key={calculatorGame} isMax={calculatorGame === "freefire-max"} />
+        ) : (
+          <SensCalculator key={calculatorGame} phoneModels={phoneModels} game={calculatorGame} />
+        )}
         <AdSlot slotKey="home_between_tool_and_article" />
       </main>
       <div className="light-content-wrapper">

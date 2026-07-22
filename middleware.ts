@@ -15,6 +15,15 @@ function withAdminNoStore(response: NextResponse) {
 }
 
 export async function middleware(request: NextRequest) {
+  const forwardedHost = request.headers.get("x-forwarded-host")?.split(",")[0]?.trim();
+  const rawHost = (forwardedHost || request.headers.get("host") || "").split(":")[0].toLowerCase();
+
+  // Force apex host: www.sensitivitysettings.com → https://sensitivitysettings.com/...
+  if (rawHost === "www.sensitivitysettings.com") {
+    const { pathname, search } = request.nextUrl;
+    return NextResponse.redirect(`https://sensitivitysettings.com${pathname}${search}`, 308);
+  }
+
   const { pathname } = request.nextUrl;
   const isPreview = request.nextUrl.searchParams.get("preview") === "1";
 
