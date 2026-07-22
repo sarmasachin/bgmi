@@ -13,6 +13,12 @@ export type ContactMessageInput = {
   topic?: ContactTopic;
 };
 
+function requireDbOrMockDisabled() {
+  if (process.env.DATABASE_URL) {
+    throw new Error("DB_UNAVAILABLE");
+  }
+}
+
 export async function createContactMessage(input: ContactMessageInput) {
   const data = {
     name: input.name.trim(),
@@ -24,41 +30,42 @@ export async function createContactMessage(input: ContactMessageInput) {
     etaHours: null as number | null,
   };
 
-  // Direct DB write — never return mock success when DATABASE_URL is set.
-  // Old tryPrisma timeout fallback saved to memory and showed "Message sent"
-  // while admin (Postgres) never received the row.
-  if (!process.env.DATABASE_URL) {
-    const item = {
-      id: `cm${Date.now()}`,
-      ...data,
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-    };
-    mockStore.contactMessages.unshift(item);
-    return item;
-  }
+  // Use long timeout — short tryPrisma was silently falling back to in-memory mock,
+  // so the API returned 200 while admin (DB) never saw the message.
+  const dbData = await tryPrismaLong(async () =>
+    prisma.contactMessage.create({
+      data,
+    }),
+  );
+  if (dbData) return dbData;
 
-  try {
-    return await prisma.contactMessage.create({ data });
-  } catch (error) {
-    console.error("[contact] createContactMessage failed:", error);
-    throw new Error("DB_UNAVAILABLE");
-  }
+  requireDbOrMockDisabled();
+
+  const item = {
+    id: `cm${Date.now()}`,
+    ...data,
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+  };
+  mockStore.contactMessages.unshift(item);
+  return item;
 }
 
 export async function listContactMessages() {
-  if (!process.env.DATABASE_URL) {
-    return mockStore.contactMessages;
+  const dbData = await tryPrismaLong(async () =>
+    prisma.contactMessage.findMany({
+      orderBy: { createdAt: "desc" },
+    }),
+  );
+  if (dbData) return dbData;
+
+  if (process.env.DATABASE_URL) {
+    // Prefer empty over mixed mock/DB ghosts when DB is temporarily down.
+    console.error("[contact] listContactMessages: database unavailable");
+    return [];
   }
 
-  try {
-    return await prisma.contactMessage.findMany({
-      orderBy: { createdAt: "desc" },
-    });
-  } catch (error) {
-    console.error("[contact] listContactMessages failed:", error);
-    throw new Error("DB_UNAVAILABLE");
-  }
+  return mockStore.contactMessages;
 }
 
 export async function getContactMessageById(id: string) {

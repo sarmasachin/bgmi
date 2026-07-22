@@ -22,13 +22,8 @@ const SUPPORT_EMAIL = "support@sensitivitysettings.com";
 const statusSchema = z.enum(["new", "read", "archived", "in_progress", "solved"]);
 
 export async function GET() {
-  try {
-    const data = await listContactMessages();
-    return NextResponse.json({ data });
-  } catch (error) {
-    console.error("[admin/contact] list failed:", error);
-    return NextResponse.json({ error: "Database unavailable. Please try again." }, { status: 503 });
-  }
+  const data = await listContactMessages();
+  return NextResponse.json({ data });
 }
 
 export async function PATCH(request: NextRequest) {
