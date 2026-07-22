@@ -122,11 +122,23 @@ export async function PATCH(request: NextRequest) {
 }
 
 export async function DELETE(request: NextRequest) {
-  const id = request.nextUrl.searchParams.get("id");
+  let id = request.nextUrl.searchParams.get("id")?.trim() ?? "";
+  if (!id) {
+    try {
+      const body = (await request.json()) as { id?: unknown };
+      if (typeof body?.id === "string") id = body.id.trim();
+    } catch {
+      /* no JSON body */
+    }
+  }
   if (!id) return NextResponse.json({ error: "id required" }, { status: 400 });
+
   try {
     const ok = await deleteContactMessage(id);
-    if (!ok) return NextResponse.json({ error: "Not found" }, { status: 404 });
+    if (!ok) {
+      console.warn("[admin/contact] delete miss:", id);
+      return NextResponse.json({ error: "Not found" }, { status: 404 });
+    }
   } catch (err) {
     console.error("[admin/contact] delete failed:", err);
     const unavailable = err instanceof Error && err.message === "DB_UNAVAILABLE";

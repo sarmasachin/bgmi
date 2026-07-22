@@ -115,29 +115,23 @@ export async function updateContactMessageStatus(
 }
 
 export async function deleteContactMessage(id: string) {
-  const dbResult = await tryPrismaLong(async () => {
-    try {
-      await prisma.contactMessage.delete({ where: { id } });
-      return true as const;
-    } catch (error) {
-      // Prisma P2025: record not found — not a DB outage.
-      const code =
-        error && typeof error === "object" && "code" in error
-          ? String((error as { code?: unknown }).code ?? "")
-          : "";
-      if (code === "P2025") return false as const;
-      throw error;
-    }
-  });
-  if (dbResult === true) return true;
-  if (dbResult === false) return false;
+  const targetId = id.trim();
+  if (!targetId) return false;
 
-  if (process.env.DATABASE_URL) {
-    throw new Error("DB_UNAVAILABLE");
+  // Admin delete must hit the real DB — no short tryPrisma timeout/mock fallback.
+  // Those caused DELETE 404 while rows stayed in Postgres (refresh brought them back).
+  if (!process.env.DATABASE_URL) {
+    const index = mockStore.contactMessages.findIndex((row) => row.id === targetId);
+    if (index === -1) return false;
+    mockStore.contactMessages.splice(index, 1);
+    return true;
   }
 
-  const index = mockStore.contactMessages.findIndex((row) => row.id === id);
-  if (index === -1) return false;
-  mockStore.contactMessages.splice(index, 1);
-  return true;
+  try {
+    const result = await prisma.contactMessage.deleteMany({ where: { id: targetId } });
+    return result.count > 0;
+  } catch (error) {
+    console.error("[contact] deleteContactMessage failed:", targetId, error);
+    throw new Error("DB_UNAVAILABLE");
+  }
 }

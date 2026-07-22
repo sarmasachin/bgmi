@@ -265,10 +265,14 @@ export default function AdminContactClient({ initialItems }: Props) {
         credentials: "include",
         headers: {
           Accept: "application/json",
+          "Content-Type": "application/json",
         },
+        body: JSON.stringify({ id }),
       });
       setMessage(res.ok ? "Message deleted." : await readApiError(res, "Delete failed."));
       if (res.ok) {
+        // Optimistic remove so refresh cannot “bring back” a just-deleted row.
+        setItems((prev) => prev.filter((item) => item.id !== id));
         if (expandedId === id) setExpandedId(null);
         await loadMessages();
       }
