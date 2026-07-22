@@ -1,12 +1,14 @@
 "use client";
 
 import Image from "next/image";
-import { FormEvent, useCallback, useEffect, useState } from "react";
+import { FormEvent, useCallback, useEffect, useMemo, useState } from "react";
 import type { AdminMediaPageData } from "@/src/server/admin/prefetchAdminMediaPageData";
 import { useAdminFlash } from "@/src/components/admin/AdminToast";
 import { readApiError } from "@/src/lib/userFacingError";
 
 type MediaRow = AdminMediaPageData["initialFiles"][number];
+
+const PAGE_SIZE = 10;
 
 function formatBytes(n: number) {
   if (n < 1024) return `${n} B`;
@@ -31,6 +33,13 @@ export default function AdminMediaClient({ initialFiles, initialOutputPref }: Pr
     initialOutputPref ?? { webp: true, avif: false, jpeg: false },
   );
   const [savingPref, setSavingPref] = useState(false);
+  const [listPage, setListPage] = useState(1);
+  const totalPages = Math.max(1, Math.ceil(files.length / PAGE_SIZE));
+  const safeListPage = Math.min(listPage, totalPages);
+  const pagedFiles = useMemo(() => {
+    const start = (safeListPage - 1) * PAGE_SIZE;
+    return files.slice(start, start + PAGE_SIZE);
+  }, [files, safeListPage]);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -329,7 +338,7 @@ export default function AdminMediaClient({ initialFiles, initialOutputPref }: Pr
                 </tr>
               </thead>
               <tbody>
-                {files.map((row) => (
+                {pagedFiles.map((row) => (
                   <tr key={row.filename}>
                     <td>
                       <Image
@@ -368,6 +377,21 @@ export default function AdminMediaClient({ initialFiles, initialOutputPref }: Pr
                 ))}
               </tbody>
             </table>
+          </div>
+          <div className="admin-pagination">
+            <button type="button" disabled={safeListPage <= 1} onClick={() => setListPage(safeListPage - 1)}>
+              Prev
+            </button>
+            <span>
+              Page {safeListPage} of {totalPages}
+            </span>
+            <button
+              type="button"
+              disabled={safeListPage >= totalPages}
+              onClick={() => setListPage(safeListPage + 1)}
+            >
+              Next
+            </button>
           </div>
         )}
       </section>

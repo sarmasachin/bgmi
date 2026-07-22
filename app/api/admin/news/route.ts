@@ -3,6 +3,8 @@ import {
   deleteNews,
   getNewsById,
   listNews,
+  newsSlugExists,
+  newsTitleExists,
   updateNews,
   updateNewsStatus,
 } from "@/src/server/repositories/newsRepository";
@@ -32,12 +34,37 @@ const createSchema = z.object({
   ...seoFields,
 });
 
+function mapNewsWriteError(error: unknown) {
+  if (error instanceof Error && error.message === "SLUG_EXISTS") {
+    return NextResponse.json({ error: "Slug already exists." }, { status: 409 });
+  }
+  if (error instanceof Error && error.message === "TITLE_EXISTS") {
+    return NextResponse.json({ error: "Title already exists." }, { status: 409 });
+  }
+  if (error instanceof Error && error.message === "INVALID_SLUG") {
+    return NextResponse.json({ error: "Slug is required." }, { status: 400 });
+  }
+  return NextResponse.json({ error: "Could not save news." }, { status: 500 });
+}
+
 export async function GET(request: NextRequest) {
   const id = request.nextUrl.searchParams.get("id");
   if (id) {
     const item = await getNewsById(id);
     if (!item) return NextResponse.json({ error: "Not found" }, { status: 404 });
     return NextResponse.json({ data: item });
+  }
+
+  const slug = request.nextUrl.searchParams.get("slug");
+  const title = request.nextUrl.searchParams.get("title");
+  const excludeId = request.nextUrl.searchParams.get("excludeId") ?? undefined;
+  if (slug) {
+    const exists = await newsSlugExists(slug, excludeId);
+    return NextResponse.json({ exists });
+  }
+  if (title) {
+    const exists = await newsTitleExists(title, excludeId);
+    return NextResponse.json({ exists });
   }
 
   const page = Number(request.nextUrl.searchParams.get("page") ?? "1");
@@ -67,8 +94,8 @@ export async function POST(request: NextRequest) {
       payload: { slug: parsed.data.slug },
     });
     return NextResponse.json({ ok: true, data: item });
-  } catch {
-    return NextResponse.json({ error: "Could not create news." }, { status: 500 });
+  } catch (error) {
+    return mapNewsWriteError(error);
   }
 }
 
@@ -124,8 +151,8 @@ export async function PATCH(request: NextRequest) {
       payload: { slug: contentParsed.data.slug },
     });
     return NextResponse.json({ ok: true, data: item });
-  } catch {
-    return NextResponse.json({ error: "Could not update news." }, { status: 500 });
+  } catch (error) {
+    return mapNewsWriteError(error);
   }
 }
 

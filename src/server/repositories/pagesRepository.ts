@@ -154,6 +154,29 @@ export async function pageSlugExists(slug: string, excludeId?: string) {
   );
 }
 
+function normalizeComparableTitle(title: string) {
+  return title.trim().replace(/\s+/g, " ").toLowerCase();
+}
+
+export async function pageTitleExists(title: string, excludeId?: string) {
+  const normalized = normalizeComparableTitle(title);
+  if (!normalized) return false;
+
+  const dbData = await tryPrisma(async () => {
+    const rows = await prisma.pageTemplate.findMany({
+      where: excludeId ? { id: { not: excludeId } } : undefined,
+      select: { id: true, title: true },
+    });
+    return rows.some((row) => normalizeComparableTitle(row.title) === normalized);
+  });
+
+  if (dbData !== null) return dbData;
+  return mockStore.pages.some(
+    (item) =>
+      normalizeComparableTitle(item.title) === normalized && item.id !== excludeId,
+  );
+}
+
 export async function listPages() {
   const dbData = await tryPrismaLong(async () =>
     prisma.pageTemplate.findMany({
@@ -226,6 +249,9 @@ export async function createPage(input: PageInput) {
     });
     if (existing) {
       throw new Error("SLUG_EXISTS");
+    }
+    if (await pageTitleExists(input.title)) {
+      throw new Error("TITLE_EXISTS");
     }
 
     const homeTemplate = await prisma.pageTemplate.findUnique({
@@ -300,6 +326,9 @@ export async function createPage(input: PageInput) {
   if (slugExists) {
     throw new Error("SLUG_EXISTS");
   }
+  if (await pageTitleExists(input.title)) {
+    throw new Error("TITLE_EXISTS");
+  }
 
   const page = {
     id: `p${Date.now()}`,
@@ -347,6 +376,9 @@ export async function updatePage(id: string, payload: Partial<PageInput>) {
         select: { id: true },
       });
       if (duplicate) throw new Error("SLUG_EXISTS");
+    }
+    if (nextPayload.title !== undefined && (await pageTitleExists(nextPayload.title, id))) {
+      throw new Error("TITLE_EXISTS");
     }
 
     const shouldPatchContent =
@@ -406,6 +438,9 @@ export async function updatePage(id: string, payload: Partial<PageInput>) {
       (item) => pageSlugVariants(nextPayload.slug!).includes(item.slug) && item.id !== id,
     );
     if (duplicate) throw new Error("SLUG_EXISTS");
+  }
+  if (nextPayload.title !== undefined && (await pageTitleExists(nextPayload.title, id))) {
+    throw new Error("TITLE_EXISTS");
   }
 
   if (nextPayload.title !== undefined) page.title = nextPayload.title;

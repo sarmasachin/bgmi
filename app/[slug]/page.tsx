@@ -149,6 +149,11 @@ export default async function DynamicTemplatePage({ params, searchParams }: Prop
   const articleHtml = extracted.html;
   const templateType = extracted.templateType;
   const calculatorGame = extracted.game;
+  const isFreeFireClone =
+    calculatorGame === "freefire" || calculatorGame === "freefire-max";
+  const titleClassName = isFreeFireClone
+    ? "main-title ff-gradient-title"
+    : "main-title";
   const header = (
     <HomeHeader siteTitle={settings.homeDisplay.headerTitle} navigation={settings.navigation} />
   );
@@ -179,7 +184,7 @@ export default async function DynamicTemplatePage({ params, searchParams }: Prop
       <div>
         {header}
         <div className="page-container" style={{ paddingTop: 32 }}>
-          <h1 className="main-title">{page.title}</h1>
+          <h1 className={titleClassName}>{page.title}</h1>
           <div className="light-content-wrapper" style={{ marginTop: 12 }}>
             <div className="content-inner">
               <div className="article">
@@ -200,7 +205,7 @@ export default async function DynamicTemplatePage({ params, searchParams }: Prop
   return (
     <div>
       {header}
-      <h1 className="main-title">{page.title}</h1>
+      <h1 className={titleClassName}>{page.title}</h1>
       <main className="page-container">
         <AdSlot slotKey="home_above_calculator" />
         {calculatorGame === "freefire" || calculatorGame === "freefire-max" ? (

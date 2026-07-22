@@ -1,6 +1,6 @@
 "use client";
 
-import { FormEvent, useCallback, useEffect, useState } from "react";
+import { FormEvent, useCallback, useEffect, useMemo, useState } from "react";
 import type { AdminUserRow } from "@/src/server/repositories/adminUsersRepository";
 import { useAdminFlash } from "@/src/components/admin/AdminToast";
 
@@ -13,11 +13,14 @@ type ResetTarget = {
   email: string;
 };
 
+const PAGE_SIZE = 10;
+
 export default function AdminUsersClient({ initialRows }: Props) {
   const [rows, setRows] = useState<AdminUserRow[]>(initialRows ?? []);
   const [loading, setLoading] = useState(initialRows === undefined);
   const setMessage = useAdminFlash();
   const [busy, setBusy] = useState(false);
+  const [listPage, setListPage] = useState(1);
   const [newEmail, setNewEmail] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [newName, setNewName] = useState("");
@@ -25,6 +28,12 @@ export default function AdminUsersClient({ initialRows }: Props) {
   const [resetPasswordValue, setResetPasswordValue] = useState("");
   const [resetConfirmValue, setResetConfirmValue] = useState("");
   const [resetError, setResetError] = useState("");
+  const totalPages = Math.max(1, Math.ceil(rows.length / PAGE_SIZE));
+  const safeListPage = Math.min(listPage, totalPages);
+  const pagedRows = useMemo(() => {
+    const start = (safeListPage - 1) * PAGE_SIZE;
+    return rows.slice(start, start + PAGE_SIZE);
+  }, [rows, safeListPage]);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -241,7 +250,7 @@ export default function AdminUsersClient({ initialRows }: Props) {
                 </tr>
               </thead>
               <tbody>
-                {rows.map((row) => (
+                {pagedRows.map((row) => (
                   <tr key={row.id}>
                     <td>{row.email}</td>
                     <td>{row.name ?? "—"}</td>
@@ -262,6 +271,21 @@ export default function AdminUsersClient({ initialRows }: Props) {
                 ))}
               </tbody>
             </table>
+          </div>
+          <div className="admin-pagination">
+            <button type="button" disabled={safeListPage <= 1} onClick={() => setListPage(safeListPage - 1)}>
+              Prev
+            </button>
+            <span>
+              Page {safeListPage} of {totalPages}
+            </span>
+            <button
+              type="button"
+              disabled={safeListPage >= totalPages}
+              onClick={() => setListPage(safeListPage + 1)}
+            >
+              Next
+            </button>
           </div>
         )}
       </section>

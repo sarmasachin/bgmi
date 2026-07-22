@@ -4,6 +4,7 @@ import { FormEvent, useEffect, useMemo, useState } from "react";
 import dynamic from "next/dynamic";
 import type { AdminPageRow } from "@/src/server/admin/mapAdminPageRows";
 import { useAdminFlash } from "@/src/components/admin/AdminToast";
+import { useAdminDuplicateCheck } from "@/src/hooks/useAdminDuplicateCheck";
 import { toCanonicalUrl } from "@/src/lib/siteUrl";
 
 const RichTextEditor = dynamic(
@@ -109,9 +110,15 @@ function comparableSlug(input: string) {
   return normalizeSlugInput(input.trim()).toLowerCase();
 }
 
+function comparableTitle(input: string) {
+  return input.trim().replace(/\s+/g, " ").toLowerCase();
+}
+
 type Props = {
   initialRows?: PageRow[];
 };
+
+const PAGE_SIZE = 10;
 
 type ConfirmAction = {
   type: "delete" | "unpublish";
@@ -154,6 +161,14 @@ export default function AdminPagesClient({ initialRows }: Props) {
   const [editorNonce, setEditorNonce] = useState(0);
   const [confirmAction, setConfirmAction] = useState<ConfirmAction | null>(null);
   const [confirmBusy, setConfirmBusy] = useState(false);
+  const [listPage, setListPage] = useState(1);
+
+  const totalPages = Math.max(1, Math.ceil(rows.length / PAGE_SIZE));
+  const safeListPage = Math.min(listPage, totalPages);
+  const pagedRows = useMemo(() => {
+    const start = (safeListPage - 1) * PAGE_SIZE;
+    return rows.slice(start, start + PAGE_SIZE);
+  }, [rows, safeListPage]);
 
   function splitMetaKeywords(raw: string) {
     return raw
@@ -266,11 +281,37 @@ export default function AdminPagesClient({ initialRows }: Props) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const duplicateSlugExists = useMemo(() => {
+  const duplicateSlugLocal = useMemo(() => {
     const current = comparableSlug(slug);
     if (!current) return false;
     return rows.some((row) => comparableSlug(row.slug) === current && row.id !== editingId);
   }, [slug, rows, editingId]);
+
+  const duplicateTitleLocal = useMemo(() => {
+    const current = comparableTitle(title);
+    if (current.length < 3) return false;
+    return rows.some((row) => comparableTitle(row.title) === current && row.id !== editingId);
+  }, [title, rows, editingId]);
+
+  const duplicateSlugApi = useAdminDuplicateCheck({
+    endpoint: "/api/admin/pages",
+    field: "slug",
+    value: slug,
+    excludeId: editingId,
+    minLength: 1,
+    enabled: showForm,
+  });
+  const duplicateTitleApi = useAdminDuplicateCheck({
+    endpoint: "/api/admin/pages",
+    field: "title",
+    value: title,
+    excludeId: editingId,
+    minLength: 3,
+    enabled: showForm,
+  });
+
+  const duplicateSlugExists = duplicateSlugLocal || duplicateSlugApi;
+  const duplicateTitleExists = duplicateTitleLocal || duplicateTitleApi;
 
   const liveChecks = useMemo(() => {
     const titleLength = title.trim().length;
@@ -333,6 +374,11 @@ export default function AdminPagesClient({ initialRows }: Props) {
     const safeSlug = normalizeSlugInput(slug);
     if (!safeSlug) {
       setMessage("Slug is required.");
+      return;
+    }
+
+    if (duplicateTitleExists) {
+      setMessage("Warning: title already exists. Please use another title.");
       return;
     }
 
@@ -485,26 +531,24 @@ export default function AdminPagesClient({ initialRows }: Props) {
           <table className="admin-table">
             <thead>
               <tr>
+                <th>Sr No</th>
                 <th>Title</th>
                 <th>Status</th>
                 <th>Slug</th>
                 <th>Type</th>
                 <th>Game</th>
-                <th>SEO Title</th>
-                <th>SEO Description</th>
                 <th>Actions</th>
               </tr>
             </thead>
             <tbody>
-              {rows.map((row) => (
+              {pagedRows.map((row, index) => (
                 <tr key={row.id}>
+                  <td>{(safeListPage - 1) * PAGE_SIZE + index + 1}</td>
                   <td>{row.title}</td>
                   <td>{row.status}</td>
                   <td>{normalizeSlugInput(row.slug) || row.slug}</td>
                   <td>{row.templateType}</td>
                   <td>{cloneGameLabel(row.game)}</td>
-                  <td>{row.seoTitle || "-"}</td>
-                  <td>{row.seoDescription || "-"}</td>
                   <td className="admin-pages-actions">
                     <div className="admin-pages-actions-wrap">
                       {row.status === "published" ? (
@@ -593,6 +637,25 @@ export default function AdminPagesClient({ initialRows }: Props) {
             </tbody>
           </table>
         </div>
+        <div className="admin-pagination">
+          <button
+            type="button"
+            disabled={safeListPage <= 1}
+            onClick={() => setListPage(safeListPage - 1)}
+          >
+            Prev
+          </button>
+          <span>
+            Page {safeListPage} of {totalPages}
+          </span>
+          <button
+            type="button"
+            disabled={safeListPage >= totalPages}
+            onClick={() => setListPage(safeListPage + 1)}
+          >
+            Next
+          </button>
+        </div>
       </section>
       ) : null}
       {showForm ? (
@@ -611,37 +674,49 @@ export default function AdminPagesClient({ initialRows }: Props) {
           </button>
         </div>
         <form onSubmit={onSubmit} className="admin-inline-form admin-pages-inline-form">
-          <input
-            name="title"
-            placeholder="Page title"
-            value={title}
-            onChange={(e) => {
-              const nextTitle = e.target.value;
-              setTitle(nextTitle);
-              if (!slugManualOverride) {
-                setSlug(slugifyFromTitle(nextTitle));
-              }
-            }}
-          />
-          <input
-            name="slug"
-            placeholder="custom-url"
-            value={slug}
-            onChange={(e) => {
-              setSlugManualOverride(true);
-              setSlug(normalizeSlugInput(e.target.value));
-            }}
-            onPaste={(e) => {
-              e.preventDefault();
-              setSlugManualOverride(true);
-              const pastedText = e.clipboardData.getData("text");
-              const input = e.currentTarget;
-              const start = input.selectionStart ?? input.value.length;
-              const end = input.selectionEnd ?? input.value.length;
-              const nextValue = `${input.value.slice(0, start)}${pastedText}${input.value.slice(end)}`;
-              setSlug(normalizeSlugInput(nextValue));
-            }}
-          />
+          <div className="admin-field">
+            <input
+              name="title"
+              placeholder="Page title"
+              className={duplicateTitleExists ? "is-invalid" : undefined}
+              value={title}
+              onChange={(e) => {
+                const nextTitle = e.target.value;
+                setTitle(nextTitle);
+                if (!slugManualOverride) {
+                  setSlug(slugifyFromTitle(nextTitle));
+                }
+              }}
+            />
+            {duplicateTitleExists ? (
+              <p className="admin-field-error">This title is already in use.</p>
+            ) : null}
+          </div>
+          <div className="admin-field">
+            <input
+              name="slug"
+              placeholder="custom-url"
+              className={duplicateSlugExists ? "is-invalid" : undefined}
+              value={slug}
+              onChange={(e) => {
+                setSlugManualOverride(true);
+                setSlug(normalizeSlugInput(e.target.value));
+              }}
+              onPaste={(e) => {
+                e.preventDefault();
+                setSlugManualOverride(true);
+                const pastedText = e.clipboardData.getData("text");
+                const input = e.currentTarget;
+                const start = input.selectionStart ?? input.value.length;
+                const end = input.selectionEnd ?? input.value.length;
+                const nextValue = `${input.value.slice(0, start)}${pastedText}${input.value.slice(end)}`;
+                setSlug(normalizeSlugInput(nextValue));
+              }}
+            />
+            {duplicateSlugExists ? (
+              <p className="admin-field-error">This slug is already in use.</p>
+            ) : null}
+          </div>
           <input name="seoTitle" placeholder="SEO title" value={seoTitle} onChange={(e) => setSeoTitle(e.target.value)} />
           <input
             name="seoDescription"
@@ -765,10 +840,6 @@ export default function AdminPagesClient({ initialRows }: Props) {
             ) : null}
           </div>
           <button type="submit">{editingId ? "Update Clone" : "Create Clone"}</button>
-
-          {duplicateSlugExists ? (
-            <p className="admin-pages-warning">Warning: slug already exists. Create se pehle slug change karein.</p>
-          ) : null}
 
           <div className="admin-pages-checks">
             <p>Title length: {liveChecks.titleLength}</p>

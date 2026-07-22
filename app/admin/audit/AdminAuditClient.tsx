@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import type { AdminAuditRow } from "@/src/server/repositories/adminAuditRepository";
 import { useAdminFlash } from "@/src/components/admin/AdminToast";
 import {
@@ -15,11 +15,20 @@ type Props = {
   initialRows?: Row[];
 };
 
+const PAGE_SIZE = 10;
+
 export default function AdminAuditClient({ initialRows }: Props) {
   const [rows, setRows] = useState<Row[]>(initialRows ?? []);
   const setMessage = useAdminFlash();
   const [loading, setLoading] = useState(initialRows === undefined);
   const [clearing, setClearing] = useState(false);
+  const [listPage, setListPage] = useState(1);
+  const totalPages = Math.max(1, Math.ceil(rows.length / PAGE_SIZE));
+  const safeListPage = Math.min(listPage, totalPages);
+  const pagedRows = useMemo(() => {
+    const start = (safeListPage - 1) * PAGE_SIZE;
+    return rows.slice(start, start + PAGE_SIZE);
+  }, [rows, safeListPage]);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -113,7 +122,7 @@ export default function AdminAuditClient({ initialRows }: Props) {
                   <td colSpan={4}>No logs yet.</td>
                 </tr>
               ) : (
-                rows.map((row) => (
+                pagedRows.map((row) => (
                   <tr key={row.id}>
                     <td>{formatAuditActor(row.actor)}</td>
                     <td>{formatAuditWhatHappened(row.action, row.payload)}</td>
@@ -126,6 +135,23 @@ export default function AdminAuditClient({ initialRows }: Props) {
           </table>
         </div>
       )}
+      {!loading && rows.length > 0 ? (
+        <div className="admin-pagination">
+          <button type="button" disabled={safeListPage <= 1} onClick={() => setListPage(safeListPage - 1)}>
+            Prev
+          </button>
+          <span>
+            Page {safeListPage} of {totalPages}
+          </span>
+          <button
+            type="button"
+            disabled={safeListPage >= totalPages}
+            onClick={() => setListPage(safeListPage + 1)}
+          >
+            Next
+          </button>
+        </div>
+      ) : null}
     </section>
   );
 }

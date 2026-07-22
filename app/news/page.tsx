@@ -1,5 +1,4 @@
 import { NewsSection } from "@/src/features/news/NewsSection";
-import Link from "next/link";
 import { AdSlot } from "@/src/components/AdSlot";
 import type { Metadata } from "next";
 import { toCanonicalUrl } from "@/src/lib/siteUrl";
@@ -23,19 +22,14 @@ type Props = {
 
 export default async function NewsPage({ searchParams }: Props) {
   const params = await searchParams;
-  const page = Math.max(Number(params.page ?? "1"), 1);
+  const page = Math.max(Number(params.page ?? "1") || 1, 1);
 
   return (
     <main className="page-container" style={{ paddingBottom: 40 }}>
       <h1 className="main-title">BGMI &amp; Gaming News</h1>
       <AdSlot slotKey="news_list_top" />
-      <NewsSection />
+      <NewsSection page={page} />
       <AdSlot slotKey="news_list_bottom" />
-      <div className="news-pagination-row">
-        <Link href={`/news?page=${Math.max(1, page - 1)}`}>Prev</Link>
-        <span>Page {page}</span>
-        <Link href={`/news?page=${page + 1}`}>Next</Link>
-      </div>
     </main>
   );
 }

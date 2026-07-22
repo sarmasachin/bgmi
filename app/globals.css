@@ -3368,10 +3368,23 @@ footer,
   margin-bottom: 8px;
 }
 
-.admin-inline-form input,
-.admin-inline-form select {
-  background: #0f172a;
-  border: 1px solid #334155;
+.admin-field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+.admin-field-error {
+  margin: 0;
+  color: #ff8b85;
+  font-size: 12px;
+  font-weight: 650;
+  line-height: 1.35;
+}
+
+.admin-field input.is-invalid {
+  border-color: #f87171;
 }
 
 .admin-inline-form button {

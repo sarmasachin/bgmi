@@ -55,7 +55,10 @@ export async function tryPrismaLong<T>(runner: () => Promise<T>): Promise<T | nu
     // Business / validation errors must reach the API route (not mock fallback).
     if (
       error instanceof Error &&
-      (error.message === "SLUG_EXISTS" || error.message === "DB_UNAVAILABLE")
+      (error.message === "SLUG_EXISTS" ||
+        error.message === "TITLE_EXISTS" ||
+        error.message === "INVALID_SLUG" ||
+        error.message === "DB_UNAVAILABLE")
     ) {
       throw error;
     }

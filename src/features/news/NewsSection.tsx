@@ -1,8 +1,20 @@
 import { listPublishedNews } from "@/src/server/repositories/newsRepository";
 import Link from "next/link";
 
-export async function NewsSection() {
-  const result = await listPublishedNews(1, 12);
+const NEWS_PAGE_SIZE = 12;
+
+type Props = {
+  page?: number;
+};
+
+export async function NewsSection({ page = 1 }: Props) {
+  const requestedPage = Math.max(1, page);
+  const first = await listPublishedNews(requestedPage, NEWS_PAGE_SIZE);
+  const totalPages = Math.max(1, Math.ceil(first.total / NEWS_PAGE_SIZE));
+  const currentPage = Math.min(requestedPage, totalPages);
+  const result =
+    currentPage === requestedPage ? first : await listPublishedNews(currentPage, NEWS_PAGE_SIZE);
+
   const items = (result.data ?? []).map((item) => ({
     id: item.id,
     slug: item.slug ?? item.id,
@@ -76,6 +88,24 @@ export async function NewsSection() {
           </Link>
         ))}
       </div>
+
+      {totalPages > 1 ? (
+        <div className="news-pagination-row">
+          {currentPage > 1 ? (
+            <Link href={currentPage === 2 ? "/news" : `/news?page=${currentPage - 1}`}>Prev</Link>
+          ) : (
+            <span aria-disabled="true">Prev</span>
+          )}
+          <span>
+            Page {currentPage} of {totalPages}
+          </span>
+          {currentPage < totalPages ? (
+            <Link href={`/news?page=${currentPage + 1}`}>Next</Link>
+          ) : (
+            <span aria-disabled="true">Next</span>
+          )}
+        </div>
+      ) : null}
     </section>
   );
 }

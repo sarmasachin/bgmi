@@ -3,6 +3,7 @@ import {
   deletePage,
   listPages,
   pageSlugExists,
+  pageTitleExists,
   updatePage,
 } from "@/src/server/repositories/pagesRepository";
 import { addAuditLog } from "@/src/server/repositories/auditRepository";
@@ -32,6 +33,9 @@ function mapPageWriteError(error: unknown) {
   if (error instanceof Error && error.message === "SLUG_EXISTS") {
     return NextResponse.json({ error: "Slug already exists." }, { status: 409 });
   }
+  if (error instanceof Error && error.message === "TITLE_EXISTS") {
+    return NextResponse.json({ error: "Title already exists." }, { status: 409 });
+  }
   if (error instanceof Error && error.message === "INVALID_SLUG") {
     return NextResponse.json({ error: "Slug is required." }, { status: 400 });
   }
@@ -46,9 +50,14 @@ function mapPageWriteError(error: unknown) {
 
 export async function GET(request: NextRequest) {
   const slug = request.nextUrl.searchParams.get("slug");
+  const title = request.nextUrl.searchParams.get("title");
   const excludeId = request.nextUrl.searchParams.get("excludeId") ?? undefined;
   if (slug) {
     const exists = await pageSlugExists(slug, excludeId);
+    return NextResponse.json({ exists });
+  }
+  if (title) {
+    const exists = await pageTitleExists(title, excludeId);
     return NextResponse.json({ exists });
   }
 

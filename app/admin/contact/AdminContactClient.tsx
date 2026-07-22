@@ -110,6 +110,7 @@ export default function AdminContactClient({ initialItems }: Props) {
   const [etaDraft, setEtaDraft] = useState<Record<string, 24 | 48>>({});
   const [confirmAction, setConfirmAction] = useState<ConfirmAction | null>(null);
   const [confirmBusy, setConfirmBusy] = useState(false);
+  const [listPage, setListPage] = useState(1);
   const setMessage = useAdminFlash();
 
   const counts = useMemo(
@@ -128,6 +129,17 @@ export default function AdminContactClient({ initialItems }: Props) {
     if (filter === "all") return items;
     return items.filter((item) => item.status === filter);
   }, [items, filter]);
+
+  const totalPages = Math.max(1, Math.ceil(visibleItems.length / 10));
+  const safeListPage = Math.min(listPage, totalPages);
+  const pagedItems = useMemo(() => {
+    const start = (safeListPage - 1) * 10;
+    return visibleItems.slice(start, start + 10);
+  }, [visibleItems, safeListPage]);
+
+  useEffect(() => {
+    setListPage(1);
+  }, [filter]);
 
   async function loadMessages() {
     setLoading(true);
@@ -341,7 +353,7 @@ export default function AdminContactClient({ initialItems }: Props) {
                 <td colSpan={6}>No contact messages yet.</td>
               </tr>
             ) : (
-              visibleItems.map((item) => {
+              pagedItems.map((item) => {
                 const open = expandedId === item.id;
                 const busy = workingId === item.id;
                 const selectedEta = etaDraft[item.id] ?? item.etaHours ?? 24;
@@ -463,6 +475,21 @@ export default function AdminContactClient({ initialItems }: Props) {
             )}
           </tbody>
         </table>
+      </div>
+      <div className="admin-pagination">
+        <button type="button" disabled={safeListPage <= 1} onClick={() => setListPage(safeListPage - 1)}>
+          Prev
+        </button>
+        <span>
+          Page {safeListPage} of {totalPages}
+        </span>
+        <button
+          type="button"
+          disabled={safeListPage >= totalPages}
+          onClick={() => setListPage(safeListPage + 1)}
+        >
+          Next
+        </button>
       </div>
     </section>
 

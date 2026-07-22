@@ -1,9 +1,11 @@
 "use client";
 
 import { FormEvent, useEffect, useRef, useState } from "react";
+
 import dynamic from "next/dynamic";
 import type { AdminNewsRow } from "@/src/server/admin/mapAdminNewsRows";
 import { useAdminFlash } from "@/src/components/admin/AdminToast";
+import { useAdminDuplicateCheck } from "@/src/hooks/useAdminDuplicateCheck";
 import { readApiError } from "@/src/lib/userFacingError";
 import { toCanonicalUrl } from "@/src/lib/siteUrl";
 import { extractNewsHtml, extractNewsMeta } from "@/src/lib/newsContent";
@@ -15,6 +17,7 @@ const RichTextEditor = dynamic(
 
 type Props = {
   initialRows?: AdminNewsRow[];
+  initialTotal?: number;
 };
 
 type ConfirmAction = {
@@ -24,6 +27,7 @@ type ConfirmAction = {
   slug: string;
 };
 
+const PAGE_SIZE = 10;
 const NEWS_EDITOR_DRAFT_KEY = "bgmi_admin_news_editor_draft_v1";
 
 function clearNewsEditorDraft() {
@@ -31,7 +35,7 @@ function clearNewsEditorDraft() {
   window.localStorage.removeItem(NEWS_EDITOR_DRAFT_KEY);
 }
 
-export default function AdminNewsClient({ initialRows }: Props) {
+export default function AdminNewsClient({ initialRows, initialTotal }: Props) {
   const featureImageInputRef = useRef<HTMLInputElement | null>(null);
   const setMessage = useAdminFlash();
   const [title, setTitle] = useState("");
@@ -53,10 +57,31 @@ export default function AdminNewsClient({ initialRows }: Props) {
   const [showMetaKeywords, setShowMetaKeywords] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [rows, setRows] = useState<AdminNewsRow[]>(initialRows ?? []);
+  const [listPage, setListPage] = useState(1);
+  const [totalRows, setTotalRows] = useState(initialTotal ?? initialRows?.length ?? 0);
   const [showForm, setShowForm] = useState(false);
   const [editorNonce, setEditorNonce] = useState(0);
   const [confirmAction, setConfirmAction] = useState<ConfirmAction | null>(null);
   const [confirmBusy, setConfirmBusy] = useState(false);
+  const totalPages = Math.max(1, Math.ceil(totalRows / PAGE_SIZE));
+  const safeListPage = Math.min(listPage, totalPages);
+
+  const duplicateTitleExists = useAdminDuplicateCheck({
+    endpoint: "/api/admin/news",
+    field: "title",
+    value: title,
+    excludeId: editingId,
+    minLength: 3,
+    enabled: showForm,
+  });
+  const duplicateSlugExists = useAdminDuplicateCheck({
+    endpoint: "/api/admin/news",
+    field: "slug",
+    value: slug,
+    excludeId: editingId,
+    minLength: 1,
+    enabled: showForm,
+  });
 
   function normalizeSlugInput(next: string) {
     return next.replace(/\s+/g, "-");
@@ -120,15 +145,23 @@ export default function AdminNewsClient({ initialRows }: Props) {
     setShowForm(false);
   }
 
-  async function loadRows() {
+  async function loadRows(page = safeListPage) {
     try {
-      const res = await fetch("/api/admin/news?page=1&pageSize=20");
+      const res = await fetch(`/api/admin/news?page=${page}&pageSize=${PAGE_SIZE}`);
       if (!res.ok) {
         setMessage("Failed to load news.");
         setRows([]);
+        setTotalRows(0);
         return;
       }
       const json = await res.json();
+      const total = typeof json.total === "number" ? json.total : 0;
+      const maxPage = Math.max(1, Math.ceil(total / PAGE_SIZE));
+      const nextPage = Math.min(page, maxPage);
+      if (nextPage !== page) {
+        await loadRows(nextPage);
+        return;
+      }
       setRows(
         (json.data ?? []).map((item: { id: string; title: string; status: string; slug: string; updatedAt?: string }) => ({
           id: item.id,
@@ -138,15 +171,18 @@ export default function AdminNewsClient({ initialRows }: Props) {
           updatedAt: item.updatedAt ?? "",
         })),
       );
+      setTotalRows(total);
+      setListPage(nextPage);
     } catch {
       setMessage("Network error. Please retry.");
       setRows([]);
+      setTotalRows(0);
     }
   }
 
   useEffect(() => {
     if (initialRows !== undefined) return;
-    void loadRows();
+    void loadRows(1);
   }, [initialRows]);
 
   useEffect(() => {
@@ -179,6 +215,14 @@ export default function AdminNewsClient({ initialRows }: Props) {
 
   async function onSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    if (duplicateTitleExists) {
+      setMessage("Warning: title already exists. Please use another title.");
+      return;
+    }
+    if (duplicateSlugExists) {
+      setMessage("Warning: slug already exists. Please use another slug.");
+      return;
+    }
     try {
       const payload = buildSeoPayload();
       const res = await fetch(
@@ -357,19 +401,21 @@ export default function AdminNewsClient({ initialRows }: Props) {
           </div>
           <div className="admin-table-wrap">
             <table className="admin-table">
-              <thead>
-                <tr>
-                  <th>Title</th>
-                  <th>Status</th>
-                  <th>Slug</th>
-                  <th>Updated</th>
-                  <th>Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {rows.map((row) => (
-                  <tr key={row.id}>
-                    <td>{row.title}</td>
+            <thead>
+              <tr>
+                <th>Sr No</th>
+                <th>Title</th>
+                <th>Status</th>
+                <th>Slug</th>
+                <th>Updated</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {rows.map((row, index) => (
+                <tr key={row.id}>
+                  <td>{(safeListPage - 1) * PAGE_SIZE + index + 1}</td>
+                  <td>{row.title}</td>
                     <td>{row.status}</td>
                     <td>{row.slug}</td>
                     <td>{row.updatedAt || "-"}</td>
@@ -423,6 +469,25 @@ export default function AdminNewsClient({ initialRows }: Props) {
               </tbody>
             </table>
           </div>
+          <div className="admin-pagination">
+            <button
+              type="button"
+              disabled={safeListPage <= 1}
+              onClick={() => void loadRows(safeListPage - 1)}
+            >
+              Prev
+            </button>
+            <span>
+              Page {safeListPage} of {totalPages}
+            </span>
+            <button
+              type="button"
+              disabled={safeListPage >= totalPages}
+              onClick={() => void loadRows(safeListPage + 1)}
+            >
+              Next
+            </button>
+          </div>
         </section>
       ) : null}
 
@@ -435,22 +500,39 @@ export default function AdminNewsClient({ initialRows }: Props) {
             </button>
           </div>
           <form onSubmit={onSubmit} className="admin-inline-form">
-            <input name="title" placeholder="News title" value={title} onChange={(e) => setTitle(e.target.value)} />
-            <input
-              name="slug"
-              placeholder="news-slug"
-              value={slug}
-              onChange={(e) => setSlug(normalizeSlugInput(e.target.value))}
-              onPaste={(e) => {
-                e.preventDefault();
-                const pastedText = e.clipboardData.getData("text");
-                const input = e.currentTarget;
-                const start = input.selectionStart ?? input.value.length;
-                const end = input.selectionEnd ?? input.value.length;
-                const nextValue = `${input.value.slice(0, start)}${pastedText}${input.value.slice(end)}`;
-                setSlug(normalizeSlugInput(nextValue));
-              }}
-            />
+            <div className="admin-field">
+              <input
+                name="title"
+                placeholder="News title"
+                className={duplicateTitleExists ? "is-invalid" : undefined}
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
+              />
+              {duplicateTitleExists ? (
+                <p className="admin-field-error">This title is already in use.</p>
+              ) : null}
+            </div>
+            <div className="admin-field">
+              <input
+                name="slug"
+                placeholder="news-slug"
+                className={duplicateSlugExists ? "is-invalid" : undefined}
+                value={slug}
+                onChange={(e) => setSlug(normalizeSlugInput(e.target.value))}
+                onPaste={(e) => {
+                  e.preventDefault();
+                  const pastedText = e.clipboardData.getData("text");
+                  const input = e.currentTarget;
+                  const start = input.selectionStart ?? input.value.length;
+                  const end = input.selectionEnd ?? input.value.length;
+                  const nextValue = `${input.value.slice(0, start)}${pastedText}${input.value.slice(end)}`;
+                  setSlug(normalizeSlugInput(nextValue));
+                }}
+              />
+              {duplicateSlugExists ? (
+                <p className="admin-field-error">This slug is already in use.</p>
+              ) : null}
+            </div>
             <input
               name="excerpt"
               placeholder="Short description"

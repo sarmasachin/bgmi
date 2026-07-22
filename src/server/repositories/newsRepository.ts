@@ -37,6 +37,53 @@ export function resolveNewsCanonicalUrl(slug: string, canonicalUrl?: string | nu
   return toCanonicalUrl(safeSlug ? `/news/${safeSlug}` : "/news");
 }
 
+function normalizeNewsSlug(slug: string) {
+  return slug.trim().replace(/^\/+|\/+$/g, "").replace(/\s+/g, "-").toLowerCase();
+}
+
+function normalizeComparableTitle(title: string) {
+  return title.trim().replace(/\s+/g, " ").toLowerCase();
+}
+
+export async function newsSlugExists(slug: string, excludeId?: string) {
+  const normalized = normalizeNewsSlug(slug);
+  if (!normalized) return false;
+
+  const dbData = await tryPrisma(async () => {
+    const found = await prisma.newsPost.findFirst({
+      where: excludeId
+        ? { slug: normalized, id: { not: excludeId } }
+        : { slug: normalized },
+      select: { id: true },
+    });
+    return Boolean(found);
+  });
+
+  if (dbData !== null) return dbData;
+  return mockStore.news.some(
+    (item) => normalizeNewsSlug(item.slug) === normalized && item.id !== excludeId,
+  );
+}
+
+export async function newsTitleExists(title: string, excludeId?: string) {
+  const normalized = normalizeComparableTitle(title);
+  if (!normalized) return false;
+
+  const dbData = await tryPrisma(async () => {
+    const rows = await prisma.newsPost.findMany({
+      where: excludeId ? { id: { not: excludeId } } : undefined,
+      select: { id: true, title: true },
+    });
+    return rows.some((row) => normalizeComparableTitle(row.title) === normalized);
+  });
+
+  if (dbData !== null) return dbData;
+  return mockStore.news.some(
+    (item) =>
+      normalizeComparableTitle(item.title) === normalized && item.id !== excludeId,
+  );
+}
+
 function buildNewsContent(input: {
   html?: string;
   existing?: unknown;
@@ -189,6 +236,11 @@ export const getPublishedNewsBySlug = cache(async function getPublishedNewsBySlu
 });
 
 export async function createNews(input: NewsInput) {
+  const slug = normalizeNewsSlug(input.slug);
+  if (!slug) throw new Error("INVALID_SLUG");
+  if (await newsSlugExists(slug)) throw new Error("SLUG_EXISTS");
+  if (await newsTitleExists(input.title)) throw new Error("TITLE_EXISTS");
+
   const content = buildNewsContent({
     html: input.content ?? "",
     metaPatch: newsMetaPatchFromInput(input),
@@ -198,7 +250,7 @@ export async function createNews(input: NewsInput) {
     prisma.newsPost.create({
       data: {
         title: input.title,
-        slug: input.slug,
+        slug,
         excerpt: input.excerpt,
         featureImage: input.featureImage,
         status: input.status,
@@ -213,7 +265,7 @@ export async function createNews(input: NewsInput) {
   const item = {
     id: `n${Date.now()}`,
     title: input.title,
-    slug: input.slug,
+    slug,
     excerpt: input.excerpt ?? "",
     featureImage: input.featureImage ?? "",
     status: input.status,
@@ -257,6 +309,11 @@ export async function updateNewsStatus(id: string, status: string) {
 export async function updateNews(
   input: Omit<NewsInput, "status"> & { id: string; status?: "draft" | "published" },
 ) {
+  const slug = normalizeNewsSlug(input.slug);
+  if (!slug) throw new Error("INVALID_SLUG");
+  if (await newsSlugExists(slug, input.id)) throw new Error("SLUG_EXISTS");
+  if (await newsTitleExists(input.title, input.id)) throw new Error("TITLE_EXISTS");
+
   const dbResult = await tryPrisma(async () => {
     const existing = await prisma.newsPost.findUnique({ where: { id: input.id } });
     if (!existing) return null;
@@ -272,7 +329,7 @@ export async function updateNews(
       where: { id: input.id },
       data: {
         title: input.title,
-        slug: input.slug,
+        slug,
         excerpt: input.excerpt,
         featureImage: input.featureImage,
         seoTitle: input.seoTitle?.trim() || null,
@@ -292,7 +349,7 @@ export async function updateNews(
   const item = mockStore.news.find((news) => news.id === input.id);
   if (!item) return null;
   item.title = input.title;
-  item.slug = input.slug;
+  item.slug = slug;
   item.excerpt = input.excerpt ?? "";
   item.featureImage = input.featureImage ?? "";
   (item as { seoTitle?: string }).seoTitle = input.seoTitle?.trim() || "";
