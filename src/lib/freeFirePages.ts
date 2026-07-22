@@ -23,8 +23,36 @@ export function freeFireConfig(variant: FreeFireVariant) {
       soonMessage: "Free Fire Max Sensitivity Settings calculator — Update Soon",
       seoDescription:
         "Free Fire Max sensitivity calculator for General, Red Dot, 2x, 4x, sniper scope, and free look. Get RAM-based headshot settings for your phone.",
-      defaultArticleHtml: `<p>Free Fire Max sensitivity settings guide and tips will appear here. The calculator is coming soon — check back for updates.</p>
-<p>Meanwhile, explore our BGMI and PUBG Mobile sensitivity calculators from the menu above.</p>`,
+      defaultArticleHtml: `<h2>Free Fire Max Sensitivity Settings Calculator</h2>
+<p>Free Fire Max runs with higher graphics and can feel heavier on mid-range phones. That is why copying a normal Free Fire sensitivity often feels too fast or too slow in Max.</p>
+<p>Use the Free Fire Max Sensitivity Settings Calculator above to generate settings from your phone RAM, DPI, FPS, and play style — then fine-tune in Training Ground.</p>
+<h2>Why Free Fire Max Needs Its Own Sensitivity</h2>
+<p>Max mode uses richer visuals and can drop frames on weaker devices. Lower FPS changes drag timing, so your General, Red Dot, and scope values should match the device you actually play Max on.</p>
+<h2>Best Free Fire Max Sensitivity by RAM</h2>
+<p>Use these ranges as a starting point if you want a quick setup before using the calculator:</p>
+<div class="ff-table-wrap">
+<table>
+<thead>
+<tr><th>Phone RAM</th><th>General</th><th>Red Dot</th><th>2X Scope</th><th>4X Scope</th><th>Sniper Scope</th><th>Free Look</th></tr>
+</thead>
+<tbody>
+<tr><td>3GB - 4GB</td><td>95 - 100</td><td>90 - 98</td><td>90 - 100</td><td>85 - 95</td><td>45 - 60</td><td>75 - 90</td></tr>
+<tr><td>6GB - 8GB</td><td>85 - 95</td><td>80 - 90</td><td>80 - 90</td><td>75 - 85</td><td>40 - 55</td><td>70 - 85</td></tr>
+<tr><td>12GB+</td><td>75 - 88</td><td>70 - 82</td><td>70 - 85</td><td>65 - 80</td><td>35 - 50</td><td>60 - 75</td></tr>
+</tbody>
+</table>
+</div>
+<p><strong>Tip for Max:</strong> If your FPS dips in fights, keep General slightly higher so drag still feels responsive.</p>
+<h2>DPI and Fire Button Tips for Free Fire Max</h2>
+<ul>
+<li><strong>Default DPI:</strong> Keep General near the top of your RAM range.</li>
+<li><strong>Custom DPI 420 - 480:</strong> Lower General and Red Dot by about 5 - 10 points so aim does not overshoot.</li>
+<li><strong>Fire button size:</strong> 42% - 52% works well for most phones in Max.</li>
+</ul>
+<h2>One-Tap and Drag Headshot Practice</h2>
+<p>After you calculate settings, practice 15 - 20 minutes in Training Ground with M1887, Desert Eagle, and an SMG. Adjust Red Dot first, then scopes.</p>
+<h2>Conclusion</h2>
+<p>Free Fire Max sensitivity should match your device performance, not a random pro code. Use the calculator on this page, test in Training Ground, and lock the values that feel stable in real matches.</p>`,
     };
   }
   return {

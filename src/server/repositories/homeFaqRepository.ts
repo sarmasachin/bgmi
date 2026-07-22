@@ -65,15 +65,15 @@ export const DEFAULT_PUBG_FAQ: HomeFaqItem[] = [
 export const DEFAULT_FREEFIRE_FAQ: HomeFaqItem[] = [
   {
     id: "ff-faq-1",
-    question: "When will the Free Fire sensitivity calculator launch?",
+    question: "How do I use the Free Fire sensitivity calculator?",
     answer:
-      "The Free Fire Sensitivity Settings calculator is under development. Meanwhile you can read the guide on this page and use our BGMI or PUBG Mobile calculators from the menu.",
+      "Select your device details (RAM, DPI, FPS, and play style), then tap Calculate. Copy the General, Red Dot, scope, and free look values into Free Fire settings and practice in Training Ground.",
   },
   {
     id: "ff-faq-2",
     question: "Will Free Fire settings be different from BGMI?",
     answer:
-      "Yes. Free Fire has its own camera, fire button, and scope feel. When the calculator launches, settings will be tuned specifically for Free Fire — not copied from BGMI or PUBG Mobile.",
+      "Yes. Free Fire has its own camera, fire button, and scope feel. This calculator is tuned for Free Fire — do not paste BGMI or PUBG Mobile codes into Free Fire.",
   },
 ];
 
@@ -82,13 +82,13 @@ export const DEFAULT_FREEFIRE_MAX_FAQ: HomeFaqItem[] = [
     id: "ffm-faq-1",
     question: "Is Free Fire Max the same as Free Fire for sensitivity?",
     answer:
-      "Free Fire Max can feel different due to graphics and device performance. We will provide a dedicated Free Fire Max calculator when it launches.",
+      "Not always. Free Fire Max can feel heavier because of graphics and FPS. Use this Free Fire Max calculator with your real device RAM and FPS, then fine-tune Red Dot in Training Ground.",
   },
   {
     id: "ffm-faq-2",
     question: "Can I use BGMI sensitivity codes in Free Fire Max?",
     answer:
-      "No. Sensitivity codes and slider ranges are game-specific. Wait for the Free Fire Max calculator or follow the guide on this page for general tips.",
+      "No. Sensitivity codes and slider ranges are game-specific. Use the Free Fire Max calculator on this page instead of BGMI or PUBG Mobile codes.",
   },
 ];
 
@@ -121,14 +121,24 @@ function parseStoredItems(raw: unknown): HomeFaqItem[] | null {
 }
 
 export async function getGameFaqItems(game: GameFaqGame): Promise<HomeFaqItem[]> {
+  const defaults = defaultsFor(game).map((x) => ({ ...x }));
   const key = KEYS[game];
   const row = await tryPrisma(async () => prisma.siteSetting.findUnique({ where: { key } }));
   if (row === null || !row?.value) {
-    return defaultsFor(game).map((x) => ({ ...x }));
+    return defaults;
   }
   const parsed = parseStoredItems(row.value);
-  if (parsed === null) {
-    return defaultsFor(game).map((x) => ({ ...x }));
+  if (parsed === null || parsed.length === 0) {
+    return defaults;
+  }
+  // Drop stale pre-launch FAQ copy so live calculator pages stay indexable.
+  const stale = parsed.some((item) =>
+    /coming soon|under development|when it launches|wait for the free fire/i.test(
+      `${item.question} ${item.answer}`,
+    ),
+  );
+  if (stale && (game === "freefire" || game === "freefire-max")) {
+    return defaults;
   }
   return parsed;
 }
