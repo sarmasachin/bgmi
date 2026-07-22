@@ -5,10 +5,6 @@ import type { AdminContactItem } from "@/src/server/admin/mapAdminContactMessage
 import { useAdminFlash } from "@/src/components/admin/AdminToast";
 import { readApiError } from "@/src/lib/userFacingError";
 
-type Props = {
-  initialItems?: AdminContactItem[];
-};
-
 type StatusFilter = "all" | AdminContactItem["status"];
 
 type ConfirmAction =
@@ -111,9 +107,10 @@ function mapLoadedItem(item: Record<string, unknown>): AdminContactItem {
   };
 }
 
-export default function AdminContactClient({ initialItems }: Props) {
-  const [items, setItems] = useState<AdminContactItem[]>(initialItems ?? []);
-  const [loading, setLoading] = useState(initialItems === undefined);
+export default function AdminContactClient() {
+  // Empty until client fetch — prevents deleted-row blink from stale SSR/bfcache.
+  const [items, setItems] = useState<AdminContactItem[]>([]);
+  const [loading, setLoading] = useState(true);
   const [workingId, setWorkingId] = useState<string | null>(null);
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [filter, setFilter] = useState<StatusFilter>("all");
