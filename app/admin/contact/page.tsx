@@ -1,9 +1,12 @@
+import { mapAdminContactMessages } from "@/src/server/admin/mapAdminContactMessages";
+import { listContactMessages } from "@/src/server/repositories/contactRepository";
 import AdminContactClient from "./AdminContactClient";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
-/** List is client-fetched only — avoids SSR/bfcache flash of deleted rows on refresh. */
-export default function AdminContactPage() {
-  return <AdminContactClient />;
+export default async function AdminContactPage() {
+  const rows = await listContactMessages();
+  const initialItems = mapAdminContactMessages(rows);
+  return <AdminContactClient initialItems={initialItems} />;
 }

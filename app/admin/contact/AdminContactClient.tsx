@@ -107,10 +107,14 @@ function mapLoadedItem(item: Record<string, unknown>): AdminContactItem {
   };
 }
 
-export default function AdminContactClient() {
-  // Empty until client fetch — prevents deleted-row blink from stale SSR/bfcache.
-  const [items, setItems] = useState<AdminContactItem[]>([]);
-  const [loading, setLoading] = useState(true);
+type Props = {
+  initialItems?: AdminContactItem[];
+};
+
+export default function AdminContactClient({ initialItems }: Props) {
+  // SSR seed paints the table immediately — empty client-only load was causing Refresh blink.
+  const [items, setItems] = useState<AdminContactItem[]>(initialItems ?? []);
+  const [loading, setLoading] = useState(initialItems === undefined);
   const [workingId, setWorkingId] = useState<string | null>(null);
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [filter, setFilter] = useState<StatusFilter>("all");
@@ -148,8 +152,11 @@ export default function AdminContactClient() {
     setListPage(1);
   }, [filter]);
 
-  async function loadMessages() {
-    setLoading(true);
+  async function loadMessages(opts?: { soft?: boolean }) {
+    // Soft refresh keeps rows mounted — avoids Loading… blink on Refresh/Save.
+    const soft =
+      opts?.soft === true ? true : opts?.soft === false ? false : items.length > 0;
+    if (!soft) setLoading(true);
     try {
       const res = await fetch("/api/admin/contact", { cache: "no-store", credentials: "include" });
       if (!res.ok) {
@@ -162,13 +169,13 @@ export default function AdminContactClient() {
     } catch {
       setMessage("Network error. Please retry.");
     } finally {
-      setLoading(false);
+      if (!soft) setLoading(false);
     }
   }
 
   useEffect(() => {
-    // Always re-fetch on mount so SSR/stale rows cannot linger after DB deletes.
-    void loadMessages();
+    // Soft re-fetch on mount when SSR already painted rows — no Loading… wipe.
+    void loadMessages({ soft: initialItems !== undefined });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -214,7 +221,20 @@ export default function AdminContactClient() {
       } else {
         setMessage(`Marked as ${statusLabel(status)}.`);
       }
-      if (res.ok) await loadMessages();
+      if (res.ok) {
+        setItems((prev) =>
+          prev.map((row) =>
+            row.id === id
+              ? {
+                  ...row,
+                  status,
+                  etaHours: status === "in_progress" ? (etaHours ?? row.etaHours ?? 24) : null,
+                }
+              : row,
+          ),
+        );
+        await loadMessages({ soft: true });
+      }
       return res.ok;
     } catch {
       setMessage("Network error. Please retry.");
@@ -272,7 +292,7 @@ export default function AdminContactClient() {
         setItems((prev) => prev.filter((item) => item.id !== id));
         if (expandedId === id) setExpandedId(null);
         setMessage(res.ok ? "Message deleted." : "Message already removed. List refreshed.");
-        await loadMessages();
+        await loadMessages({ soft: true });
         return true;
       }
 
@@ -344,7 +364,11 @@ export default function AdminContactClient() {
                 : key[0]!.toUpperCase() + key.slice(1)}
           </button>
         ))}
-        <button type="button" className="admin-news-btn admin-news-btn-edit" onClick={() => void loadMessages()}>
+        <button
+          type="button"
+          className="admin-news-btn admin-news-btn-edit"
+          onClick={() => void loadMessages({ soft: true })}
+        >
           Refresh
         </button>
       </div>
