@@ -99,6 +99,13 @@ type Props = {
   initialRows?: PageRow[];
 };
 
+type ConfirmAction = {
+  type: "delete" | "unpublish";
+  id: string;
+  title: string;
+  slug: string;
+};
+
 const PAGES_EDITOR_DRAFT_KEY = "bgmi_admin_pages_editor_draft_v1";
 
 function clearPagesEditorDraft() {
@@ -131,6 +138,8 @@ export default function AdminPagesClient({ initialRows }: Props) {
   const [showForm, setShowForm] = useState(false);
   const [previewDevice, setPreviewDevice] = useState<"desktop" | "tablet" | "mobile">("desktop");
   const [editorNonce, setEditorNonce] = useState(0);
+  const [confirmAction, setConfirmAction] = useState<ConfirmAction | null>(null);
+  const [confirmBusy, setConfirmBusy] = useState(false);
 
   function splitMetaKeywords(raw: string) {
     return raw
@@ -406,8 +415,10 @@ export default function AdminPagesClient({ initialRows }: Props) {
             : "Unpublish failed.",
       );
       if (res.ok) await loadRows();
+      return res.ok;
     } catch {
       setMessage("Network error. Please retry.");
+      return false;
     }
   }
 
@@ -416,9 +427,27 @@ export default function AdminPagesClient({ initialRows }: Props) {
       const res = await fetch(`/api/admin/pages?id=${id}`, { method: "DELETE" });
       setMessage(res.ok ? "Page deleted." : "Delete failed.");
       if (res.ok) await loadRows();
+      return res.ok;
     } catch {
       setMessage("Network error. Please retry.");
+      return false;
     }
+  }
+
+  function closeConfirmModal() {
+    if (confirmBusy) return;
+    setConfirmAction(null);
+  }
+
+  async function confirmPendingAction() {
+    if (!confirmAction || confirmBusy) return;
+    setConfirmBusy(true);
+    const ok =
+      confirmAction.type === "delete"
+        ? await deletePage(confirmAction.id)
+        : await setPageStatus(confirmAction.id, "draft");
+    setConfirmBusy(false);
+    if (ok) setConfirmAction(null);
   }
 
   return (
@@ -468,7 +497,14 @@ export default function AdminPagesClient({ initialRows }: Props) {
                         <button
                           type="button"
                           className="admin-pages-btn admin-pages-btn-edit"
-                          onClick={() => void setPageStatus(row.id, "draft")}
+                          onClick={() =>
+                            setConfirmAction({
+                              type: "unpublish",
+                              id: row.id,
+                              title: row.title,
+                              slug: normalizeSlugInput(row.slug) || row.slug,
+                            })
+                          }
                         >
                           Unpublish
                         </button>
@@ -522,7 +558,18 @@ export default function AdminPagesClient({ initialRows }: Props) {
                       >
                         Edit
                       </button>
-                      <button type="button" className="admin-pages-btn admin-pages-btn-delete" onClick={() => void deletePage(row.id)}>
+                      <button
+                        type="button"
+                        className="admin-pages-btn admin-pages-btn-delete"
+                        onClick={() =>
+                          setConfirmAction({
+                            type: "delete",
+                            id: row.id,
+                            title: row.title,
+                            slug: normalizeSlugInput(row.slug) || row.slug,
+                          })
+                        }
+                      >
                         Delete
                       </button>
                     </div>
@@ -771,6 +818,84 @@ export default function AdminPagesClient({ initialRows }: Props) {
           </div>
         </form>
       </section>
+      ) : null}
+
+      {confirmAction ? (
+        <div className="admin-modal-overlay" role="presentation" onClick={closeConfirmModal}>
+          <div
+            className={`admin-modal admin-confirm-modal ${
+              confirmAction.type === "delete" ? "is-danger" : "is-warning"
+            }`}
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="admin-pages-confirm-title"
+            aria-describedby="admin-pages-confirm-desc"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="admin-confirm-icon" aria-hidden>
+              {confirmAction.type === "delete" ? (
+                <svg viewBox="0 0 24 24" width="22" height="22" fill="none">
+                  <path
+                    d="M9 3h6m-8 4h10m-9 0 .7 12.2A1.5 1.5 0 0 0 10.2 21h3.6a1.5 1.5 0 0 0 1.5-1.4L16 7M10 11v6m4-6v6"
+                    stroke="currentColor"
+                    strokeWidth="1.7"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                </svg>
+              ) : (
+                <svg viewBox="0 0 24 24" width="22" height="22" fill="none">
+                  <path
+                    d="M12 9v4.5M12 17h.01M10.3 4.2 2.7 17.1A2 2 0 0 0 4.4 20h15.2a2 2 0 0 0 1.7-2.9L13.7 4.2a2 2 0 0 0-3.4 0Z"
+                    stroke="currentColor"
+                    strokeWidth="1.7"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                </svg>
+              )}
+            </div>
+            <h2 id="admin-pages-confirm-title">
+              {confirmAction.type === "delete" ? "Delete this clone?" : "Unpublish this clone?"}
+            </h2>
+            <p id="admin-pages-confirm-desc" className="admin-modal-subtitle">
+              {confirmAction.type === "delete"
+                ? "This will permanently remove the clone. This action cannot be undone."
+                : "This clone will go offline and stop appearing as a live page."}
+            </p>
+            <div className="admin-confirm-meta">
+              <span className="admin-confirm-meta-label">Clone</span>
+              <strong>{confirmAction.title}</strong>
+              <span className="admin-confirm-meta-slug">/{confirmAction.slug}</span>
+            </div>
+            <div className="admin-modal-actions">
+              <button
+                type="button"
+                className="admin-modal-btn-secondary"
+                onClick={closeConfirmModal}
+                disabled={confirmBusy}
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                className={`admin-modal-btn-primary ${
+                  confirmAction.type === "delete" ? "admin-modal-btn-danger" : "admin-modal-btn-warning"
+                }`}
+                onClick={() => void confirmPendingAction()}
+                disabled={confirmBusy}
+              >
+                {confirmBusy
+                  ? confirmAction.type === "delete"
+                    ? "Deleting…"
+                    : "Unpublishing…"
+                  : confirmAction.type === "delete"
+                    ? "Yes, delete"
+                    : "Yes, unpublish"}
+              </button>
+            </div>
+          </div>
+        </div>
       ) : null}
     </>
   );

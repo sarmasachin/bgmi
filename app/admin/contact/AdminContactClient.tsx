@@ -11,6 +11,30 @@ type Props = {
 
 type StatusFilter = "all" | AdminContactItem["status"];
 
+type ConfirmAction =
+  | {
+      type: "delete";
+      id: string;
+      name: string;
+      email: string;
+      subject: string;
+    }
+  | {
+      type: "in_progress";
+      id: string;
+      name: string;
+      email: string;
+      subject: string;
+      etaHours: 24 | 48;
+    }
+  | {
+      type: "solved";
+      id: string;
+      name: string;
+      email: string;
+      subject: string;
+    };
+
 const STATUS_OPTIONS: Array<{ value: AdminContactItem["status"]; label: string }> = [
   { value: "new", label: "New" },
   { value: "read", label: "Read" },
@@ -84,6 +108,8 @@ export default function AdminContactClient({ initialItems }: Props) {
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [filter, setFilter] = useState<StatusFilter>("all");
   const [etaDraft, setEtaDraft] = useState<Record<string, 24 | 48>>({});
+  const [confirmAction, setConfirmAction] = useState<ConfirmAction | null>(null);
+  const [confirmBusy, setConfirmBusy] = useState(false);
   const setMessage = useAdminFlash();
 
   const counts = useMemo(
@@ -170,39 +196,46 @@ export default function AdminContactClient({ initialItems }: Props) {
         setMessage(`Marked as ${statusLabel(status)}.`);
       }
       if (res.ok) await loadMessages();
+      return res.ok;
     } catch {
       setMessage("Network error. Please retry.");
+      return false;
+    } finally {
+      setWorkingId(null);
     }
-    setWorkingId(null);
   }
 
-  async function onStatusChange(item: AdminContactItem, next: AdminContactItem["status"]) {
+  function onStatusChange(item: AdminContactItem, next: AdminContactItem["status"]) {
     if (next === item.status) return;
 
     if (next === "in_progress") {
       const hours = etaDraft[item.id] ?? item.etaHours ?? 24;
-      const ok = window.confirm(
-        `Mark as In Progress and email the user that the issue will be resolved within ${hours} hours?`,
-      );
-      if (!ok) return;
-      await updateStatus(item.id, "in_progress", hours);
+      setConfirmAction({
+        type: "in_progress",
+        id: item.id,
+        name: item.name,
+        email: item.email,
+        subject: item.subject,
+        etaHours: hours,
+      });
       return;
     }
 
     if (next === "solved") {
-      const ok = window.confirm(
-        "Mark as Solved and email the user that the problem has been resolved?",
-      );
-      if (!ok) return;
-      await updateStatus(item.id, "solved");
+      setConfirmAction({
+        type: "solved",
+        id: item.id,
+        name: item.name,
+        email: item.email,
+        subject: item.subject,
+      });
       return;
     }
 
-    await updateStatus(item.id, next);
+    void updateStatus(item.id, next);
   }
 
   async function removeMessage(id: string) {
-    if (!window.confirm("Delete this contact message?")) return;
     setWorkingId(id);
     try {
       const res = await fetch(`/api/admin/contact?id=${encodeURIComponent(id)}`, {
@@ -214,10 +247,33 @@ export default function AdminContactClient({ initialItems }: Props) {
         if (expandedId === id) setExpandedId(null);
         await loadMessages();
       }
+      return res.ok;
     } catch {
       setMessage("Network error. Please retry.");
+      return false;
+    } finally {
+      setWorkingId(null);
     }
-    setWorkingId(null);
+  }
+
+  function closeConfirmModal() {
+    if (confirmBusy) return;
+    setConfirmAction(null);
+  }
+
+  async function confirmPendingAction() {
+    if (!confirmAction || confirmBusy) return;
+    setConfirmBusy(true);
+    let ok = false;
+    if (confirmAction.type === "delete") {
+      ok = await removeMessage(confirmAction.id);
+    } else if (confirmAction.type === "in_progress") {
+      ok = await updateStatus(confirmAction.id, "in_progress", confirmAction.etaHours);
+    } else {
+      ok = await updateStatus(confirmAction.id, "solved");
+    }
+    setConfirmBusy(false);
+    if (ok) setConfirmAction(null);
   }
 
   const filterKeys: StatusFilter[] = [
@@ -230,6 +286,7 @@ export default function AdminContactClient({ initialItems }: Props) {
   ];
 
   return (
+    <>
     <section className="admin-section admin-comments-section">
       <div className="admin-comments-head">
         <h1>Contact Messages</h1>
@@ -369,7 +426,15 @@ export default function AdminContactClient({ initialItems }: Props) {
                             type="button"
                             className="admin-news-btn admin-news-btn-danger"
                             disabled={busy}
-                            onClick={() => void removeMessage(item.id)}
+                            onClick={() =>
+                              setConfirmAction({
+                                type: "delete",
+                                id: item.id,
+                                name: item.name,
+                                email: item.email,
+                                subject: item.subject,
+                              })
+                            }
                           >
                             Delete
                           </button>
@@ -400,5 +465,132 @@ export default function AdminContactClient({ initialItems }: Props) {
         </table>
       </div>
     </section>
+
+    {confirmAction ? (
+      <div className="admin-modal-overlay" role="presentation" onClick={closeConfirmModal}>
+        <div
+          className={`admin-modal admin-confirm-modal ${
+            confirmAction.type === "delete"
+              ? "is-danger"
+              : confirmAction.type === "solved"
+                ? "is-success"
+                : "is-info"
+          }`}
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="admin-contact-confirm-title"
+          aria-describedby="admin-contact-confirm-desc"
+          onClick={(e) => e.stopPropagation()}
+        >
+          <div className="admin-confirm-icon" aria-hidden>
+            {confirmAction.type === "delete" ? (
+              <svg viewBox="0 0 24 24" width="22" height="22" fill="none">
+                <path
+                  d="M9 3h6m-8 4h10m-9 0 .7 12.2A1.5 1.5 0 0 0 10.2 21h3.6a1.5 1.5 0 0 0 1.5-1.4L16 7M10 11v6m4-6v6"
+                  stroke="currentColor"
+                  strokeWidth="1.7"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+              </svg>
+            ) : confirmAction.type === "solved" ? (
+              <svg viewBox="0 0 24 24" width="22" height="22" fill="none">
+                <path
+                  d="M20 7 10.2 17.2 4 11.2"
+                  stroke="currentColor"
+                  strokeWidth="1.9"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+              </svg>
+            ) : (
+              <svg viewBox="0 0 24 24" width="22" height="22" fill="none">
+                <path
+                  d="M4 7.5 12 13l8-5.5M5.5 18h13A1.5 1.5 0 0 0 20 16.5v-9A1.5 1.5 0 0 0 18.5 6h-13A1.5 1.5 0 0 0 4 7.5v9A1.5 1.5 0 0 0 5.5 18Z"
+                  stroke="currentColor"
+                  strokeWidth="1.7"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+              </svg>
+            )}
+          </div>
+
+          <h2 id="admin-contact-confirm-title">
+            {confirmAction.type === "delete"
+              ? "Delete this message?"
+              : confirmAction.type === "in_progress"
+                ? "Mark as In Progress?"
+                : "Mark as Solved?"}
+          </h2>
+          <p id="admin-contact-confirm-desc" className="admin-modal-subtitle">
+            {confirmAction.type === "delete"
+              ? "This will permanently remove the contact message. This action cannot be undone."
+              : confirmAction.type === "in_progress"
+                ? `The user will get an email that the issue will be resolved within ${confirmAction.etaHours} hours.`
+                : "The user will get an email that the problem has been resolved."}
+          </p>
+
+          <div className="admin-confirm-meta admin-confirm-meta-rich">
+            <div className="admin-confirm-meta-row">
+              <span className="admin-confirm-meta-label">From</span>
+              <strong>{confirmAction.name}</strong>
+              <span className="admin-confirm-meta-slug">{confirmAction.email}</span>
+            </div>
+            <div className="admin-confirm-meta-row">
+              <span className="admin-confirm-meta-label">Subject</span>
+              <strong>{confirmAction.subject || "No subject"}</strong>
+            </div>
+            {confirmAction.type === "in_progress" ? (
+              <div className="admin-confirm-meta-row">
+                <span className="admin-confirm-meta-label">ETA</span>
+                <span className="admin-confirm-pill">{confirmAction.etaHours} hours</span>
+              </div>
+            ) : null}
+          </div>
+
+          {confirmAction.type !== "delete" ? (
+            <div className="admin-confirm-note" role="note">
+              <span className="admin-confirm-note-dot" aria-hidden />
+              Email notification will be sent to the user.
+            </div>
+          ) : null}
+
+          <div className="admin-modal-actions">
+            <button
+              type="button"
+              className="admin-modal-btn-secondary"
+              onClick={closeConfirmModal}
+              disabled={confirmBusy}
+            >
+              Cancel
+            </button>
+            <button
+              type="button"
+              className={`admin-modal-btn-primary ${
+                confirmAction.type === "delete"
+                  ? "admin-modal-btn-danger"
+                  : confirmAction.type === "solved"
+                    ? "admin-modal-btn-success"
+                    : "admin-modal-btn-info"
+              }`}
+              onClick={() => void confirmPendingAction()}
+              disabled={confirmBusy}
+            >
+              {confirmBusy
+                ? confirmAction.type === "delete"
+                  ? "Deleting…"
+                  : "Updating…"
+                : confirmAction.type === "delete"
+                  ? "Yes, delete"
+                  : confirmAction.type === "in_progress"
+                    ? "Yes, mark In Progress"
+                    : "Yes, mark Solved"}
+            </button>
+          </div>
+        </div>
+      </div>
+    ) : null}
+    </>
   );
 }

@@ -23,6 +23,13 @@ type Props = {
   initialRows?: AdminLegalPageRow[];
 };
 
+type ConfirmAction = {
+  type: "delete" | "unpublish";
+  id: string;
+  title: string;
+  slug: string;
+};
+
 type FormState = {
   title: string;
   slug: string;
@@ -76,6 +83,8 @@ export default function AdminLegalPagesClient({ initialRows }: Props) {
   const [form, setForm] = useState<FormState>(emptyForm);
   const [editorNonce, setEditorNonce] = useState(0);
   const [saving, setSaving] = useState(false);
+  const [confirmAction, setConfirmAction] = useState<ConfirmAction | null>(null);
+  const [confirmBusy, setConfirmBusy] = useState(false);
   const setMessage = useAdminFlash();
 
   const missingCore = useMemo(() => {
@@ -207,14 +216,16 @@ export default function AdminLegalPagesClient({ initialRows }: Props) {
       });
       setMessage(res.ok ? `Marked as ${status}.` : await readApiError(res, "Update failed."));
       if (res.ok) await loadRows();
+      return res.ok;
     } catch {
       setMessage("Network error. Please retry.");
+      return false;
+    } finally {
+      setWorkingId(null);
     }
-    setWorkingId(null);
   }
 
   async function removePage(id: string) {
-    if (!window.confirm("Delete this legal page?")) return;
     setWorkingId(id);
     try {
       const res = await fetch(`/api/admin/legal-pages?id=${encodeURIComponent(id)}`, {
@@ -226,13 +237,33 @@ export default function AdminLegalPagesClient({ initialRows }: Props) {
         if (editingId === id) closeForm();
         await loadRows();
       }
+      return res.ok;
     } catch {
       setMessage("Network error. Please retry.");
+      return false;
+    } finally {
+      setWorkingId(null);
     }
-    setWorkingId(null);
+  }
+
+  function closeConfirmModal() {
+    if (confirmBusy) return;
+    setConfirmAction(null);
+  }
+
+  async function confirmPendingAction() {
+    if (!confirmAction || confirmBusy) return;
+    setConfirmBusy(true);
+    const ok =
+      confirmAction.type === "delete"
+        ? await removePage(confirmAction.id)
+        : await setStatus(confirmAction.id, "draft");
+    setConfirmBusy(false);
+    if (ok) setConfirmAction(null);
   }
 
   return (
+    <>
     <section className="admin-section admin-comments-section">
       <div className="admin-comments-head">
         <h1>Legal Pages</h1>
@@ -435,7 +466,14 @@ export default function AdminLegalPagesClient({ initialRows }: Props) {
                             type="button"
                             className="admin-news-btn admin-news-btn-edit"
                             disabled={busy}
-                            onClick={() => void setStatus(row.id, "draft")}
+                            onClick={() =>
+                              setConfirmAction({
+                                type: "unpublish",
+                                id: row.id,
+                                title: row.title,
+                                slug: row.slug,
+                              })
+                            }
                           >
                             Unpublish
                           </button>
@@ -453,7 +491,14 @@ export default function AdminLegalPagesClient({ initialRows }: Props) {
                           type="button"
                           className="admin-news-btn admin-news-btn-danger"
                           disabled={busy}
-                          onClick={() => void removePage(row.id)}
+                          onClick={() =>
+                            setConfirmAction({
+                              type: "delete",
+                              id: row.id,
+                              title: row.title,
+                              slug: row.slug,
+                            })
+                          }
                         >
                           Delete
                         </button>
@@ -467,5 +512,84 @@ export default function AdminLegalPagesClient({ initialRows }: Props) {
         </table>
       </div>
     </section>
+
+    {confirmAction ? (
+      <div className="admin-modal-overlay" role="presentation" onClick={closeConfirmModal}>
+        <div
+          className={`admin-modal admin-confirm-modal ${
+            confirmAction.type === "delete" ? "is-danger" : "is-warning"
+          }`}
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="admin-legal-confirm-title"
+          aria-describedby="admin-legal-confirm-desc"
+          onClick={(e) => e.stopPropagation()}
+        >
+          <div className="admin-confirm-icon" aria-hidden>
+            {confirmAction.type === "delete" ? (
+              <svg viewBox="0 0 24 24" width="22" height="22" fill="none">
+                <path
+                  d="M9 3h6m-8 4h10m-9 0 .7 12.2A1.5 1.5 0 0 0 10.2 21h3.6a1.5 1.5 0 0 0 1.5-1.4L16 7M10 11v6m4-6v6"
+                  stroke="currentColor"
+                  strokeWidth="1.7"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+              </svg>
+            ) : (
+              <svg viewBox="0 0 24 24" width="22" height="22" fill="none">
+                <path
+                  d="M12 9v4.5M12 17h.01M10.3 4.2 2.7 17.1A2 2 0 0 0 4.4 20h15.2a2 2 0 0 0 1.7-2.9L13.7 4.2a2 2 0 0 0-3.4 0Z"
+                  stroke="currentColor"
+                  strokeWidth="1.7"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+              </svg>
+            )}
+          </div>
+          <h2 id="admin-legal-confirm-title">
+            {confirmAction.type === "delete" ? "Delete this legal page?" : "Unpublish this legal page?"}
+          </h2>
+          <p id="admin-legal-confirm-desc" className="admin-modal-subtitle">
+            {confirmAction.type === "delete"
+              ? "This will permanently remove the legal page. This action cannot be undone."
+              : "This legal page will go offline and stop appearing as a live page."}
+          </p>
+          <div className="admin-confirm-meta">
+            <span className="admin-confirm-meta-label">Legal page</span>
+            <strong>{confirmAction.title}</strong>
+            <span className="admin-confirm-meta-slug">{publicPath(confirmAction.slug)}</span>
+          </div>
+          <div className="admin-modal-actions">
+            <button
+              type="button"
+              className="admin-modal-btn-secondary"
+              onClick={closeConfirmModal}
+              disabled={confirmBusy}
+            >
+              Cancel
+            </button>
+            <button
+              type="button"
+              className={`admin-modal-btn-primary ${
+                confirmAction.type === "delete" ? "admin-modal-btn-danger" : "admin-modal-btn-warning"
+              }`}
+              onClick={() => void confirmPendingAction()}
+              disabled={confirmBusy}
+            >
+              {confirmBusy
+                ? confirmAction.type === "delete"
+                  ? "Deleting…"
+                  : "Unpublishing…"
+                : confirmAction.type === "delete"
+                  ? "Yes, delete"
+                  : "Yes, unpublish"}
+            </button>
+          </div>
+        </div>
+      </div>
+    ) : null}
+    </>
   );
 }

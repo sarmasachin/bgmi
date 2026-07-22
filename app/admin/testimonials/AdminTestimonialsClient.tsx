@@ -12,6 +12,13 @@ type Props = {
   maxApproved?: number;
 };
 
+type ConfirmAction = {
+  type: "delete" | "reject";
+  id: string;
+  name: string;
+  message: string;
+};
+
 const GAME_LABEL: Record<AdminTestimonialItem["game"], string> = {
   bgmi: "BGMI",
   pubg: "PUBG Mobile",
@@ -31,6 +38,8 @@ export default function AdminTestimonialsClient({
   const [workingId, setWorkingId] = useState<string | null>(null);
   const setMessage = useAdminFlash();
   const [visibleCount, setVisibleCount] = useState(10);
+  const [confirmAction, setConfirmAction] = useState<ConfirmAction | null>(null);
+  const [confirmBusy, setConfirmBusy] = useState(false);
 
   const counts = useMemo(() => {
     return {
@@ -144,7 +153,7 @@ export default function AdminTestimonialsClient({
 
       if (!res.ok) {
         setMessage(json.error ?? "Action failed.");
-        return;
+        return false;
       }
 
       const trimmed = typeof json.trimmed === "number" ? json.trimmed : 0;
@@ -176,8 +185,10 @@ export default function AdminTestimonialsClient({
         setFilter(status);
       }
       await loadTestimonials();
+      return true;
     } catch {
       setMessage("Network error. Please retry.");
+      return false;
     } finally {
       setWorkingId(null);
     }
@@ -197,21 +208,40 @@ export default function AdminTestimonialsClient({
       };
       if (!res.ok) {
         setMessage(json.error ?? "Delete failed.");
-        return;
+        return false;
       }
       setMessage("Testimonial deleted.");
       if (typeof json.approvedCount === "number") {
         setApprovedCount(json.approvedCount);
       }
       await loadTestimonials();
+      return true;
     } catch {
       setMessage("Network error. Please retry.");
+      return false;
     } finally {
       setWorkingId(null);
     }
   }
 
+  function closeConfirmModal() {
+    if (confirmBusy) return;
+    setConfirmAction(null);
+  }
+
+  async function confirmPendingAction() {
+    if (!confirmAction || confirmBusy) return;
+    setConfirmBusy(true);
+    const ok =
+      confirmAction.type === "delete"
+        ? await removeItem(confirmAction.id)
+        : await updateStatus(confirmAction.id, "rejected");
+    setConfirmBusy(false);
+    if (ok) setConfirmAction(null);
+  }
+
   return (
+    <>
     <section className="admin-section admin-comments-section">
       <div className="admin-comments-head">
         <h1>Testimonials Moderation</h1>
@@ -319,7 +349,14 @@ export default function AdminTestimonialsClient({
                           type="button"
                           className="admin-pages-btn admin-pages-btn-preview"
                           disabled={workingId === item.id}
-                          onClick={() => void updateStatus(item.id, "rejected")}
+                          onClick={() =>
+                            setConfirmAction({
+                              type: "reject",
+                              id: item.id,
+                              name: item.name,
+                              message: item.message,
+                            })
+                          }
                         >
                           Reject
                         </button>
@@ -338,7 +375,14 @@ export default function AdminTestimonialsClient({
                         type="button"
                         className="admin-pages-btn admin-pages-btn-delete"
                         disabled={workingId === item.id}
-                        onClick={() => void removeItem(item.id)}
+                        onClick={() =>
+                          setConfirmAction({
+                            type: "delete",
+                            id: item.id,
+                            name: item.name,
+                            message: item.message,
+                          })
+                        }
                       >
                         Delete
                       </button>
@@ -363,5 +407,88 @@ export default function AdminTestimonialsClient({
         </div>
       ) : null}
     </section>
+
+    {confirmAction ? (
+      <div className="admin-modal-overlay" role="presentation" onClick={closeConfirmModal}>
+        <div
+          className={`admin-modal admin-confirm-modal ${
+            confirmAction.type === "delete" ? "is-danger" : "is-warning"
+          }`}
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="admin-testimonials-confirm-title"
+          aria-describedby="admin-testimonials-confirm-desc"
+          onClick={(e) => e.stopPropagation()}
+        >
+          <div className="admin-confirm-icon" aria-hidden>
+            {confirmAction.type === "delete" ? (
+              <svg viewBox="0 0 24 24" width="22" height="22" fill="none">
+                <path
+                  d="M9 3h6m-8 4h10m-9 0 .7 12.2A1.5 1.5 0 0 0 10.2 21h3.6a1.5 1.5 0 0 0 1.5-1.4L16 7M10 11v6m4-6v6"
+                  stroke="currentColor"
+                  strokeWidth="1.7"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+              </svg>
+            ) : (
+              <svg viewBox="0 0 24 24" width="22" height="22" fill="none">
+                <path
+                  d="M12 9v4.5M12 17h.01M10.3 4.2 2.7 17.1A2 2 0 0 0 4.4 20h15.2a2 2 0 0 0 1.7-2.9L13.7 4.2a2 2 0 0 0-3.4 0Z"
+                  stroke="currentColor"
+                  strokeWidth="1.7"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+              </svg>
+            )}
+          </div>
+          <h2 id="admin-testimonials-confirm-title">
+            {confirmAction.type === "delete" ? "Delete this testimonial?" : "Reject this testimonial?"}
+          </h2>
+          <p id="admin-testimonials-confirm-desc" className="admin-modal-subtitle">
+            {confirmAction.type === "delete"
+              ? "This will permanently remove the testimonial. This action cannot be undone."
+              : "This testimonial will be marked as rejected and will not appear on the live site."}
+          </p>
+          <div className="admin-confirm-meta">
+            <span className="admin-confirm-meta-label">Testimonial</span>
+            <strong>{confirmAction.name}</strong>
+            <span className="admin-confirm-meta-slug">
+              {confirmAction.message.length > 120
+                ? `${confirmAction.message.slice(0, 120)}…`
+                : confirmAction.message}
+            </span>
+          </div>
+          <div className="admin-modal-actions">
+            <button
+              type="button"
+              className="admin-modal-btn-secondary"
+              onClick={closeConfirmModal}
+              disabled={confirmBusy}
+            >
+              Cancel
+            </button>
+            <button
+              type="button"
+              className={`admin-modal-btn-primary ${
+                confirmAction.type === "delete" ? "admin-modal-btn-danger" : "admin-modal-btn-warning"
+              }`}
+              onClick={() => void confirmPendingAction()}
+              disabled={confirmBusy}
+            >
+              {confirmBusy
+                ? confirmAction.type === "delete"
+                  ? "Deleting…"
+                  : "Rejecting…"
+                : confirmAction.type === "delete"
+                  ? "Yes, delete"
+                  : "Yes, reject"}
+            </button>
+          </div>
+        </div>
+      </div>
+    ) : null}
+    </>
   );
 }
