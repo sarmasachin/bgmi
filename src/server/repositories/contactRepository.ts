@@ -116,10 +116,21 @@ export async function updateContactMessageStatus(
 
 export async function deleteContactMessage(id: string) {
   const dbResult = await tryPrismaLong(async () => {
-    await prisma.contactMessage.delete({ where: { id } });
-    return true;
+    try {
+      await prisma.contactMessage.delete({ where: { id } });
+      return true as const;
+    } catch (error) {
+      // Prisma P2025: record not found — not a DB outage.
+      const code =
+        error && typeof error === "object" && "code" in error
+          ? String((error as { code?: unknown }).code ?? "")
+          : "";
+      if (code === "P2025") return false as const;
+      throw error;
+    }
   });
-  if (dbResult) return true;
+  if (dbResult === true) return true;
+  if (dbResult === false) return false;
 
   if (process.env.DATABASE_URL) {
     throw new Error("DB_UNAVAILABLE");

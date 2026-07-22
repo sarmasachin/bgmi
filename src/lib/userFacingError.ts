@@ -3,12 +3,12 @@
  */
 export function messageFromHttpStatus(status: number, fallback?: string): string {
   if (status === 400) return fallback || "Please check your input and try again.";
-  if (status === 401 || status === 403) return "You don’t have permission to do that.";
-  if (status === 404) return "We couldn’t find what you were looking for.";
-  if (status === 408) return "Request timed out. Please try again.";
-  if (status === 429) return "Too many requests. Please wait a minute and try again.";
-  if (status === 503) return "Service temporarily unavailable. Please try again shortly.";
-  if (status >= 500) return "Something went wrong on our side. Please try again.";
+  if (status === 401 || status === 403) return fallback || "You don’t have permission to do that.";
+  if (status === 404) return fallback || "We couldn’t find what you were looking for.";
+  if (status === 408) return fallback || "Request timed out. Please try again.";
+  if (status === 429) return fallback || "Too many requests. Please wait a minute and try again.";
+  if (status === 503) return fallback || "Service temporarily unavailable. Please try again shortly.";
+  if (status >= 500) return fallback || "Something went wrong on our side. Please try again.";
   return fallback || "Something went wrong. Please try again.";
 }
 

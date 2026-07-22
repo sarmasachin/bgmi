@@ -47,7 +47,17 @@ function formatWhen(value: string) {
   if (!value) return "-";
   const date = new Date(value);
   if (Number.isNaN(date.getTime())) return value;
-  return date.toLocaleString();
+  // Fixed locale/timeZone so SSR + client match (avoids React hydration #418).
+  return date.toLocaleString("en-IN", {
+    timeZone: "Asia/Kolkata",
+    day: "numeric",
+    month: "numeric",
+    year: "numeric",
+    hour: "numeric",
+    minute: "2-digit",
+    second: "2-digit",
+    hour12: true,
+  });
 }
 
 function statusLabel(status: AdminContactItem["status"]) {
@@ -253,6 +263,9 @@ export default function AdminContactClient({ initialItems }: Props) {
       const res = await fetch(`/api/admin/contact?id=${encodeURIComponent(id)}`, {
         method: "DELETE",
         credentials: "include",
+        headers: {
+          Accept: "application/json",
+        },
       });
       setMessage(res.ok ? "Message deleted." : await readApiError(res, "Delete failed."));
       if (res.ok) {

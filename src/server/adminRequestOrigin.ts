@@ -26,7 +26,7 @@ function hostsMatch(a: string | null, b: string | null): boolean {
 
 /**
  * Block cross-site mutating requests to admin APIs (CSRF mitigation).
- * Same-site browser fetches send Origin; we require Origin or Referer host match.
+ * Same-site browser fetches send Origin; we require Origin, Referer, or Sec-Fetch-Site.
  */
 export function isAdminMutationOriginAllowed(request: NextRequest): boolean {
   const method = request.method.toUpperCase();
@@ -34,6 +34,12 @@ export function isAdminMutationOriginAllowed(request: NextRequest): boolean {
 
   const { pathname } = request.nextUrl;
   if (!pathname.startsWith("/api/admin")) return true;
+
+  // Modern browsers send this on fetch(); same-origin admin UI is safe.
+  const secFetchSite = (request.headers.get("sec-fetch-site") || "").toLowerCase();
+  if (secFetchSite === "same-origin" || secFetchSite === "same-site") {
+    return true;
+  }
 
   const expectedHost = (request.headers.get("x-forwarded-host") || request.headers.get("host") || "")
     .split(",")[0]
