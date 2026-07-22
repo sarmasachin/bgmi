@@ -37,13 +37,22 @@ export async function buildFreeFireMetadata(variant: FreeFireVariant): Promise<M
   const page =
     (await getPublishedPageBySlug(cfg.slug)) ??
     (await getPublishedPageBySlug(`/${cfg.slug}`));
+  const rawDescription = page?.seoDescription?.trim() || cfg.seoDescription;
+  // Never expose stale "coming soon" CMS copy once the calculator is live.
+  const description = /coming soon|in development|update soon/i.test(rawDescription)
+    ? cfg.seoDescription
+    : rawDescription;
   const title = page?.seoTitle?.trim() || page?.title || cfg.title;
-  const description = page?.seoDescription?.trim() || cfg.seoDescription;
   const canonical = toCanonicalUrl(cfg.path);
 
   return {
     title,
     description,
+    robots: {
+      index: true,
+      follow: true,
+      googleBot: { index: true, follow: true },
+    },
     alternates: { canonical },
     ...buildSocialMetadata({ title, description, url: canonical }),
   };

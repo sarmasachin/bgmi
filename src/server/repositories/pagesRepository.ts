@@ -465,9 +465,31 @@ export async function ensureFreeFireCmsPages() {
       (await getPageBySlug(cfg.slug)) ?? (await getPageBySlug(`/${cfg.slug}`));
     if (existing) {
       const currentHtml = extractHtml(existing.content);
+      const staleSeo =
+        !existing.seoDescription?.trim() ||
+        /coming soon|in development|update soon/i.test(existing.seoDescription);
+      const patch: {
+        content?: string;
+        seoDescription?: string;
+        seoTitle?: string;
+        title?: string;
+        status?: "published";
+      } = {};
       if (currentHtml !== cfg.defaultArticleHtml) {
+        patch.content = cfg.defaultArticleHtml;
+      }
+      if (staleSeo) {
+        patch.seoDescription = cfg.seoDescription;
+      }
+      if (!existing.seoTitle?.trim()) {
+        patch.seoTitle = cfg.title;
+      }
+      if (existing.status !== "published") {
+        patch.status = "published";
+      }
+      if (Object.keys(patch).length > 0) {
         try {
-          await updatePage(existing.id, { content: cfg.defaultArticleHtml });
+          await updatePage(existing.id, patch);
         } catch {
           /* DB unavailable — page still uses code default on render */
         }
