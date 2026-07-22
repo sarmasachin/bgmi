@@ -325,74 +325,76 @@ export default function AdminMediaClient({ initialFiles, initialOutputPref }: Pr
         ) : files.length === 0 ? (
           <p className="admin-dashboard-subtitle">No files yet. Upload an image above.</p>
         ) : (
-          <div className="admin-table-wrap">
-            <table className="admin-table">
-              <thead>
-                <tr>
-                  <th>Preview</th>
-                  <th>Filename</th>
-                  <th>Format</th>
-                  <th>Size</th>
-                  <th>Updated</th>
-                  <th>Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {pagedFiles.map((row) => (
-                  <tr key={row.filename}>
-                    <td>
-                      <Image
-                        className="admin-media-thumb"
-                        src={row.url}
-                        alt=""
-                        width={56}
-                        height={56}
-                        unoptimized
-                      />
-                    </td>
-                    <td>
-                      <code className="admin-media-filename">{row.filename}</code>
-                    </td>
-                    <td>{row.format}</td>
-                    <td>{formatBytes(row.size)}</td>
-                    <td>{new Date(row.createdAt).toLocaleString()}</td>
-                    <td className="admin-media-actions">
-                      <button
-                        type="button"
-                        className="admin-pages-btn admin-pages-btn-preview"
-                        onClick={() => void copyUrl(row.url)}
-                      >
-                        Copy URL
-                      </button>
-                      <button
-                        type="button"
-                        className="admin-pages-btn"
-                        style={{ borderColor: "#7f1d1d", color: "#fecaca" }}
-                        onClick={() => void deleteFile(row.filename)}
-                      >
-                        Delete
-                      </button>
-                    </td>
+          <>
+            <div className="admin-table-wrap">
+              <table className="admin-table">
+                <thead>
+                  <tr>
+                    <th>Preview</th>
+                    <th>Filename</th>
+                    <th>Format</th>
+                    <th>Size</th>
+                    <th>Updated</th>
+                    <th>Actions</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-          <div className="admin-pagination">
-            <button type="button" disabled={safeListPage <= 1} onClick={() => setListPage(safeListPage - 1)}>
-              Prev
-            </button>
-            <span>
-              Page {safeListPage} of {totalPages}
-            </span>
-            <button
-              type="button"
-              disabled={safeListPage >= totalPages}
-              onClick={() => setListPage(safeListPage + 1)}
-            >
-              Next
-            </button>
-          </div>
+                </thead>
+                <tbody>
+                  {pagedFiles.map((row) => (
+                    <tr key={row.filename}>
+                      <td>
+                        <Image
+                          className="admin-media-thumb"
+                          src={row.url}
+                          alt=""
+                          width={56}
+                          height={56}
+                          unoptimized
+                        />
+                      </td>
+                      <td>
+                        <code className="admin-media-filename">{row.filename}</code>
+                      </td>
+                      <td>{row.format}</td>
+                      <td>{formatBytes(row.size)}</td>
+                      <td>{new Date(row.createdAt).toLocaleString()}</td>
+                      <td className="admin-media-actions">
+                        <button
+                          type="button"
+                          className="admin-pages-btn admin-pages-btn-preview"
+                          onClick={() => void copyUrl(row.url)}
+                        >
+                          Copy URL
+                        </button>
+                        <button
+                          type="button"
+                          className="admin-pages-btn"
+                          style={{ borderColor: "#7f1d1d", color: "#fecaca" }}
+                          onClick={() => void deleteFile(row.filename)}
+                        >
+                          Delete
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+            <div className="admin-pagination">
+              <button type="button" disabled={safeListPage <= 1} onClick={() => setListPage(safeListPage - 1)}>
+                Prev
+              </button>
+              <span>
+                Page {safeListPage} of {totalPages}
+              </span>
+              <button
+                type="button"
+                disabled={safeListPage >= totalPages}
+                onClick={() => setListPage(safeListPage + 1)}
+              >
+                Next
+              </button>
+            </div>
+          </>
         )}
       </section>
     </>
