@@ -47,14 +47,14 @@ export default function AdminSettingsClient({ initialData }: Props) {
   );
   const [footerTagline, setFooterTagline] = useState(
     initialData?.footerTagline ??
-      "BGMI & PUBG Mobile sensitivity calculator for better aim.",
+      "Free Fire, BGMI & PUBG Mobile sensitivity calculator for better aim.",
   );
   const [navigationLinks, setNavigationLinks] = useState<LinkItem[]>(
     initialData?.navigationLinks ?? [
-      { label: "BGMI", href: "/" },
-      { label: "PUBG Mobile", href: "/pubg" },
-      { label: "Free Fire", href: "/free-fire-sensitivity-settings-calculator" },
+      { label: "Free Fire", href: "/" },
       { label: "Free Fire Max", href: "/free-fire-max-sensitivity-settings-calculator" },
+      { label: "BGMI", href: "/bgmi" },
+      { label: "PUBG Mobile", href: "/pubg" },
     ],
   );
   const [footerLinks, setFooterLinks] = useState<LinkItem[]>(

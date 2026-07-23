@@ -1,15 +1,11 @@
-import {
-  FreeFireComingSoonPage,
-  buildFreeFireMetadata,
-} from "@/src/components/FreeFireComingSoonPage";
-import type { Metadata } from "next";
+import { permanentRedirect } from "next/navigation";
 
 export const dynamic = "force-dynamic";
 
-export async function generateMetadata(): Promise<Metadata> {
-  return buildFreeFireMetadata("freefire");
-}
-
+/**
+ * Free Fire calculator now lives on home (`/`).
+ * Keep this URL as a permanent redirect to avoid duplicate SEO.
+ */
 export default function FreeFirePage() {
-  return <FreeFireComingSoonPage variant="freefire" />;
+  permanentRedirect("/");
 }

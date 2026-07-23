@@ -6,8 +6,9 @@ export const FREE_FIRE_MAX_SLUG = "free-fire-max-sensitivity-settings-calculator
 export const FREE_FIRE_PATH = `/${FREE_FIRE_SLUG}`;
 export const FREE_FIRE_MAX_PATH = `/${FREE_FIRE_MAX_SLUG}`;
 
+/** Free Fire calculator lives on home (`/`); dedicated slug page still works. */
 export const FREE_FIRE_NAV = [
-  { label: "Free Fire", href: FREE_FIRE_PATH },
+  { label: "Free Fire", href: "/" },
   { label: "Free Fire Max", href: FREE_FIRE_MAX_PATH },
 ] as const;
 
@@ -57,12 +58,13 @@ export function freeFireConfig(variant: FreeFireVariant) {
   }
   return {
     slug: FREE_FIRE_SLUG,
-    path: FREE_FIRE_PATH,
+    /** Public URL is home — slug page permanently redirects here. */
+    path: "/",
     navLabel: "Free Fire",
     title: "Free Fire Sensitivity Settings Calculator",
     soonMessage: "Free Fire Sensitivity Settings calculator — Update Soon",
     seoDescription:
-      "Free Fire sensitivity calculator for General, Red Dot, 2x, 4x, sniper scope, and free look. Get RAM-based one-tap headshot settings for Vivo, Redmi, Samsung, and more.",
+      "Best Free Fire & FF Max sensitivity settings for auto headshots. Get updated FF sensitivity, DPI settings & control layout for all RAM devices (2GB-8GB).",
     defaultArticleHtml: `<h2>Free Fire Sensitivity Settings Calculator: The Easiest Way to Hit Headshots!</h2>
 <p>If you play Free Fire (or FF MAX), you already know how important the right sensitivity settings are for landing "One-Tap Headshot" or "Drag Headshot" in the game.</p>
 <p>Players often copy the sensitivity of pro players (like Total Gaming, White444, or Rai Star), but their headshots still don't land. This happens because every phone has a different processor, RAM, and screen refresh rate.</p>
@@ -157,6 +159,8 @@ export function freeFireConfig(variant: FreeFireVariant) {
 
 export function isFreeFirePath(pathname: string) {
   return (
+    pathname === "/" ||
+    pathname === "" ||
     pathname === FREE_FIRE_PATH ||
     pathname.startsWith(`${FREE_FIRE_PATH}/`) ||
     pathname === FREE_FIRE_MAX_PATH ||
@@ -164,19 +168,40 @@ export function isFreeFirePath(pathname: string) {
   );
 }
 
-/** Merge Free Fire nav links if missing from saved settings. */
+/** Merge Free Fire nav links if missing, and pin Free Fire / Free Fire Max to positions 1–2. */
 export function ensureFreeFireNavigation(
   links: Array<{ label: string; href: string }>,
 ): Array<{ label: string; href: string }> {
   const out = [...links];
   for (const item of FREE_FIRE_NAV) {
-    const has = out.some(
-      (row) =>
-        row.href === item.href ||
-        row.href === item.href.replace(/^\//, "") ||
-        new RegExp(item.label.replace(/\s+/g, "\\s*"), "i").test(row.label),
-    );
+    const isFfHome = item.href === "/";
+    const has = out.some((row) => {
+      if (new RegExp(item.label.replace(/\s+/g, "\\s*"), "i").test(row.label)) return true;
+      if (row.href === item.href || row.href === item.href.replace(/^\//, "")) return true;
+      if (isFfHome && (row.href === FREE_FIRE_PATH || row.href === FREE_FIRE_SLUG)) return true;
+      return false;
+    });
     if (!has) out.push({ label: item.label, href: item.href });
   }
-  return out;
+
+  const normalized = out.map((row) => {
+    if (/free\s*fire/i.test(row.label) && !/max/i.test(row.label)) {
+      return { ...row, href: "/" };
+    }
+    return row;
+  });
+
+  const isFf = (row: { label: string }) =>
+    /free\s*fire/i.test(row.label) && !/max/i.test(row.label);
+  const isFfMax = (row: { label: string }) => /free\s*fire\s*max/i.test(row.label);
+
+  const freefire = normalized.find(isFf);
+  const freefireMax = normalized.find(isFfMax);
+  const rest = normalized.filter((row) => !isFf(row) && !isFfMax(row));
+
+  return [
+    ...(freefire ? [freefire] : []),
+    ...(freefireMax ? [freefireMax] : []),
+    ...rest,
+  ];
 }

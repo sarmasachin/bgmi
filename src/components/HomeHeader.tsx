@@ -8,8 +8,8 @@ import type { MouseEvent } from "react";
 import {
   FREE_FIRE_MAX_PATH,
   FREE_FIRE_PATH,
-  isFreeFirePath,
 } from "@/src/lib/freeFirePages";
+import { PUBG_MOBILE_CODES_PATH } from "@/src/lib/pubgMobileCodes";
 
 type NavLink = { label: string; href: string };
 
@@ -21,7 +21,13 @@ type HomeHeaderProps = {
 };
 
 function isGameHref(href: string) {
-  return href === "/" || href === "/pubg" || href === FREE_FIRE_PATH || href === FREE_FIRE_MAX_PATH;
+  return (
+    href === "/" ||
+    href === "/bgmi" ||
+    href === "/pubg" ||
+    href === FREE_FIRE_PATH ||
+    href === FREE_FIRE_MAX_PATH
+  );
 }
 
 function normalizePath(path: string | null | undefined) {
@@ -34,17 +40,20 @@ export function HomeHeader({ siteTitle, navigation }: HomeHeaderProps) {
   const [, startTransition] = useTransition();
   const links = navigation.map((item) => {
     const label = item.label.trim();
+    if (/pubg\s*mobile\s*code/i.test(label)) {
+      return { ...item, href: PUBG_MOBILE_CODES_PATH };
+    }
     if (/pubg/i.test(label) && (item.href === "/" || !item.href.trim())) {
       return { ...item, href: "/pubg" };
     }
     if (/^bgmi$/i.test(label)) {
-      return { ...item, href: "/" };
+      return { ...item, href: "/bgmi" };
     }
     if (/free\s*fire\s*max/i.test(label)) {
       return { ...item, href: FREE_FIRE_MAX_PATH };
     }
     if (/free\s*fire/i.test(label) && !/max/i.test(label)) {
-      return { ...item, href: FREE_FIRE_PATH };
+      return { ...item, href: "/" };
     }
     return item;
   });
@@ -60,7 +69,9 @@ export function HomeHeader({ siteTitle, navigation }: HomeHeaderProps) {
   // Prefetch game routes so switching feels instant.
   useEffect(() => {
     router.prefetch("/");
+    router.prefetch("/bgmi");
     router.prefetch("/pubg");
+    router.prefetch(PUBG_MOBILE_CODES_PATH);
     router.prefetch(FREE_FIRE_PATH);
     router.prefetch(FREE_FIRE_MAX_PATH);
   }, [router]);
@@ -125,8 +136,8 @@ export function HomeHeader({ siteTitle, navigation }: HomeHeaderProps) {
   }
 
   function isActiveHref(href: string) {
-    if (href === "/") return activePath === "/";
-    if (isFreeFirePath(href) || href === "/pubg") {
+    if (href === "/") return activePath === "/" || activePath === "";
+    if (href === "/bgmi" || href === "/pubg" || href === FREE_FIRE_MAX_PATH || href === FREE_FIRE_PATH) {
       return activePath === href || activePath.startsWith(`${href}/`);
     }
     return activePath === href || activePath.startsWith(`${href}/`);

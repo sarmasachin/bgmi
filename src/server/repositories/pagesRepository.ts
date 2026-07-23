@@ -6,7 +6,7 @@ import { sanitizeHtml } from "@/src/lib/sanitizeHtml";
 import { toCanonicalUrl } from "@/src/lib/siteUrl";
 
 type TemplateType = "home" | "article" | "landing";
-type CloneGame = "bgmi" | "pubg" | "freefire" | "freefire-max";
+type CloneGame = "bgmi" | "pubg" | "freefire" | "freefire-max" | "pubg-mobile-codes";
 
 type PageInput = {
   title: string;
@@ -60,7 +60,11 @@ function resolveCanonicalUrl(slug: string, canonicalUrl?: string | null) {
 }
 
 function coerceCloneGame(value: unknown): CloneGame | undefined {
-  return value === "pubg" || value === "bgmi" || value === "freefire" || value === "freefire-max"
+  return value === "pubg" ||
+    value === "bgmi" ||
+    value === "freefire" ||
+    value === "freefire-max" ||
+    value === "pubg-mobile-codes"
     ? value
     : undefined;
 }

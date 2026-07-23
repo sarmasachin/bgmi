@@ -13,7 +13,7 @@ const RichTextEditor = dynamic(
 );
 
 type TemplateType = "home" | "article" | "landing";
-type CloneGame = "bgmi" | "pubg" | "freefire" | "freefire-max";
+type CloneGame = "bgmi" | "pubg" | "freefire" | "freefire-max" | "pubg-mobile-codes";
 
 type PageRow = AdminPageRow;
 
@@ -31,12 +31,20 @@ function coerceTemplateType(value: unknown): TemplateType {
 }
 
 function coerceCloneGame(value: unknown): CloneGame {
-  if (value === "pubg" || value === "freefire" || value === "freefire-max") return value;
+  if (
+    value === "pubg" ||
+    value === "freefire" ||
+    value === "freefire-max" ||
+    value === "pubg-mobile-codes"
+  ) {
+    return value;
+  }
   return "bgmi";
 }
 
 function cloneGameLabel(game: CloneGame) {
   if (game === "pubg") return "PUBG Mobile";
+  if (game === "pubg-mobile-codes") return "PUBG Mobile Code";
   if (game === "freefire") return "Free Fire";
   if (game === "freefire-max") return "Free Fire Max";
   return "BGMI";
@@ -93,7 +101,8 @@ function parseContent(content: unknown) {
           metaObj.game === "pubg" ||
           metaObj.game === "bgmi" ||
           metaObj.game === "freefire" ||
-          metaObj.game === "freefire-max"
+          metaObj.game === "freefire-max" ||
+          metaObj.game === "pubg-mobile-codes"
             ? metaObj.game
             : undefined,
         socialTitle: typeof metaObj.socialTitle === "string" ? metaObj.socialTitle : undefined,
@@ -737,6 +746,7 @@ export default function AdminPagesClient({ initialRows }: Props) {
           >
             <option value="bgmi">BGMI</option>
             <option value="pubg">PUBG Mobile</option>
+            <option value="pubg-mobile-codes">PUBG Mobile Code</option>
             <option value="freefire">Free Fire</option>
             <option value="freefire-max">Free Fire Max</option>
           </select>

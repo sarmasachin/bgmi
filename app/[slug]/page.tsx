@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { AdSlot } from "@/src/components/AdSlot";
 import { HomeHeader } from "@/src/components/HomeHeader";
+import { PubgMobileCodesPanel } from "@/src/components/PubgMobileCodesPanel";
 import { SiteFooter } from "@/src/components/SiteFooter";
 import { FfCalculator } from "@/src/features/ffCalculator/FfCalculator";
 import "@/src/features/ffCalculator/ffCalculator.css";
@@ -14,7 +15,7 @@ import { toCanonicalUrl } from "@/src/lib/siteUrl";
 import { buildSocialMetadata } from "@/src/lib/socialMeta";
 
 type TemplateType = "home" | "article" | "landing";
-type CloneGame = "bgmi" | "pubg" | "freefire" | "freefire-max";
+type CloneGame = "bgmi" | "pubg" | "freefire" | "freefire-max" | "pubg-mobile-codes";
 
 type Props = {
   params: Promise<{ slug: string }>;
@@ -52,7 +53,12 @@ function extractContentData(content: unknown) {
     const templateType: TemplateType =
       rawType === "article" || rawType === "landing" || rawType === "home" ? rawType : "home";
     const game: CloneGame =
-      meta.game === "pubg" || meta.game === "freefire" || meta.game === "freefire-max" ? meta.game : "bgmi";
+      meta.game === "pubg" ||
+      meta.game === "freefire" ||
+      meta.game === "freefire-max" ||
+      meta.game === "pubg-mobile-codes"
+        ? meta.game
+        : "bgmi";
     return {
       html,
       templateType,
@@ -209,7 +215,9 @@ export default async function DynamicTemplatePage({ params, searchParams }: Prop
       <h1 className={titleClassName}>{page.title}</h1>
       <main className="page-container">
         <AdSlot slotKey="home_above_calculator" />
-        {calculatorGame === "freefire" || calculatorGame === "freefire-max" ? (
+        {calculatorGame === "pubg-mobile-codes" ? (
+          <PubgMobileCodesPanel key="pubg-mobile-codes" phoneModels={phoneModels} />
+        ) : calculatorGame === "freefire" || calculatorGame === "freefire-max" ? (
           <FfCalculator key={calculatorGame} isMax={calculatorGame === "freefire-max"} />
         ) : (
           <SensCalculator key={calculatorGame} phoneModels={phoneModels} game={calculatorGame} />

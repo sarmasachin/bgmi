@@ -9,8 +9,8 @@ import {
   freeFireConfig,
   type FreeFireVariant,
 } from "@/src/lib/freeFirePages";
-import { faqSchema } from "@/src/lib/schema";
-import { toCanonicalUrl } from "@/src/lib/siteUrl";
+import { faqSchema, toolAppReviewSchema } from "@/src/lib/schema";
+import { getSiteUrl, toCanonicalUrl } from "@/src/lib/siteUrl";
 import { buildSocialMetadata } from "@/src/lib/socialMeta";
 import {
   ensureFreeFireCmsPages,
@@ -83,7 +83,19 @@ export async function FreeFireComingSoonPage({ variant }: { variant: FreeFireVar
   // Code article is source of truth after deploy; CMS is only a fallback.
   const html = cfg.defaultArticleHtml || extractHtml(page?.content);
   const title = page?.title?.trim() || cfg.title;
+  const description = page?.seoDescription?.trim() || cfg.seoDescription;
   const faqLd = faqSchema(faqItems);
+  const toolLd = toolAppReviewSchema({
+    baseUrl: getSiteUrl(),
+    name: title,
+    description,
+    url: toCanonicalUrl(cfg.path),
+    reviews: testimonials.map((t) => ({
+      name: t.name,
+      rating: t.rating,
+      message: t.message,
+    })),
+  });
 
   return (
     <div>
@@ -116,6 +128,12 @@ export async function FreeFireComingSoonPage({ variant }: { variant: FreeFireVar
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(faqLd) }}
+        />
+      ) : null}
+      {toolLd ? (
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(toolLd) }}
         />
       ) : null}
       <SiteFooter settings={settings} />

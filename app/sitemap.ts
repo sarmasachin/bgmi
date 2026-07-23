@@ -8,6 +8,7 @@ export const revalidate = 3600;
 
 /** App routes that already have dedicated pages — avoid duplicate CMS entries. */
 const RESERVED_TOP_SEGMENTS = new Set([
+  "bgmi",
   "pubg",
   "news",
   "admin",
@@ -17,6 +18,7 @@ const RESERVED_TOP_SEGMENTS = new Set([
   "contact",
   "disclaimer",
   "legal",
+  "pubg-mobile-codes",
   "free-fire-sensitivity-settings-calculator",
   "free-fire-max-sensitivity-settings-calculator",
 ]);
@@ -41,16 +43,22 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       priority: 1,
     },
     {
+      url: `${baseUrl}/bgmi`,
+      lastModified: now,
+      changeFrequency: "daily",
+      priority: 0.95,
+    },
+    {
       url: `${baseUrl}/pubg`,
       lastModified: now,
       changeFrequency: "daily",
       priority: 0.95,
     },
     {
-      url: `${baseUrl}/free-fire-sensitivity-settings-calculator`,
+      url: `${baseUrl}/pubg-mobile-codes`,
       lastModified: now,
-      changeFrequency: "weekly",
-      priority: 0.9,
+      changeFrequency: "daily",
+      priority: 0.95,
     },
     {
       url: `${baseUrl}/free-fire-max-sensitivity-settings-calculator`,

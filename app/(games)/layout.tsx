@@ -1,11 +1,14 @@
 import { AdSlot } from "@/src/components/AdSlot";
 import { ClientErrorBoundary } from "@/src/components/ClientErrorBoundary";
 import { GameArticleFaq } from "@/src/components/GameArticleFaq";
+import { GamePathJsonLd } from "@/src/components/GamePathJsonLd";
 import { GameTestimonialsSection } from "@/src/components/GameTestimonialsSection";
 import { HomeHeader } from "@/src/components/HomeHeader";
 import { SensCalculatorHost } from "@/src/components/SensCalculatorHost";
 import { SiteFooter } from "@/src/components/SiteFooter";
-import { faqSchema } from "@/src/lib/schema";
+import { freeFireConfig } from "@/src/lib/freeFirePages";
+import { faqSchema, toolAppReviewSchema } from "@/src/lib/schema";
+import { getSiteUrl, toCanonicalUrl } from "@/src/lib/siteUrl";
 import { getAdPlacementVisibility } from "@/src/server/repositories/adPlacementRepository";
 import { getCalculatorPhoneModels } from "@/src/server/repositories/calculatorPhoneModelsRepository";
 import { getGameFaqItems } from "@/src/server/repositories/homeFaqRepository";
@@ -17,20 +20,22 @@ import { listApprovedTestimonials } from "@/src/server/repositories/testimonials
 export const dynamic = "force-dynamic";
 
 /**
- * Shared chrome for BGMI (/) and PUBG (/pubg).
+ * Shared chrome for Free Fire (/), BGMI (/bgmi), and PUBG (/pubg).
  * Await all home chrome data first, then render one stable tree (no Suspense streaming).
- * That matches the old non-streaming home: refresh paints header → title → calculator → article → footer together.
  * Calculator feature/math code is not modified here.
  */
 export default async function GamesLayout({ children }: { children: React.ReactNode }) {
+  const ffCfg = freeFireConfig("freefire");
   const [
     settings,
     adPlaces,
     phoneModels,
     bgmiTestimonials,
     pubgTestimonials,
+    freefireTestimonials,
     bgmiFaqItems,
     pubgFaqItems,
+    freefireFaqItems,
     bgmiArticleHtml,
     pubgArticleHtml,
   ] = await Promise.all([
@@ -39,12 +44,42 @@ export default async function GamesLayout({ children }: { children: React.ReactN
     getCalculatorPhoneModels(),
     listApprovedTestimonials({ game: "bgmi" }),
     listApprovedTestimonials({ game: "pubg" }),
+    listApprovedTestimonials({ game: "freefire" }),
     getGameFaqItems("bgmi"),
     getGameFaqItems("pubg"),
+    getGameFaqItems("freefire"),
     getGameArticleHtml("bgmi"),
     getGameArticleHtml("pubg"),
   ]);
-  const faqLd = faqSchema(bgmiFaqItems);
+  const baseUrl = getSiteUrl();
+  const mapReviews = (items: typeof bgmiTestimonials) =>
+    items.map((t) => ({ name: t.name, rating: t.rating, message: t.message }));
+  const bgmiFaqLd = faqSchema(bgmiFaqItems);
+  const pubgFaqLd = faqSchema(pubgFaqItems);
+  const freefireFaqLd = faqSchema(freefireFaqItems);
+  const bgmiToolLd = toolAppReviewSchema({
+    baseUrl,
+    name: "BGMI Sensitivity Calculator | Free No Recoil Settings 2026",
+    description:
+      "Free BGMI sensitivity calculator for camera, ADS, and gyroscope. Generate custom no-recoil settings for your phone, FPS mode, and play style.",
+    url: toCanonicalUrl("/bgmi"),
+    reviews: mapReviews(bgmiTestimonials),
+  });
+  const pubgToolLd = toolAppReviewSchema({
+    baseUrl,
+    name: "PUBG Mobile Sensitivity Calculator | Free No Recoil Settings 2026",
+    description:
+      "Free PUBG Mobile sensitivity calculator for camera, ADS, and gyroscope. Get custom no-recoil presets matched to your device and play style.",
+    url: toCanonicalUrl("/pubg"),
+    reviews: mapReviews(pubgTestimonials),
+  });
+  const freefireToolLd = toolAppReviewSchema({
+    baseUrl,
+    name: ffCfg.title,
+    description: ffCfg.seoDescription,
+    url: toCanonicalUrl("/"),
+    reviews: mapReviews(freefireTestimonials),
+  });
 
   return (
     <div>
@@ -64,21 +99,26 @@ export default async function GamesLayout({ children }: { children: React.ReactN
           <GameTestimonialsSection
             bgmiTestimonials={bgmiTestimonials}
             pubgTestimonials={pubgTestimonials}
+            freefireTestimonials={freefireTestimonials}
           />
         </ClientErrorBoundary>
       </main>
-      {faqLd ? (
-        <script
-          type="application/ld+json"
-          dangerouslySetInnerHTML={{ __html: JSON.stringify(faqLd) }}
-        />
-      ) : null}
+      <GamePathJsonLd
+        bgmiFaqSchema={bgmiFaqLd}
+        pubgFaqSchema={pubgFaqLd}
+        freefireFaqSchema={freefireFaqLd}
+        bgmiToolSchema={bgmiToolLd}
+        pubgToolSchema={pubgToolLd}
+        freefireToolSchema={freefireToolLd}
+      />
       <ClientErrorBoundary label="Guide">
         <GameArticleFaq
           bgmiFaqItems={bgmiFaqItems}
           pubgFaqItems={pubgFaqItems}
+          freefireFaqItems={freefireFaqItems}
           bgmiArticleHtml={bgmiArticleHtml}
           pubgArticleHtml={pubgArticleHtml}
+          freefireArticleHtml={ffCfg.defaultArticleHtml}
         />
       </ClientErrorBoundary>
       <SiteFooter settings={settings} />

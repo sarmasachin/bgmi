@@ -1,6 +1,11 @@
 import { cache } from "react";
 import { defaultSeoSettings, defaultThemeTokens } from "@/src/lib/siteSettings";
 import { ensureFreeFireNavigation, FREE_FIRE_NAV } from "@/src/lib/freeFirePages";
+import {
+  ensurePubgMobileCodesNavigation,
+  PUBG_MOBILE_CODES_LABEL,
+  PUBG_MOBILE_CODES_PATH,
+} from "@/src/lib/pubgMobileCodes";
 import { prisma, tryPrisma } from "@/src/server/dbSafe";
 
 type SettingsPayload = {
@@ -41,9 +46,10 @@ const defaultSettings = {
     showShareRail: true,
   },
   navigation: [
-    { label: "BGMI", href: "/" },
-    { label: "PUBG Mobile", href: "/pubg" },
     ...FREE_FIRE_NAV.map((item) => ({ label: item.label, href: item.href })),
+    { label: "BGMI", href: "/bgmi" },
+    { label: "PUBG Mobile", href: "/pubg" },
+    { label: PUBG_MOBILE_CODES_LABEL, href: PUBG_MOBILE_CODES_PATH },
   ],
   footerLinks: [
     { label: "Privacy", href: "/privacy" },
@@ -58,7 +64,7 @@ const defaultSettings = {
   footerCopyright: "© 2026 Sensitivity Settings. All rights reserved.",
   footerBranding: {
     brandTitle: "Sensitivity Settings",
-    tagline: "BGMI & PUBG Mobile sensitivity calculator for better aim.",
+    tagline: "Free Fire, BGMI & PUBG Mobile sensitivity calculator for better aim.",
   },
   homeDisplay: {
     headerTitle: "Sensitivity Settings",
@@ -136,8 +142,10 @@ export const getSettings = cache(async function getSettings() {
       ...defaultSettings.integrations,
       ...(map[SETTINGS_KEYS.integrations] as Record<string, unknown> | undefined),
     },
-    navigation: ensureFreeFireNavigation(
-      parseLinkList(map[SETTINGS_KEYS.navigation], defaultSettings.navigation),
+    navigation: ensurePubgMobileCodesNavigation(
+      ensureFreeFireNavigation(
+        parseLinkList(map[SETTINGS_KEYS.navigation], defaultSettings.navigation),
+      ),
     ),
     footerLinks: parseLinkList(map[SETTINGS_KEYS.footerLinks], defaultSettings.footerLinks),
     footerCopyright: parseFooterCopyright(map[SETTINGS_KEYS.footerCopyright]),

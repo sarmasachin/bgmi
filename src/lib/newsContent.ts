@@ -30,3 +30,20 @@ export function extractNewsMeta(content: unknown): NewsMeta {
     canonicalUrl: typeof rawMeta.canonicalUrl === "string" ? rawMeta.canonicalUrl : undefined,
   };
 }
+
+/** Prefer CMS SEO/excerpt; if too short, expand so meta description stays SEO-safe (~120–160). */
+export function resolveNewsSeoDescription(input: {
+  seoDescription?: string | null;
+  excerpt?: string | null;
+  title: string;
+}) {
+  const preferred = (input.seoDescription?.trim() || input.excerpt?.trim() || "").replace(/\s+/g, " ");
+  if (preferred.length >= 120) return preferred.slice(0, 160);
+  if (preferred.length >= 70) return preferred;
+
+  const title = input.title.trim() || "Gaming update";
+  const base = preferred
+    ? `${preferred} Read more about ${title} on Sensitivity Settings.`
+    : `${title} — latest Free Fire, BGMI, and PUBG Mobile gaming news on Sensitivity Settings.`;
+  return base.slice(0, 160);
+}

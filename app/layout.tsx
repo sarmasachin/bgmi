@@ -1,7 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { Geist } from "next/font/google";
 import { PublicSiteScripts } from "@/src/components/PublicSiteScripts";
-import { organizationSchema, softwareAppSchema, websiteSchema } from "@/src/lib/schema";
+import { organizationSchema, websiteSchema } from "@/src/lib/schema";
 import { parseGoogleSiteVerification } from "@/src/lib/headSnippets";
 import { getSiteUrl } from "@/src/lib/siteUrl";
 import { DEFAULT_OG_IMAGE_PATH } from "@/src/lib/socialMeta";
@@ -32,13 +32,15 @@ export async function generateMetadata(): Promise<Metadata> {
   return {
     metadataBase: new URL(baseUrl),
     title: {
-      default: "BGMI Sensitivity Calculator | Sensitivity Settings",
+      default: "Free Fire, BGMI & PUBG Sensitivity Calculator | Sensitivity Settings",
       template: "%s | Sensitivity Settings",
     },
     description:
-      "Free BGMI and PUBG Mobile sensitivity calculator with custom no-recoil settings, pro presets, and gaming news.",
+      "Free Fire, BGMI, and PUBG Mobile sensitivity calculator with custom settings, pro presets, and gaming news.",
     applicationName: "Sensitivity Settings",
     keywords: [
+      "Free Fire sensitivity calculator",
+      "Free Fire Max sensitivity",
       "BGMI sensitivity calculator",
       "BGMI no recoil",
       "PUBG Mobile sensitivity",
@@ -73,7 +75,7 @@ export async function generateMetadata(): Promise<Metadata> {
           url: DEFAULT_OG_IMAGE_PATH,
           width: 1200,
           height: 630,
-          alt: "BGMI Sensitivity Calculator",
+          alt: "Free Fire, BGMI and PUBG Sensitivity Calculator",
         },
       ],
     },
@@ -124,12 +126,6 @@ export default async function RootLayout({
           type="application/ld+json"
           dangerouslySetInnerHTML={{
             __html: JSON.stringify(organizationSchema(baseUrl)),
-          }}
-        />
-        <script
-          type="application/ld+json"
-          dangerouslySetInnerHTML={{
-            __html: JSON.stringify(softwareAppSchema(baseUrl)),
           }}
         />
       </body>

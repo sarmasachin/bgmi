@@ -11,10 +11,7 @@ export default function NotFound() {
         </p>
         <div className="user-error-panel-actions">
           <Link href="/" className="user-error-panel-btn user-error-panel-btn--primary">
-            BGMI calculator
-          </Link>
-          <Link href="/pubg" className="user-error-panel-btn user-error-panel-btn--ghost">
-            PUBG Mobile
+            Go to Home Page
           </Link>
         </div>
       </div>

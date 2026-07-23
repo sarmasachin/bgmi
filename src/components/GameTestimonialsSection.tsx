@@ -8,12 +8,27 @@ import type { PublicTestimonial } from "@/src/server/repositories/testimonialsRe
 type Props = {
   bgmiTestimonials?: PublicTestimonial[];
   pubgTestimonials?: PublicTestimonial[];
+  freefireTestimonials?: PublicTestimonial[];
 };
 
-export function GameTestimonialsSection({ bgmiTestimonials, pubgTestimonials }: Props) {
+export function GameTestimonialsSection({
+  bgmiTestimonials,
+  pubgTestimonials,
+  freefireTestimonials,
+}: Props) {
   const pathname = usePathname() ?? "";
-  const game = pathname === "/pubg" || pathname.startsWith("/pubg/") ? "pubg" : "bgmi";
-  const initialItems = game === "pubg" ? pubgTestimonials : bgmiTestimonials;
+  const game =
+    pathname === "/" || pathname === ""
+      ? "freefire"
+      : pathname === "/pubg" || pathname.startsWith("/pubg/")
+        ? "pubg"
+        : "bgmi";
+  const initialItems =
+    game === "freefire"
+      ? freefireTestimonials
+      : game === "pubg"
+        ? pubgTestimonials
+        : bgmiTestimonials;
 
   return (
     <>

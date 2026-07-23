@@ -5,16 +5,17 @@ import { HomeHeader } from "@/src/components/HomeHeader";
 import { NewsCommentSection } from "@/src/components/NewsCommentSection";
 import { SiteFooter } from "@/src/components/SiteFooter";
 import { ratingWidgetRemountKey } from "@/src/lib/ratingWidgetKey";
+import { extractNewsMeta, resolveNewsSeoDescription } from "@/src/lib/newsContent";
 import { getAdPlacementVisibility } from "@/src/server/repositories/adPlacementRepository";
 import { listApprovedCommentsByNewsId } from "@/src/server/repositories/commentsRepository";
 import {
-  extractNewsMeta,
   getPublishedNewsBySlug,
   resolveNewsCanonicalUrl,
 } from "@/src/server/repositories/newsRepository";
 import { getRatingSummary } from "@/src/server/repositories/ratingSummaryRepository";
 import { getSettings } from "@/src/server/repositories/settingsRepository";
 import { getSiteUrl } from "@/src/lib/siteUrl";
+import { newsArticleSchema } from "@/src/lib/schema";
 import { buildSocialMetadata, DEFAULT_OG_IMAGE_PATH } from "@/src/lib/socialMeta";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
@@ -30,14 +31,18 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     return {
       title: "News Not Found",
       description: "This news article is not available.",
+      robots: { index: false, follow: false },
     };
   }
 
   const meta = extractNewsMeta(item.content);
   const articleUrl = resolveNewsCanonicalUrl(item.slug, meta.canonicalUrl);
   const pageTitle = item.seoTitle?.trim() || item.title;
-  const description =
-    item.seoDescription?.trim() || item.excerpt?.trim() || "Latest BGMI and gaming updates.";
+  const description = resolveNewsSeoDescription({
+    seoDescription: item.seoDescription,
+    excerpt: item.excerpt,
+    title: item.title,
+  });
   const socialTitle = meta.socialTitle?.trim() || pageTitle;
   const socialDescription = meta.socialDescription?.trim() || description;
   const imageAlt = meta.socialImageAlt?.trim() || item.title;
@@ -88,18 +93,21 @@ export default async function NewsDetailPage({ params }: Props) {
   ]);
 
   const baseUrl = getSiteUrl();
-  const articleSchema = {
-    "@context": "https://schema.org",
-    "@type": "Article",
+  const articleUrl = resolveNewsCanonicalUrl(item.slug, meta.canonicalUrl);
+  const articleSchema = newsArticleSchema({
+    baseUrl,
     headline: item.seoTitle?.trim() || item.title,
-    description: item.seoDescription?.trim() || item.excerpt?.trim() || undefined,
+    description: resolveNewsSeoDescription({
+      seoDescription: item.seoDescription,
+      excerpt: item.excerpt,
+      title: item.title,
+    }),
     datePublished: item.publishedAt ?? item.createdAt,
     dateModified: item.updatedAt,
-    author: { "@type": "Person", name: "Admin" },
-    publisher: { "@type": "Organization", name: "Sensitivity Settings" },
     image: meta.ogImageUrl?.trim() || item.featureImage || `${baseUrl}${DEFAULT_OG_IMAGE_PATH}`,
-    mainEntityOfPage: resolveNewsCanonicalUrl(item.slug, meta.canonicalUrl),
-  };
+    mainEntityOfPage: articleUrl,
+    ratingSummary,
+  });
 
   return (
     <div>

@@ -32,7 +32,7 @@ function newId() {
 
 function previewHref(game: GameFaqGame) {
   if (game === "pubg") return "/pubg";
-  if (game === "freefire") return "/free-fire-sensitivity-settings-calculator";
+  if (game === "freefire") return "/";
   if (game === "freefire-max") return "/free-fire-max-sensitivity-settings-calculator";
   return "/";
 }

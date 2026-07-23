@@ -12,7 +12,7 @@ import {
 } from "./calculator";
 import "./ffCalculator.css";
 
-export function FfCalculator({ isMax = false }: { isMax?: boolean }) {
+export function FfCalculator({ isMax: _isMax = false }: { isMax?: boolean }) {
   const [deviceName, setDeviceName] = useState("");
   const [profile, setProfile] = useState<CalcInputs["profile"]>("custom");
   const [deviceAge, setDeviceAge] = useState("0.5");
@@ -72,8 +72,8 @@ export function FfCalculator({ isMax = false }: { isMax?: boolean }) {
       />
       <header className="ffc-header">
         <h2 className="ffc-title">
-          <i className="fa-solid fa-crosshairs ffc-title-icon"></i>FF
-          {isMax ? " Max" : ""} Sensitivity Calc
+          <i className="fa-solid fa-crosshairs ffc-title-icon"></i>Best Sensi
+          Calculator 2026
         </h2>
         <p className="ffc-subtitle">
           Device Engine &amp; Smart Hardware Recognition

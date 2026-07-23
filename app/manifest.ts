@@ -8,7 +8,8 @@ export default function manifest(): MetadataRoute.Manifest {
     id: `${baseUrl}/`,
     name: "Sensitivity Settings",
     short_name: "Sensitivity",
-    description: "BGMI and PUBG Mobile sensitivity calculator with no-recoil presets and gaming news.",
+    description:
+      "Free Fire, BGMI, and PUBG Mobile sensitivity calculator with presets and gaming news.",
     start_url: "/",
     scope: "/",
     display: "standalone",

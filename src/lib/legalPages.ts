@@ -34,21 +34,21 @@ export function defaultSeoForSlug(slug: string) {
     return {
       seoTitle: "Privacy Policy",
       seoDescription:
-        "Privacy Policy for Sensitivity Settings — how we handle information on our BGMI and PUBG Mobile sensitivity calculator website.",
+        "Privacy Policy for Sensitivity Settings — how we handle information on our Free Fire, BGMI, and PUBG Mobile sensitivity calculator website.",
     };
   }
   if (slug === "terms") {
     return {
       seoTitle: "Terms & Conditions",
       seoDescription:
-        "Terms and Conditions for using Sensitivity Settings, including our BGMI and PUBG Mobile sensitivity calculator tools.",
+        "Terms and Conditions for using Sensitivity Settings, including our Free Fire, BGMI, and PUBG Mobile sensitivity calculator tools.",
     };
   }
   if (slug === "disclaimer") {
     return {
       seoTitle: "Disclaimer",
       seoDescription:
-        "Disclaimer for Sensitivity Settings — calculator results are guidance only and not affiliated with Krafton or official game publishers.",
+        "Disclaimer for Sensitivity Settings — calculator results are guidance only and not affiliated with Garena, Krafton, or official game publishers.",
     };
   }
   return { seoTitle: defaultTitleForSlug(slug), seoDescription: "" };
@@ -56,7 +56,7 @@ export function defaultSeoForSlug(slug: string) {
 
 export function defaultHtmlForSlug(slug: string) {
   if (slug === "privacy") {
-    return `<p>This Privacy Policy explains how Sensitivity Settings collects, uses, and protects information when you use our BGMI and PUBG Mobile sensitivity calculator website.</p>
+    return `<p>This Privacy Policy explains how Sensitivity Settings collects, uses, and protects information when you use our Free Fire, BGMI, and PUBG Mobile sensitivity calculator website.</p>
 <p>We may collect technical data such as browser type, device information, and usage analytics to improve the site. We do not sell your personal information.</p>
 <p>If you contact us or submit a rating with your email, we use that information only to respond and operate our services.</p>
 <p>For questions about this policy, email <a href="mailto:support@sensitivitysettings.com">support@sensitivitysettings.com</a>.</p>`;
@@ -68,7 +68,7 @@ export function defaultHtmlForSlug(slug: string) {
 <p>We may update these terms at any time. Continued use of the site means you accept the updated terms.</p>`;
   }
   if (slug === "disclaimer") {
-    return `<p>Sensitivity Settings is an independent fan resource. We are not affiliated with, endorsed by, or sponsored by Krafton, PUBG Corporation, or any official game publisher.</p>
+    return `<p>Sensitivity Settings is an independent fan resource. We are not affiliated with, endorsed by, or sponsored by Garena, Krafton, PUBG Corporation, or any official game publisher.</p>
 <p>Calculator outputs are estimates and guidance only — not guarantees of in-game performance. Always follow official game rules and fair-play policies.</p>
 <p>We are not responsible for any loss, account action, or gameplay outcome related to settings you choose to apply.</p>`;
   }

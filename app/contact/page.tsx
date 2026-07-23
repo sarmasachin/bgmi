@@ -27,7 +27,7 @@ function copyForTopic(topic: ContactTopic) {
     return {
       title: "Report Issue",
       description:
-        "Report an issue with Sensitivity Settings — BGMI and PUBG Mobile sensitivity calculator support.",
+        "Report an issue with Sensitivity Settings — Free Fire, BGMI, and PUBG Mobile sensitivity calculator support.",
       eyebrow: "Support",
       heading: "Report Issue",
       lead: "Found a bug or something not working? Tell us what happened and we'll look into it.",
@@ -38,7 +38,7 @@ function copyForTopic(topic: ContactTopic) {
     return {
       title: "Feedback",
       description:
-        "Share feedback about Sensitivity Settings — BGMI and PUBG Mobile sensitivity calculator.",
+        "Share feedback about Sensitivity Settings — Free Fire, BGMI, and PUBG Mobile sensitivity calculator.",
       eyebrow: "Support",
       heading: "Feedback",
       lead: "Ideas, suggestions, or thoughts on the site — we'd love to hear from you.",
@@ -48,7 +48,7 @@ function copyForTopic(topic: ContactTopic) {
   return {
     title: "Contact",
     description:
-      "Contact Sensitivity Settings for support or feedback about the BGMI and PUBG Mobile sensitivity calculator.",
+      "Contact Sensitivity Settings for support or feedback about the Free Fire, BGMI, and PUBG Mobile sensitivity calculator.",
     eyebrow: "Support",
     heading: "Contact us",
     lead: "Questions, feedback, or help with sensitivity settings — send a message and we'll reply as soon as we can.",
