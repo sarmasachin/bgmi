@@ -16,11 +16,7 @@ export function FfAdvanceServerCard() {
 
   return (
     <section className="ff-advance" aria-labelledby="ff-advance-title">
-      <link
-        rel="stylesheet"
-        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
-      />
-      <article className="ff-advance-card">
+<article className="ff-advance-card">
         <div className="ff-advance-top">
           <span className="ff-advance-badge">
             <i className="fa-solid fa-server" aria-hidden />

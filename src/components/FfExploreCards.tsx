@@ -14,11 +14,7 @@ export function FfExploreCards() {
 
   return (
     <section className="ff-explore" aria-labelledby="ff-explore-title">
-      <link
-        rel="stylesheet"
-        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
-      />
-      <h2 id="ff-explore-title" className="ff-explore-title">
+<h2 id="ff-explore-title" className="ff-explore-title">
         Explore calculators
       </h2>
       <div className="ff-explore-grid">

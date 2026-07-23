@@ -31,6 +31,16 @@ a {
   text-decoration: none;
 }
 
+/* Font Awesome solid — font-display swap (PageSpeed / FCP) */
+@font-face {
+  font-family: "Font Awesome 6 Free";
+  font-style: normal;
+  font-weight: 900;
+  font-display: swap;
+  src: url("https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/webfonts/fa-solid-900.woff2")
+    format("woff2");
+}
+
 .page-container {
   width: 100%;
   display: flex;
@@ -6951,7 +6961,7 @@ footer,
 
 .ff-explore-card--max .ff-explore-btn {
   background: #ef4444;
-  color: #fff;
+  color: #111827;
 }
 
 .ff-explore-btn:hover {

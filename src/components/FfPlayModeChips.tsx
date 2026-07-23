@@ -66,11 +66,7 @@ export function FfPlayModeChips() {
 
   return (
     <section className="ff-modes" aria-labelledby="ff-modes-title">
-      <link
-        rel="stylesheet"
-        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
-      />
-      <h2 id="ff-modes-title" className="ff-modes-title">
+<h2 id="ff-modes-title" className="ff-modes-title">
         Choose your play mode
       </h2>
       <p className="ff-modes-lead">Tap a mode — calculator Player Role updates automatically.</p>

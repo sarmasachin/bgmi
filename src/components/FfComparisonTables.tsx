@@ -97,11 +97,7 @@ export function FfComparisonTables() {
 
   return (
     <section className="ff-compare" aria-labelledby="ff-compare-title">
-      <link
-        rel="stylesheet"
-        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
-      />
-      <h2 id="ff-compare-title" className="ff-compare-title">
+<h2 id="ff-compare-title" className="ff-compare-title">
         <i className="fa-solid fa-table" aria-hidden /> Free Fire vs FF Max
       </h2>
 

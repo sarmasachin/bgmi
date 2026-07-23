@@ -15,10 +15,6 @@ export function FfOfficialPatchStrip() {
 
   return (
     <aside className="ff-patch-strip" aria-label="Free Fire update news">
-      <link
-        rel="stylesheet"
-        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
-      />
       <div className="ff-patch-strip-inner">
         <div className="ff-patch-strip-main">
           <span className="ff-patch-badge">

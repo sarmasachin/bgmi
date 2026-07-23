@@ -29,11 +29,7 @@ export function FfNewsHub({ items, total }: Props) {
 
   return (
     <section className="ff-news-hub" aria-labelledby="ff-news-hub-title">
-      <link
-        rel="stylesheet"
-        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
-      />
-      <div className="ff-news-hub-head">
+<div className="ff-news-hub-head">
         <h2 id="ff-news-hub-title" className="ff-news-hub-title">
           Latest Free Fire News
         </h2>

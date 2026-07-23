@@ -99,11 +99,7 @@ export async function FreeFireComingSoonPage({ variant }: { variant: FreeFireVar
 
   return (
     <div>
-      <link
-        rel="stylesheet"
-        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
-      />
-      <HomeHeader siteTitle={settings.homeDisplay.headerTitle} navigation={settings.navigation} />
+<HomeHeader siteTitle={settings.homeDisplay.headerTitle} navigation={settings.navigation} />
       <h1 className="main-title ff-gradient-title">{title}</h1>
       <main className="page-container">
         <FfCalculator isMax={variant === "freefire-max"} trustBar={settings.ffTrustBar} />

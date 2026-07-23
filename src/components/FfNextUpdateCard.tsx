@@ -15,11 +15,7 @@ export function FfNextUpdateCard() {
 
   return (
     <section className="ff-next" aria-labelledby="ff-next-title">
-      <link
-        rel="stylesheet"
-        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
-      />
-      <article className="ff-next-card">
+<article className="ff-next-card">
         <div className="ff-next-top">
           <span className="ff-next-badge">
             <i className="fa-solid fa-rocket" aria-hidden />

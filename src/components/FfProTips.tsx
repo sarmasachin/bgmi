@@ -53,11 +53,7 @@ export function FfProTips() {
 
   return (
     <section className="ff-pro-tips" aria-labelledby="ff-pro-tips-title">
-      <link
-        rel="stylesheet"
-        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
-      />
-      <h2 id="ff-pro-tips-title" className="ff-pro-tips-title">
+<h2 id="ff-pro-tips-title" className="ff-pro-tips-title">
         Pro tips for better aim
       </h2>
       <p className="ff-pro-tips-lead">

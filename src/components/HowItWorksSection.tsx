@@ -98,11 +98,7 @@ export function HowItWorksSection() {
 
   return (
     <section className="how-works" aria-labelledby="how-works-title">
-      <link
-        rel="stylesheet"
-        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
-      />
-      <h2 id="how-works-title" className="how-works-title">
+<h2 id="how-works-title" className="how-works-title">
         How It Works
       </h2>
       <p className="how-works-subtitle">{subtitle}</p>

@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { Geist } from "next/font/google";
 import { PublicSiteScripts } from "@/src/components/PublicSiteScripts";
+import { FontAwesomeLoader } from "@/src/components/FontAwesomeLoader";
 import { organizationSchema, websiteSchema } from "@/src/lib/schema";
 import { parseGoogleSiteVerification } from "@/src/lib/headSnippets";
 import { getSiteUrl } from "@/src/lib/siteUrl";
@@ -102,6 +103,17 @@ export default async function RootLayout({
 
   return (
     <html lang="en" className={geistSans.variable}>
+      <head>
+        <link rel="preconnect" href="https://cdnjs.cloudflare.com" crossOrigin="anonymous" />
+        <link rel="dns-prefetch" href="https://cdnjs.cloudflare.com" />
+        <link
+          rel="preload"
+          href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/webfonts/fa-solid-900.woff2"
+          as="font"
+          type="font/woff2"
+          crossOrigin="anonymous"
+        />
+      </head>
       <body>
         {/* Critical above-the-fold styles so LCP title can paint before the CSS chunk */}
         <style
@@ -115,6 +127,7 @@ export default async function RootLayout({
           }}
         />
         {children}
+        <FontAwesomeLoader />
         <PublicSiteScripts />
         <script
           type="application/ld+json"

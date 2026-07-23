@@ -58,11 +58,7 @@ export function FfRoleTips() {
 
   return (
     <section className="ff-role-tips" aria-labelledby="ff-role-tips-title">
-      <link
-        rel="stylesheet"
-        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
-      />
-      <h2 id="ff-role-tips-title" className="ff-role-tips-title">
+<h2 id="ff-role-tips-title" className="ff-role-tips-title">
         Best sensi tips by role
       </h2>
       <div className="ff-role-tips-grid">

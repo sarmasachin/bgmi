@@ -16,11 +16,7 @@ export function FfSeasonBanner() {
 
   return (
     <section className="ff-season" aria-labelledby="ff-season-title">
-      <link
-        rel="stylesheet"
-        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
-      />
-      <div className="ff-season-card">
+<div className="ff-season-card">
         <div className="ff-season-main">
           <span className="ff-season-badge">
             <i className="fa-solid fa-gift" aria-hidden />
