@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   AGE_ERROR_MESSAGE,
   calculateSensitivity,
@@ -10,9 +10,27 @@ import {
   type CalcInputs,
   type CalcResults,
 } from "./calculator";
+import {
+  DEFAULT_FF_TRUST_BAR,
+  FF_TRUST_BAR_ICONS,
+  type FfTrustBarItem,
+} from "@/src/lib/ffTrustBar";
+import { FF_SET_ROLE_EVENT } from "@/src/lib/ffPlayModes";
 import "./ffCalculator.css";
 
-export function FfCalculator({ isMax: _isMax = false }: { isMax?: boolean }) {
+type Props = {
+  isMax?: boolean;
+  trustBar?: FfTrustBarItem[];
+};
+
+export function FfCalculator({ isMax: _isMax = false, trustBar }: Props) {
+  const items =
+    trustBar && trustBar.length
+      ? DEFAULT_FF_TRUST_BAR.map((fallback, index) => ({
+          label: trustBar[index]?.label?.trim() || fallback.label,
+          sublabel: trustBar[index]?.sublabel?.trim() || fallback.sublabel,
+        }))
+      : DEFAULT_FF_TRUST_BAR;
   const [deviceName, setDeviceName] = useState("");
   const [profile, setProfile] = useState<CalcInputs["profile"]>("custom");
   const [deviceAge, setDeviceAge] = useState("0.5");
@@ -26,6 +44,17 @@ export function FfCalculator({ isMax: _isMax = false }: { isMax?: boolean }) {
   const [ageError, setAgeError] = useState(false);
   const [results, setResults] = useState<CalcResults | null>(null);
   const [showDeviceList, setShowDeviceList] = useState(false);
+
+  useEffect(() => {
+    function onSetRole(event: Event) {
+      const detail = (event as CustomEvent<{ role?: string }>).detail;
+      if (detail?.role === "rusher" || detail?.role === "sniper") {
+        setRole(detail.role);
+      }
+    }
+    window.addEventListener(FF_SET_ROLE_EVENT, onSetRole);
+    return () => window.removeEventListener(FF_SET_ROLE_EVENT, onSetRole);
+  }, []);
 
   const detectedTier = detectHardwareTier(deviceName);
 
@@ -358,6 +387,18 @@ export function FfCalculator({ isMax: _isMax = false }: { isMax?: boolean }) {
           </div>
         </div>
       </div>
+
+      <ul className="ffc-trust-bar" aria-label="Calculator highlights">
+        {items.map((item, index) => (
+          <li key={`ff-trust-${index}`} className="ffc-trust-item">
+            <i className={`fa-solid ${FF_TRUST_BAR_ICONS[index] ?? "fa-star"}`} aria-hidden />
+            <span className="ffc-trust-text">
+              <strong>{item.label}</strong>
+              <span>{item.sublabel}</span>
+            </span>
+          </li>
+        ))}
+      </ul>
     </div>
   );
 }

@@ -90,9 +90,7 @@ type MockStore = {
 function createMockStore(): MockStore {
   const now = new Date().toISOString();
   return {
-    news: [
-      { id: "n1", title: "RTX 5090 Benchmark Results Leaked", slug: "rtx-5090", status: "published" },
-    ],
+    news: [],
     pages: [
       {
         id: "p1",
@@ -104,7 +102,7 @@ function createMockStore(): MockStore {
         content: { html: "<h2>Default Home Article</h2><p>Clone pages copy this article content.</p>" },
       },
     ],
-    comments: [{ id: "c1", name: "User", message: "Nice post", status: "pending", newsId: "n1" }],
+    comments: [],
     contactMessages: [],
     legalPages: [],
     ads: [
@@ -147,12 +145,22 @@ function createMockStore(): MockStore {
   };
 }
 
-const globalForMock = globalThis as typeof globalThis & { __bgmiMockStore?: MockStore };
+const globalForMock = globalThis as typeof globalThis & {
+  __bgmiMockStore?: MockStore;
+  __bgmiNewsSeedVersion?: number;
+};
 
 /** Shared across Next.js route module instances when DB is unavailable. */
 export const mockStore = globalForMock.__bgmiMockStore ?? createMockStore();
 if (!globalForMock.__bgmiMockStore) globalForMock.__bgmiMockStore = mockStore;
 if (!Array.isArray(mockStore.legalPages)) mockStore.legalPages = [];
+/** Bump to wipe legacy in-memory seed news (home hub stays hidden until real posts). */
+const NEWS_SEED_VERSION = 2;
+if (globalForMock.__bgmiNewsSeedVersion !== NEWS_SEED_VERSION) {
+  mockStore.news = [];
+  mockStore.comments = [];
+  globalForMock.__bgmiNewsSeedVersion = NEWS_SEED_VERSION;
+}
 if (!Array.isArray(mockStore.roleDefinitions) || mockStore.roleDefinitions.length === 0) {
   const now = new Date().toISOString();
   mockStore.roleDefinitions = [

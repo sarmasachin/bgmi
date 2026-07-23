@@ -28,6 +28,7 @@ export type AdminSettingsPageData = {
   footerLinks: AdminSettingsLink[];
   phoneModelsText: string;
   faqItems: HomeFaqItem[];
+  ffTrustBar: Array<{ label: string; sublabel: string }>;
 };
 
 export async function prefetchAdminSettingsPageData(): Promise<AdminSettingsPageData> {
@@ -73,5 +74,6 @@ export async function prefetchAdminSettingsPageData(): Promise<AdminSettingsPage
       question: row.question ?? "",
       answer: row.answer ?? "",
     })),
+    ffTrustBar: settings.ffTrustBar,
   };
 }

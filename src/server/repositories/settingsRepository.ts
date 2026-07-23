@@ -7,6 +7,13 @@ import {
   PUBG_MOBILE_CODES_PATH,
 } from "@/src/lib/pubgMobileCodes";
 import { prisma, tryPrisma } from "@/src/server/dbSafe";
+import {
+  DEFAULT_FF_TRUST_BAR,
+  type FfTrustBarItem,
+} from "@/src/lib/ffTrustBar";
+
+export type { FfTrustBarItem };
+export { DEFAULT_FF_TRUST_BAR };
 
 type SettingsPayload = {
   seo?: Record<string, unknown>;
@@ -17,8 +24,8 @@ type SettingsPayload = {
   footerCopyright?: string;
   homeDisplay?: { headerTitle?: string; heroTitle?: string };
   footerBranding?: { brandTitle?: string; tagline?: string };
+  ffTrustBar?: Array<{ label?: string; sublabel?: string }>;
 };
-
 const SETTINGS_KEYS = {
   seo: "settings:seo",
   theme: "settings:theme",
@@ -28,6 +35,7 @@ const SETTINGS_KEYS = {
   footerCopyright: "settings:footerCopyright",
   footerBranding: "settings:footerBranding",
   homeDisplay: "settings:homeDisplay",
+  ffTrustBar: "settings:ffTrustBar",
   /** Stored separately; listed so batch reads stay consistent. */
   headSnippets: "settings:headSnippets",
 };
@@ -70,6 +78,7 @@ const defaultSettings = {
     headerTitle: "Sensitivity Settings",
     heroTitle: "BGMI Sensitivity Settings calculator",
   },
+  ffTrustBar: DEFAULT_FF_TRUST_BAR,
 };
 
 function normalizeDisplayTitle(input: unknown, fallback: string): string {
@@ -92,6 +101,27 @@ function parseHomeDisplayValue(raw: unknown): { headerTitle: string; heroTitle: 
     headerTitle: normalizeDisplayTitle(obj.headerTitle, defaultSettings.homeDisplay.headerTitle),
     heroTitle: normalizeDisplayTitle(obj.heroTitle, defaultSettings.homeDisplay.heroTitle),
   };
+}
+
+function normalizeTrustText(input: unknown, fallback: string, max = 60): string {
+  if (typeof input !== "string") return fallback;
+  const t = input.trim().replace(/\s+/g, " ");
+  if (!t) return fallback;
+  return t.slice(0, max);
+}
+
+export function parseFfTrustBarValue(raw: unknown): FfTrustBarItem[] {
+  const defaults = DEFAULT_FF_TRUST_BAR;
+  if (!Array.isArray(raw)) return defaults.map((row) => ({ ...row }));
+  return defaults.map((fallback, index) => {
+    const item = raw[index];
+    if (!item || typeof item !== "object") return { ...fallback };
+    const rec = item as Record<string, unknown>;
+    return {
+      label: normalizeTrustText(rec.label, fallback.label, 48),
+      sublabel: normalizeTrustText(rec.sublabel, fallback.sublabel, 48),
+    };
+  });
 }
 
 function parseLinkList(
@@ -151,6 +181,7 @@ export const getSettings = cache(async function getSettings() {
     footerCopyright: parseFooterCopyright(map[SETTINGS_KEYS.footerCopyright]),
     footerBranding: parseFooterBrandingValue(map[SETTINGS_KEYS.footerBranding]),
     homeDisplay: parseHomeDisplayValue(map[SETTINGS_KEYS.homeDisplay]),
+    ffTrustBar: parseFfTrustBarValue(map[SETTINGS_KEYS.ffTrustBar]),
   };
 });
 
@@ -249,6 +280,16 @@ export async function saveSettings(payload: SettingsPayload) {
       footerBrandingToSave = parseFooterBrandingValue(currentRow?.value);
     }
 
+    let ffTrustBarToSave = defaultSettings.ffTrustBar.map((row) => ({ ...row }));
+    if (payload.ffTrustBar !== undefined) {
+      ffTrustBarToSave = parseFfTrustBarValue(payload.ffTrustBar);
+    } else {
+      const currentRow = await prisma.siteSetting.findUnique({
+        where: { key: SETTINGS_KEYS.ffTrustBar },
+      });
+      ffTrustBarToSave = parseFfTrustBarValue(currentRow?.value);
+    }
+
     const entries = [
       [SETTINGS_KEYS.seo, payload.seo ?? defaultSettings.seo],
       [SETTINGS_KEYS.theme, payload.theme ?? defaultSettings.theme],
@@ -258,6 +299,7 @@ export async function saveSettings(payload: SettingsPayload) {
       [SETTINGS_KEYS.footerCopyright, copyright],
       [SETTINGS_KEYS.footerBranding, footerBrandingToSave],
       [SETTINGS_KEYS.homeDisplay, homeDisplayToSave],
+      [SETTINGS_KEYS.ffTrustBar, ffTrustBarToSave],
     ] as const;
 
     for (const [key, value] of entries) {

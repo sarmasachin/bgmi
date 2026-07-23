@@ -40,6 +40,65 @@
   font-size: 12px;
 }
 
+/* Trust / features strip — directly under calculator cards */
+.ffc-trust-bar {
+  list-style: none;
+  margin: 0 0 8px;
+  padding: 14px 12px;
+  width: 100%;
+  max-width: 768px;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px 10px;
+  background: #0a0e14;
+  border: none;
+  border-radius: 14px;
+  box-sizing: border-box;
+}
+
+.ffc-trust-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+
+.ffc-trust-item > i {
+  flex-shrink: 0;
+  width: 28px;
+  height: 28px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  color: #f97316;
+}
+
+.ffc-trust-text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.ffc-trust-text strong {
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: #e6edf3;
+  line-height: 1.2;
+}
+
+.ffc-trust-text span {
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  color: #94a3b8;
+  line-height: 1.2;
+}
+
 /* Two separate cards on all screen sizes: inputs card + results card */
 .ffc-card {
   width: 100%;
@@ -82,9 +141,9 @@
   text-transform: uppercase;
   letter-spacing: 0.05em;
   margin-bottom: 6px;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  white-space: normal;
+  overflow: visible;
+  text-overflow: clip;
 }
 
 .ffc-label i {
@@ -365,6 +424,10 @@
 
 /* Desktop: the two cards sit side by side — inputs left, results right */
 @media (min-width: 900px) {
+  .ffc-header {
+    max-width: 1100px;
+  }
+
   .ffc-card {
     max-width: 1100px;
     flex-direction: row;
@@ -419,6 +482,61 @@
   }
 
   .ffc-subtitle {
+    font-size: 14px;
+  }
+
+  .ffc-trust-bar {
+    display: flex;
+    flex-wrap: nowrap;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 10px;
+    padding: 16px 4px;
+    max-width: 1100px;
+  }
+
+  .ffc-trust-item {
+    flex: 1 1 0;
+    min-width: 0;
+    justify-content: flex-start;
+    gap: 8px;
+  }
+
+  .ffc-trust-text {
+    flex-direction: column;
+    flex-wrap: nowrap;
+    align-items: flex-start;
+    gap: 3px;
+  }
+
+  .ffc-trust-text strong,
+  .ffc-trust-text span {
+    display: block;
+    white-space: normal;
+    overflow: visible;
+    text-overflow: unset;
+    max-width: none;
+    word-break: normal;
+    overflow-wrap: anywhere;
+  }
+
+  .ffc-trust-text span::before {
+    content: none;
+  }
+
+  .ffc-trust-text strong {
+    font-size: 12px;
+    letter-spacing: 0.01em;
+  }
+
+  .ffc-trust-text span {
+    font-size: 11px;
+    letter-spacing: 0.01em;
+  }
+
+  .ffc-trust-item > i {
+    width: 28px;
+    height: 28px;
     font-size: 14px;
   }
 

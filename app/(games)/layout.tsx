@@ -4,6 +4,15 @@ import { GameArticleFaq } from "@/src/components/GameArticleFaq";
 import { GamePathJsonLd } from "@/src/components/GamePathJsonLd";
 import { GameTestimonialsSection } from "@/src/components/GameTestimonialsSection";
 import { HomeHeader } from "@/src/components/HomeHeader";
+import { HowItWorksSection } from "@/src/components/HowItWorksSection";
+import { FfComparisonTables } from "@/src/components/FfComparisonTables";
+import { FfExploreCards } from "@/src/components/FfExploreCards";
+import { FfOfficialPatchStrip } from "@/src/components/FfOfficialPatchStrip";
+import { FfPlayModeChips } from "@/src/components/FfPlayModeChips";
+import { FfRoleTips } from "@/src/components/FfRoleTips";
+import { FfSeasonBanner } from "@/src/components/FfSeasonBanner";
+import { FfProTips } from "@/src/components/FfProTips";
+import { FfNewsHub } from "@/src/components/FfNewsHub";
 import { SensCalculatorHost } from "@/src/components/SensCalculatorHost";
 import { SiteFooter } from "@/src/components/SiteFooter";
 import { freeFireConfig } from "@/src/lib/freeFirePages";
@@ -13,6 +22,7 @@ import { getAdPlacementVisibility } from "@/src/server/repositories/adPlacementR
 import { getCalculatorPhoneModels } from "@/src/server/repositories/calculatorPhoneModelsRepository";
 import { getGameFaqItems } from "@/src/server/repositories/homeFaqRepository";
 import { getGameArticleHtml } from "@/src/server/repositories/gameArticlesRepository";
+import { listPublishedNews } from "@/src/server/repositories/newsRepository";
 import { getSettings } from "@/src/server/repositories/settingsRepository";
 import { listApprovedTestimonials } from "@/src/server/repositories/testimonialsRepository";
 
@@ -38,6 +48,7 @@ export default async function GamesLayout({ children }: { children: React.ReactN
     freefireFaqItems,
     bgmiArticleHtml,
     pubgArticleHtml,
+    homeNews,
   ] = await Promise.all([
     getSettings(),
     getAdPlacementVisibility(),
@@ -50,7 +61,27 @@ export default async function GamesLayout({ children }: { children: React.ReactN
     getGameFaqItems("freefire"),
     getGameArticleHtml("bgmi"),
     getGameArticleHtml("pubg"),
+    listPublishedNews(1, 10),
   ]);
+  const homeNewsItems = (homeNews.data ?? []).map((item) => {
+    const rawDate = item.publishedAt ?? item.createdAt ?? null;
+    const date = rawDate ? new Date(rawDate) : null;
+    const excerpt = (item.excerpt ?? "").trim();
+    return {
+      id: item.id,
+      slug: item.slug ?? item.id,
+      title: item.title,
+      excerpt: excerpt.length > 120 ? `${excerpt.slice(0, 117).trimEnd()}…` : excerpt,
+      dateLabel: date
+        ? date.toLocaleDateString("en-IN", {
+            day: "2-digit",
+            month: "short",
+            year: "numeric",
+          })
+        : "—",
+      dateIso: date && !Number.isNaN(date.getTime()) ? date.toISOString().slice(0, 10) : "",
+    };
+  });
   const baseUrl = getSiteUrl();
   const mapReviews = (items: typeof bgmiTestimonials) =>
     items.map((t) => ({ name: t.name, rating: t.rating, message: t.message }));
@@ -88,9 +119,15 @@ export default async function GamesLayout({ children }: { children: React.ReactN
       </ClientErrorBoundary>
       {children}
       <main className="page-container">
+        <ClientErrorBoundary label="Official patch">
+          <FfOfficialPatchStrip />
+        </ClientErrorBoundary>
+        <ClientErrorBoundary label="Play modes">
+          <FfPlayModeChips />
+        </ClientErrorBoundary>
         {adPlaces.home.home_above_calculator ? <AdSlot slotKey="home_above_calculator" /> : null}
         <ClientErrorBoundary label="Calculator">
-          <SensCalculatorHost phoneModels={phoneModels} />
+          <SensCalculatorHost phoneModels={phoneModels} ffTrustBar={settings.ffTrustBar} />
         </ClientErrorBoundary>
         {adPlaces.home.home_between_tool_and_article ? (
           <AdSlot slotKey="home_between_tool_and_article" />
@@ -101,6 +138,27 @@ export default async function GamesLayout({ children }: { children: React.ReactN
             pubgTestimonials={pubgTestimonials}
             freefireTestimonials={freefireTestimonials}
           />
+        </ClientErrorBoundary>
+        <ClientErrorBoundary label="Role tips">
+          <FfRoleTips />
+        </ClientErrorBoundary>
+        <ClientErrorBoundary label="Season event">
+          <FfSeasonBanner />
+        </ClientErrorBoundary>
+        <ClientErrorBoundary label="Pro tips">
+          <FfProTips />
+        </ClientErrorBoundary>
+        <ClientErrorBoundary label="News hub">
+          <FfNewsHub items={homeNewsItems} total={homeNews.total} />
+        </ClientErrorBoundary>
+        <ClientErrorBoundary label="How it works">
+          <HowItWorksSection />
+        </ClientErrorBoundary>
+        <ClientErrorBoundary label="Comparison tables">
+          <FfComparisonTables />
+        </ClientErrorBoundary>
+        <ClientErrorBoundary label="Explore calculators">
+          <FfExploreCards />
         </ClientErrorBoundary>
       </main>
       <GamePathJsonLd

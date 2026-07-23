@@ -218,7 +218,11 @@ export default async function DynamicTemplatePage({ params, searchParams }: Prop
         {calculatorGame === "pubg-mobile-codes" ? (
           <PubgMobileCodesPanel key="pubg-mobile-codes" phoneModels={phoneModels} />
         ) : calculatorGame === "freefire" || calculatorGame === "freefire-max" ? (
-          <FfCalculator key={calculatorGame} isMax={calculatorGame === "freefire-max"} />
+          <FfCalculator
+            key={calculatorGame}
+            isMax={calculatorGame === "freefire-max"}
+            trustBar={settings.ffTrustBar}
+          />
         ) : (
           <SensCalculator key={calculatorGame} phoneModels={phoneModels} game={calculatorGame} />
         )}

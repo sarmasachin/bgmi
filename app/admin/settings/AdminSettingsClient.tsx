@@ -9,10 +9,13 @@ import {
 } from "@/src/lib/calculatorPhoneModelsInput";
 import type { AdminSettingsPageData } from "@/src/server/admin/prefetchAdminSettingsPageData";
 import { useAdminFlash } from "@/src/components/admin/AdminToast";
+import { DEFAULT_FF_TRUST_BAR } from "@/src/lib/ffTrustBar";
 
 type LinkItem = { label: string; href: string };
 
 type FaqItem = { id: string; question: string; answer: string };
+
+type TrustItem = { label: string; sublabel: string };
 
 type Props = {
   initialData?: AdminSettingsPageData;
@@ -69,6 +72,9 @@ export default function AdminSettingsClient({ initialData }: Props) {
   );
   const [faqItems, setFaqItems] = useState<FaqItem[]>(initialData?.faqItems ?? []);
   const setFaqMessage = useAdminFlash();
+  const [ffTrustBar, setFfTrustBar] = useState<TrustItem[]>(
+    initialData?.ffTrustBar ?? DEFAULT_FF_TRUST_BAR.map((row) => ({ ...row })),
+  );
 
   useEffect(() => {
     if (initialData !== undefined) return;
@@ -150,6 +156,17 @@ export default function AdminSettingsClient({ initialData }: Props) {
             setFooterTagline(fb.tagline);
           }
         }
+        if (Array.isArray(settings?.ffTrustBar)) {
+          setFfTrustBar(
+            DEFAULT_FF_TRUST_BAR.map((fallback, index) => {
+              const row = settings.ffTrustBar[index] as TrustItem | undefined;
+              return {
+                label: row?.label?.trim() || fallback.label,
+                sublabel: row?.sublabel?.trim() || fallback.sublabel,
+              };
+            }),
+          );
+        }
         if (snippets?.googleVerificationMeta) setGoogleVerification(snippets.googleVerificationMeta);
         if (snippets?.analyticsScript) setAnalyticsScript(snippets.analyticsScript);
         if (snippets?.adsenseScript) setAdsenseScript(snippets.adsenseScript);
@@ -202,6 +219,10 @@ export default function AdminSettingsClient({ initialData }: Props) {
             headerTitle: headerSiteTitle.trim(),
             heroTitle: homeHeroTitle.trim(),
           },
+          ffTrustBar: ffTrustBar.map((row) => ({
+            label: row.label.trim(),
+            sublabel: row.sublabel.trim(),
+          })),
         }),
       });
       const snippetRes = await fetch("/api/admin/head-snippets", {
@@ -362,6 +383,45 @@ export default function AdminSettingsClient({ initialData }: Props) {
           <small style={{ display: "block", marginTop: 6, opacity: 0.85 }}>
             Big cyan title above the sensitivity calculator on <code>/</code>. Empty saves as default.
           </small>
+        </div>
+        <div className="form-group">
+          <label>Free Fire calculator — trust bar (under calculator)</label>
+          <small style={{ display: "block", marginBottom: 8, opacity: 0.85 }}>
+            4 items shown below the Free Fire calculator on home / FF pages. Icons stay fixed; edit
+            title + subtitle only.
+          </small>
+          <div className="admin-link-editor">
+            {ffTrustBar.map((item, index) => (
+              <div key={`ff-trust-${index}`} className="admin-link-row">
+                <input
+                  aria-label={`Trust item ${index + 1} title`}
+                  value={item.label}
+                  maxLength={48}
+                  placeholder={`Title ${index + 1}`}
+                  onChange={(e) =>
+                    setFfTrustBar((prev) =>
+                      prev.map((row, i) =>
+                        i === index ? { ...row, label: e.target.value } : row,
+                      ),
+                    )
+                  }
+                />
+                <input
+                  aria-label={`Trust item ${index + 1} subtitle`}
+                  value={item.sublabel}
+                  maxLength={48}
+                  placeholder={`Subtitle ${index + 1}`}
+                  onChange={(e) =>
+                    setFfTrustBar((prev) =>
+                      prev.map((row, i) =>
+                        i === index ? { ...row, sublabel: e.target.value } : row,
+                      ),
+                    )
+                  }
+                />
+              </div>
+            ))}
+          </div>
         </div>
         <div className="form-group">
           <label htmlFor="seoTitleTemplate">Title Template</label>

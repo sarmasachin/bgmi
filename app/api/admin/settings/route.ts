@@ -19,6 +19,7 @@ let settingsCache:
         footerCopyright: string;
         homeDisplay: { headerTitle: string; heroTitle: string };
         footerBranding: { brandTitle: string; tagline: string };
+        ffTrustBar: Array<{ label: string; sublabel: string }>;
       };
     }
   | null = null;
@@ -39,6 +40,7 @@ export async function GET() {
     footerCopyright: stored.footerCopyright,
     homeDisplay: stored.homeDisplay,
     footerBranding: stored.footerBranding,
+    ffTrustBar: stored.ffTrustBar,
   };
 
   settingsCache = {
@@ -67,6 +69,15 @@ const settingsSchema = z.object({
       brandTitle: z.string().max(120).optional(),
       tagline: z.string().max(500).optional(),
     })
+    .optional(),
+  ffTrustBar: z
+    .array(
+      z.object({
+        label: z.string().max(48).optional(),
+        sublabel: z.string().max(48).optional(),
+      }),
+    )
+    .max(4)
     .optional(),
 });
 

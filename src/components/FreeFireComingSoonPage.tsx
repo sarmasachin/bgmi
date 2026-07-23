@@ -106,7 +106,7 @@ export async function FreeFireComingSoonPage({ variant }: { variant: FreeFireVar
       <HomeHeader siteTitle={settings.homeDisplay.headerTitle} navigation={settings.navigation} />
       <h1 className="main-title ff-gradient-title">{title}</h1>
       <main className="page-container">
-        <FfCalculator isMax={variant === "freefire-max"} />
+        <FfCalculator isMax={variant === "freefire-max"} trustBar={settings.ffTrustBar} />
         <TestimonialsMarquee game={testimonialGame} initialItems={testimonials} />
         <TestimonialForm game={testimonialGame} />
       </main>

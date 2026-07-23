@@ -38,6 +38,14 @@ a {
   align-items: center;
 }
 
+/* Keep FF calculator full-width inside centered page flex (anchor for Explore CTA). */
+.ff-calculator-anchor {
+  width: 100%;
+  max-width: 1100px;
+  display: block;
+  box-sizing: border-box;
+}
+
 .main-title {
   color: var(--primary);
   text-transform: uppercase;
@@ -6063,3 +6071,1173 @@ footer,
 .pmc-btn:hover {
   background: var(--primary-strong);
 }
+
+/* How It Works — below ratings on home / game calculators */
+.how-works {
+  width: 95%;
+  max-width: 1100px;
+  margin: 8px auto 28px;
+  padding: 8px 0 4px;
+  box-sizing: border-box;
+  text-align: center;
+}
+
+.how-works-title {
+  margin: 0 0 8px;
+  font-size: clamp(22px, 4vw, 32px);
+  font-weight: 900;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: #e6edf3;
+}
+
+.how-works-subtitle {
+  margin: 0 auto 20px;
+  max-width: 520px;
+  font-size: 14px;
+  line-height: 1.45;
+  color: rgba(230, 237, 243, 0.65);
+}
+
+.how-works-grid {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.how-works-card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 22px 14px 16px;
+  border-radius: 14px;
+  background: #121820;
+  border: 1px solid rgba(48, 54, 61, 0.85);
+  text-align: center;
+  box-sizing: border-box;
+}
+
+.how-works-num {
+  position: absolute;
+  top: 10px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 22px;
+  height: 22px;
+  border-radius: 999px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  font-weight: 800;
+  color: #fff;
+  background: linear-gradient(135deg, #ef4444, #f97316);
+}
+
+.how-works-icon {
+  margin-top: 14px;
+  font-size: 28px;
+  background: linear-gradient(135deg, #ef4444, #f472b6);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  -webkit-text-fill-color: transparent;
+}
+
+.how-works-card-title {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 800;
+  color: #e6edf3;
+}
+
+.how-works-bullets {
+  list-style: disc;
+  margin: 0;
+  padding: 0 0 0 1.15em;
+  text-align: left;
+  width: 100%;
+  max-width: 240px;
+}
+
+.how-works-bullets li {
+  font-size: 12px;
+  line-height: 1.45;
+  color: rgba(230, 237, 243, 0.7);
+}
+
+.how-works-bullets li + li {
+  margin-top: 4px;
+}
+
+@media (min-width: 900px) {
+  .how-works-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 14px;
+  }
+
+  .how-works-card {
+    padding: 24px 12px 18px;
+  }
+
+  .how-works-card-title {
+    font-size: 16px;
+  }
+
+  .how-works-bullets li {
+    font-size: 12.5px;
+  }
+}
+
+/* Free Fire comparison + RAM tables (home) */
+.ff-compare {
+  width: 95%;
+  max-width: 1100px;
+  margin: 4px auto 32px;
+  padding: 4px 0 8px;
+  box-sizing: border-box;
+}
+
+.ff-compare-title,
+.ff-compare-subtitle {
+  margin: 0 0 20px;
+  font-size: clamp(18px, 3.2vw, 26px);
+  font-weight: 900;
+  letter-spacing: 0.02em;
+  color: #e6edf3;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  text-align: center;
+}
+
+.ff-compare-title i,
+.ff-compare-subtitle i {
+  color: #f97316;
+}
+
+.ff-compare-subtitle {
+  margin-top: 32px;
+  margin-bottom: 20px;
+  font-size: clamp(16px, 2.8vw, 22px);
+}
+
+.ff-compare-lead {
+  margin: 0 0 14px;
+  font-size: 14px;
+  line-height: 1.45;
+  color: rgba(230, 237, 243, 0.68);
+}
+
+.ff-compare-table-wrap {
+  overflow-x: auto;
+  border-radius: 14px;
+  border: 1px solid rgba(48, 54, 61, 0.9);
+  background: #121820;
+  -webkit-overflow-scrolling: touch;
+}
+
+.ff-compare-table {
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 520px;
+}
+
+.ff-compare-table--ram {
+  min-width: 640px;
+}
+
+.ff-compare-table th,
+.ff-compare-table td {
+  padding: 12px 14px;
+  text-align: left;
+  font-size: 13px;
+  border-bottom: 1px solid rgba(48, 54, 61, 0.75);
+  vertical-align: middle;
+}
+
+.ff-compare-table thead th {
+  background: rgba(249, 115, 22, 0.12);
+  color: #e6edf3;
+  font-weight: 800;
+  white-space: nowrap;
+}
+
+.ff-compare-table thead th i,
+.ff-compare-table tbody th i {
+  color: #f97316;
+  margin-right: 6px;
+}
+
+.ff-compare-table tbody th {
+  color: #e6edf3;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.ff-compare-table td {
+  color: rgba(230, 237, 243, 0.82);
+}
+
+.ff-compare-table tbody tr:last-child th,
+.ff-compare-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.ff-compare-table tbody tr:hover td,
+.ff-compare-table tbody tr:hover th {
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.ff-compare-cta {
+  margin: 22px 0 0;
+  font-size: 13px;
+  color: rgba(230, 237, 243, 0.7);
+}
+
+.ff-compare-cta a {
+  color: #fb923c;
+  font-weight: 700;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.ff-compare-note {
+  margin: 12px 0 0;
+  font-size: 12.5px;
+  line-height: 1.45;
+  color: rgba(230, 237, 243, 0.62);
+}
+
+.ff-compare-note i {
+  color: #38bdf8;
+  margin-right: 6px;
+}
+
+/* Official OB / patch strip (home) — links out to Garena only */
+.ff-patch-strip {
+  width: 95%;
+  max-width: 1100px;
+  margin: 4px auto 18px;
+  box-sizing: border-box;
+}
+
+.ff-patch-strip-inner {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 14px 16px;
+  border-radius: 14px;
+  border: 1px solid rgba(249, 115, 22, 0.35);
+  background:
+    linear-gradient(120deg, rgba(249, 115, 22, 0.14) 0%, transparent 42%),
+    #121820;
+}
+
+.ff-patch-strip-main {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  min-width: 0;
+}
+
+.ff-patch-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  align-self: center;
+  padding: 6px 12px;
+  border-radius: 999px;
+  background: linear-gradient(135deg, #ef4444, #f97316);
+  color: #fff;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+}
+
+.ff-patch-badge i {
+  font-size: 12px;
+}
+
+.ff-patch-copy {
+  min-width: 0;
+}
+
+.ff-patch-meta {
+  margin: 0 0 4px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  font-size: 12px;
+  font-weight: 700;
+  color: rgba(251, 146, 60, 0.95);
+}
+
+.ff-patch-summary {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.45;
+  color: rgba(230, 237, 243, 0.86);
+}
+
+.ff-patch-strip-actions {
+  display: flex;
+  flex-wrap: nowrap;
+  align-items: stretch;
+  gap: 8px;
+  width: 100%;
+}
+
+.ff-patch-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  flex: 1 1 0;
+  min-width: 0;
+  padding: 10px 10px;
+  border-radius: 10px;
+  font-size: 12px;
+  font-weight: 750;
+  text-decoration: none;
+  line-height: 1.2;
+  white-space: nowrap;
+  box-sizing: border-box;
+}
+
+.ff-patch-btn--primary {
+  background: #f97316;
+  color: #111827;
+}
+
+.ff-patch-btn--primary:hover {
+  background: #fb923c;
+}
+
+.ff-patch-btn--ghost {
+  border: 1px solid rgba(249, 115, 22, 0.45);
+  color: #fb923c;
+  background: transparent;
+}
+
+.ff-patch-btn--ghost:hover {
+  background: rgba(249, 115, 22, 0.1);
+}
+
+@media (min-width: 800px) {
+  .ff-patch-strip-inner {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    gap: 18px;
+    padding: 16px 18px;
+  }
+
+  .ff-patch-strip-main {
+    flex-direction: row;
+    align-items: center;
+    gap: 14px;
+    flex: 1;
+    min-width: 0;
+  }
+
+  .ff-patch-strip-actions {
+    flex-shrink: 0;
+    width: auto;
+  }
+
+  .ff-patch-btn {
+    flex: 0 0 auto;
+    padding: 10px 14px;
+    font-size: 13px;
+    gap: 8px;
+  }
+}
+
+/* Explore Free Fire / Free Fire Max cards (home) — internal links only */
+.ff-explore {
+  width: 95%;
+  max-width: 1100px;
+  margin: 8px auto 32px;
+  box-sizing: border-box;
+}
+
+.ff-explore-title {
+  margin: 0 0 18px;
+  text-align: center;
+  font-size: clamp(18px, 3.2vw, 26px);
+  font-weight: 900;
+  letter-spacing: 0.02em;
+  color: #e6edf3;
+}
+
+.ff-explore-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 14px;
+}
+
+.ff-explore-card {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 18px 16px 16px;
+  border-radius: 16px;
+  border: 1px solid rgba(48, 54, 61, 0.95);
+  background: #121820;
+  box-sizing: border-box;
+}
+
+.ff-explore-card--ff {
+  border-color: rgba(249, 115, 22, 0.35);
+  background:
+    linear-gradient(160deg, rgba(249, 115, 22, 0.12) 0%, transparent 50%),
+    #121820;
+}
+
+.ff-explore-card--max {
+  border-color: rgba(239, 68, 68, 0.35);
+  background:
+    linear-gradient(160deg, rgba(239, 68, 68, 0.12) 0%, transparent 50%),
+    #121820;
+}
+
+.ff-explore-card-top {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.ff-explore-icon {
+  width: 42px;
+  height: 42px;
+  border-radius: 12px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(249, 115, 22, 0.15);
+  color: #fb923c;
+  font-size: 18px;
+}
+
+.ff-explore-card--max .ff-explore-icon {
+  background: rgba(239, 68, 68, 0.15);
+  color: #f87171;
+}
+
+.ff-explore-card-title {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 900;
+  color: #e6edf3;
+}
+
+.ff-explore-card-text {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.45;
+  color: rgba(230, 237, 243, 0.72);
+}
+
+.ff-explore-points {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.ff-explore-points li {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  font-size: 13px;
+  line-height: 1.35;
+  color: rgba(230, 237, 243, 0.8);
+}
+
+.ff-explore-points i {
+  margin-top: 2px;
+  color: #4ade80;
+  font-size: 12px;
+}
+
+.ff-explore-btn {
+  margin-top: auto;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  padding: 12px 14px;
+  border-radius: 12px;
+  background: #f97316;
+  color: #111827;
+  font-size: 14px;
+  font-weight: 800;
+  text-decoration: none;
+  box-sizing: border-box;
+}
+
+.ff-explore-card--max .ff-explore-btn {
+  background: #ef4444;
+  color: #fff;
+}
+
+.ff-explore-btn:hover {
+  filter: brightness(1.06);
+}
+
+@media (min-width: 800px) {
+  .ff-explore-grid {
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+  }
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+/* Play mode chips (home) — sets calculator Player Role */
+.ff-modes {
+  display: none;
+  width: 95%;
+  max-width: 1100px;
+  margin: 0 auto 16px;
+  box-sizing: border-box;
+}
+
+.ff-modes-title {
+  margin: 0 0 6px;
+  text-align: center;
+  font-size: clamp(16px, 2.8vw, 22px);
+  font-weight: 900;
+  color: #e6edf3;
+}
+
+.ff-modes-lead {
+  margin: 0 0 14px;
+  text-align: center;
+  font-size: 13px;
+  color: rgba(230, 237, 243, 0.62);
+}
+
+.ff-modes-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.ff-mode-chip {
+  appearance: none;
+  border: 1px solid rgba(249, 115, 22, 0.35);
+  border-radius: 14px;
+  background:
+    linear-gradient(160deg, rgba(249, 115, 22, 0.1) 0%, transparent 55%),
+    #121820;
+  color: inherit;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 12px;
+  text-align: left;
+  transition: border-color 0.15s ease, transform 0.15s ease;
+}
+
+.ff-mode-chip:hover {
+  border-color: rgba(249, 115, 22, 0.7);
+  transform: translateY(-1px);
+}
+
+.ff-mode-chip:focus-visible {
+  outline: 2px solid #f97316;
+  outline-offset: 2px;
+}
+
+.ff-mode-icon {
+  flex-shrink: 0;
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(249, 115, 22, 0.16);
+  color: #fb923c;
+  font-size: 15px;
+}
+
+.ff-mode-text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.ff-mode-text strong {
+  font-size: 14px;
+  font-weight: 800;
+  color: #e6edf3;
+}
+
+.ff-mode-text span {
+  font-size: 11px;
+  line-height: 1.3;
+  color: rgba(230, 237, 243, 0.65);
+}
+
+@media (min-width: 800px) {
+  .ff-modes {
+    display: block;
+  }
+
+  .ff-modes-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 12px;
+  }
+}
+
+/* Role tips (home) — below ratings */
+.ff-role-tips {
+  width: 95%;
+  max-width: 1100px;
+  margin: 8px auto 28px;
+  box-sizing: border-box;
+}
+
+.ff-role-tips-title {
+  margin: 0 0 16px;
+  text-align: center;
+  font-size: clamp(18px, 3.2vw, 26px);
+  font-weight: 900;
+  color: #e6edf3;
+}
+
+.ff-role-tips-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 12px;
+}
+
+.ff-role-tip-card {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 16px;
+  border-radius: 16px;
+  border: 1px solid rgba(249, 115, 22, 0.35);
+  background:
+    linear-gradient(160deg, rgba(249, 115, 22, 0.1) 0%, transparent 50%),
+    #121820;
+  box-sizing: border-box;
+}
+
+.ff-role-tip-head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.ff-role-tip-icon {
+  width: 38px;
+  height: 38px;
+  border-radius: 11px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(249, 115, 22, 0.16);
+  color: #fb923c;
+  font-size: 16px;
+}
+
+.ff-role-tip-name {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 900;
+  color: #e6edf3;
+}
+
+.ff-role-tip-list {
+  margin: 0;
+  padding: 0 0 0 1.15em;
+  list-style: disc;
+}
+
+.ff-role-tip-list li {
+  font-size: 13px;
+  line-height: 1.45;
+  color: rgba(230, 237, 243, 0.78);
+}
+
+.ff-role-tip-list li + li {
+  margin-top: 6px;
+}
+
+.ff-role-tip-btn {
+  appearance: none;
+  margin-top: auto;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  padding: 11px 14px;
+  border: none;
+  border-radius: 12px;
+  background: #f97316;
+  color: #111827;
+  font-size: 13px;
+  font-weight: 800;
+  cursor: pointer;
+  box-sizing: border-box;
+}
+
+.ff-role-tip-btn:hover {
+  filter: brightness(1.06);
+}
+
+.ff-role-tip-btn:focus-visible {
+  outline: 2px solid #fb923c;
+  outline-offset: 2px;
+}
+
+@media (min-width: 800px) {
+  .ff-role-tips-grid {
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+  }
+}
+
+/* Season / event banner (home) — below ratings */
+.ff-season {
+  width: 95%;
+  max-width: 1100px;
+  margin: 8px auto 28px;
+  box-sizing: border-box;
+}
+
+.ff-season-card {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 18px 16px;
+  border-radius: 16px;
+  border: 1px solid rgba(249, 115, 22, 0.4);
+  background:
+    linear-gradient(135deg, rgba(249, 115, 22, 0.14) 0%, transparent 45%),
+    linear-gradient(320deg, rgba(251, 146, 60, 0.08) 0%, transparent 40%),
+    #121820;
+  box-sizing: border-box;
+}
+
+.ff-season-main {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  min-width: 0;
+}
+
+.ff-season-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  align-self: flex-start;
+  padding: 6px 12px;
+  border-radius: 999px;
+  background: #f97316;
+  color: #111827;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+}
+
+.ff-season-badge i {
+  font-size: 12px;
+}
+
+.ff-season-copy {
+  min-width: 0;
+}
+
+.ff-season-meta {
+  margin: 0 0 4px;
+  font-size: 12px;
+  font-weight: 700;
+  color: #fb923c;
+}
+
+.ff-season-title {
+  margin: 0 0 8px;
+  font-size: clamp(18px, 3.2vw, 24px);
+  font-weight: 900;
+  color: #e6edf3;
+  line-height: 1.25;
+}
+
+.ff-season-summary {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.5;
+  color: rgba(230, 237, 243, 0.78);
+}
+
+.ff-season-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.ff-season-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  padding: 11px 14px;
+  border-radius: 12px;
+  font-size: 13px;
+  font-weight: 800;
+  text-decoration: none;
+  box-sizing: border-box;
+}
+
+.ff-season-btn--primary {
+  background: #f97316;
+  color: #111827;
+  border: none;
+}
+
+.ff-season-btn--primary:hover {
+  filter: brightness(1.06);
+}
+
+.ff-season-btn--ghost {
+  background: transparent;
+  color: #fb923c;
+  border: 1px solid rgba(249, 115, 22, 0.55);
+}
+
+.ff-season-btn--ghost:hover {
+  background: rgba(249, 115, 22, 0.1);
+}
+
+.ff-season-btn:focus-visible {
+  outline: 2px solid #fb923c;
+  outline-offset: 2px;
+}
+
+@media (min-width: 800px) {
+  .ff-season-card {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    gap: 20px;
+    padding: 20px 22px;
+  }
+
+  .ff-season-actions {
+    flex-direction: column;
+    flex-shrink: 0;
+    width: 220px;
+  }
+}
+
+/* Pro tips (home) — esports vibe, no official assets */
+.ff-pro-tips {
+  width: 95%;
+  max-width: 1100px;
+  margin: 8px auto 28px;
+  box-sizing: border-box;
+}
+
+.ff-pro-tips-title {
+  margin: 0 0 8px;
+  text-align: center;
+  font-size: clamp(18px, 3.2vw, 26px);
+  font-weight: 900;
+  color: #e6edf3;
+}
+
+.ff-pro-tips-lead {
+  margin: 0 auto 16px;
+  max-width: 36em;
+  text-align: center;
+  font-size: 13px;
+  line-height: 1.45;
+  color: rgba(230, 237, 243, 0.65);
+}
+
+.ff-pro-tips-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 12px;
+}
+
+.ff-pro-tip-card {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 16px;
+  border-radius: 16px;
+  border: 1px solid rgba(249, 115, 22, 0.3);
+  background:
+    linear-gradient(165deg, rgba(249, 115, 22, 0.08) 0%, transparent 55%),
+    #121820;
+  box-sizing: border-box;
+}
+
+.ff-pro-tip-icon {
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(249, 115, 22, 0.16);
+  color: #fb923c;
+  font-size: 15px;
+}
+
+.ff-pro-tip-name {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 900;
+  color: #e6edf3;
+}
+
+.ff-pro-tip-text {
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.45;
+  color: rgba(230, 237, 243, 0.78);
+}
+
+.ff-pro-tips-cta {
+  appearance: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  max-width: 320px;
+  margin: 16px auto 0;
+  padding: 12px 16px;
+  border: none;
+  border-radius: 12px;
+  background: #f97316;
+  color: #111827;
+  font-size: 13px;
+  font-weight: 800;
+  cursor: pointer;
+  box-sizing: border-box;
+}
+
+.ff-pro-tips-cta:hover {
+  filter: brightness(1.06);
+}
+
+.ff-pro-tips-cta:focus-visible {
+  outline: 2px solid #fb923c;
+  outline-offset: 2px;
+}
+
+@media (min-width: 800px) {
+  .ff-pro-tips-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 14px;
+  }
+
+  .ff-pro-tips-cta {
+    display: flex;
+  }
+}
+
+/* News hub (home) — latest posts from this site only */
+.ff-news-hub {
+  width: 95%;
+  max-width: 1100px;
+  margin: 8px auto 28px;
+  box-sizing: border-box;
+}
+
+.ff-news-hub-head {
+  margin: 0 0 16px;
+  text-align: center;
+}
+
+.ff-news-hub-title {
+  margin: 0 0 8px;
+  font-size: clamp(18px, 3.2vw, 26px);
+  font-weight: 900;
+  color: #e6edf3;
+}
+
+.ff-news-hub-lead {
+  margin: 0 auto;
+  max-width: 36em;
+  font-size: 13px;
+  line-height: 1.45;
+  color: rgba(230, 237, 243, 0.65);
+}
+
+.ff-news-hub-scroll {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: nowrap;
+  gap: 12px;
+  overflow-x: auto;
+  overflow-y: hidden;
+  -webkit-overflow-scrolling: touch;
+  scroll-snap-type: x mandatory;
+  scroll-padding-inline: 2px;
+  padding: 4px 2px 12px;
+  overscroll-behavior-x: contain;
+}
+
+.ff-news-hub-scroll::-webkit-scrollbar {
+  height: 6px;
+}
+
+.ff-news-hub-scroll::-webkit-scrollbar-thumb {
+  background: rgba(249, 115, 22, 0.45);
+  border-radius: 999px;
+}
+
+.ff-news-hub-card {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  flex: 0 0 min(78vw, 280px);
+  width: min(78vw, 280px);
+  max-width: 280px;
+  min-height: 168px;
+  padding: 16px;
+  border-radius: 16px;
+  border: 1px solid rgba(249, 115, 22, 0.3);
+  background:
+    linear-gradient(160deg, rgba(249, 115, 22, 0.08) 0%, transparent 50%),
+    #121820;
+  text-decoration: none;
+  box-sizing: border-box;
+  scroll-snap-align: start;
+}
+
+.ff-news-hub-card:hover {
+  border-color: rgba(249, 115, 22, 0.55);
+}
+
+.ff-news-hub-card:focus-visible {
+  outline: 2px solid #fb923c;
+  outline-offset: 2px;
+}
+
+.ff-news-hub-card-meta {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 12px;
+  color: rgba(230, 237, 243, 0.6);
+}
+
+.ff-news-hub-pill {
+  display: inline-flex;
+  padding: 3px 8px;
+  border-radius: 999px;
+  background: rgba(249, 115, 22, 0.18);
+  color: #fb923c;
+  font-size: 11px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.ff-news-hub-card-title {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 900;
+  line-height: 1.3;
+  color: #e6edf3;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.ff-news-hub-card-excerpt {
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.45;
+  color: rgba(230, 237, 243, 0.72);
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.ff-news-hub-card-more {
+  margin-top: auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  font-weight: 800;
+  color: #fb923c;
+}
+
+.ff-news-hub-empty {
+  margin: 0 0 16px;
+  padding: 16px;
+  border-radius: 14px;
+  border: 1px dashed rgba(249, 115, 22, 0.35);
+  background: #121820;
+  text-align: center;
+  font-size: 13px;
+  line-height: 1.45;
+  color: rgba(230, 237, 243, 0.7);
+}
+
+.ff-news-hub-cta {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  max-width: 280px;
+  margin: 16px auto 0;
+  padding: 12px 16px;
+  border-radius: 12px;
+  background: #f97316;
+  color: #111827;
+  font-size: 13px;
+  font-weight: 800;
+  text-decoration: none;
+  box-sizing: border-box;
+}
+
+.ff-news-hub-cta:hover {
+  filter: brightness(1.06);
+}
+
+.ff-news-hub-cta:focus-visible {
+  outline: 2px solid #fb923c;
+  outline-offset: 2px;
+}
+
+@media (min-width: 800px) {
+  .ff-news-hub-card {
+    flex-basis: 260px;
+    width: 260px;
+  }
+}
+
