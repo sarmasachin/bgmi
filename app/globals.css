@@ -6328,6 +6328,368 @@ footer,
   box-sizing: border-box;
 }
 
+/* Next update card (OB55 teaser) */
+.ff-next {
+  width: 95%;
+  max-width: 1100px;
+  margin: 0 auto 18px;
+  box-sizing: border-box;
+}
+
+.ff-next-card {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 18px 16px;
+  border-radius: 18px;
+  border: 1px solid rgba(56, 189, 248, 0.35);
+  background:
+    linear-gradient(145deg, rgba(56, 189, 248, 0.12) 0%, transparent 42%),
+    linear-gradient(320deg, rgba(249, 115, 22, 0.1) 0%, transparent 45%),
+    #121820;
+  box-sizing: border-box;
+}
+
+.ff-next-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.ff-next-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 12px;
+  border-radius: 999px;
+  background: linear-gradient(135deg, #0ea5e9, #38bdf8);
+  color: #0f172a;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+}
+
+.ff-next-code {
+  display: inline-flex;
+  align-items: center;
+  padding: 5px 10px;
+  border-radius: 999px;
+  border: 1px solid rgba(56, 189, 248, 0.45);
+  color: #7dd3fc;
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.ff-next-meta {
+  margin: 0;
+  font-size: 12px;
+  font-weight: 700;
+  color: #7dd3fc;
+}
+
+.ff-next-title {
+  margin: 0;
+  font-size: clamp(18px, 3.2vw, 26px);
+  font-weight: 900;
+  line-height: 1.25;
+  color: #e6edf3;
+}
+
+.ff-next-summary {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.5;
+  color: rgba(230, 237, 243, 0.78);
+}
+
+.ff-next-features {
+  margin: 2px 0 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.ff-next-features li {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  font-size: 13px;
+  line-height: 1.45;
+  color: rgba(230, 237, 243, 0.88);
+}
+
+.ff-next-features i {
+  margin-top: 2px;
+  color: #38bdf8;
+  font-size: 12px;
+  flex-shrink: 0;
+}
+
+.ff-next-note {
+  margin: 0;
+  font-size: 11px;
+  line-height: 1.4;
+  color: rgba(230, 237, 243, 0.5);
+}
+
+.ff-next-actions {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  margin-top: 4px;
+  width: 100%;
+}
+
+.ff-next-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  max-width: 280px;
+  padding: 11px 14px;
+  border-radius: 12px;
+  font-size: 13px;
+  font-weight: 800;
+  text-decoration: none;
+  box-sizing: border-box;
+}
+
+.ff-next-btn--primary {
+  background: linear-gradient(135deg, #0ea5e9, #38bdf8);
+  color: #0f172a;
+  border: none;
+}
+
+.ff-next-btn--primary:hover {
+  filter: brightness(1.06);
+}
+
+.ff-next-btn--ghost {
+  background: transparent;
+  color: #7dd3fc;
+  border: 1px solid rgba(56, 189, 248, 0.5);
+}
+
+.ff-next-btn--ghost:hover {
+  background: rgba(56, 189, 248, 0.1);
+}
+
+.ff-next-btn:focus-visible {
+  outline: 2px solid #38bdf8;
+  outline-offset: 2px;
+}
+
+@media (min-width: 800px) {
+  .ff-next-card {
+    padding: 22px 24px;
+  }
+
+  .ff-next-actions {
+    flex-direction: row;
+    flex-wrap: wrap;
+    justify-content: center;
+    align-items: center;
+    gap: 14px;
+    max-width: none;
+  }
+
+  .ff-next-btn {
+    width: auto;
+    max-width: none;
+    flex: 0 0 auto;
+    min-width: 180px;
+  }
+}
+
+/* Advance Server OB55 APK guide card */
+.ff-advance {
+  width: 95%;
+  max-width: 1100px;
+  margin: 0 auto 18px;
+  box-sizing: border-box;
+}
+
+.ff-advance-card {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 18px 16px;
+  border-radius: 18px;
+  border: 1px solid rgba(34, 197, 94, 0.4);
+  background:
+    linear-gradient(145deg, rgba(34, 197, 94, 0.12) 0%, transparent 42%),
+    linear-gradient(320deg, rgba(249, 115, 22, 0.08) 0%, transparent 45%),
+    #121820;
+  box-sizing: border-box;
+}
+
+.ff-advance-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.ff-advance-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 12px;
+  border-radius: 999px;
+  background: linear-gradient(135deg, #16a34a, #22c55e);
+  color: #052e16;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+}
+
+.ff-advance-code {
+  display: inline-flex;
+  align-items: center;
+  padding: 5px 10px;
+  border-radius: 999px;
+  border: 1px solid rgba(34, 197, 94, 0.5);
+  color: #86efac;
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.ff-advance-meta {
+  margin: 0;
+  font-size: 12px;
+  font-weight: 700;
+  color: #86efac;
+}
+
+.ff-advance-title {
+  margin: 0;
+  font-size: clamp(18px, 3.2vw, 26px);
+  font-weight: 900;
+  line-height: 1.25;
+  color: #e6edf3;
+}
+
+.ff-advance-summary {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.5;
+  color: rgba(230, 237, 243, 0.78);
+}
+
+.ff-advance-features {
+  margin: 2px 0 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.ff-advance-features li {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  font-size: 13px;
+  line-height: 1.45;
+  color: rgba(230, 237, 243, 0.88);
+}
+
+.ff-advance-features i {
+  margin-top: 2px;
+  color: #4ade80;
+  font-size: 12px;
+  flex-shrink: 0;
+}
+
+.ff-advance-note {
+  margin: 0;
+  font-size: 11px;
+  line-height: 1.4;
+  color: rgba(230, 237, 243, 0.5);
+}
+
+.ff-advance-actions {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  margin-top: 4px;
+  width: 100%;
+}
+
+.ff-advance-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  max-width: 280px;
+  padding: 11px 14px;
+  border-radius: 12px;
+  font-size: 13px;
+  font-weight: 800;
+  text-decoration: none;
+  box-sizing: border-box;
+}
+
+.ff-advance-btn--primary {
+  background: linear-gradient(135deg, #16a34a, #22c55e);
+  color: #052e16;
+  border: none;
+}
+
+.ff-advance-btn--primary:hover {
+  filter: brightness(1.06);
+}
+
+.ff-advance-btn--ghost {
+  background: transparent;
+  color: #86efac;
+  border: 1px solid rgba(34, 197, 94, 0.5);
+}
+
+.ff-advance-btn--ghost:hover {
+  background: rgba(34, 197, 94, 0.1);
+}
+
+.ff-advance-btn:focus-visible {
+  outline: 2px solid #4ade80;
+  outline-offset: 2px;
+}
+
+@media (min-width: 800px) {
+  .ff-advance-card {
+    padding: 22px 24px;
+  }
+
+  .ff-advance-actions {
+    flex-direction: row;
+    flex-wrap: wrap;
+    justify-content: center;
+    align-items: center;
+    gap: 14px;
+    max-width: none;
+  }
+
+  .ff-advance-btn {
+    width: auto;
+    max-width: none;
+    flex: 0 0 auto;
+    min-width: 180px;
+  }
+}
+
 .ff-patch-strip-inner {
   display: flex;
   flex-direction: column;
