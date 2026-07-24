@@ -7,7 +7,6 @@ import { HomeHeader } from "@/src/components/HomeHeader";
 import { HowItWorksSection } from "@/src/components/HowItWorksSection";
 import { FfComparisonTables } from "@/src/components/FfComparisonTables";
 import { FfExploreCards } from "@/src/components/FfExploreCards";
-import { FfHeroBanner } from "@/src/components/FfHeroBanner";
 import { FfOfficialPatchStrip } from "@/src/components/FfOfficialPatchStrip";
 import { FfNextUpdateCard } from "@/src/components/FfNextUpdateCard";
 import { FfAdvanceServerCard } from "@/src/components/FfAdvanceServerCard";
@@ -122,9 +121,6 @@ export default async function GamesLayout({ children }: { children: React.ReactN
       </ClientErrorBoundary>
       {children}
       <main className="page-container">
-        <ClientErrorBoundary label="FF hero">
-          <FfHeroBanner variant="freefire" />
-        </ClientErrorBoundary>
         <ClientErrorBoundary label="Official patch">
           <FfOfficialPatchStrip />
         </ClientErrorBoundary>

@@ -30,7 +30,7 @@ export const metadata: Metadata = {
     title,
     description,
     url: canonical,
-    image: "/ff/og-freefire.jpg",
+    image: "/ff/og-freefire.jpg?v=2",
     imageAlt: "Free Fire sensitivity settings wallpaper",
   }),
 };

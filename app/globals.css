@@ -6913,76 +6913,6 @@ footer,
 }
 
 /* Explore Free Fire / Free Fire Max cards (home) — internal links only */
-.ff-hero {
-  width: 95%;
-  max-width: 1100px;
-  margin: 4px auto 18px;
-  box-sizing: border-box;
-}
-
-.ff-hero-frame {
-  position: relative;
-  overflow: hidden;
-  border-radius: 18px;
-  min-height: clamp(180px, 32vw, 280px);
-  border: 1px solid rgba(94, 134, 186, 0.28);
-  box-shadow:
-    0 18px 40px rgba(0, 0, 0, 0.35),
-    inset 0 1px 0 rgba(255, 255, 255, 0.06);
-  background: #07101c;
-}
-
-.ff-hero-img {
-  object-fit: cover;
-  object-position: center 30%;
-}
-
-.ff-hero-shade {
-  position: absolute;
-  inset: 0;
-  background:
-    linear-gradient(90deg, rgba(4, 10, 20, 0.88) 0%, rgba(4, 10, 20, 0.45) 48%, rgba(4, 10, 20, 0.2) 100%),
-    linear-gradient(180deg, transparent 40%, rgba(4, 10, 20, 0.72) 100%);
-  pointer-events: none;
-  z-index: 1;
-}
-
-.ff-hero-copy {
-  position: absolute;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  z-index: 2;
-  padding: clamp(16px, 3vw, 28px);
-  max-width: 560px;
-}
-
-.ff-hero-eyebrow {
-  margin: 0 0 6px;
-  font-size: 12px;
-  font-weight: 800;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  color: #5eead4;
-}
-
-.ff-hero-title {
-  margin: 0 0 8px;
-  font-size: clamp(22px, 4vw, 34px);
-  font-weight: 900;
-  line-height: 1.15;
-  color: #f4f8ff;
-  text-shadow: 0 2px 16px rgba(0, 0, 0, 0.45);
-}
-
-.ff-hero-text {
-  margin: 0;
-  font-size: clamp(13px, 2.2vw, 15px);
-  line-height: 1.5;
-  color: #c5d4e8;
-  max-width: 42ch;
-}
-
 .ff-explore {
   width: 95%;
   max-width: 1100px;
@@ -7006,35 +6936,14 @@ footer,
 }
 
 .ff-explore-card {
-  position: relative;
-  overflow: hidden;
   display: flex;
   flex-direction: column;
   gap: 12px;
-  padding: 0;
+  padding: 18px 16px 16px;
   border-radius: 16px;
   border: 1px solid rgba(48, 54, 61, 0.95);
   background: #121820;
   box-sizing: border-box;
-}
-
-.ff-explore-card-media {
-  position: relative;
-  width: 100%;
-  aspect-ratio: 16 / 9;
-  background: #07101c;
-}
-
-.ff-explore-card-media img {
-  object-fit: cover;
-  object-position: center;
-}
-
-.ff-explore-card-body {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-  padding: 14px 16px 16px;
 }
 
 .ff-explore-card--ff {

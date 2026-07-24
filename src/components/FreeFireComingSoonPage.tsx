@@ -1,5 +1,4 @@
 import { FaqAccordion } from "@/src/components/FaqAccordion";
-import { FfHeroBanner } from "@/src/components/FfHeroBanner";
 import { HomeHeader } from "@/src/components/HomeHeader";
 import { SiteFooter } from "@/src/components/SiteFooter";
 import { TestimonialForm } from "@/src/components/TestimonialForm";
@@ -61,7 +60,7 @@ export async function buildFreeFireMetadata(variant: FreeFireVariant): Promise<M
       title,
       description,
       url: canonical,
-      image: "/ff/og-freefire.jpg",
+      image: "/ff/og-freefire.jpg?v=2",
       imageAlt:
         variant === "freefire-max"
           ? "Free Fire Max sensitivity settings wallpaper"
@@ -112,7 +111,6 @@ export async function FreeFireComingSoonPage({ variant }: { variant: FreeFireVar
       <HomeHeader siteTitle={settings.homeDisplay.headerTitle} navigation={settings.navigation} />
       <h1 className="main-title ff-gradient-title">{title}</h1>
       <main className="page-container">
-        <FfHeroBanner variant={variant === "freefire-max" ? "freefire-max" : "freefire"} />
         <FfCalculator isMax={variant === "freefire-max"} trustBar={settings.ffTrustBar} />
         <TestimonialsMarquee game={testimonialGame} initialItems={testimonials} />
         <TestimonialForm game={testimonialGame} />
