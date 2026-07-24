@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { checkRateLimit } from "@/src/server/rateLimit";
+import { getRequestIp } from "@/src/server/requestIp";
 
 const schema = z.object({
   endpoint: z.string().url(),
@@ -10,7 +11,7 @@ const schema = z.object({
 });
 
 export async function POST(request: NextRequest) {
-  const ip = request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || "local";
+  const ip = getRequestIp(request);
   const rl = checkRateLimit(`subscribe-push:${ip}`, 20, 60_000);
   if (!rl.ok) {
     return NextResponse.json({ error: "Too many attempts" }, { status: 429 });

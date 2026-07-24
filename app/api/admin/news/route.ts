@@ -12,6 +12,7 @@ import { addAuditLog } from "@/src/server/repositories/auditRepository";
 import { readAdminJsonBody } from "@/src/server/admin/adminApiHelpers";
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
+import { enforceAdminApiAccess } from "@/src/server/rbac/enforceAdminApiAccess";
 
 const seoFields = {
   seoTitle: z.string().optional(),
@@ -48,6 +49,8 @@ function mapNewsWriteError(error: unknown) {
 }
 
 export async function GET(request: NextRequest) {
+  const gate = await enforceAdminApiAccess(request);
+  if (!gate.ok) return gate.response;
   const id = request.nextUrl.searchParams.get("id");
   if (id) {
     const item = await getNewsById(id);
@@ -79,6 +82,8 @@ export async function GET(request: NextRequest) {
 }
 
 export async function POST(request: NextRequest) {
+  const gate = await enforceAdminApiAccess(request);
+  if (!gate.ok) return gate.response;
   const bodyResult = await readAdminJsonBody(request);
   if (!bodyResult.ok) return bodyResult.response;
   const parsed = createSchema.safeParse(bodyResult.data);
@@ -100,6 +105,8 @@ export async function POST(request: NextRequest) {
 }
 
 export async function PATCH(request: NextRequest) {
+  const gate = await enforceAdminApiAccess(request);
+  if (!gate.ok) return gate.response;
   const bodyResult = await readAdminJsonBody(request);
   if (!bodyResult.ok) return bodyResult.response;
   const body = bodyResult.data;
@@ -157,6 +164,8 @@ export async function PATCH(request: NextRequest) {
 }
 
 export async function DELETE(request: NextRequest) {
+  const gate = await enforceAdminApiAccess(request);
+  if (!gate.ok) return gate.response;
   const id = request.nextUrl.searchParams.get("id");
   if (!id) return NextResponse.json({ error: "id required" }, { status: 400 });
   const ok = await deleteNews(id);

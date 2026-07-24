@@ -36,5 +36,11 @@ export async function getAdminSession(): Promise<AdminSessionPayload | null> {
 }
 
 export async function isAdminLoggedIn(): Promise<boolean> {
-  return (await getAdminSession()) !== null;
+  const session = await getAdminSession();
+  if (!session) return false;
+  const { getAdminUserAuthSnapshot } = await import(
+    "@/src/server/repositories/adminUsersRepository"
+  );
+  const live = await getAdminUserAuthSnapshot(session.sub);
+  return live != null;
 }

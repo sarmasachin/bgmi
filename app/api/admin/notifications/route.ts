@@ -3,6 +3,7 @@ import { z } from "zod";
 import { sendEmail } from "@/src/server/services/emailService";
 import { logError, logInfo } from "@/src/server/monitoring";
 import { readAdminJsonBody } from "@/src/server/admin/adminApiHelpers";
+import { enforceAdminApiAccess } from "@/src/server/rbac/enforceAdminApiAccess";
 
 const schema = z.object({
   title: z.string().min(2),
@@ -12,6 +13,8 @@ const schema = z.object({
 });
 
 export async function POST(request: NextRequest) {
+  const gate = await enforceAdminApiAccess(request);
+  if (!gate.ok) return gate.response;
   const bodyResult = await readAdminJsonBody(request);
   if (!bodyResult.ok) return bodyResult.response;
   const parsed = schema.safeParse(bodyResult.data);

@@ -16,12 +16,15 @@ import {
 } from "@/src/lib/contactEmailTemplates";
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
+import { enforceAdminApiAccess } from "@/src/server/rbac/enforceAdminApiAccess";
 
 const SUPPORT_EMAIL = "support@sensitivitysettings.com";
 
 const statusSchema = z.enum(["new", "read", "archived", "in_progress", "solved"]);
 
-export async function GET() {
+export async function GET(request: NextRequest) {
+  const gate = await enforceAdminApiAccess(request);
+  if (!gate.ok) return gate.response;
   try {
     const data = await listContactMessages();
     return NextResponse.json({ data, repo: "postgres-direct" });
@@ -32,6 +35,8 @@ export async function GET() {
 }
 
 export async function PATCH(request: NextRequest) {
+  const gate = await enforceAdminApiAccess(request);
+  if (!gate.ok) return gate.response;
   const bodyResult = await readAdminJsonBody(request);
   if (!bodyResult.ok) return bodyResult.response;
   const parsed = z
@@ -127,6 +132,8 @@ export async function PATCH(request: NextRequest) {
 }
 
 export async function DELETE(request: NextRequest) {
+  const gate = await enforceAdminApiAccess(request);
+  if (!gate.ok) return gate.response;
   let id = request.nextUrl.searchParams.get("id")?.trim() ?? "";
   if (!id) {
     try {

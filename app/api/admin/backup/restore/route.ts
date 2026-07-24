@@ -8,6 +8,11 @@ import { prisma, tryPrismaLong } from "@/src/server/dbSafe";
 import crypto from "crypto";
 import { addAuditLog } from "@/src/server/repositories/auditRepository";
 import { sanitizeHtml } from "@/src/lib/sanitizeHtml";
+import { enforceAdminApiAccess } from "@/src/server/rbac/enforceAdminApiAccess";
+import {
+  normalizeAdminRole,
+  sanitizeSubadminPermissions,
+} from "@/src/server/rbac/permissions";
 
 function restoreStr(v: unknown): string {
   if (v == null) return "";
@@ -83,6 +88,8 @@ const schema = z.object({
 });
 
 export async function POST(request: NextRequest) {
+  const gate = await enforceAdminApiAccess(request);
+  if (!gate.ok) return gate.response;
   let raw: unknown = {};
   try {
     const text = await request.text();
@@ -217,13 +224,17 @@ export async function POST(request: NextRequest) {
     }
 
     for (const item of users) {
+      const role = normalizeAdminRole(item.role || "superadmin");
+      const permissions =
+        role === "superadmin" ? [] : sanitizeSubadminPermissions(item.permissions);
       await prisma.adminUser.create({
         data: {
           id: restoreStr(item.id),
           email: restoreStr(item.email),
           passwordHash: await restoreUserPasswordHash(item, hashByEmail),
           name: restoreStrNull(item.name),
-          role: restoreStr(item.role) || "superadmin",
+          role,
+          permissions: permissions as Prisma.InputJsonValue,
           isActive: restoreAdminActive(item),
           createdAt: restoreDate(item.createdAt),
           updatedAt: restoreDate(item.updatedAt),

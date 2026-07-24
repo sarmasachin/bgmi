@@ -7,13 +7,18 @@ import { addAuditLog } from "@/src/server/repositories/auditRepository";
 import { readAdminJsonBody } from "@/src/server/admin/adminApiHelpers";
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
+import { enforceAdminApiAccess } from "@/src/server/rbac/enforceAdminApiAccess";
 
-export async function GET() {
+export async function GET(request: NextRequest) {
+  const gate = await enforceAdminApiAccess(request);
+  if (!gate.ok) return gate.response;
   const data = await listComments();
   return NextResponse.json({ data });
 }
 
 export async function PATCH(request: NextRequest) {
+  const gate = await enforceAdminApiAccess(request);
+  if (!gate.ok) return gate.response;
   const bodyResult = await readAdminJsonBody(request);
   if (!bodyResult.ok) return bodyResult.response;
   const parsed = z
@@ -36,6 +41,8 @@ export async function PATCH(request: NextRequest) {
 }
 
 export async function DELETE(request: NextRequest) {
+  const gate = await enforceAdminApiAccess(request);
+  if (!gate.ok) return gate.response;
   const id = request.nextUrl.searchParams.get("id");
   if (!id) return NextResponse.json({ error: "id required" }, { status: 400 });
   const ok = await removeComment(id);

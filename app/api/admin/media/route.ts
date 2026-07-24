@@ -2,10 +2,13 @@ import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { addAuditLog } from "@/src/server/repositories/auditRepository";
 import { isSafeUploadFilename, listUploadedImages, removeUploadedImage } from "@/src/server/media/localImageUpload";
+import { enforceAdminApiAccess } from "@/src/server/rbac/enforceAdminApiAccess";
 
 export const runtime = "nodejs";
 
-export async function GET() {
+export async function GET(request: NextRequest) {
+  const gate = await enforceAdminApiAccess(request);
+  if (!gate.ok) return gate.response;
   const files = await listUploadedImages();
   return NextResponse.json({ data: files });
 }
@@ -15,6 +18,8 @@ const deleteSchema = z.object({
 });
 
 export async function DELETE(request: NextRequest) {
+  const gate = await enforceAdminApiAccess(request);
+  if (!gate.ok) return gate.response;
   let body: unknown;
   try {
     body = await request.json();

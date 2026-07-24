@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { addAuditLog } from "@/src/server/repositories/auditRepository";
 import { readAdminJsonBody } from "@/src/server/admin/adminApiHelpers";
+import { enforceAdminApiAccess } from "@/src/server/rbac/enforceAdminApiAccess";
 import {
   getAllGameFaqsForAdmin,
   getGameFaqItems,
@@ -19,6 +20,8 @@ const itemSchema = z.object({
 });
 
 export async function GET(request: NextRequest) {
+  const gate = await enforceAdminApiAccess(request);
+  if (!gate.ok) return gate.response;
   const gameParam = request.nextUrl.searchParams.get("game");
   if (!gameParam) {
     const data = await getAllGameFaqsForAdmin();
@@ -41,6 +44,8 @@ export async function GET(request: NextRequest) {
 }
 
 export async function POST(request: NextRequest) {
+  const gate = await enforceAdminApiAccess(request);
+  if (!gate.ok) return gate.response;
   const bodyResult = await readAdminJsonBody(request);
   if (!bodyResult.ok) return bodyResult.response;
 

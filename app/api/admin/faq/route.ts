@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { addAuditLog } from "@/src/server/repositories/auditRepository";
+import { enforceAdminApiAccess } from "@/src/server/rbac/enforceAdminApiAccess";
 import {
   getHomeFaqItems,
   getStoredHomeFaqRaw,
@@ -19,13 +20,17 @@ const postSchema = z.object({
   items: z.array(itemSchema).max(50),
 });
 
-export async function GET() {
+export async function GET(request: NextRequest) {
+  const gate = await enforceAdminApiAccess(request);
+  if (!gate.ok) return gate.response;
   const stored = await getStoredHomeFaqRaw();
   const effective = await getHomeFaqItems();
   return NextResponse.json({ effectiveItems: effective, storedItems: stored });
 }
 
 export async function POST(request: NextRequest) {
+  const gate = await enforceAdminApiAccess(request);
+  if (!gate.ok) return gate.response;
   let body: unknown;
   try {
     body = await request.json();

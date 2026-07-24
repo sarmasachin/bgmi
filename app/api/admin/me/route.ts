@@ -1,4 +1,4 @@
-import { NextResponse } from "next/server";
+import { NextResponse, NextRequest } from "next/server";
 import {
   ADMIN_SESSION_COOKIE,
   adminSessionCookieOptions,
@@ -18,15 +18,18 @@ function clearSession(response: NextResponse) {
 
 /**
  * Any logged-in admin — sidebar + session probes.
- * Phase 4: re-check isActive from DB and refresh cookie permissions live.
+ * Re-check isActive from DB and refresh cookie permissions live.
+ * Clears cookie when account is inactive/missing (revocation).
  */
-export async function GET() {
+export async function GET(_request: NextRequest) {
   const cookieStore = await cookies();
   const raw = cookieStore.get(ADMIN_SESSION_COOKIE)?.value;
   const session = await verifyAdminSessionToken(raw);
 
   if (!session) {
-    return NextResponse.json({ error: "Unauthorized. Please log in again." }, { status: 401 });
+    return clearSession(
+      NextResponse.json({ error: "Unauthorized. Please log in again." }, { status: 401 }),
+    );
   }
 
   const live = await getAdminUserAuthSnapshot(session.sub);

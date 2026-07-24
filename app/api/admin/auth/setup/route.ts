@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { checkRateLimit } from "@/src/server/rateLimit";
+import { getRequestIp } from "@/src/server/requestIp";
 import {
   countAdminUsers,
   setPrimaryAdminCredentials,
@@ -17,14 +18,19 @@ import {
 
 const schema = z.object({
   email: z.string().email().max(200),
-  password: z.string().min(6).max(200),
+  password: z.string().min(8).max(200),
   name: z.string().trim().max(200).optional(),
   bootstrapSecret: z.string().max(200).optional(),
 });
 
 function bootstrapEnabled() {
   const secret = process.env.ADMIN_BOOTSTRAP_SECRET?.trim() ?? "";
-  return secret.length >= 16;
+  if (secret.length < 16) return false;
+  // Production takeover requires explicit opt-in (empty-DB first setup still works without this).
+  if (process.env.NODE_ENV === "production" && process.env.ADMIN_BOOTSTRAP_ALLOW !== "1") {
+    return false;
+  }
+  return true;
 }
 
 function bootstrapSecretOk(provided: string | undefined) {
@@ -43,7 +49,7 @@ function bootstrapSecretOk(provided: string | undefined) {
  * ADMIN_BOOTSTRAP_SECRET matches (for lockout recovery / setting Gmail + password).
  */
 export async function POST(request: NextRequest) {
-  const ip = request.headers.get("x-forwarded-for") ?? "local";
+  const ip = getRequestIp(request);
   const rl = checkRateLimit(`admin-setup:${ip}`, 8, 60_000);
   if (!rl.ok) {
     return NextResponse.json({ error: "Too many attempts" }, { status: 429 });
@@ -59,7 +65,7 @@ export async function POST(request: NextRequest) {
   const parsed = schema.safeParse(body);
   if (!parsed.success) {
     return NextResponse.json(
-      { error: "Enter a valid email and password (min 6 characters)." },
+      { error: "Enter a valid email and password (min 8 characters)." },
       { status: 400 },
     );
   }

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { checkRateLimit } from "@/src/server/rateLimit";
+import { getRequestIp } from "@/src/server/requestIp";
 import { getNewsById } from "@/src/server/repositories/newsRepository";
 import {
   createComment,
@@ -15,7 +16,7 @@ const postSchema = z.object({
 
 /** Public: approved comments for a news article. */
 export async function GET(request: NextRequest) {
-  const ip = request.headers.get("x-forwarded-for") ?? "local";
+  const ip = getRequestIp(request);
   const rl = checkRateLimit(`comments:get:${ip}`, 120, 60_000);
   if (!rl.ok) {
     return NextResponse.json({ error: "Too many requests" }, { status: 429 });
@@ -32,7 +33,7 @@ export async function GET(request: NextRequest) {
 
 /** Public: submit comment (always starts as pending). */
 export async function POST(request: NextRequest) {
-  const ip = request.headers.get("x-forwarded-for") ?? "local";
+  const ip = getRequestIp(request);
   const rl = checkRateLimit(`comments:post:${ip}`, 10, 60_000);
   if (!rl.ok) {
     return NextResponse.json({ error: "Too many requests" }, { status: 429 });

@@ -8,15 +8,15 @@ import {
   updateAdminUserAccess,
   updateAdminUserPassword,
 } from "@/src/server/repositories/adminUsersRepository";
-import { requirePermission } from "@/src/server/rbac/requirePermission";
 import { ADMIN_PERMISSIONS } from "@/src/server/rbac/permissions";
 import { readAdminJsonBody } from "@/src/server/admin/adminApiHelpers";
+import { enforceAdminApiAccess } from "@/src/server/rbac/enforceAdminApiAccess";
 
 const permissionSchema = z.enum(ADMIN_PERMISSIONS);
 
 const createSchema = z.object({
   email: z.string().email(),
-  password: z.string().min(6),
+  password: z.string().min(8).max(200),
   name: z.string().min(1).max(200).optional(),
   role: z.enum(["superadmin", "subadmin"]).optional(),
   permissions: z.array(permissionSchema).max(80).optional(),
@@ -32,7 +32,7 @@ const patchSchema = z.discriminatedUnion("action", [
   z.object({
     action: z.literal("resetPassword"),
     id: z.string().min(1),
-    newPassword: z.string().min(6),
+    newPassword: z.string().min(8).max(200),
   }),
   z.object({
     action: z.literal("setAccess"),
@@ -43,8 +43,8 @@ const patchSchema = z.discriminatedUnion("action", [
   }),
 ]);
 
-export async function GET() {
-  const gate = await requirePermission("users.manage");
+export async function GET(request: NextRequest) {
+  const gate = await enforceAdminApiAccess(request);
   if (!gate.ok) return gate.response;
 
   const data = await listAdminUsers();
@@ -60,7 +60,7 @@ export async function GET() {
 }
 
 export async function POST(request: NextRequest) {
-  const gate = await requirePermission("users.manage");
+  const gate = await enforceAdminApiAccess(request);
   if (!gate.ok) return gate.response;
 
   const bodyResult = await readAdminJsonBody(request);
@@ -101,7 +101,7 @@ export async function POST(request: NextRequest) {
 }
 
 export async function PATCH(request: NextRequest) {
-  const gate = await requirePermission("users.manage");
+  const gate = await enforceAdminApiAccess(request);
   if (!gate.ok) return gate.response;
 
   const bodyResult = await readAdminJsonBody(request);

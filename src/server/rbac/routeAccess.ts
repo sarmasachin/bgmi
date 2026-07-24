@@ -107,6 +107,7 @@ export function resolveAdminApiPermission(
   }
 
   if (path === "/api/admin/audit" || path.startsWith("/api/admin/audit/")) {
+    if (isDelete) return { type: "permission", permission: "audit.delete" };
     return { type: "permission", permission: "audit.view" };
   }
 

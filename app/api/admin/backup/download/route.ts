@@ -1,7 +1,8 @@
-import { NextResponse } from "next/server";
+import { NextResponse, NextRequest } from "next/server";
 import { prisma, tryPrisma } from "@/src/server/dbSafe";
 import { exportMockBackup } from "@/src/server/mockStore";
 import crypto from "crypto";
+import { enforceAdminApiAccess } from "@/src/server/rbac/enforceAdminApiAccess";
 
 function stripUserSecrets(users: unknown) {
   if (!Array.isArray(users)) return [];
@@ -12,7 +13,9 @@ function stripUserSecrets(users: unknown) {
   });
 }
 
-export async function GET() {
+export async function GET(request: NextRequest) {
+  const gate = await enforceAdminApiAccess(request);
+  if (!gate.ok) return gate.response;
   const dbBackup = await tryPrisma(async () => {
     const [news, pages, comments, ads, users, settings] = await Promise.all([
       prisma.newsPost.findMany(),

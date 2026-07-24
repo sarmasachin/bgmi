@@ -8,40 +8,28 @@ import {
   type AdminPermission,
   type AdminAuthSubject,
 } from "@/src/server/rbac/permissions";
-import { subjectFromSessionPayload } from "@/src/server/rbac/sessionSubject";
-
 export type AdminSessionSubject = AdminAuthSubject & {
   userId: string;
   email: string;
 };
 
 /**
- * Live auth subject (Phase 4): prefer DB role/permissions + isActive.
- * Falls back to cookie payload only when DB snapshot is unavailable.
+ * Live auth subject: DB role/permissions + isActive only.
+ * Never trusts cookie RBAC alone (prevents stale privilege after demote/deactivate).
  */
 export async function getAdminAuthSubject(): Promise<AdminSessionSubject | null> {
   const session = await getAdminSession();
   if (!session) return null;
 
   const live = await getAdminUserAuthSnapshot(session.sub);
-  if (live) {
-    return {
-      userId: live.id,
-      email: live.email,
-      role: live.role,
-      permissions: live.permissions,
-    };
-  }
+  if (!live) return null;
 
-  // User missing/inactive in DB — do not trust cookie alone for Node routes.
-  // (Middleware still uses cookie until /api/admin/me clears it.)
-  if (process.env.NODE_ENV === "production") {
-    return null;
-  }
-
-  // Dev fallback when DB is down: cookie subject.
-  const fromCookie = subjectFromSessionPayload(session);
-  return fromCookie;
+  return {
+    userId: live.id,
+    email: live.email,
+    role: live.role,
+    permissions: live.permissions,
+  };
 }
 
 export async function requireAdminSession(): Promise<

@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { checkRateLimit } from "@/src/server/rateLimit";
+import { getRequestIp } from "@/src/server/requestIp";
 import {
   getRatingSummary,
   normalizeRatingToolContext,
@@ -21,7 +22,7 @@ const postSchema = z.object({
 
 /** Public read: average + count for a rating target */
 export async function GET(request: NextRequest) {
-  const ip = request.headers.get("x-forwarded-for") ?? "local";
+  const ip = getRequestIp(request);
   const rl = checkRateLimit(`ratings:get:${ip}`, 120, 60_000);
   if (!rl.ok) return NextResponse.json({ error: "Too many requests" }, { status: 429 });
 
@@ -51,7 +52,7 @@ export async function GET(request: NextRequest) {
 }
 
 export async function POST(request: NextRequest) {
-  const ip = request.headers.get("x-forwarded-for") ?? "local";
+  const ip = getRequestIp(request);
   const rl = checkRateLimit(`ratings:post:${ip}`, 30, 60_000);
   if (!rl.ok) return NextResponse.json({ error: "Too many requests" }, { status: 429 });
 

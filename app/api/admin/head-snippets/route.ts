@@ -3,6 +3,7 @@ import { z } from "zod";
 import { getHeadSnippets, saveHeadSnippets } from "@/src/server/repositories/settingsRepository";
 import { addAuditLog } from "@/src/server/repositories/auditRepository";
 import { readAdminJsonBody } from "@/src/server/admin/adminApiHelpers";
+import { enforceAdminApiAccess } from "@/src/server/rbac/enforceAdminApiAccess";
 
 const CACHE_TTL_MS = 60_000;
 
@@ -23,7 +24,9 @@ const schema = z.object({
   adsenseScript: z.string().optional(),
 });
 
-export async function GET() {
+export async function GET(request: NextRequest) {
+  const gate = await enforceAdminApiAccess(request);
+  if (!gate.ok) return gate.response;
   const now = Date.now();
   if (headSnippetsCache && headSnippetsCache.expiresAt > now) {
     return NextResponse.json(headSnippetsCache.payload);
@@ -38,6 +41,8 @@ export async function GET() {
 }
 
 export async function POST(request: NextRequest) {
+  const gate = await enforceAdminApiAccess(request);
+  if (!gate.ok) return gate.response;
   const bodyResult = await readAdminJsonBody(request);
   if (!bodyResult.ok) return bodyResult.response;
   const parsed = schema.safeParse(bodyResult.data);

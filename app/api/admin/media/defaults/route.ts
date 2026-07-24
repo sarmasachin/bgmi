@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { addAuditLog } from "@/src/server/repositories/auditRepository";
+import { enforceAdminApiAccess } from "@/src/server/rbac/enforceAdminApiAccess";
 import {
   getMediaImageOutputPreference,
   saveMediaImageOutputPreference,
@@ -15,12 +16,16 @@ const schema = z.object({
   jpeg: z.boolean(),
 });
 
-export async function GET() {
+export async function GET(request: NextRequest) {
+  const gate = await enforceAdminApiAccess(request);
+  if (!gate.ok) return gate.response;
   const pref = await getMediaImageOutputPreference();
   return NextResponse.json({ data: pref });
 }
 
 export async function PUT(request: NextRequest) {
+  const gate = await enforceAdminApiAccess(request);
+  if (!gate.ok) return gate.response;
   let body: unknown;
   try {
     body = await request.json();

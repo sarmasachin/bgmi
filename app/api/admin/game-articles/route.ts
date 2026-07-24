@@ -2,17 +2,22 @@ import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { addAuditLog } from "@/src/server/repositories/auditRepository";
 import { readAdminJsonBody } from "@/src/server/admin/adminApiHelpers";
+import { enforceAdminApiAccess } from "@/src/server/rbac/enforceAdminApiAccess";
 import {
   getGameArticlesForAdmin,
   saveGameArticleHtml,
 } from "@/src/server/repositories/gameArticlesRepository";
 
-export async function GET() {
+export async function GET(request: NextRequest) {
+  const gate = await enforceAdminApiAccess(request);
+  if (!gate.ok) return gate.response;
   const data = await getGameArticlesForAdmin();
   return NextResponse.json({ data });
 }
 
 export async function POST(request: NextRequest) {
+  const gate = await enforceAdminApiAccess(request);
+  if (!gate.ok) return gate.response;
   const bodyResult = await readAdminJsonBody(request);
   if (!bodyResult.ok) return bodyResult.response;
 

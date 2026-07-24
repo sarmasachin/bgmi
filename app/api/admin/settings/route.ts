@@ -4,6 +4,7 @@ import { z } from "zod";
 import { getSettings, saveSettings } from "@/src/server/repositories/settingsRepository";
 import { addAuditLog } from "@/src/server/repositories/auditRepository";
 import { readAdminJsonBody } from "@/src/server/admin/adminApiHelpers";
+import { enforceAdminApiAccess } from "@/src/server/rbac/enforceAdminApiAccess";
 
 const CACHE_TTL_MS = 60_000;
 
@@ -24,7 +25,9 @@ let settingsCache:
     }
   | null = null;
 
-export async function GET() {
+export async function GET(request: NextRequest) {
+  const gate = await enforceAdminApiAccess(request);
+  if (!gate.ok) return gate.response;
   const now = Date.now();
   if (settingsCache && settingsCache.expiresAt > now) {
     return NextResponse.json(settingsCache.payload);
@@ -82,6 +85,8 @@ const settingsSchema = z.object({
 });
 
 export async function POST(request: NextRequest) {
+  const gate = await enforceAdminApiAccess(request);
+  if (!gate.ok) return gate.response;
   const bodyResult = await readAdminJsonBody(request);
   if (!bodyResult.ok) return bodyResult.response;
   const parsed = settingsSchema.safeParse(bodyResult.data);

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { addAuditLog } from "@/src/server/repositories/auditRepository";
+import { enforceAdminApiAccess } from "@/src/server/rbac/enforceAdminApiAccess";
 import {
   getAdPlacementVisibility,
   saveAdPlacementVisibility,
@@ -18,12 +19,16 @@ const schema = z.object({
   }),
 });
 
-export async function GET() {
+export async function GET(request: NextRequest) {
+  const gate = await enforceAdminApiAccess(request);
+  if (!gate.ok) return gate.response;
   const data = await getAdPlacementVisibility();
   return NextResponse.json({ data });
 }
 
 export async function PATCH(request: NextRequest) {
+  const gate = await enforceAdminApiAccess(request);
+  if (!gate.ok) return gate.response;
   let body: unknown;
   try {
     body = await request.json();

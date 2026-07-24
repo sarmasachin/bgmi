@@ -1,8 +1,9 @@
-import { NextResponse } from "next/server";
+import { NextResponse, NextRequest } from "next/server";
 import { mkdir, writeFile } from "node:fs/promises";
 import path from "node:path";
 import sharp from "sharp";
 import { addAuditLog } from "@/src/server/repositories/auditRepository";
+import { enforceAdminApiAccess } from "@/src/server/rbac/enforceAdminApiAccess";
 import {
   detectImageMime,
   getPublicUploadDir,
@@ -26,7 +27,9 @@ function parseFormats(raw: string | null): OutFormat[] {
   return set.size ? [...set] : ["webp"];
 }
 
-export async function POST(request: Request) {
+export async function POST(request: NextRequest) {
+  const gate = await enforceAdminApiAccess(request);
+  if (!gate.ok) return gate.response;
   const formData = await request.formData();
   const file = formData.get("file");
   const widthRaw = formData.get("width");

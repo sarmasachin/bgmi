@@ -1,6 +1,7 @@
 import { getAdminAuditRows } from "@/src/server/repositories/adminAuditRepository";
 import { requireAdminPageAccess } from "@/src/server/rbac/requireAdminPage";
 import { AdminAccessDenied } from "@/src/components/admin/AdminAccessDenied";
+import { can } from "@/src/server/rbac/permissions";
 import AdminAuditClient from "./AdminAuditClient";
 
 export default async function AdminAuditPage() {
@@ -8,5 +9,10 @@ export default async function AdminAuditPage() {
   if (!access.ok) return <AdminAccessDenied />;
 
   const initialRows = await getAdminAuditRows();
-  return <AdminAuditClient initialRows={initialRows} />;
+  return (
+    <AdminAuditClient
+      initialRows={initialRows}
+      canClear={can(access.subject, "audit.delete")}
+    />
+  );
 }

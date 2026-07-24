@@ -5,6 +5,7 @@ import {
   expandCalculatorPhoneModelStrings,
 } from "@/src/lib/calculatorPhoneModelsInput";
 import { addAuditLog } from "@/src/server/repositories/auditRepository";
+import { enforceAdminApiAccess } from "@/src/server/rbac/enforceAdminApiAccess";
 import {
   getCalculatorPhoneModels,
   getStoredCalculatorPhoneModelsRaw,
@@ -23,7 +24,9 @@ const postSchema = z
     message: "text or models required",
   });
 
-export async function GET() {
+export async function GET(request: NextRequest) {
+  const gate = await enforceAdminApiAccess(request);
+  if (!gate.ok) return gate.response;
   const stored = await getStoredCalculatorPhoneModelsRaw();
   const effective = await getCalculatorPhoneModels();
   return NextResponse.json({
@@ -35,6 +38,8 @@ export async function GET() {
 }
 
 export async function POST(request: NextRequest) {
+  const gate = await enforceAdminApiAccess(request);
+  if (!gate.ok) return gate.response;
   let body: unknown;
   try {
     body = await request.json();

@@ -6,12 +6,15 @@
 export const ADMIN_ROLES = ["superadmin", "subadmin"] as const;
 export type AdminRole = (typeof ADMIN_ROLES)[number];
 
-/** Legacy DB value `"admin"` is treated as superadmin. */
+/**
+ * Normalize role strings. Fail closed: unknown/empty → subadmin (least privilege).
+ * Legacy DB value `"admin"` is treated as superadmin.
+ */
 export function normalizeAdminRole(role: unknown): AdminRole {
   const raw = typeof role === "string" ? role.trim().toLowerCase() : "";
+  if (raw === "superadmin" || raw === "admin") return "superadmin";
   if (raw === "subadmin") return "subadmin";
-  // "admin", "superadmin", empty, unknown → superadmin (safe default for Phase 1)
-  return "superadmin";
+  return "subadmin";
 }
 
 export function isSuperAdminRole(role: unknown): boolean {
@@ -50,6 +53,7 @@ export const ADMIN_PERMISSIONS = [
   "settings.view",
   "settings.edit",
   "audit.view",
+  "audit.delete",
   "users.manage",
   "backups.download",
   "backups.restore",
@@ -79,6 +83,17 @@ export function normalizePermissionList(raw: unknown): AdminPermission[] {
   return out;
 }
 
+/** Permissions that must never be granted to subadmin. */
+export const SUPERADMIN_ONLY_PERMISSIONS: readonly AdminPermission[] = [
+  "audit.delete",
+  "users.manage",
+  "backups.download",
+  "backups.restore",
+  "system.view",
+];
+
+const SUPERADMIN_ONLY_SET = new Set<string>(SUPERADMIN_ONLY_PERMISSIONS);
+
 /**
  * Effective permissions for a user.
  * Superadmin always gets the full catalog (DB list ignored).
@@ -88,13 +103,7 @@ export function resolvePermissions(role: unknown, stored: unknown): AdminPermiss
   if (isSuperAdminRole(role)) {
     return [...ALL_ADMIN_PERMISSIONS];
   }
-  const superOnly = new Set<string>([
-    "users.manage",
-    "backups.download",
-    "backups.restore",
-    "system.view",
-  ]);
-  return normalizePermissionList(stored).filter((p) => !superOnly.has(p));
+  return normalizePermissionList(stored).filter((p) => !SUPERADMIN_ONLY_SET.has(p));
 }
 
 export type AdminAuthSubject = {
@@ -167,7 +176,12 @@ export const ADMIN_PERMISSION_MODULES: ReadonlyArray<{
     permissions: ["media.view", "media.upload", "media.delete"],
   },
   { id: "settings", label: "Settings", permissions: ["settings.view", "settings.edit"] },
-  { id: "audit", label: "Audit", permissions: ["audit.view"] },
+  {
+    id: "audit",
+    label: "Audit",
+    permissions: ["audit.view", "audit.delete"],
+    superadminOnly: true,
+  },
   {
     id: "users",
     label: "Users & RBAC",
@@ -182,16 +196,6 @@ export const ADMIN_PERMISSION_MODULES: ReadonlyArray<{
   },
   { id: "system", label: "System", permissions: ["system.view"], superadminOnly: true },
 ];
-
-/** Permissions that must never be granted to subadmin. */
-export const SUPERADMIN_ONLY_PERMISSIONS: readonly AdminPermission[] = [
-  "users.manage",
-  "backups.download",
-  "backups.restore",
-  "system.view",
-];
-
-const SUPERADMIN_ONLY_SET = new Set<string>(SUPERADMIN_ONLY_PERMISSIONS);
 
 /** Strip users/backups/system from a subadmin checkbox list. */
 export function sanitizeSubadminPermissions(raw: unknown): AdminPermission[] {

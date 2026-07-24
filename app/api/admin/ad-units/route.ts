@@ -3,13 +3,18 @@ import { z } from "zod";
 import { addAuditLog } from "@/src/server/repositories/auditRepository";
 import { listAdSlots, updateAdSlot } from "@/src/server/repositories/adsRepository";
 import { readAdminJsonBody } from "@/src/server/admin/adminApiHelpers";
+import { enforceAdminApiAccess } from "@/src/server/rbac/enforceAdminApiAccess";
 
-export async function GET() {
+export async function GET(request: NextRequest) {
+  const gate = await enforceAdminApiAccess(request);
+  if (!gate.ok) return gate.response;
   const data = await listAdSlots();
   return NextResponse.json({ data });
 }
 
 export async function PATCH(request: NextRequest) {
+  const gate = await enforceAdminApiAccess(request);
+  if (!gate.ok) return gate.response;
   const bodyResult = await readAdminJsonBody(request);
   if (!bodyResult.ok) return bodyResult.response;
   const parsed = z

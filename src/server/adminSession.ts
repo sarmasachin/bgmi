@@ -2,8 +2,8 @@
 
 export const ADMIN_SESSION_COOKIE = "bgmi_admin_session";
 
-/** 7 days */
-export const ADMIN_SESSION_MAX_AGE_SEC = 60 * 60 * 24 * 7;
+/** 24 hours — shorter TTL limits damage if a cookie is stolen; live RBAC still re-checks DB. */
+export const ADMIN_SESSION_MAX_AGE_SEC = 60 * 60 * 24;
 
 export type AdminSessionPayload = {
   sub: string;

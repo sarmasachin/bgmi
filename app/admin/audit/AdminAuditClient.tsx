@@ -13,11 +13,12 @@ type Row = AdminAuditRow;
 
 type Props = {
   initialRows?: Row[];
+  canClear?: boolean;
 };
 
 const PAGE_SIZE = 10;
 
-export default function AdminAuditClient({ initialRows }: Props) {
+export default function AdminAuditClient({ initialRows, canClear = false }: Props) {
   const [rows, setRows] = useState<Row[]>(initialRows ?? []);
   const setMessage = useAdminFlash();
   const [loading, setLoading] = useState(initialRows === undefined);
@@ -86,14 +87,16 @@ export default function AdminAuditClient({ initialRows }: Props) {
         Simple history of admin actions — who did what, and when. Showing the latest 100 entries.
       </p>
       <div className="admin-actions">
-        <button
-          type="button"
-          className="admin-pages-btn admin-pages-btn-delete"
-          disabled={loading || clearing || rows.length === 0}
-          onClick={() => void clearAll()}
-        >
-          {clearing ? "Clearing…" : "Clear all logs"}
-        </button>
+        {canClear ? (
+          <button
+            type="button"
+            className="admin-pages-btn admin-pages-btn-delete"
+            disabled={loading || clearing || rows.length === 0}
+            onClick={() => void clearAll()}
+          >
+            {clearing ? "Clearing…" : "Clear all logs"}
+          </button>
+        ) : null}
         <button
           type="button"
           className="admin-pages-btn admin-pages-btn-preview"

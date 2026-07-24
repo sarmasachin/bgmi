@@ -9,15 +9,15 @@ import {
   listAdminRoleDefinitions,
   updateAdminRoleDefinition,
 } from "@/src/server/repositories/adminRolesRepository";
-import { requirePermission } from "@/src/server/rbac/requirePermission";
 import { ADMIN_PERMISSIONS } from "@/src/server/rbac/permissions";
 import { readAdminJsonBody } from "@/src/server/admin/adminApiHelpers";
 import { auditActorFromSubject } from "@/src/server/rbac/auditActor";
+import { enforceAdminApiAccess } from "@/src/server/rbac/enforceAdminApiAccess";
 
 const permissionSchema = z.enum(ADMIN_PERMISSIONS);
 
 export async function GET(request: NextRequest) {
-  const gate = await requirePermission("users.manage");
+  const gate = await enforceAdminApiAccess(request);
   if (!gate.ok) return gate.response;
 
   await ensureSystemRoleDefinitions();
@@ -33,7 +33,7 @@ export async function GET(request: NextRequest) {
 }
 
 export async function POST(request: NextRequest) {
-  const gate = await requirePermission("users.manage");
+  const gate = await enforceAdminApiAccess(request);
   if (!gate.ok) return gate.response;
 
   const bodyResult = await readAdminJsonBody(request);
@@ -78,7 +78,7 @@ export async function POST(request: NextRequest) {
 }
 
 export async function PATCH(request: NextRequest) {
-  const gate = await requirePermission("users.manage");
+  const gate = await enforceAdminApiAccess(request);
   if (!gate.ok) return gate.response;
 
   const bodyResult = await readAdminJsonBody(request);
@@ -114,7 +114,7 @@ export async function PATCH(request: NextRequest) {
 }
 
 export async function DELETE(request: NextRequest) {
-  const gate = await requirePermission("users.manage");
+  const gate = await enforceAdminApiAccess(request);
   if (!gate.ok) return gate.response;
 
   const id = request.nextUrl.searchParams.get("id")?.trim();

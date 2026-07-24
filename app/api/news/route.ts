@@ -1,9 +1,10 @@
 import { listPublishedNews } from "@/src/server/repositories/newsRepository";
 import { NextRequest, NextResponse } from "next/server";
 import { checkRateLimit } from "@/src/server/rateLimit";
+import { getRequestIp } from "@/src/server/requestIp";
 
 export async function GET(request: NextRequest) {
-  const ip = request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || "local";
+  const ip = getRequestIp(request);
   const rl = checkRateLimit(`news-list:${ip}`, 120, 60_000);
   if (!rl.ok) {
     return NextResponse.json({ error: "Too many requests" }, { status: 429 });

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { checkRateLimit } from "@/src/server/rateLimit";
+import { getRequestIp } from "@/src/server/requestIp";
 import { createContactMessage } from "@/src/server/repositories/contactRepository";
 import { sendEmail } from "@/src/server/services/emailService";
 import {
@@ -21,7 +22,7 @@ const schema = z.object({
 });
 
 export async function POST(request: NextRequest) {
-  const ip = request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || "local";
+  const ip = getRequestIp(request);
   const rl = checkRateLimit(`contact-form:${ip}`, 8, 60_000);
   if (!rl.ok) {
     return NextResponse.json({ error: "Too many messages. Please try again shortly." }, { status: 429 });
