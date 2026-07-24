@@ -9,9 +9,17 @@ import { SiteFooter } from "@/src/components/SiteFooter";
 import {
   FF_ADVANCE_SERVER_PAGE,
   FREE_FIRE_ADVANCE_SERVER_PAGE_KEY,
+  FREE_FIRE_ADVANCE_SERVER_PATH,
 } from "@/src/lib/ffAdvanceServerPage";
 import { ratingWidgetRemountKey } from "@/src/lib/ratingWidgetKey";
-import { faqSchema } from "@/src/lib/schema";
+import {
+  breadcrumbListSchema,
+  faqSchema,
+  howToSchema,
+  androidApkAppSchema,
+  webPageSchema,
+} from "@/src/lib/schema";
+import { toCanonicalUrl } from "@/src/lib/siteUrl";
 import { listApprovedPageComments } from "@/src/server/repositories/pageCommentsRepository";
 import { getRatingSummary } from "@/src/server/repositories/ratingSummaryRepository";
 import { getSettings } from "@/src/server/repositories/settingsRepository";
@@ -32,11 +40,61 @@ export async function FfAdvanceServerLandingPage() {
     question: item.question,
     answer: item.answer,
   }));
+  const canonical = toCanonicalUrl(FREE_FIRE_ADVANCE_SERVER_PATH);
+  const homeUrl = toCanonicalUrl("/");
+  const heroImageAbs = toCanonicalUrl(page.heroImage);
+  const registerCard = page.cards.find((c) => c.id === "register-download");
+  const installCard = page.cards.find((c) => c.id === "apk-steps");
+
   const faqLd = faqSchema(faqItems);
+  const breadcrumbLd = breadcrumbListSchema([
+    { name: "Home", url: homeUrl },
+    { name: "Free Fire Advance Server", url: canonical },
+  ]);
+  const registerHowToLd = registerCard
+    ? howToSchema({
+        name: registerCard.title,
+        description: registerCard.summary,
+        steps: [...registerCard.points],
+      })
+    : null;
+  const installHowToLd = installCard
+    ? howToSchema({
+        name: installCard.title,
+        description: installCard.summary,
+        steps: [...installCard.points],
+      })
+    : null;
+  const webPageLd = webPageSchema({
+    name: page.seoTitle,
+    description: page.seoDescription,
+    url: canonical,
+    image: heroImageAbs,
+    dateModified: new Date().toISOString().slice(0, 10),
+    keywords: [...page.seoKeywords],
+    inLanguage: "en",
+  });
+  const apkAppLd = androidApkAppSchema({
+    name: "Free Fire Advance Server OB55",
+    description: page.seoDescription,
+    url: canonical,
+    downloadUrl: page.officialUrl,
+    operatingSystem: "Android",
+    image: heroImageAbs,
+  });
 
   return (
     <div className="ff-as-page">
       <HomeHeader siteTitle={settings.homeDisplay.headerTitle} navigation={settings.navigation} />
+
+      <nav className="ff-as-breadcrumb" aria-label="Breadcrumb">
+        <ol className="ff-as-breadcrumb-list">
+          <li>
+            <Link href="/">Home</Link>
+          </li>
+          <li aria-current="page">Advance Server</li>
+        </ol>
+      </nav>
 
       <section
         className={`ff-as-hero${page.heroLayout === "split" ? " ff-as-hero--split" : " ff-as-hero--center"}`}
@@ -62,7 +120,19 @@ export async function FfAdvanceServerLandingPage() {
               target="_blank"
               rel="noopener noreferrer"
             >
-              <i className="fa-solid fa-download" aria-hidden />
+              <svg
+                className="ff-as-apk-btn-icon"
+                viewBox="0 0 24 24"
+                width="22"
+                height="22"
+                aria-hidden="true"
+                focusable="false"
+              >
+                <path
+                  fill="currentColor"
+                  d="M12 3a1 1 0 0 1 1 1v8.59l2.3-2.3a1 1 0 1 1 1.4 1.42l-4 4a1 1 0 0 1-1.4 0l-4-4a1 1 0 0 1 1.4-1.42L11 12.59V4a1 1 0 0 1 1-1zm-7 13a1 1 0 0 1 1 1v2h12v-2a1 1 0 1 1 2 0v3a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1v-3a1 1 0 0 1 1-1z"
+                />
+              </svg>
               <span>{page.apkCta}</span>
             </a>
 
@@ -86,7 +156,7 @@ export async function FfAdvanceServerLandingPage() {
               <img
                 className="ff-as-hero-visual-img"
                 src={page.heroImage}
-                alt=""
+                alt={page.heroImageAlt}
                 decoding="async"
               />
             </div>
@@ -261,6 +331,32 @@ export async function FfAdvanceServerLandingPage() {
           dangerouslySetInnerHTML={{ __html: JSON.stringify(faqLd) }}
         />
       ) : null}
+      {breadcrumbLd ? (
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbLd) }}
+        />
+      ) : null}
+      {registerHowToLd ? (
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(registerHowToLd) }}
+        />
+      ) : null}
+      {installHowToLd ? (
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(installHowToLd) }}
+        />
+      ) : null}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(webPageLd) }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(apkAppLd) }}
+      />
 
       <SiteFooter settings={settings} />
     </div>

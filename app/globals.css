@@ -1,5 +1,5 @@
 :root {
-  /* Soft teal — easier on eyes than neon var(--primary) */
+  /* Soft teal ? easier on eyes than neon var(--primary) */
   --primary: #45c4b0;
   --primary-strong: #5ed4c2;
   --primary-muted: rgba(69, 196, 176, 0.18);
@@ -31,7 +31,7 @@ a {
   text-decoration: none;
 }
 
-/* Font Awesome solid — font-display swap (PageSpeed / FCP) */
+/* Font Awesome solid ? font-display swap (PageSpeed / FCP) */
 @font-face {
   font-family: "Font Awesome 6 Free";
   font-style: normal;
@@ -70,7 +70,7 @@ a {
   box-sizing: border-box;
 }
 
-/* Free Fire / FF Max page title — keep in globals so it paints with first CSS (no client-chunk flash) */
+/* Free Fire / FF Max page title ? keep in globals so it paints with first CSS (no client-chunk flash) */
 h1.main-title.ff-gradient-title {
   background: linear-gradient(
     90deg,
@@ -91,7 +91,7 @@ h1.main-title.ff-gradient-title {
   width: 100%;
   flex-shrink: 0;
   display: block;
-  /* Static offsets — avoid JS height updates that jump the calculator on refresh */
+  /* Static offsets ? avoid JS height updates that jump the calculator on refresh */
   height: 108px;
 }
 
@@ -3623,7 +3623,7 @@ footer,
   margin-bottom: 8px;
 }
 
-/* Title / description / SEO — wider so full text is readable (not social fields). */
+/* Title / description / SEO ? wider so full text is readable (not social fields). */
 .admin-inline-form .admin-input-wide {
   grid-column: span 2;
   min-width: 0;
@@ -5552,7 +5552,7 @@ footer,
   }
 }
 
-/* �� User-facing error UI �� */
+/* ?? User-facing error UI ?? */
 .user-error-page {
   width: 100%;
   min-height: 70vh;
@@ -5664,7 +5664,7 @@ footer,
   line-height: 1.45;
 }
 
-/* —— Contact page —— */
+/* ?? Contact page ?? */
 .contact-page {
   padding: 28px 0 56px;
 }
@@ -5903,7 +5903,7 @@ footer,
   }
 }
 
-/* —— Roles & Permissions (screenshot-style cards) —— */
+/* ?? Roles & Permissions (screenshot-style cards) ?? */
 .admin-roles-head {
   display: flex;
   align-items: center;
@@ -6057,7 +6057,7 @@ footer,
   flex-wrap: wrap;
 }
 
-/* PUBG Mobile Code — result table + copy (calculator clone uses existing calc CSS) */
+/* PUBG Mobile Code ? result table + copy (calculator clone uses existing calc CSS) */
 .pmc-code-table-wrap {
   width: 100%;
   overflow-x: auto;
@@ -6161,7 +6161,7 @@ footer,
   background: var(--primary-strong);
 }
 
-/* How It Works — below ratings on home / game calculators */
+/* How It Works ? below ratings on home / game calculators */
 .how-works {
   width: 95%;
   max-width: 1100px;
@@ -6409,7 +6409,7 @@ footer,
   margin-right: 6px;
 }
 
-/* Official OB / patch strip (home) — links out to Garena only */
+/* Official OB / patch strip (home) ? links out to Garena only */
 .ff-patch-strip {
   width: 95%;
   max-width: 1100px;
@@ -6912,7 +6912,7 @@ footer,
   }
 }
 
-/* Explore Free Fire / Free Fire Max cards (home) — internal links only */
+/* Explore Free Fire / Free Fire Max cards (home) ? internal links only */
 .ff-explore {
   width: 95%;
   max-width: 1100px;
@@ -7058,7 +7058,7 @@ html {
   scroll-behavior: smooth;
 }
 
-/* Play mode chips (home) — sets calculator Player Role */
+/* Play mode chips (home) ? sets calculator Player Role */
 .ff-modes {
   display: none;
   width: 95%;
@@ -7158,7 +7158,7 @@ html {
   }
 }
 
-/* Role tips (home) — below ratings */
+/* Role tips (home) ? below ratings */
 .ff-role-tips {
   width: 95%;
   max-width: 1100px;
@@ -7269,7 +7269,7 @@ html {
   }
 }
 
-/* Season / event banner (home) — below ratings */
+/* Season / event banner (home) ? below ratings */
 .ff-season {
   width: 95%;
   max-width: 1100px;
@@ -7404,7 +7404,7 @@ html {
   }
 }
 
-/* Pro tips (home) — esports vibe, no official assets */
+/* Pro tips (home) ? esports vibe, no official assets */
 .ff-pro-tips {
   width: 95%;
   max-width: 1100px;
@@ -7514,7 +7514,7 @@ html {
   }
 }
 
-/* News hub (home) — latest posts from this site only */
+/* News hub (home) ? latest posts from this site only */
 .ff-news-hub {
   width: 95%;
   max-width: 1100px;
@@ -7698,6 +7698,51 @@ html {
   display: flex;
   flex-direction: column;
   background: #0a0a0a;
+  overflow-x: clip;
+  max-width: 100vw;
+}
+
+.ff-as-breadcrumb {
+  position: relative;
+  z-index: 2;
+  width: 100%;
+  padding: 10px 16px 0;
+  background: #0a0a0a;
+  box-sizing: border-box;
+}
+
+.ff-as-breadcrumb-list {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px 8px;
+  max-width: 1180px;
+  margin: 0 auto;
+  padding: 0;
+  list-style: none;
+  color: #9ca3af;
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+
+.ff-as-breadcrumb-list li:not(:last-child)::after {
+  content: "/";
+  margin-left: 8px;
+  color: #6b7280;
+  font-weight: 500;
+}
+
+.ff-as-breadcrumb-list a {
+  color: #f5c518;
+  text-decoration: none;
+}
+
+.ff-as-breadcrumb-list a:hover {
+  text-decoration: underline;
+}
+
+.ff-as-breadcrumb-list li[aria-current="page"] {
+  color: #e5e7eb;
 }
 
 .ff-as-hero {
@@ -7926,7 +7971,15 @@ html {
   text-decoration: none;
   box-shadow: 0 10px 28px rgba(34, 197, 94, 0.35);
   box-sizing: border-box;
-  transition: filter 0.15s ease, transform 0.15s ease;
+  /* No transform ? avoids CTA ?jump/blink? feel on paint & hover */
+  transition: filter 0.15s ease;
+}
+
+.ff-as-apk-btn-icon {
+  width: 1.25em;
+  height: 1.25em;
+  flex-shrink: 0;
+  display: block;
 }
 
 .ff-as-apk-btn i {
@@ -7935,7 +7988,6 @@ html {
 
 .ff-as-apk-btn:hover {
   filter: brightness(1.06);
-  transform: translateY(-1px);
 }
 
 .ff-as-apk-btn:focus-visible {
@@ -8036,16 +8088,36 @@ html {
 }
 
 @media (max-width: 900px) {
+  /* Mobile/tablet: hero hugs content ? no full-viewport empty gap before cards */
+  .ff-as-hero {
+    flex: 0 0 auto;
+    min-height: 0;
+    padding: 24px 16px 20px;
+  }
+
+  .ff-as-hero--split {
+    padding: 20px 14px 16px;
+  }
+
+  .ff-as-hero--split .ff-as-hero-overlay {
+    background:
+      linear-gradient(180deg, rgba(0, 0, 0, 0.55) 0%, rgba(0, 0, 0, 0.72) 45%, rgba(0, 0, 0, 0.88) 100%),
+      radial-gradient(ellipse at center, transparent 20%, rgba(0, 0, 0, 0.55) 100%);
+  }
+
   .ff-as-hero--split .ff-as-hero-inner {
     flex-direction: column;
     align-items: stretch;
-    justify-content: center;
-    gap: 22px;
+    justify-content: flex-start;
+    flex: 0 0 auto;
+    gap: 16px;
     max-width: 640px;
+    width: 100%;
   }
 
   .ff-as-hero--split .ff-as-hero-copy {
     max-width: none;
+    width: 100%;
     align-items: center;
     text-align: center;
   }
@@ -8063,8 +8135,14 @@ html {
     justify-content: center;
   }
 
+  .ff-as-hero--split .ff-as-countdown-unit {
+    flex: 1 1 0;
+    min-width: 0;
+    max-width: none;
+  }
+
   .ff-as-hero--split .ff-as-apk-btn {
-    max-width: 520px;
+    max-width: 100%;
   }
 
   .ff-as-hero-visual {
@@ -8074,12 +8152,13 @@ html {
 
 @media (max-width: 480px) {
   .ff-as-hero {
-    padding: 28px 14px 18px;
-    min-height: calc(100vh - 56px);
+    flex: 0 0 auto;
+    min-height: 0;
+    padding: 20px 14px 14px;
   }
 
   .ff-as-hero--split {
-    padding: 24px 14px 16px;
+    padding: 18px 14px 12px;
   }
 
   .ff-as-apk-btn {
@@ -8089,24 +8168,26 @@ html {
 
   .ff-as-countdown {
     margin-top: 10px;
-    padding: 0 4px 2px;
+    padding: 0;
   }
 
   .ff-as-countdown-units {
-    gap: 8px;
+    gap: 6px;
   }
 
   .ff-as-countdown-unit {
-    padding: 12px 6px 10px;
+    padding: 10px 4px 8px;
   }
 
   .ff-as-countdown-date {
-    margin-top: 12px;
+    margin-top: 10px;
   }
 }
 
 .ff-as-main {
   width: 100%;
+  max-width: 100%;
+  min-width: 0;
   padding: 28px 16px 48px;
   background: #111315;
   box-sizing: border-box;
@@ -8118,6 +8199,7 @@ html {
   gap: 16px;
   width: 100%;
   max-width: 920px;
+  min-width: 0;
   margin: 0 auto;
 }
 
@@ -8332,15 +8414,20 @@ html {
   gap: 16px;
   width: 100%;
   max-width: 920px;
+  min-width: 0;
   margin: 20px auto 0;
+  box-sizing: border-box;
 }
 
 .ff-as-table-block {
+  min-width: 0;
+  max-width: 100%;
   padding: 22px 16px 18px;
   border-radius: 16px;
   background: linear-gradient(180deg, #1a1d21 0%, #141618 100%);
   border: 1px solid rgba(245, 197, 24, 0.18);
   box-shadow: 0 12px 28px rgba(0, 0, 0, 0.28);
+  box-sizing: border-box;
 }
 
 .ff-as-table-block .ff-as-card-title,
@@ -8350,11 +8437,15 @@ html {
 }
 
 .ff-as-table-wrap {
+  display: block;
+  width: 100%;
+  max-width: 100%;
   overflow-x: auto;
   margin-top: 4px;
   border-radius: 12px;
   border: 1px solid rgba(255, 255, 255, 0.08);
   -webkit-overflow-scrolling: touch;
+  overscroll-behavior-x: contain;
 }
 
 .ff-as-table {
@@ -8773,3 +8864,174 @@ html {
 
 
 
+
+/* === Free Fire Advance Server ? mobile overrides (must be last) === */
+@media (max-width: 900px) {
+  .ff-as-page {
+    overflow-x: clip;
+    max-width: 100vw;
+  }
+
+  .ff-as-breadcrumb {
+    padding: 8px 14px 0;
+  }
+
+  .ff-as-hero,
+  .ff-as-hero--split,
+  .ff-as-hero--center {
+    flex: 0 0 auto !important;
+    min-height: 0 !important;
+  }
+
+  .ff-as-hero-title {
+    font-size: clamp(1.35rem, 7vw, 1.85rem);
+    letter-spacing: 0.02em;
+    line-height: 1.15;
+    word-break: break-word;
+  }
+
+  .ff-as-hero-sub {
+    margin: 0 0 18px;
+    font-size: 0.92rem;
+    padding: 0 2px;
+  }
+
+  .ff-as-pills {
+    margin-top: 14px;
+    gap: 6px 10px;
+    justify-content: center;
+  }
+
+  .ff-as-pill {
+    padding: 2px 0;
+    font-size: 0.75rem;
+  }
+
+  .ff-as-countdown {
+    width: 100%;
+    max-width: 100%;
+    margin: 12px 0 0;
+    padding: 0;
+  }
+
+  .ff-as-countdown-label {
+    font-size: 0.82rem;
+    margin-bottom: 10px;
+    padding: 0 4px;
+  }
+
+  .ff-as-countdown-units {
+    width: 100%;
+    gap: 6px;
+  }
+
+  .ff-as-countdown-unit {
+    flex: 1 1 0;
+    min-width: 0 !important;
+    max-width: none;
+    padding: 10px 4px 8px;
+  }
+
+  .ff-as-countdown-unit strong {
+    font-size: clamp(1.15rem, 5.5vw, 1.45rem);
+  }
+
+  .ff-as-countdown-unit span {
+    font-size: 0.62rem;
+  }
+
+  .ff-as-countdown-date {
+    margin-top: 10px;
+    font-size: 0.82rem;
+    line-height: 1.4;
+    padding: 0 4px;
+  }
+
+  .ff-as-main {
+    padding: 16px 12px 36px !important;
+  }
+
+  .ff-as-cards,
+  .ff-as-tables {
+    gap: 12px;
+    max-width: 100%;
+    min-width: 0;
+  }
+
+  .ff-as-card {
+    padding: 16px 14px 14px;
+    border-radius: 14px;
+  }
+
+  .ff-as-card-title {
+    font-size: 1.08rem;
+    word-break: break-word;
+  }
+
+  .ff-as-card-summary {
+    font-size: 0.9rem;
+  }
+
+  .ff-as-card-points li {
+    font-size: 0.88rem;
+  }
+
+  .ff-as-table-block {
+    padding: 16px 12px 14px;
+    min-width: 0;
+    max-width: 100%;
+  }
+
+  .ff-as-table-wrap {
+    width: 100%;
+    max-width: 100%;
+  }
+
+  .ff-as-table {
+    min-width: 480px;
+  }
+
+  .ff-as-table th,
+  .ff-as-table td {
+    padding: 10px 10px;
+    font-size: 0.82rem;
+  }
+
+  .ff-as-faq-inner,
+  .ff-as-rating-inner,
+  .ff-as-comments-inner {
+    padding-left: 12px !important;
+    padding-right: 12px !important;
+  }
+
+  .ff-as-faq .faq-accordion-trigger {
+    padding: 14px 12px;
+    font-size: 0.92rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .ff-as-hero,
+  .ff-as-hero--split {
+    padding: 16px 12px 10px !important;
+  }
+
+  .ff-as-apk-btn {
+    min-height: 48px;
+    padding: 12px 14px;
+    font-size: 0.95rem;
+    gap: 8px;
+  }
+
+  .ff-as-main {
+    padding: 14px 10px 32px !important;
+  }
+
+  .ff-as-card {
+    padding: 14px 12px 12px;
+  }
+
+  .ff-as-table {
+    min-width: 420px;
+  }
+}

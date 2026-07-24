@@ -204,3 +204,114 @@ export function newsArticleSchema(options: {
     ...(ratingFields ?? {}),
   };
 }
+
+/** BreadcrumbList for guide / tool pages. */
+export function breadcrumbListSchema(
+  items: Array<{ name: string; url: string }>,
+) {
+  const list = items
+    .map((item) => ({
+      name: item.name?.trim() ?? "",
+      url: item.url?.trim() ?? "",
+    }))
+    .filter((item) => item.name && item.url);
+
+  if (list.length === 0) return null;
+
+  return {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    itemListElement: list.map((item, index) => ({
+      "@type": "ListItem" as const,
+      position: index + 1,
+      name: item.name,
+      item: item.url,
+    })),
+  };
+}
+
+/** HowTo schema from on-page step list (register / install guides). */
+export function howToSchema(options: {
+  name: string;
+  description: string;
+  steps: string[];
+}) {
+  const steps = options.steps.map((s) => s.trim()).filter(Boolean);
+  if (steps.length === 0) return null;
+
+  return {
+    "@context": "https://schema.org",
+    "@type": "HowTo",
+    name: options.name.trim(),
+    description: options.description.trim(),
+    step: steps.map((text, index) => ({
+      "@type": "HowToStep" as const,
+      position: index + 1,
+      name: `Step ${index + 1}`,
+      text,
+    })),
+  };
+}
+
+/** WebPage schema for long-form guides. */
+export function webPageSchema(options: {
+  name: string;
+  description: string;
+  url: string;
+  image?: string | null;
+  dateModified?: string;
+  keywords?: string[];
+  inLanguage?: string;
+}) {
+  const keywords = (options.keywords ?? []).map((k) => k.trim()).filter(Boolean);
+  return {
+    "@context": "https://schema.org",
+    "@type": "WebPage",
+    name: options.name.trim(),
+    description: options.description.trim(),
+    url: options.url,
+    inLanguage: options.inLanguage ?? "en",
+    ...(options.image
+      ? {
+          primaryImageOfPage: {
+            "@type": "ImageObject",
+            url: options.image,
+          },
+        }
+      : {}),
+    ...(options.dateModified ? { dateModified: options.dateModified } : {}),
+    ...(keywords.length ? { keywords: keywords.join(", ") } : {}),
+    isPartOf: {
+      "@type": "WebSite",
+      name: "Sensitivity Settings",
+    },
+  };
+}
+
+/** Soft APK / beta app entity for Advance Server style pages. */
+export function androidApkAppSchema(options: {
+  name: string;
+  description: string;
+  url: string;
+  downloadUrl: string;
+  operatingSystem?: string;
+  image?: string | null;
+}) {
+  return {
+    "@context": "https://schema.org",
+    "@type": "SoftwareApplication",
+    name: options.name.trim(),
+    description: options.description.trim(),
+    url: options.url,
+    applicationCategory: "GameApplication",
+    operatingSystem: options.operatingSystem ?? "Android",
+    ...(options.image ? { image: options.image } : {}),
+    offers: {
+      "@type": "Offer",
+      price: "0",
+      priceCurrency: "INR",
+    },
+    downloadUrl: options.downloadUrl,
+    installUrl: options.downloadUrl,
+  };
+}

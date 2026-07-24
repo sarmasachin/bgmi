@@ -8,11 +8,24 @@ export const FF_ADVANCE_SERVER_PAGE = {
   path: FREE_FIRE_ADVANCE_SERVER_PATH,
   title: "Free Fire Advance Server",
   heroTitle: "FREE FIRE ADVANCE SERVER",
-  seoTitle: "Free Fire Advance Server APK Download OB55 | Official Garena",
+  seoTitle: "Free Fire Advance Server APK Download OB55 | FF OB55 Update APK",
   seoDescription:
-    "Free Fire Advance Server OB55 — register and download the official APK from Garena. Android beta only. Test new features before the global update.",
+    "Free Fire Advance Server OB55 Download APK: FF Advance server Register, Download OB55 APK Update, and Get Activation Code. OB55 APK Download available — free fire advance server download apk new version & FF advance server update apk.",
+  seoKeywords: [
+    "FF Advance server Register",
+    "Get advance server activation code",
+    "OB55 APK Download available",
+    "Free Fire Advance Server download",
+    "FF advance server download",
+    "free fire advance server download apk new version",
+    "free fire advance server update apk",
+    "Free Fire Advance Server OB55",
+    "FF OB55 Update APK",
+  ],
+  heroImageAlt:
+    "Free Fire Advance Server OB55 APK download — FF advance server update banner",
   subtitleEn:
-    "Garena opens Advance Server so players can try upcoming OB features early, find bugs, and give feedback before the global update.",
+    "Garena opens Advance Server so players can try upcoming OB features early, find bugs, and give feedback before the global update. FF Advance server Register, download OB55 APK, and get your activation code from the official site.",
   apkCta: "Direct Download APK · OB55",
   officialUrl: "https://ff-advance.ff.garena.com/",
   heroImage: "/ff/advance-server-hero.jpg",
@@ -31,7 +44,7 @@ export const FF_ADVANCE_SERVER_PAGE = {
   countdown: {
     label: "Next OB55 Update Free Fire Advance Server Open",
     targetIso: "2026-08-21T00:00:00+05:30",
-    dateText: "Free Fire Next OB55 Update Release · 21 August 2026",
+    dateText: "Estimated: Free Fire Next OB55 Update Release · 21 August 2026",
   },
   cards: [
     {

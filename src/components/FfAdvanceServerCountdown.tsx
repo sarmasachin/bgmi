@@ -26,17 +26,17 @@ function pad(n: number) {
 
 /**
  * Advance Server hero countdown only — does not affect other pages.
+ * Numbers render immediately (no "--" flash). suppressHydrationWarning
+ * avoids SSR/client clock second mismatch remount blink.
  */
 export function FfAdvanceServerCountdown({ label, targetIso, dateText }: Props) {
   const targetMs = Date.parse(targetIso);
   const [parts, setParts] = useState<Parts | null>(() =>
     Number.isFinite(targetMs) ? splitRemaining(targetMs - Date.now()) : null,
   );
-  const [ready, setReady] = useState(false);
 
   useEffect(() => {
     if (!Number.isFinite(targetMs)) return;
-    setReady(true);
     const tick = () => setParts(splitRemaining(targetMs - Date.now()));
     tick();
     const id = window.setInterval(tick, 1000);
@@ -46,43 +46,24 @@ export function FfAdvanceServerCountdown({ label, targetIso, dateText }: Props) 
   if (!Number.isFinite(targetMs)) return null;
 
   return (
-    <div className="ff-as-countdown" aria-live="polite">
+    <div className="ff-as-countdown">
       <p className="ff-as-countdown-label">{label}</p>
-      {!ready ? (
-        <div className="ff-as-countdown-units" aria-hidden>
-          <span className="ff-as-countdown-unit">
-            <strong>--</strong>
-            <span>Days</span>
-          </span>
-          <span className="ff-as-countdown-unit">
-            <strong>--</strong>
-            <span>Hours</span>
-          </span>
-          <span className="ff-as-countdown-unit">
-            <strong>--</strong>
-            <span>Mins</span>
-          </span>
-          <span className="ff-as-countdown-unit">
-            <strong>--</strong>
-            <span>Secs</span>
-          </span>
-        </div>
-      ) : parts ? (
+      {parts ? (
         <div className="ff-as-countdown-units">
           <span className="ff-as-countdown-unit">
-            <strong>{pad(parts.days)}</strong>
+            <strong suppressHydrationWarning>{pad(parts.days)}</strong>
             <span>Days</span>
           </span>
           <span className="ff-as-countdown-unit">
-            <strong>{pad(parts.hours)}</strong>
+            <strong suppressHydrationWarning>{pad(parts.hours)}</strong>
             <span>Hours</span>
           </span>
           <span className="ff-as-countdown-unit">
-            <strong>{pad(parts.minutes)}</strong>
+            <strong suppressHydrationWarning>{pad(parts.minutes)}</strong>
             <span>Mins</span>
           </span>
           <span className="ff-as-countdown-unit">
-            <strong>{pad(parts.seconds)}</strong>
+            <strong suppressHydrationWarning>{pad(parts.seconds)}</strong>
             <span>Secs</span>
           </span>
         </div>
