@@ -683,7 +683,7 @@ export default function AdminPagesClient({ initialRows }: Props) {
           </button>
         </div>
         <form onSubmit={onSubmit} className="admin-inline-form admin-pages-inline-form">
-          <div className="admin-field">
+          <div className="admin-field admin-input-wide">
             <input
               name="title"
               placeholder="Page title"
@@ -701,7 +701,7 @@ export default function AdminPagesClient({ initialRows }: Props) {
               <p className="admin-field-error">This title is already in use.</p>
             ) : null}
           </div>
-          <div className="admin-field">
+          <div className="admin-field admin-input-wide">
             <input
               name="slug"
               placeholder="custom-url"
@@ -726,12 +726,20 @@ export default function AdminPagesClient({ initialRows }: Props) {
               <p className="admin-field-error">This slug is already in use.</p>
             ) : null}
           </div>
-          <input name="seoTitle" placeholder="SEO title" value={seoTitle} onChange={(e) => setSeoTitle(e.target.value)} />
           <input
+            name="seoTitle"
+            className="admin-input-wide"
+            placeholder="SEO title"
+            value={seoTitle}
+            onChange={(e) => setSeoTitle(e.target.value)}
+          />
+          <textarea
             name="seoDescription"
+            className="admin-input-wide"
             placeholder="SEO description"
             value={seoDescription}
             onChange={(e) => setSeoDescription(e.target.value)}
+            rows={3}
           />
           <select value={templateType} onChange={(e) => setTemplateType(e.target.value as TemplateType)} title="Clone type">
             <option value="home">Home style</option>
