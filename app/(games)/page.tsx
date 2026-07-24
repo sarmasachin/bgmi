@@ -26,7 +26,13 @@ export const metadata: Metadata = {
     googleBot: { index: true, follow: true },
   },
   alternates: { canonical },
-  ...buildSocialMetadata({ title, description, url: canonical }),
+  ...buildSocialMetadata({
+    title,
+    description,
+    url: canonical,
+    image: "/ff/og-freefire.jpg",
+    imageAlt: "Free Fire sensitivity settings wallpaper",
+  }),
 };
 
 export default function HomePage() {
