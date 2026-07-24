@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { FREE_FIRE_MAX_PATH } from "@/src/lib/freeFirePages";
 
 export type FfNewsHubItem = {
   id: string;
@@ -20,21 +21,26 @@ type Props = {
 /**
  * Point 8 — official-site “Latest News” hub direction.
  * Safe: only this site’s published posts + /news links (no external news).
+ * Shown on Free Fire home (`/`) and Free Fire Max calculator page.
  */
 export function FfNewsHub({ items, total }: Props) {
   const pathname = usePathname() ?? "";
-  if (pathname !== "/" && pathname !== "") return null;
+  const isHome = pathname === "/" || pathname === "";
+  const isMax = pathname === FREE_FIRE_MAX_PATH;
+  if (!isHome && !isMax) return null;
   // Hide until real published news exists.
   if (!items.length) return null;
 
   return (
     <section className="ff-news-hub" aria-labelledby="ff-news-hub-title">
-<div className="ff-news-hub-head">
+      <div className="ff-news-hub-head">
         <h2 id="ff-news-hub-title" className="ff-news-hub-title">
-          Latest Free Fire News
+          {isMax ? "Latest Free Fire Max news" : "Latest Free Fire News"}
         </h2>
         <p className="ff-news-hub-lead">
-          Latest {Math.min(items.length, 10)} stories — swipe sideways to browse
+          {isMax
+            ? `Updates & guides that matter for Max players — latest ${Math.min(items.length, 10)} posts`
+            : `Latest ${Math.min(items.length, 10)} stories — swipe sideways to browse`}
           {total > items.length ? ` · ${total} on site` : ""}.
         </p>
       </div>

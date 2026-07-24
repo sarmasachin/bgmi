@@ -1,4 +1,6 @@
+import { randomUUID } from "crypto";
 import { z } from "zod";
+import { mockStore } from "@/src/server/mockStore";
 import { prisma, tryPrisma } from "@/src/server/dbSafe";
 
 export type RatingSummary = { average: number | null; count: number };
@@ -20,6 +22,14 @@ function normalizeToolContext(raw: string | undefined) {
 
 function normalizeEmail(email: string) {
   return email.trim().toLowerCase();
+}
+
+function mockToolSummary(ctx: string): RatingSummary {
+  const rows = mockStore.toolRatings.filter((r) => r.context === ctx);
+  const count = rows.length;
+  if (!count) return { average: null, count: 0 };
+  const sum = rows.reduce((acc, r) => acc + r.value, 0);
+  return { average: Number((sum / count).toFixed(2)), count };
 }
 
 async function readSummary(
@@ -63,7 +73,7 @@ async function readSummary(
   return { average: avg, count };
 }
 
-/** Server-side rating summary. Returns null when DB is unavailable in dev. */
+/** Server-side rating summary. Tool ratings fall back to memory when DB is down. */
 export async function getRatingSummary(
   targetType: "home" | "news" | "tool",
   targetId?: string,
@@ -76,12 +86,20 @@ export async function getRatingSummary(
   }
 
   const summary = await tryPrisma(() => readSummary(targetType, targetId));
-  if (!summary) return null;
+  if (summary) {
+    return {
+      average: summary.average != null ? Number(summary.average.toFixed(2)) : null,
+      count: summary.count,
+    };
+  }
 
-  return {
-    average: summary.average != null ? Number(summary.average.toFixed(2)) : null,
-    count: summary.count,
-  };
+  if (targetType === "tool") {
+    const ctx = normalizeToolContext(targetId);
+    if (!ctx) return { average: null, count: 0 };
+    return mockToolSummary(ctx);
+  }
+
+  return null;
 }
 
 export async function persistRating(
@@ -112,6 +130,19 @@ export async function persistRating(
   if (!ctx) return false;
   await prisma.toolRating.create({ data: { context: ctx, value } });
   return true;
+}
+
+/** Persist tool rating to memory when DB is unavailable (local/dev). */
+export function persistToolRatingMock(targetId: string | undefined, value: number): RatingSummary | null {
+  const ctx = normalizeToolContext(targetId);
+  if (!ctx || value < 1 || value > 5) return null;
+  mockStore.toolRatings.unshift({
+    id: randomUUID(),
+    context: ctx,
+    value,
+    createdAt: new Date().toISOString(),
+  });
+  return mockToolSummary(ctx);
 }
 
 /**

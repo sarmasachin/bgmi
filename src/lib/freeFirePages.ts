@@ -1,5 +1,7 @@
 /** Free Fire / Free Fire Max coming-soon game pages. */
 
+import { FREE_FIRE_ADVANCE_SERVER_PATH } from "@/src/lib/ffAdvanceServerPage";
+
 export const FREE_FIRE_SLUG = "free-fire-sensitivity-settings-calculator";
 export const FREE_FIRE_MAX_SLUG = "free-fire-max-sensitivity-settings-calculator";
 
@@ -10,6 +12,7 @@ export const FREE_FIRE_MAX_PATH = `/${FREE_FIRE_MAX_SLUG}`;
 export const FREE_FIRE_NAV = [
   { label: "Free Fire", href: "/" },
   { label: "Free Fire Max", href: FREE_FIRE_MAX_PATH },
+  { label: "Advance Server", href: FREE_FIRE_ADVANCE_SERVER_PATH },
 ] as const;
 
 export type FreeFireVariant = "freefire" | "freefire-max";
@@ -168,7 +171,7 @@ export function isFreeFirePath(pathname: string) {
   );
 }
 
-/** Merge Free Fire nav links if missing, and pin Free Fire / Free Fire Max to positions 1–2. */
+/** Merge Free Fire nav links if missing, and pin Free Fire / Free Fire Max / Advance Server to positions 1–3. */
 export function ensureFreeFireNavigation(
   links: Array<{ label: string; href: string }>,
 ): Array<{ label: string; href: string }> {
@@ -184,24 +187,35 @@ export function ensureFreeFireNavigation(
     if (!has) out.push({ label: item.label, href: item.href });
   }
 
+  const isAdvance = (row: { label: string; href: string }) =>
+    /advance\s*server/i.test(row.label) ||
+    row.href === FREE_FIRE_ADVANCE_SERVER_PATH ||
+    row.href === FREE_FIRE_ADVANCE_SERVER_PATH.replace(/^\//, "");
+
   const normalized = out.map((row) => {
-    if (/free\s*fire/i.test(row.label) && !/max/i.test(row.label)) {
+    if (
+      /free\s*fire/i.test(row.label) &&
+      !/max/i.test(row.label) &&
+      !isAdvance(row)
+    ) {
       return { ...row, href: "/" };
     }
     return row;
   });
 
-  const isFf = (row: { label: string }) =>
-    /free\s*fire/i.test(row.label) && !/max/i.test(row.label);
+  const isFf = (row: { label: string; href: string }) =>
+    /free\s*fire/i.test(row.label) && !/max/i.test(row.label) && !isAdvance(row);
   const isFfMax = (row: { label: string }) => /free\s*fire\s*max/i.test(row.label);
 
   const freefire = normalized.find(isFf);
   const freefireMax = normalized.find(isFfMax);
-  const rest = normalized.filter((row) => !isFf(row) && !isFfMax(row));
+  const advance = normalized.find(isAdvance);
+  const rest = normalized.filter((row) => !isFf(row) && !isFfMax(row) && !isAdvance(row));
 
   return [
     ...(freefire ? [freefire] : []),
     ...(freefireMax ? [freefireMax] : []),
+    ...(advance ? [advance] : []),
     ...rest,
   ];
 }

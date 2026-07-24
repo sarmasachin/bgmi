@@ -202,3 +202,16 @@ model Testimonial {
   @@index([game, status, approvedAt])
   @@index([status, approvedAt, createdAt])
 }
+
+/// Public page comments (e.g. Free Fire Advance Server landing)
+model PageComment {
+  id        String   @id @default(cuid())
+  pageKey   String
+  name      String
+  email     String?
+  message   String
+  status    String   @default("pending")
+  createdAt DateTime @default(now())
+
+  @@index([pageKey, status, createdAt])
+}

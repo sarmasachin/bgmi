@@ -17,5 +17,20 @@ export const FF_SITE_PATCH = {
   secondaryCta: "All patch notes",
 } as const;
 
+/** Max page strip — same patch, Max player angle. */
+export const FF_MAX_SITE_PATCH = {
+  code: "OB54",
+  label: "OB54 on Free Fire Max",
+  dateLabel: "23 Jun 2026",
+  dateIso: "2026-06-23",
+  typeLabel: "Max Patch Notes",
+  summary:
+    "Anniversary content is live on Max too — if drag feels off after the update, recalculate for Max (not classic Free Fire).",
+  articlePath: "/news",
+  newsListPath: "/news",
+  primaryCta: "Read Max notes",
+  secondaryCta: "All updates",
+} as const;
+
 /** @deprecated use FF_SITE_PATCH */
 export const FF_OFFICIAL_PATCH = FF_SITE_PATCH;

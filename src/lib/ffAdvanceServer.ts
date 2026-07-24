@@ -24,3 +24,26 @@ export const FF_ADVANCE_SERVER = {
   secondaryPath: "/news",
   secondaryCta: "Read guides",
 } as const;
+
+/** Max page — same official portal, copy aimed at Max players. */
+export const FF_MAX_ADVANCE_SERVER = {
+  badge: "Advance Server",
+  code: "OB55",
+  title: "Test OB55 early — then retune Free Fire Max sensi",
+  meta: "Official Garena beta · Android only",
+  summary:
+    "Advance Server is the early OB55 build. Max players should try new weapons there, then come back here and recalculate — Max aim feels heavier than classic Free Fire.",
+  features: [
+    "Register / download only from Garena’s official Advance Server site",
+    "Use the Google or Facebook account tied to your Free Fire / Max ID",
+    "Selection is not guaranteed — wait for your activation code",
+    "Beta is Android-only and separate from your main Max install",
+    "After you feel the new OB55 weapons, recalculate on this Max page",
+    "Skip random APK sites — they are not safe and not needed",
+  ],
+  note: "",
+  officialUrl: "https://ff-advance.ff.garena.com/",
+  primaryCta: "Official register / APK",
+  secondaryPath: "/news",
+  secondaryCta: "Read Max guides",
+} as const;

@@ -5,6 +5,9 @@ export type AdminCommentItem = {
   status: "pending" | "approved" | "rejected" | "spam";
   createdAt?: string;
   newsId?: string;
+  pageKey?: string;
+  source?: "news" | "page";
+  email?: string;
 };
 
 export function mapAdminComments(
@@ -15,6 +18,9 @@ export function mapAdminComments(
     status?: string | null;
     createdAt?: Date | string | null;
     newsId?: string | null;
+    pageKey?: string | null;
+    source?: "news" | "page" | null;
+    email?: string | null;
   }>,
 ): AdminCommentItem[] {
   return items.map((item) => ({
@@ -29,5 +35,8 @@ export function mapAdminComments(
           ? String(item.createdAt)
           : "",
     newsId: item.newsId ? String(item.newsId) : "",
+    pageKey: item.pageKey ? String(item.pageKey) : "",
+    source: item.source === "page" ? "page" : "news",
+    email: item.email ? String(item.email) : "",
   }));
 }

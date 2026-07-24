@@ -1,4 +1,13 @@
 import { FaqAccordion } from "@/src/components/FaqAccordion";
+import { FfAdvanceServerCard } from "@/src/components/FfAdvanceServerCard";
+import { FfComparisonTables } from "@/src/components/FfComparisonTables";
+import { FfExploreCards } from "@/src/components/FfExploreCards";
+import { FfNewsHub } from "@/src/components/FfNewsHub";
+import { FfNextUpdateCard } from "@/src/components/FfNextUpdateCard";
+import { FfOfficialPatchStrip } from "@/src/components/FfOfficialPatchStrip";
+import { FfProTips } from "@/src/components/FfProTips";
+import { FfRoleTips } from "@/src/components/FfRoleTips";
+import { FfSeasonBanner } from "@/src/components/FfSeasonBanner";
 import { HomeHeader } from "@/src/components/HomeHeader";
 import { SiteFooter } from "@/src/components/SiteFooter";
 import { TestimonialForm } from "@/src/components/TestimonialForm";
@@ -18,6 +27,7 @@ import {
   getPublishedPageBySlug,
 } from "@/src/server/repositories/pagesRepository";
 import { getGameFaqItems } from "@/src/server/repositories/homeFaqRepository";
+import { listPublishedNews } from "@/src/server/repositories/newsRepository";
 import { getSettings } from "@/src/server/repositories/settingsRepository";
 import { listApprovedTestimonials } from "@/src/server/repositories/testimonialsRepository";
 import { isAdminLoggedIn } from "@/src/server/auth";
@@ -75,7 +85,7 @@ export async function FreeFireComingSoonPage({ variant }: { variant: FreeFireVar
   const faqGame = variant === "freefire-max" ? "freefire-max" : "freefire";
   const testimonialGame = variant === "freefire-max" ? "freefire-max" : "freefire";
 
-  const [settings, published, draft, faqItems, testimonials] = await Promise.all([
+  const [settings, published, draft, faqItems, testimonials, homeNews] = await Promise.all([
     getSettings(),
     getPublishedPageBySlug(cfg.slug).then(
       (p) => p ?? getPublishedPageBySlug(`/${cfg.slug}`),
@@ -86,7 +96,30 @@ export async function FreeFireComingSoonPage({ variant }: { variant: FreeFireVar
     }),
     getGameFaqItems(faqGame),
     listApprovedTestimonials({ game: variant === "freefire-max" ? "freefire-max" : "freefire" }),
+    variant === "freefire-max"
+      ? listPublishedNews(1, 10)
+      : Promise.resolve({ data: [] as Awaited<ReturnType<typeof listPublishedNews>>["data"], total: 0 }),
   ]);
+
+  const newsItems = (homeNews.data ?? []).map((item) => {
+    const rawDate = item.publishedAt ?? item.createdAt ?? null;
+    const date = rawDate ? new Date(rawDate) : null;
+    const excerpt = (item.excerpt ?? "").trim();
+    return {
+      id: item.id,
+      slug: item.slug ?? item.id,
+      title: item.title,
+      excerpt: excerpt.length > 120 ? `${excerpt.slice(0, 117).trimEnd()}…` : excerpt,
+      dateLabel: date
+        ? date.toLocaleDateString("en-IN", {
+            day: "2-digit",
+            month: "short",
+            year: "numeric",
+          })
+        : "—",
+      dateIso: date && !Number.isNaN(date.getTime()) ? date.toISOString().slice(0, 10) : "",
+    };
+  });
 
   const page = published ?? (draft?.status === "draft" ? null : draft);
   // Code article is source of truth after deploy; CMS is only a fallback.
@@ -111,9 +144,24 @@ export async function FreeFireComingSoonPage({ variant }: { variant: FreeFireVar
       <HomeHeader siteTitle={settings.homeDisplay.headerTitle} navigation={settings.navigation} />
       <h1 className="main-title ff-gradient-title">{title}</h1>
       <main className="page-container">
-        <FfCalculator isMax={variant === "freefire-max"} trustBar={settings.ffTrustBar} />
+        {variant === "freefire-max" ? <FfOfficialPatchStrip /> : null}
+        <div id="ff-calculator" className="ff-calculator-anchor">
+          <FfCalculator isMax={variant === "freefire-max"} trustBar={settings.ffTrustBar} />
+        </div>
         <TestimonialsMarquee game={testimonialGame} initialItems={testimonials} />
         <TestimonialForm game={testimonialGame} />
+        {variant === "freefire-max" ? (
+          <>
+            <FfNextUpdateCard />
+            <FfAdvanceServerCard />
+            <FfRoleTips />
+            <FfSeasonBanner />
+            <FfProTips />
+            <FfNewsHub items={newsItems} total={homeNews.total} />
+            <FfComparisonTables />
+            <FfExploreCards />
+          </>
+        ) : null}
       </main>
       <div className="light-content-wrapper">
         <div className="content-inner">

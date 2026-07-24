@@ -56,6 +56,7 @@ export default function AdminSettingsClient({ initialData }: Props) {
     initialData?.navigationLinks ?? [
       { label: "Free Fire", href: "/" },
       { label: "Free Fire Max", href: "/free-fire-max-sensitivity-settings-calculator" },
+      { label: "Advance Server", href: "/free-fire-advance-server" },
       { label: "BGMI", href: "/bgmi" },
       { label: "PUBG Mobile", href: "/pubg" },
     ],

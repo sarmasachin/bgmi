@@ -3,6 +3,7 @@
 import { usePathname } from "next/navigation";
 import type { CalcInputs } from "@/src/features/ffCalculator/calculator";
 import { FF_SET_ROLE_EVENT } from "@/src/lib/ffPlayModes";
+import { FREE_FIRE_MAX_PATH } from "@/src/lib/freeFirePages";
 
 type RoleTip = {
   role: CalcInputs["role"];
@@ -34,13 +35,41 @@ const ROLE_TIPS: RoleTip[] = [
   },
 ];
 
+/** Max-only tips — heavier graphics / FPS focus. */
+const MAX_ROLE_TIPS: RoleTip[] = [
+  {
+    role: "rusher",
+    title: "Max rusher tips",
+    icon: "fa-person-running",
+    tips: [
+      "On Max, keep General slightly higher if FPS dips in close fights",
+      "Don’t copy classic Free Fire rusher codes — Max drag feels heavier",
+      "Warm up with SMG / shotgun in Training Ground on your Max graphics setting",
+    ],
+  },
+  {
+    role: "sniper",
+    title: "Max sniper tips",
+    icon: "fa-crosshairs",
+    tips: [
+      "Lower 2x / 4x a touch if scopes shake when Max effects kick in",
+      "Lock Red Dot first, then sniper scope — one change at a time",
+      "If the phone heats mid-match, drop effects before blaming sensi",
+    ],
+  },
+];
+
 /**
- * Point 4 — light role tips (official “choose your style” direction).
- * Safe: own copy only; CTA sets calculator role + scrolls up to tool.
+ * Role tips — home Free Fire copy; Max page Free Fire Max copy.
+ * CTA sets calculator role + scrolls up to tool.
  */
 export function FfRoleTips() {
   const pathname = usePathname() ?? "";
-  if (pathname !== "/" && pathname !== "") return null;
+  const isHome = pathname === "/" || pathname === "";
+  const isMax = pathname === FREE_FIRE_MAX_PATH;
+  if (!isHome && !isMax) return null;
+
+  const tips = isMax ? MAX_ROLE_TIPS : ROLE_TIPS;
 
   function applyRole(role: CalcInputs["role"]) {
     window.dispatchEvent(
@@ -58,11 +87,11 @@ export function FfRoleTips() {
 
   return (
     <section className="ff-role-tips" aria-labelledby="ff-role-tips-title">
-<h2 id="ff-role-tips-title" className="ff-role-tips-title">
-        Best sensi tips by role
+      <h2 id="ff-role-tips-title" className="ff-role-tips-title">
+        {isMax ? "Best Free Fire Max sensi tips by role" : "Best sensi tips by role"}
       </h2>
       <div className="ff-role-tips-grid">
-        {ROLE_TIPS.map((card) => (
+        {tips.map((card) => (
           <article key={card.role} className="ff-role-tip-card">
             <div className="ff-role-tip-head">
               <span className="ff-role-tip-icon" aria-hidden>
@@ -80,7 +109,8 @@ export function FfRoleTips() {
               className="ff-role-tip-btn"
               onClick={() => applyRole(card.role)}
             >
-              Use {card.role === "rusher" ? "Rusher" : "Sniper"} in calculator
+              Use {card.role === "rusher" ? "Rusher" : "Sniper"} in{" "}
+              {isMax ? "Max calculator" : "calculator"}
               <i className="fa-solid fa-arrow-up" aria-hidden />
             </button>
           </article>

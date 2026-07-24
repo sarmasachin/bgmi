@@ -5,13 +5,41 @@ import {
   getRatingSummary,
   normalizeRatingToolContext,
   persistRating,
+  persistToolRatingMock,
 } from "@/src/server/repositories/ratingSummaryRepository";
 import { tryPrisma } from "@/src/server/dbSafe";
 import { sendEmail } from "@/src/server/services/emailService";
 import { buildHomeRatingThankYouEmailHtml } from "@/src/lib/contactEmailTemplates";
+import { FREE_FIRE_ADVANCE_SERVER_PAGE_KEY } from "@/src/lib/ffAdvanceServerPage";
 import { z } from "zod";
 
 const SUPPORT_EMAIL = "support@sensitivitysettings.com";
+
+/** Advance Server page only: one rating per browser cookie + IP (best-effort). */
+const FF_AS_RATED_COOKIE = "ff_as_rated";
+const FF_AS_RATED_MAX_AGE = 60 * 60 * 24 * 365;
+const advanceServerRatedIps = new Set<string>();
+
+function isAdvanceServerTool(targetType: string, targetId: string | undefined) {
+  return targetType === "tool" && targetId === FREE_FIRE_ADVANCE_SERVER_PAGE_KEY;
+}
+
+function alreadyRatedAdvanceServer(request: NextRequest, ip: string) {
+  if (request.cookies.get(FF_AS_RATED_COOKIE)?.value === "1") return true;
+  return advanceServerRatedIps.has(ip);
+}
+
+function attachAdvanceServerRatedCookie(res: NextResponse, ip: string) {
+  advanceServerRatedIps.add(ip);
+  res.cookies.set(FF_AS_RATED_COOKIE, "1", {
+    httpOnly: true,
+    sameSite: "lax",
+    path: "/",
+    maxAge: FF_AS_RATED_MAX_AGE,
+    secure: process.env.NODE_ENV === "production",
+  });
+  return res;
+}
 
 const postSchema = z.object({
   targetType: z.enum(["home", "news", "tool"]),
@@ -90,11 +118,31 @@ export async function POST(request: NextRequest) {
     targetId = ctx;
   }
 
+  if (isAdvanceServerTool(targetType, targetId) && alreadyRatedAdvanceServer(request, ip)) {
+    return NextResponse.json({ error: "You have already rated this page." }, { status: 409 });
+  }
+
   const ok = await tryPrisma(() =>
     persistRating(targetType, targetId, value, targetType === "home" ? { email } : undefined),
   );
 
   if (ok === null) {
+    // DB down: keep tool ratings working via memory (Advance Server page, etc.).
+    if (targetType === "tool") {
+      const mock = persistToolRatingMock(targetId, value);
+      if (mock) {
+        const res = NextResponse.json({
+          ok: true,
+          saved: true,
+          average: mock.average,
+          count: mock.count,
+        });
+        if (isAdvanceServerTool(targetType, targetId)) {
+          return attachAdvanceServerRatedCookie(res, ip);
+        }
+        return res;
+      }
+    }
     if (process.env.NODE_ENV === "production") {
       return NextResponse.json({ error: "Database unavailable" }, { status: 503 });
     }
@@ -123,10 +171,14 @@ export async function POST(request: NextRequest) {
   }
 
   const after = await getRatingSummary(targetType, targetId);
-  return NextResponse.json({
+  const res = NextResponse.json({
     ok: true,
     saved: true,
     average: after?.average ?? null,
     count: after?.count ?? 0,
   });
+  if (isAdvanceServerTool(targetType, targetId)) {
+    return attachAdvanceServerRatedCookie(res, ip);
+  }
+  return res;
 }

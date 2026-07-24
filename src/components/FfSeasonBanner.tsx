@@ -2,21 +2,24 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { FF_SEASON_EVENT } from "@/src/lib/ffSeasonEvent";
+import { FF_MAX_SEASON_EVENT, FF_SEASON_EVENT } from "@/src/lib/ffSeasonEvent";
+import { FREE_FIRE_MAX_PATH } from "@/src/lib/freeFirePages";
 
 /**
- * Point 5 — official-site “Special Event / season” direction.
- * Safe: own copy only; links stay on this website (news + calculator).
+ * Season / event banner.
+ * Home = Free Fire copy; Max page = Free Fire Max copy.
  */
 export function FfSeasonBanner() {
   const pathname = usePathname() ?? "";
-  if (pathname !== "/" && pathname !== "") return null;
+  const isHome = pathname === "/" || pathname === "";
+  const isMax = pathname === FREE_FIRE_MAX_PATH;
+  if (!isHome && !isMax) return null;
 
-  const event = FF_SEASON_EVENT;
+  const event = isMax ? FF_MAX_SEASON_EVENT : FF_SEASON_EVENT;
 
   return (
     <section className="ff-season" aria-labelledby="ff-season-title">
-<div className="ff-season-card">
+      <div className="ff-season-card">
         <div className="ff-season-main">
           <span className="ff-season-badge">
             <i className="fa-solid fa-gift" aria-hidden />

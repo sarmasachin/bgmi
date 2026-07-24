@@ -2,19 +2,23 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { FF_SITE_PATCH } from "@/src/lib/ffOfficialPatch";
+import { FF_MAX_SITE_PATCH, FF_SITE_PATCH } from "@/src/lib/ffOfficialPatch";
+import { FREE_FIRE_MAX_PATH } from "@/src/lib/freeFirePages";
 
 /**
- * Home-only update strip — all CTAs stay on this website (news), no external links.
+ * Update strip — CTAs stay on this website (news).
+ * Home = Free Fire copy; Max page = Free Fire Max copy.
  */
 export function FfOfficialPatchStrip() {
   const pathname = usePathname() ?? "";
-  if (pathname !== "/" && pathname !== "") return null;
+  const isHome = pathname === "/" || pathname === "";
+  const isMax = pathname === FREE_FIRE_MAX_PATH;
+  if (!isHome && !isMax) return null;
 
-  const patch = FF_SITE_PATCH;
+  const patch = isMax ? FF_MAX_SITE_PATCH : FF_SITE_PATCH;
 
   return (
-    <aside className="ff-patch-strip" aria-label="Free Fire update news">
+    <aside className="ff-patch-strip" aria-label={isMax ? "Free Fire Max update news" : "Free Fire update news"}>
       <div className="ff-patch-strip-inner">
         <div className="ff-patch-strip-main">
           <span className="ff-patch-badge">

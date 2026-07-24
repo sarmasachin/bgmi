@@ -1,6 +1,7 @@
 "use client";
 
 import { usePathname } from "next/navigation";
+import { FREE_FIRE_MAX_PATH } from "@/src/lib/freeFirePages";
 
 type ProTip = {
   id: string;
@@ -9,10 +10,6 @@ type ProTip = {
   icon: string;
 };
 
-/**
- * Point 6 — official-site “Esports / pro tip” direction (FFWS vibe),
- * without logos, team names, or external esports links.
- */
 const PRO_TIPS: ProTip[] = [
   {
     id: "training",
@@ -40,9 +37,44 @@ const PRO_TIPS: ProTip[] = [
   },
 ];
 
+/** Max-only — graphics load / heat / don’t copy classic FF. */
+const MAX_PRO_TIPS: ProTip[] = [
+  {
+    id: "stable-fps",
+    title: "Stable FPS beats HD",
+    tip: "On Max, a steady frame rate matters more than Ultra looks. If aim feels late, drop effects before changing every slider.",
+    icon: "fa-gauge-high",
+  },
+  {
+    id: "dont-copy-ff",
+    title: "Don’t paste classic FF codes",
+    tip: "Same account, different feel. Max textures and effects make drag heavier — calculate for Max on this page.",
+    icon: "fa-ban",
+  },
+  {
+    id: "heat",
+    title: "Watch phone heat",
+    tip: "Long Max sessions heat mid-range phones. Heat → FPS drop → fake “bad sensi”. Cool down, then retune.",
+    icon: "fa-temperature-high",
+  },
+  {
+    id: "one-change-max",
+    title: "Change one Max value",
+    tip: "Start with General or Red Dot only. After 2 ranked matches, tweak scopes — not everything at once.",
+    icon: "fa-sliders",
+  },
+];
+
+/**
+ * Pro tips — home Free Fire copy; Max page Free Fire Max copy.
+ */
 export function FfProTips() {
   const pathname = usePathname() ?? "";
-  if (pathname !== "/" && pathname !== "") return null;
+  const isHome = pathname === "/" || pathname === "";
+  const isMax = pathname === FREE_FIRE_MAX_PATH;
+  if (!isHome && !isMax) return null;
+
+  const tips = isMax ? MAX_PRO_TIPS : PRO_TIPS;
 
   function goToCalculator() {
     document.getElementById("ff-calculator")?.scrollIntoView({
@@ -53,14 +85,16 @@ export function FfProTips() {
 
   return (
     <section className="ff-pro-tips" aria-labelledby="ff-pro-tips-title">
-<h2 id="ff-pro-tips-title" className="ff-pro-tips-title">
-        Pro tips for better aim
+      <h2 id="ff-pro-tips-title" className="ff-pro-tips-title">
+        {isMax ? "Pro tips for Free Fire Max aim" : "Pro tips for better aim"}
       </h2>
       <p className="ff-pro-tips-lead">
-        Practice-first habits that help any sensi stick — no team logos, just usable advice.
+        {isMax
+          ? "Practical Max habits — graphics, heat, and sensi that actually stick in ranked."
+          : "Practice-first habits that help any sensi stick — no team logos, just usable advice."}
       </p>
       <div className="ff-pro-tips-grid">
-        {PRO_TIPS.map((card) => (
+        {tips.map((card) => (
           <article key={card.id} className="ff-pro-tip-card">
             <span className="ff-pro-tip-icon" aria-hidden>
               <i className={`fa-solid ${card.icon}`} />
@@ -71,7 +105,7 @@ export function FfProTips() {
         ))}
       </div>
       <button type="button" className="ff-pro-tips-cta" onClick={goToCalculator}>
-        Apply sensi in calculator
+        {isMax ? "Apply Max sensi in calculator" : "Apply sensi in calculator"}
         <i className="fa-solid fa-arrow-up" aria-hidden />
       </button>
     </section>

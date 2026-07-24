@@ -185,7 +185,7 @@ export function RatingWidget({
 
   return (
     <section className="rating-widget">
-      <p>{title}</p>
+      {title.trim() ? <p>{title}</p> : null}
       {summaryLine}
       <div className={submitting ? "rating-widget-stars is-busy" : "rating-widget-stars"}>
         {[1, 2, 3, 4, 5].map((star) => (

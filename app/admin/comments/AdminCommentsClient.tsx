@@ -53,6 +53,9 @@ export default function AdminCommentsClient({ initialItems }: Props) {
         status: (item.status as CommentItem["status"]) ?? "pending",
         createdAt: item.createdAt ? String(item.createdAt) : "",
         newsId: item.newsId ? String(item.newsId) : "",
+        pageKey: item.pageKey ? String(item.pageKey) : "",
+        source: item.source === "page" ? ("page" as const) : ("news" as const),
+        email: item.email ? String(item.email) : "",
       }));
       setItems(next);
       setVisibleCount(10);
@@ -139,7 +142,9 @@ export default function AdminCommentsClient({ initialItems }: Props) {
             <thead>
               <tr>
                 <th>Name</th>
+                <th>Email</th>
                 <th>Comment</th>
+                <th>Source</th>
                 <th>Status</th>
                 <th>Created</th>
                 <th>Actions</th>
@@ -148,17 +153,25 @@ export default function AdminCommentsClient({ initialItems }: Props) {
             <tbody>
               {loading ? (
                 <tr>
-                  <td colSpan={5}>Loading comments...</td>
+                  <td colSpan={7}>Loading comments...</td>
                 </tr>
               ) : items.length === 0 ? (
                 <tr>
-                  <td colSpan={5}>No comments found.</td>
+                  <td colSpan={7}>No comments found.</td>
                 </tr>
               ) : (
                 visibleItems.map((item) => (
                   <tr key={item.id}>
                     <td>{item.name}</td>
+                    <td>{item.email || "—"}</td>
                     <td className="admin-comments-message-cell">{item.message}</td>
+                    <td>
+                      {item.source === "page"
+                        ? item.pageKey === "free-fire-advance-server"
+                          ? "FF Advance Server"
+                          : item.pageKey || "Page"
+                        : "News"}
+                    </td>
                     <td>
                       <span className={`admin-comments-badge status-${item.status}`}>{item.status}</span>
                     </td>

@@ -71,6 +71,16 @@ type MockStore = {
   news: News[];
   pages: PageClone[];
   comments: Array<{ id: string; name: string; message: string; status: string; newsId: string }>;
+  pageComments: Array<{
+    id: string;
+    pageKey: string;
+    name: string;
+    email?: string;
+    message: string;
+    status: string;
+    createdAt: string;
+  }>;
+  toolRatings: Array<{ id: string; context: string; value: number; createdAt: string }>;
   contactMessages: ContactMessage[];
   legalPages: LegalPage[];
   ads: AdSlot[];
@@ -103,6 +113,8 @@ function createMockStore(): MockStore {
       },
     ],
     comments: [],
+    pageComments: [],
+    toolRatings: [],
     contactMessages: [],
     legalPages: [],
     ads: [
@@ -154,6 +166,8 @@ const globalForMock = globalThis as typeof globalThis & {
 export const mockStore = globalForMock.__bgmiMockStore ?? createMockStore();
 if (!globalForMock.__bgmiMockStore) globalForMock.__bgmiMockStore = mockStore;
 if (!Array.isArray(mockStore.legalPages)) mockStore.legalPages = [];
+if (!Array.isArray(mockStore.pageComments)) mockStore.pageComments = [];
+if (!Array.isArray(mockStore.toolRatings)) mockStore.toolRatings = [];
 /** Bump to wipe legacy in-memory seed news (home hub stays hidden until real posts). */
 const NEWS_SEED_VERSION = 2;
 if (globalForMock.__bgmiNewsSeedVersion !== NEWS_SEED_VERSION) {
@@ -191,6 +205,8 @@ export function restoreMockBackup(payload: typeof mockStore) {
   mockStore.news = payload.news ?? [];
   mockStore.pages = payload.pages ?? [];
   mockStore.comments = payload.comments ?? [];
+  mockStore.pageComments = payload.pageComments ?? [];
+  mockStore.toolRatings = payload.toolRatings ?? [];
   mockStore.contactMessages = payload.contactMessages ?? [];
   mockStore.legalPages = payload.legalPages ?? [];
   mockStore.ads = payload.ads ?? [];
