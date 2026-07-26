@@ -3,7 +3,7 @@ import { Geist } from "next/font/google";
 import { PublicSiteScripts } from "@/src/components/PublicSiteScripts";
 import { FontAwesomeLoader } from "@/src/components/FontAwesomeLoader";
 import { organizationSchema, websiteSchema } from "@/src/lib/schema";
-import { parseGoogleSiteVerification } from "@/src/lib/headSnippets";
+import { parseAnalyticsSnippet, parseGoogleSiteVerification } from "@/src/lib/headSnippets";
 import { getSiteUrl } from "@/src/lib/siteUrl";
 import { DEFAULT_OG_IMAGE_PATH } from "@/src/lib/socialMeta";
 import { getHeadSnippets } from "@/src/server/repositories/settingsRepository";
@@ -100,10 +100,22 @@ export default async function RootLayout({
   children: React.ReactNode;
 }>) {
   const baseUrl = getSiteUrl();
+  const snippets = await getHeadSnippets();
+  const analytics = parseAnalyticsSnippet(snippets.analyticsScript);
 
   return (
     <html lang="en" className={geistSans.variable}>
       <head>
+        {/* Google tag — immediately after <head>, per Google install instructions */}
+        {analytics?.externalSrc ? (
+          <script async src={analytics.externalSrc} />
+        ) : null}
+        {analytics?.inlineJs ? (
+          <script
+            id="site-analytics"
+            dangerouslySetInnerHTML={{ __html: analytics.inlineJs }}
+          />
+        ) : null}
         <link rel="preconnect" href="https://cdnjs.cloudflare.com" crossOrigin="anonymous" />
         <link rel="dns-prefetch" href="https://cdnjs.cloudflare.com" />
         <link

@@ -3,30 +3,21 @@ import { getHeadSnippets } from "@/src/server/repositories/settingsRepository";
 import { normalizeInlineScript } from "@/src/lib/headSnippets";
 
 /**
- * Optional analytics / ads scripts from admin Head Snippets.
- * Google verification meta is handled via generateMetadata (proper <head> tag).
+ * Optional AdSense (and similar) scripts from admin Head Snippets.
+ * Google Analytics is injected in app/layout.tsx <head> (Google install guide).
+ * Google verification meta is handled via generateMetadata.
  */
 export async function PublicSiteScripts() {
   const snippets = await getHeadSnippets();
-  const analytics = normalizeInlineScript(snippets.analyticsScript);
   const adsense = normalizeInlineScript(snippets.adsenseScript);
 
+  if (!adsense) return null;
+
   return (
-    <>
-      {analytics ? (
-        <Script
-          id="site-analytics"
-          strategy="afterInteractive"
-          dangerouslySetInnerHTML={{ __html: analytics }}
-        />
-      ) : null}
-      {adsense ? (
-        <Script
-          id="site-adsense"
-          strategy="afterInteractive"
-          dangerouslySetInnerHTML={{ __html: adsense }}
-        />
-      ) : null}
-    </>
+    <Script
+      id="site-adsense"
+      strategy="afterInteractive"
+      dangerouslySetInnerHTML={{ __html: adsense }}
+    />
   );
 }

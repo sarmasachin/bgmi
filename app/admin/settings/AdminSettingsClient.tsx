@@ -447,8 +447,11 @@ export default function AdminSettingsClient({ initialData }: Props) {
             id="analyticsTag"
             value={analyticsScript}
             onChange={(e) => setAnalyticsScript(e.target.value)}
-            placeholder="window.dataLayer..."
+            placeholder="Paste full Google tag HTML, or G-XXXXXXXX"
           />
+          <p className="form-hint" style={{ marginTop: 6, opacity: 0.75, fontSize: 12 }}>
+            Injected in {"<head>"} like Google recommends. Full gtag HTML paste is OK.
+          </p>
         </div>
         <div className="form-group">
           <label htmlFor="adsenseScript">AdSense Script</label>
