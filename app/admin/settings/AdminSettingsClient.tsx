@@ -459,8 +459,11 @@ export default function AdminSettingsClient({ initialData }: Props) {
             id="adsenseScript"
             value={adsenseScript}
             onChange={(e) => setAdsenseScript(e.target.value)}
-            placeholder="(adsbygoogle = ...)"
+            placeholder="Paste full AdSense script, or ca-pub-XXXXXXXX"
           />
+          <p className="form-hint" style={{ marginTop: 6, opacity: 0.75, fontSize: 12 }}>
+            Injected in {"<head>"} like Analytics. Full AdSense HTML paste is OK.
+          </p>
         </div>
         <div className="form-group">
           <label htmlFor="cdnBaseUrl">CDN Base URL</label>

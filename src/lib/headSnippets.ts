@@ -127,3 +127,76 @@ export function parseAnalyticsSnippet(
     inlineJs: inlineJs || undefined,
   };
 }
+
+export type ParsedAdsenseSnippet = {
+  clientId?: string;
+  /** pagead adsbygoogle.js URL */
+  externalSrc?: string;
+  /** AdSense script uses crossorigin="anonymous" */
+  crossOrigin?: boolean;
+  inlineJs?: string;
+};
+
+/**
+ * Parse admin AdSense Script field.
+ * Accepts: full AdSense <script src=...> HTML, bare ca-pub-XXXX, or inline JS.
+ */
+export function parseAdsenseSnippet(
+  raw: string | undefined | null
+): ParsedAdsenseSnippet | undefined {
+  const s = (raw ?? "").trim();
+  if (!s) return undefined;
+
+  if (/^ca-pub-\d+$/i.test(s)) {
+    const clientId = s.toLowerCase();
+    return {
+      clientId,
+      externalSrc: `https://pagead2.googlesyndication.com/pagead/adsbygoogle.js?client=${clientId}`,
+      crossOrigin: true,
+    };
+  }
+
+  const clientMatch = s.match(/\b(ca-pub-\d+)\b/i);
+  const clientId = clientMatch?.[1]?.toLowerCase();
+
+  const srcTag = s.match(
+    /<script([^>]*)\bsrc\s*=\s*["'](https:\/\/pagead2\.googlesyndication\.com\/pagead\/[^"']+)["'][^>]*>\s*<\/script>/i
+  );
+  const srcLoose = s.match(
+    /(https:\/\/pagead2\.googlesyndication\.com\/pagead\/adsbygoogle\.js(?:\?[^"'>\s]*)?)/i
+  );
+
+  let externalSrc = srcTag?.[2] || srcLoose?.[1];
+  if (!externalSrc && clientId) {
+    externalSrc = `https://pagead2.googlesyndication.com/pagead/adsbygoogle.js?client=${clientId}`;
+  }
+
+  const crossOrigin =
+    /crossorigin\s*=\s*["']anonymous["']/i.test(s) ||
+    Boolean(srcTag?.[1] && /crossorigin/i.test(srcTag[1])) ||
+    Boolean(externalSrc);
+
+  const inlineParts: string[] = [];
+  const inlineScriptRe = /<script\b(?![^>]*\bsrc\s*=)[^>]*>([\s\S]*?)<\/script>/gi;
+  let m: RegExpExecArray | null;
+  while ((m = inlineScriptRe.exec(s)) !== null) {
+    const body = m[1]?.trim();
+    if (body) inlineParts.push(body);
+  }
+
+  let inlineJs = inlineParts.join("\n").trim();
+  if (!inlineJs && !externalSrc) {
+    inlineJs = stripHtmlNoise(normalizeInlineScript(s) ?? s);
+  } else if (inlineJs) {
+    inlineJs = stripHtmlNoise(inlineJs);
+  }
+
+  if (!externalSrc && !inlineJs) return undefined;
+
+  return {
+    clientId,
+    externalSrc,
+    crossOrigin: Boolean(crossOrigin && externalSrc),
+    inlineJs: inlineJs || undefined,
+  };
+}

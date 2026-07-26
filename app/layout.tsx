@@ -1,9 +1,12 @@
 import type { Metadata, Viewport } from "next";
 import { Geist } from "next/font/google";
-import { PublicSiteScripts } from "@/src/components/PublicSiteScripts";
 import { FontAwesomeLoader } from "@/src/components/FontAwesomeLoader";
 import { organizationSchema, websiteSchema } from "@/src/lib/schema";
-import { parseAnalyticsSnippet, parseGoogleSiteVerification } from "@/src/lib/headSnippets";
+import {
+  parseAdsenseSnippet,
+  parseAnalyticsSnippet,
+  parseGoogleSiteVerification,
+} from "@/src/lib/headSnippets";
 import { getSiteUrl } from "@/src/lib/siteUrl";
 import { DEFAULT_OG_IMAGE_PATH } from "@/src/lib/socialMeta";
 import { getHeadSnippets } from "@/src/server/repositories/settingsRepository";
@@ -102,11 +105,12 @@ export default async function RootLayout({
   const baseUrl = getSiteUrl();
   const snippets = await getHeadSnippets();
   const analytics = parseAnalyticsSnippet(snippets.analyticsScript);
+  const adsense = parseAdsenseSnippet(snippets.adsenseScript);
 
   return (
     <html lang="en" className={geistSans.variable}>
       <head>
-        {/* Google tag — immediately after <head>, per Google install instructions */}
+        {/* Google Analytics — immediately after <head> */}
         {analytics?.externalSrc ? (
           <script async src={analytics.externalSrc} />
         ) : null}
@@ -114,6 +118,20 @@ export default async function RootLayout({
           <script
             id="site-analytics"
             dangerouslySetInnerHTML={{ __html: analytics.inlineJs }}
+          />
+        ) : null}
+        {/* Google AdSense — also in <head> */}
+        {adsense?.externalSrc ? (
+          <script
+            async
+            src={adsense.externalSrc}
+            {...(adsense.crossOrigin ? { crossOrigin: "anonymous" as const } : {})}
+          />
+        ) : null}
+        {adsense?.inlineJs ? (
+          <script
+            id="site-adsense"
+            dangerouslySetInnerHTML={{ __html: adsense.inlineJs }}
           />
         ) : null}
         <link rel="preconnect" href="https://cdnjs.cloudflare.com" crossOrigin="anonymous" />
@@ -140,7 +158,6 @@ export default async function RootLayout({
         />
         {children}
         <FontAwesomeLoader />
-        <PublicSiteScripts />
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{
