@@ -450,7 +450,7 @@ export default function AdminSettingsClient({ initialData }: Props) {
             placeholder="Paste full Google tag HTML, or G-XXXXXXXX"
           />
           <p className="form-hint" style={{ marginTop: 6, opacity: 0.75, fontSize: 12 }}>
-            Injected in {"<head>"} like Google recommends. Full gtag HTML paste is OK.
+            Loaded into {"<head>"} after page paint (better mobile PageSpeed). Full gtag paste OK.
           </p>
         </div>
         <div className="form-group">
@@ -462,7 +462,7 @@ export default function AdminSettingsClient({ initialData }: Props) {
             placeholder="Paste full AdSense script, or ca-pub-XXXXXXXX"
           />
           <p className="form-hint" style={{ marginTop: 6, opacity: 0.75, fontSize: 12 }}>
-            Injected in {"<head>"} like Analytics. Full AdSense HTML paste is OK.
+            Loaded into {"<head>"} after page paint (better mobile PageSpeed). Full AdSense HTML OK.
           </p>
         </div>
         <div className="form-group">

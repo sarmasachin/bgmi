@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { Geist } from "next/font/google";
+import { DeferredMarketingScripts } from "@/src/components/DeferredMarketingScripts";
 import { FontAwesomeLoader } from "@/src/components/FontAwesomeLoader";
 import { organizationSchema, websiteSchema } from "@/src/lib/schema";
 import {
@@ -12,11 +13,12 @@ import { DEFAULT_OG_IMAGE_PATH } from "@/src/lib/socialMeta";
 import { getHeadSnippets } from "@/src/server/repositories/settingsRepository";
 import "./globals.css";
 
-/* Geist Mono was unused; keep variable Sans only (one file, weights used in CSS) */
+/* Limit downloaded axis pressure; swap keeps text visible for LCP */
 const geistSans = Geist({
   variable: "--font-geist-sans",
   subsets: ["latin"],
   display: "swap",
+  preload: false,
 });
 
 export const viewport: Viewport = {
@@ -110,39 +112,10 @@ export default async function RootLayout({
   return (
     <html lang="en" className={geistSans.variable}>
       <head>
-        {/* Google Analytics — immediately after <head> */}
-        {analytics?.externalSrc ? (
-          <script async src={analytics.externalSrc} />
-        ) : null}
-        {analytics?.inlineJs ? (
-          <script
-            id="site-analytics"
-            dangerouslySetInnerHTML={{ __html: analytics.inlineJs }}
-          />
-        ) : null}
-        {/* Google AdSense — also in <head> */}
-        {adsense?.externalSrc ? (
-          <script
-            async
-            src={adsense.externalSrc}
-            {...(adsense.crossOrigin ? { crossOrigin: "anonymous" as const } : {})}
-          />
-        ) : null}
-        {adsense?.inlineJs ? (
-          <script
-            id="site-adsense"
-            dangerouslySetInnerHTML={{ __html: adsense.inlineJs }}
-          />
-        ) : null}
-        <link rel="preconnect" href="https://cdnjs.cloudflare.com" crossOrigin="anonymous" />
+        {/* GA/AdSense injected after LCP via DeferredMarketingScripts (still into document.head) */}
+        <link rel="dns-prefetch" href="https://www.googletagmanager.com" />
+        <link rel="dns-prefetch" href="https://pagead2.googlesyndication.com" />
         <link rel="dns-prefetch" href="https://cdnjs.cloudflare.com" />
-        <link
-          rel="preload"
-          href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/webfonts/fa-solid-900.woff2"
-          as="font"
-          type="font/woff2"
-          crossOrigin="anonymous"
-        />
       </head>
       <body>
         {/* Critical above-the-fold styles so LCP title can paint before the CSS chunk */}
@@ -157,6 +130,27 @@ export default async function RootLayout({
           }}
         />
         {children}
+        <DeferredMarketingScripts
+          analytics={
+            analytics
+              ? {
+                  id: "site-analytics",
+                  externalSrc: analytics.externalSrc,
+                  inlineJs: analytics.inlineJs,
+                }
+              : null
+          }
+          adsense={
+            adsense
+              ? {
+                  id: "site-adsense",
+                  externalSrc: adsense.externalSrc,
+                  inlineJs: adsense.inlineJs,
+                  crossOrigin: adsense.crossOrigin,
+                }
+              : null
+          }
+        />
         <FontAwesomeLoader />
         <script
           type="application/ld+json"

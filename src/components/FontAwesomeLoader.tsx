@@ -10,26 +10,44 @@ const FA_CSS = [
 ] as const;
 
 /**
- * Load Font Awesome once (non-blocking) to fix:
- * - font-display / invisible text
- * - critical request chain (HTML → CSS → woff2)
- * - forced reflow from many duplicate <link> injections
+ * Load Font Awesome after first paint / idle — avoids unused CSS on mobile LCP.
  */
 export function FontAwesomeLoader() {
   useEffect(() => {
     if (document.querySelector('link[data-fa-site="1"]')) return;
 
-    for (const href of FA_CSS) {
-      const link = document.createElement("link");
-      link.rel = "stylesheet";
-      link.href = href;
-      link.dataset.faSite = "1";
-      link.media = "print";
-      link.onload = () => {
-        link.media = "all";
-      };
-      document.head.appendChild(link);
-    }
+    let loaded = false;
+    const load = () => {
+      if (loaded) return;
+      loaded = true;
+      for (const href of FA_CSS) {
+        const link = document.createElement("link");
+        link.rel = "stylesheet";
+        link.href = href;
+        link.dataset.faSite = "1";
+        link.media = "print";
+        link.onload = () => {
+          link.media = "all";
+        };
+        document.head.appendChild(link);
+      }
+    };
+
+    const t = window.setTimeout(load, 2500);
+    const ric =
+      "requestIdleCallback" in window
+        ? window.requestIdleCallback(load, { timeout: 4000 })
+        : 0;
+    const onInteract = () => load();
+    window.addEventListener("scroll", onInteract, { once: true, passive: true });
+    window.addEventListener("touchstart", onInteract, { once: true, passive: true });
+
+    return () => {
+      window.clearTimeout(t);
+      if (ric && "cancelIdleCallback" in window) window.cancelIdleCallback(ric);
+      window.removeEventListener("scroll", onInteract);
+      window.removeEventListener("touchstart", onInteract);
+    };
   }, []);
 
   return (
