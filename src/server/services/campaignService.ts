@@ -31,10 +31,24 @@ function finalStatus(sent: number, fail: number, recipientCount: number) {
   return "failed" as const;
 }
 
+function summarizePushFailures(reasons: string[]) {
+  if (!reasons.length) return null;
+  const counts = new Map<string, number>();
+  for (const reason of reasons) {
+    const key = reason.trim() || "Unknown push error";
+    counts.set(key, (counts.get(key) || 0) + 1);
+  }
+  return Array.from(counts.entries())
+    .map(([reason, count]) => (count > 1 ? `${reason} (x${count})` : reason))
+    .join(" | ")
+    .slice(0, 480);
+}
+
 async function deliverPush(title: string, body: string, segment: string) {
   const subs = await listPushSubscriptionsForSegment(segment);
   let sentCount = 0;
   let failCount = 0;
+  const failReasons: string[] = [];
 
   for (const sub of subs) {
     const result = await sendPush({
@@ -49,10 +63,13 @@ async function deliverPush(title: string, body: string, segment: string) {
       continue;
     }
     failCount += 1;
+    if (result.reason) failReasons.push(result.reason);
     if (result.statusCode === 404 || result.statusCode === 410) {
       await deletePushSubscriptionByEndpoint(sub.endpoint);
     }
   }
+
+  const failureSummary = summarizePushFailures(failReasons);
 
   return {
     recipientCount: subs.length,
@@ -62,8 +79,11 @@ async function deliverPush(title: string, body: string, segment: string) {
       subs.length === 0
         ? "No browser push subscribers for this segment. Ask users to enable notifications on the site."
         : sentCount === 0
-          ? "Push delivery failed for all subscribers. Check VAPID keys."
-          : null,
+          ? failureSummary ||
+            "Push delivery failed for all subscribers. Check VAPID keys on the server."
+          : failCount > 0
+            ? failureSummary
+            : null,
   };
 }
 

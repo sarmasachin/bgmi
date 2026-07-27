@@ -4,11 +4,11 @@ import { useEffect, useRef, useState } from "react";
 import { isPushSupported, subscribeWebPush } from "@/src/lib/webPushClient";
 import styles from "./PushSoftPrompt.module.css";
 
-const STORAGE_DISMISS = "ss_push_soft_dismissed_v1";
+const STORAGE_DISMISS = "ss_push_soft_dismissed_v2";
 const SHOW_AFTER_MS = 5_000;
 const SHOW_AFTER_SCROLL_RATIO = 0.1;
 
-/** Enable / Not now: hide permanently in this browser (localStorage). */
+/** Not now / successful Enable: hide permanently in this browser. */
 function wasDismissed() {
   try {
     return localStorage.getItem(STORAGE_DISMISS) === "1";
@@ -25,10 +25,18 @@ function markDismissed() {
   }
 }
 
+function clearDismissed() {
+  try {
+    localStorage.removeItem(STORAGE_DISMISS);
+  } catch {
+    /* ignore */
+  }
+}
+
 /**
  * Top soft prompt (not a blocking modal).
  * Never auto-opens the browser permission dialog — only after Enable.
- * Shows after 5s or ~10% scroll. Enable or Not now → hide immediately, no status message.
+ * If permission already granted (e.g. after DB wipe), silently re-sync subscription to server.
  */
 export function PushSoftPrompt() {
   const [visible, setVisible] = useState(false);
@@ -39,7 +47,19 @@ export function PushSoftPrompt() {
     if (typeof window === "undefined") return;
     if (window.location.pathname.startsWith("/admin")) return;
     if (!isPushSupported()) return;
-    if (Notification.permission === "granted" || Notification.permission === "denied") return;
+
+    // Already allowed in browser but row may be missing on server (DB wipe / failed save).
+    if (Notification.permission === "granted") {
+      void (async () => {
+        const result = await subscribeWebPush({ syncOnly: true });
+        if (result.ok) {
+          markDismissed();
+        }
+      })();
+      return;
+    }
+
+    if (Notification.permission === "denied") return;
     if (wasDismissed()) return;
 
     const reveal = () => {
@@ -73,10 +93,15 @@ export function PushSoftPrompt() {
   async function onEnable() {
     if (busyRef.current) return;
     busyRef.current = true;
-    markDismissed();
     setVisible(false);
-    await subscribeWebPush();
+    const result = await subscribeWebPush();
     busyRef.current = false;
+    if (result.ok) {
+      markDismissed();
+      return;
+    }
+    // Failed save → allow banner again next visit / refresh
+    clearDismissed();
   }
 
   if (!visible) return null;

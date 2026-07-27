@@ -9,6 +9,17 @@ export function urlBase64ToUint8Array(base64String: string) {
   return output;
 }
 
+function applicationServerKeysEqual(existing: ArrayBuffer | null | undefined, publicKey: string) {
+  if (!existing) return false;
+  const a = new Uint8Array(existing);
+  const b = urlBase64ToUint8Array(publicKey);
+  if (a.length !== b.length) return false;
+  for (let i = 0; i < a.length; i += 1) {
+    if (a[i] !== b[i]) return false;
+  }
+  return true;
+}
+
 export function detectPushTags(): string[] {
   const tags = ["all"];
   const ua = navigator.userAgent.toLowerCase();
@@ -33,10 +44,13 @@ export type SubscribePushResult =
   | { ok: false; message: string };
 
 /**
- * Soft-prompt flow only: call AFTER the user clicks Enable.
- * Never call on page load (Google quieter-messaging / UX guidelines).
+ * Soft-prompt flow: call AFTER the user clicks Enable (or when permission already granted — sync only).
+ * Never calls Notification.requestPermission on cold page load unless Enable was clicked.
  */
-export async function subscribeWebPush(): Promise<SubscribePushResult> {
+export async function subscribeWebPush(options?: {
+  /** When true, only sync if permission is already granted (no permission prompt). */
+  syncOnly?: boolean;
+}): Promise<SubscribePushResult> {
   if (!isPushSupported()) {
     return { ok: false, message: "Push is not supported in this browser." };
   }
@@ -54,12 +68,19 @@ export async function subscribeWebPush(): Promise<SubscribePushResult> {
       };
     }
 
-    const permission = await Notification.requestPermission();
-    if (permission !== "granted") {
-      return {
-        ok: false,
-        message: "Notification permission denied. You can allow it later in browser settings.",
-      };
+    let permission = Notification.permission;
+    if (options?.syncOnly) {
+      if (permission !== "granted") {
+        return { ok: false, message: "Notification permission not granted." };
+      }
+    } else {
+      permission = await Notification.requestPermission();
+      if (permission !== "granted") {
+        return {
+          ok: false,
+          message: "Notification permission denied. You can allow it later in browser settings.",
+        };
+      }
     }
 
     const reg =
@@ -72,10 +93,20 @@ export async function subscribeWebPush(): Promise<SubscribePushResult> {
 
     let subscription = await reg.pushManager.getSubscription();
     const existingJson = subscription?.toJSON();
-    if (subscription && (!existingJson?.keys?.p256dh || !existingJson?.keys?.auth)) {
+    const keyMismatch =
+      !!subscription &&
+      !applicationServerKeysEqual(
+        subscription.options?.applicationServerKey ?? undefined,
+        vapidJson.publicKey,
+      );
+    const missingKeys =
+      !!subscription && (!existingJson?.keys?.p256dh || !existingJson?.keys?.auth);
+
+    if (subscription && (keyMismatch || missingKeys)) {
       await subscription.unsubscribe();
       subscription = null;
     }
+
     if (!subscription) {
       subscription = await reg.pushManager.subscribe({
         userVisibleOnly: true,
@@ -117,7 +148,9 @@ export async function subscribeWebPush(): Promise<SubscribePushResult> {
       message:
         detail.includes("push service error") || detail.includes("Registration failed")
           ? "Push subscribe failed. Check site is HTTPS and VAPID keys are valid."
-          : "Could not enable notifications. Try again.",
+          : detail
+            ? `Could not enable notifications: ${detail}`
+            : "Could not enable notifications. Try again.",
     };
   }
 }
