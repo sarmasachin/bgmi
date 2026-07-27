@@ -8,6 +8,7 @@ import {
 } from "@/src/server/repositories/pagesRepository";
 import { addAuditLog } from "@/src/server/repositories/auditRepository";
 import { readAdminJsonBody } from "@/src/server/admin/adminApiHelpers";
+import { getAutoNotifySettings } from "@/src/server/repositories/autoNotifySettingsRepository";
 import { maybeSendPublishPush } from "@/src/server/services/publishPushNotify";
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
@@ -117,11 +118,10 @@ export async function PATCH(request: NextRequest) {
       metaKeywords: z.string().optional(),
       content: z.string().optional(),
       status: z.enum(["draft", "published"]).optional(),
-      sendPush: z.boolean().optional(),
     })
     .safeParse(bodyResult.data);
   if (!parsed.success) return NextResponse.json({ error: "Invalid update payload" }, { status: 400 });
-  const { sendPush, ...pageUpdate } = parsed.data;
+  const pageUpdate = parsed.data;
   let page;
   try {
     page = await updatePage(pageUpdate.id, pageUpdate);
@@ -129,15 +129,20 @@ export async function PATCH(request: NextRequest) {
     return mapPageWriteError(error);
   }
   if (!page) return NextResponse.json({ error: "Not found" }, { status: 404 });
+
+  const autoNotify = await getAutoNotifySettings();
+  const sendPush = pageUpdate.status === "published" && autoNotify.pagesOnPublish;
+
   await addAuditLog({
     actor: "admin",
     action: "page.update",
     target: parsed.data.id,
-    payload: { ...pageUpdate, sendPush: Boolean(sendPush) },
+    payload: { ...pageUpdate, sendPush },
   });
 
   let warning: string | undefined;
-  if (pageUpdate.status === "published" && sendPush) {
+  let pushSent = false;
+  if (sendPush) {
     const pushResult = await maybeSendPublishPush({
       sendPush: true,
       source: "page",
@@ -145,11 +150,13 @@ export async function PATCH(request: NextRequest) {
       urlPath: `/${page.slug}`,
     });
     warning = pushResult.warning;
+    pushSent = pushResult.sent;
   }
 
   return NextResponse.json({
     ok: true,
     data: page,
+    pushSent,
     ...(warning ? { warning } : {}),
   });
 }

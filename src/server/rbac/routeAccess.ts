@@ -34,6 +34,12 @@ export const ADMIN_NAV_ACCESS: ReadonlyArray<{
     icon: "notifications",
     anyOf: ["notifications.view"],
   },
+  {
+    label: "Auto Notify",
+    href: "/admin/auto-notify",
+    icon: "notifications",
+    anyOf: ["notifications.view"],
+  },
   { label: "Ratings", href: "/admin/ratings", icon: "ratings", anyOf: ["ratings.view"] },
   { label: "Ads", href: "/admin/ad-placements", icon: "ads", anyOf: ["ads.view"] },
   { label: "Media", href: "/admin/media", icon: "media", anyOf: ["media.view"] },
@@ -153,7 +159,7 @@ export function resolveAdminApiPermission(
     return { type: "permission", permission: "testimonials.edit" };
   }
 
-  if (path.startsWith("/api/admin/notifications")) {
+  if (path.startsWith("/api/admin/notifications") || path.startsWith("/api/admin/auto-notify")) {
     if (isRead) return { type: "permission", permission: "notifications.view" };
     return { type: "permission", permission: "notifications.edit" };
   }

@@ -10,6 +10,7 @@ import {
 } from "@/src/server/repositories/newsRepository";
 import { addAuditLog } from "@/src/server/repositories/auditRepository";
 import { readAdminJsonBody } from "@/src/server/admin/adminApiHelpers";
+import { getAutoNotifySettings } from "@/src/server/repositories/autoNotifySettingsRepository";
 import { maybeSendPublishPush } from "@/src/server/services/publishPushNotify";
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
@@ -114,7 +115,6 @@ export async function PATCH(request: NextRequest) {
   const statusUpdateSchema = z.object({
     id: z.string(),
     status: z.enum(["draft", "published"]),
-    sendPush: z.boolean().optional(),
   });
   const contentUpdateSchema = z
     .object({
@@ -134,18 +134,23 @@ export async function PATCH(request: NextRequest) {
     try {
       const item = await updateNewsStatus(statusParsed.data.id, statusParsed.data.status);
       if (!item) return NextResponse.json({ error: "Not found" }, { status: 404 });
+      const autoNotify = await getAutoNotifySettings();
+      const sendPush =
+        statusParsed.data.status === "published" && autoNotify.newsOnPublish;
+
       await addAuditLog({
         actor: "admin",
         action: "news.status.update",
         target: statusParsed.data.id,
         payload: {
           status: statusParsed.data.status,
-          sendPush: Boolean(statusParsed.data.sendPush),
+          sendPush,
         },
       });
 
       let warning: string | undefined;
-      if (statusParsed.data.status === "published" && statusParsed.data.sendPush) {
+      let pushSent = false;
+      if (sendPush) {
         const pushResult = await maybeSendPublishPush({
           sendPush: true,
           source: "news",
@@ -154,11 +159,13 @@ export async function PATCH(request: NextRequest) {
           urlPath: `/news/${item.slug}`,
         });
         warning = pushResult.warning;
+        pushSent = pushResult.sent;
       }
 
       return NextResponse.json({
         ok: true,
         data: item,
+        pushSent,
         ...(warning ? { warning } : {}),
       });
     } catch {

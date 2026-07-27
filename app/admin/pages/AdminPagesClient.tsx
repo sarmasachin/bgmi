@@ -71,7 +71,6 @@ export default function AdminPagesClient({ initialRows }: Props) {
   const [editorNonce, setEditorNonce] = useState(0);
   const [confirmAction, setConfirmAction] = useState<ConfirmAction | null>(null);
   const [confirmBusy, setConfirmBusy] = useState(false);
-  const [sendPushNotify, setSendPushNotify] = useState(false);
   const [listPage, setListPage] = useState(1);
 
   const totalPages = Math.max(1, Math.ceil(rows.length / PAGE_SIZE));
@@ -368,15 +367,19 @@ export default function AdminPagesClient({ initialRows }: Props) {
     }
   }
 
-  async function setPageStatus(id: string, status: "draft" | "published", sendPush = false) {
+  async function setPageStatus(id: string, status: "draft" | "published") {
     const publishing = status === "published";
     try {
       const res = await fetch("/api/admin/pages", {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ id, status, ...(publishing ? { sendPush } : {}) }),
+        body: JSON.stringify({ id, status }),
       });
-      const json = (await res.json().catch(() => ({}))) as { warning?: string; error?: string };
+      const json = (await res.json().catch(() => ({}))) as {
+        warning?: string;
+        error?: string;
+        pushSent?: boolean;
+      };
       if (!res.ok) {
         setMessage(json.error || (publishing ? "Publish failed." : "Unpublish failed."));
         return false;
@@ -385,7 +388,7 @@ export default function AdminPagesClient({ initialRows }: Props) {
         setMessage(
           json.warning
             ? `Page published. Push: ${json.warning}`
-            : sendPush
+            : json.pushSent
               ? "Page published and push sent."
               : "Page published.",
         );
@@ -415,7 +418,6 @@ export default function AdminPagesClient({ initialRows }: Props) {
   function closeConfirmModal() {
     if (confirmBusy) return;
     setConfirmAction(null);
-    setSendPushNotify(false);
   }
 
   async function confirmPendingAction() {
@@ -425,12 +427,11 @@ export default function AdminPagesClient({ initialRows }: Props) {
       confirmAction.type === "delete"
         ? await deletePage(confirmAction.id)
         : confirmAction.type === "publish"
-          ? await setPageStatus(confirmAction.id, "published", sendPushNotify)
+          ? await setPageStatus(confirmAction.id, "published")
           : await setPageStatus(confirmAction.id, "draft");
     setConfirmBusy(false);
     if (ok) {
       setConfirmAction(null);
-      setSendPushNotify(false);
     }
   }
 
@@ -495,7 +496,6 @@ export default function AdminPagesClient({ initialRows }: Props) {
                           type="button"
                           className="admin-pages-btn admin-pages-btn-publish"
                           onClick={() => {
-                            setSendPushNotify(false);
                             setConfirmAction({
                               type: "publish",
                               id: row.id,
@@ -906,26 +906,6 @@ export default function AdminPagesClient({ initialRows }: Props) {
               <strong>{confirmAction.title}</strong>
               <span className="admin-confirm-meta-slug">/{confirmAction.slug}</span>
             </div>
-            {confirmAction.type === "publish" ? (
-              <label
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  gap: 8,
-                  marginTop: 12,
-                  fontSize: 14,
-                  cursor: "pointer",
-                }}
-              >
-                <input
-                  type="checkbox"
-                  checked={sendPushNotify}
-                  onChange={(e) => setSendPushNotify(e.target.checked)}
-                  disabled={confirmBusy}
-                />
-                Send push notification to subscribers
-              </label>
-            ) : null}
             <div className="admin-modal-actions">
               <button
                 type="button"

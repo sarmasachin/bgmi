@@ -63,7 +63,6 @@ export default function AdminNewsClient({ initialRows, initialTotal }: Props) {
   const [editorNonce, setEditorNonce] = useState(0);
   const [confirmAction, setConfirmAction] = useState<ConfirmAction | null>(null);
   const [confirmBusy, setConfirmBusy] = useState(false);
-  const [sendPushNotify, setSendPushNotify] = useState(false);
   const totalPages = Math.max(1, Math.ceil(totalRows / PAGE_SIZE));
   const safeListPage = Math.min(listPage, totalPages);
 
@@ -268,15 +267,19 @@ export default function AdminNewsClient({ initialRows, initialTotal }: Props) {
     }
   }
 
-  async function setNewsStatus(id: string, status: "draft" | "published", sendPush = false) {
+  async function setNewsStatus(id: string, status: "draft" | "published") {
     const publishing = status === "published";
     try {
       const res = await fetch("/api/admin/news", {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ id, status, ...(publishing ? { sendPush } : {}) }),
+        body: JSON.stringify({ id, status }),
       });
-      const json = (await res.json().catch(() => ({}))) as { warning?: string; error?: string };
+      const json = (await res.json().catch(() => ({}))) as {
+        warning?: string;
+        error?: string;
+        pushSent?: boolean;
+      };
       if (!res.ok) {
         setMessage(
           json.error ||
@@ -288,7 +291,7 @@ export default function AdminNewsClient({ initialRows, initialTotal }: Props) {
         setMessage(
           json.warning
             ? `News published. Push: ${json.warning}`
-            : sendPush
+            : json.pushSent
               ? "News published and push sent."
               : "News published.",
         );
@@ -306,7 +309,6 @@ export default function AdminNewsClient({ initialRows, initialTotal }: Props) {
   function closeConfirmModal() {
     if (confirmBusy) return;
     setConfirmAction(null);
-    setSendPushNotify(false);
   }
 
   async function confirmPendingAction() {
@@ -316,12 +318,11 @@ export default function AdminNewsClient({ initialRows, initialTotal }: Props) {
       confirmAction.type === "delete"
         ? await removeNews(confirmAction.id)
         : confirmAction.type === "publish"
-          ? await setNewsStatus(confirmAction.id, "published", sendPushNotify)
+          ? await setNewsStatus(confirmAction.id, "published")
           : await setNewsStatus(confirmAction.id, "draft");
     setConfirmBusy(false);
     if (ok) {
       setConfirmAction(null);
-      setSendPushNotify(false);
     }
   }
 
@@ -463,7 +464,6 @@ export default function AdminNewsClient({ initialRows, initialTotal }: Props) {
                             type="button"
                             className="admin-news-btn admin-news-btn-primary"
                             onClick={() => {
-                              setSendPushNotify(false);
                               setConfirmAction({
                                 type: "publish",
                                 id: row.id,
@@ -782,26 +782,6 @@ export default function AdminNewsClient({ initialRows, initialTotal }: Props) {
               <strong>{confirmAction.title}</strong>
               <span className="admin-confirm-meta-slug">/news/{confirmAction.slug}</span>
             </div>
-            {confirmAction.type === "publish" ? (
-              <label
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  gap: 8,
-                  marginTop: 12,
-                  fontSize: 14,
-                  cursor: "pointer",
-                }}
-              >
-                <input
-                  type="checkbox"
-                  checked={sendPushNotify}
-                  onChange={(e) => setSendPushNotify(e.target.checked)}
-                  disabled={confirmBusy}
-                />
-                Send push notification to subscribers
-              </label>
-            ) : null}
             <div className="admin-modal-actions">
               <button
                 type="button"
