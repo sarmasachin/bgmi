@@ -9,6 +9,7 @@ import {
   type TestimonialGame,
 } from "@/src/server/repositories/testimonialsRepository";
 import { sendEmail } from "@/src/server/services/emailService";
+import { trackEmailForCampaigns } from "@/src/server/repositories/emailSubscribersRepository";
 
 const SUPPORT_EMAIL = "support@sensitivitysettings.com";
 
@@ -81,6 +82,8 @@ export async function POST(request: NextRequest) {
   if (!created) {
     return NextResponse.json({ error: "Database unavailable" }, { status: 503 });
   }
+
+  void trackEmailForCampaigns(email, "testimonial");
 
   // Background thank-you — never block the success response.
   void (async () => {

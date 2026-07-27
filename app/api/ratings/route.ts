@@ -9,6 +9,7 @@ import {
 } from "@/src/server/repositories/ratingSummaryRepository";
 import { tryPrisma } from "@/src/server/dbSafe";
 import { sendEmail } from "@/src/server/services/emailService";
+import { trackEmailForCampaigns } from "@/src/server/repositories/emailSubscribersRepository";
 import { buildHomeRatingThankYouEmailHtml } from "@/src/lib/contactEmailTemplates";
 import { FREE_FIRE_ADVANCE_SERVER_PAGE_KEY } from "@/src/lib/ffAdvanceServerPage";
 import { z } from "zod";
@@ -155,6 +156,7 @@ export async function POST(request: NextRequest) {
 
   // Background: thank-you mail only (no feedback invite). Never block the success response.
   if (targetType === "home" && email) {
+    void trackEmailForCampaigns(email, "rating");
     void (async () => {
       try {
         const mail = buildHomeRatingThankYouEmailHtml({ email, value });

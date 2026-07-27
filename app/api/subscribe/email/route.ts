@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { checkRateLimit } from "@/src/server/rateLimit";
 import { getRequestIp } from "@/src/server/requestIp";
+import { upsertEmailSubscriber } from "@/src/server/repositories/emailSubscribersRepository";
 
 const schema = z.object({
   email: z.string().email(),
@@ -23,6 +24,18 @@ export async function POST(request: NextRequest) {
   }
 
   const parsed = schema.safeParse(body);
-  if (!parsed.success) return NextResponse.json({ error: "Invalid email" }, { status: 400 });
-  return NextResponse.json({ ok: true, subscribed: true });
+  if (!parsed.success) {
+    return NextResponse.json({ error: "Invalid email" }, { status: 400 });
+  }
+
+  try {
+    await upsertEmailSubscriber(parsed.data);
+    return NextResponse.json({ ok: true, subscribed: true });
+  } catch (error) {
+    const unavailable = error instanceof Error && error.message === "DB_UNAVAILABLE";
+    return NextResponse.json(
+      { error: unavailable ? "Service temporarily unavailable." : "Could not save subscription." },
+      { status: unavailable ? 503 : 500 },
+    );
+  }
 }

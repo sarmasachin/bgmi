@@ -63,7 +63,7 @@ export function TestimonialsMarquee({ game, initialItems }: Props) {
   const loopItems = useMemo(() => {
     if (items.length === 0) return [];
 
-    // One or two reviews: show as a static row (no fake duplicates).
+    // Fewer than 3: horizontal static row (no marquee / no fake duplicates).
     if (items.length < 3) {
       return items.map((item, index) => ({
         ...item,
@@ -71,7 +71,7 @@ export function TestimonialsMarquee({ game, initialItems }: Props) {
       }));
     }
 
-    // Enough cards for a wide track, then exact 2 copies for a seamless -50% loop.
+    // 3+: seamless horizontal auto-scroll (exact 2 copies for -50% loop).
     let base = [...items];
     while (base.length < 4) {
       base = base.concat(items);
@@ -85,6 +85,7 @@ export function TestimonialsMarquee({ game, initialItems }: Props) {
 
   const durationSec = Math.max(28, items.length * 6);
   const gameLabel = GAME_LABEL[game];
+  /** Auto-scroll only when there are 3 or more reviews. */
   const isStatic = items.length > 0 && items.length < 3;
 
   if (!ready) {

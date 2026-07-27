@@ -1024,6 +1024,48 @@ button {
   margin-bottom: 20px;
 }
 
+/* Article links: global `a { color: inherit }` otherwise keeps them black like body text */
+.article a,
+.article a:link,
+.article a:visited {
+  color: #0d9488;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  text-decoration-thickness: 1.5px;
+  font-weight: 600;
+}
+
+/* Override pasted/editor inline black so links stay visible on light articles */
+.article a[style*="color"],
+.article a [style*="color"] {
+  color: #0d9488 !important;
+}
+
+.article a:hover,
+.article a:focus-visible {
+  color: #0f766e;
+}
+
+.article a *,
+.article a:link *,
+.article a:visited * {
+  color: inherit;
+}
+
+.faq-accordion-answer a,
+.faq-accordion-answer a:link,
+.faq-accordion-answer a:visited {
+  color: #0d9488;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  font-weight: 600;
+}
+
+.faq-accordion-answer a:hover,
+.faq-accordion-answer a:focus-visible {
+  color: #0f766e;
+}
+
 .article ul {
   margin: 0 0 20px;
   padding-left: 22px;
@@ -2034,6 +2076,7 @@ footer,
 
 .testimonials-marquee-track {
   display: flex;
+  flex-wrap: nowrap;
   align-items: stretch;
   gap: 12px;
   width: max-content;
@@ -2050,17 +2093,20 @@ footer,
 }
 
 .testimonials-marquee-viewport.is-static {
+  display: flex;
+  justify-content: center;
   mask-image: none;
   -webkit-mask-image: none;
-  overflow: visible;
+  overflow-x: auto;
+  overflow-y: hidden;
 }
 
 .testimonials-marquee-track.is-static {
   animation: none;
-  width: 100%;
-  max-width: 100%;
-  flex-wrap: wrap;
-  justify-content: center;
+  flex-wrap: nowrap;
+  width: max-content;
+  max-width: none;
+  justify-content: flex-start;
 }
 
 @keyframes testimonials-rtl {
@@ -2174,16 +2220,19 @@ footer,
 
 @media (prefers-reduced-motion: reduce) {
   .testimonials-marquee-track {
-    animation: none;
-    flex-wrap: wrap;
-    width: 100%;
-    max-width: 100%;
+    animation: none !important;
+    flex-wrap: nowrap;
+    width: max-content;
+    max-width: none;
   }
 
   .testimonials-marquee-viewport {
+    display: flex;
+    justify-content: flex-start;
     mask-image: none;
     -webkit-mask-image: none;
-    overflow: auto;
+    overflow-x: auto;
+    overflow-y: hidden;
   }
 }
 
@@ -4235,6 +4284,12 @@ footer,
   color: #fca5a5;
   border-color: #b91c1c;
   background: rgba(185, 28, 28, 0.2);
+}
+
+.admin-notifications-badge.status-partial {
+  color: #fde68a;
+  border-color: #a16207;
+  background: rgba(161, 98, 7, 0.2);
 }
 
 .admin-notifications-load-more-wrap {

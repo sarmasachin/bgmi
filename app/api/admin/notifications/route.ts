@@ -1,16 +1,41 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
-import { sendEmail } from "@/src/server/services/emailService";
-import { logError, logInfo } from "@/src/server/monitoring";
 import { readAdminJsonBody } from "@/src/server/admin/adminApiHelpers";
 import { enforceAdminApiAccess } from "@/src/server/rbac/enforceAdminApiAccess";
+import { addAuditLog } from "@/src/server/repositories/auditRepository";
+import { runNotificationCampaign } from "@/src/server/services/campaignService";
+import {
+  deleteNotificationCampaign,
+  listNotificationCampaigns,
+} from "@/src/server/repositories/notificationCampaignsRepository";
+import { countPushSubscriptions } from "@/src/server/repositories/pushSubscriptionsRepository";
+import { countActiveEmailSubscribers } from "@/src/server/repositories/emailSubscribersRepository";
 
 const schema = z.object({
-  title: z.string().min(2),
-  body: z.string().min(2),
+  title: z.string().trim().min(2).max(120),
+  body: z.string().trim().min(2).max(4000),
   channel: z.enum(["push", "email"]),
-  segment: z.string().min(1),
+  segment: z.string().trim().min(1).max(40),
 });
+
+export async function GET(request: NextRequest) {
+  const gate = await enforceAdminApiAccess(request);
+  if (!gate.ok) return gate.response;
+  try {
+    const [campaigns, pushCount, emailCount] = await Promise.all([
+      listNotificationCampaigns(50),
+      countPushSubscriptions(),
+      countActiveEmailSubscribers(),
+    ]);
+    return NextResponse.json({
+      data: campaigns,
+      stats: { pushCount, emailCount },
+    });
+  } catch (error) {
+    console.error("[admin/notifications] list failed:", error);
+    return NextResponse.json({ error: "Database unavailable. Please try again." }, { status: 503 });
+  }
+}
 
 export async function POST(request: NextRequest) {
   const gate = await enforceAdminApiAccess(request);
@@ -21,24 +46,70 @@ export async function POST(request: NextRequest) {
   if (!parsed.success) {
     return NextResponse.json({ error: "Invalid campaign payload" }, { status: 400 });
   }
-  if (parsed.data.channel === "email") {
-    try {
-      const recipient = process.env.NOTIFICATION_TEST_EMAIL || "subscriber@localhost";
-      const result = await sendEmail(
-        recipient,
-        parsed.data.title,
-        `<p>${parsed.data.body}</p>`,
-      );
-      logInfo("campaign.email.sent", { segment: parsed.data.segment });
-      return NextResponse.json({ ok: true, queued: true, email: result });
-    } catch (error) {
-      logError("campaign.email.failed", error);
-      return NextResponse.json({ error: "Email send failed" }, { status: 500 });
-    }
+
+  try {
+    const result = await runNotificationCampaign({
+      title: parsed.data.title,
+      body: parsed.data.body,
+      channel: parsed.data.channel,
+      segment: parsed.data.segment,
+    });
+
+    await addAuditLog({
+      actor: gate.subject.email,
+      action: "campaign.send",
+      target: result.campaign.id,
+      payload: {
+        channel: result.campaign.channel,
+        segment: result.campaign.segment,
+        status: result.campaign.status,
+        sentCount: result.campaign.sentCount,
+        failCount: result.campaign.failCount,
+        recipientCount: result.recipientCount,
+      },
+    });
+
+    const ok =
+      result.campaign.status === "sent" || result.campaign.status === "partial";
+    return NextResponse.json(
+      {
+        ok,
+        data: result.campaign,
+        recipientCount: result.recipientCount,
+        ...(result.campaign.errorNote ? { warning: result.campaign.errorNote } : {}),
+      },
+      { status: ok ? 200 : 422 },
+    );
+  } catch (error) {
+    console.error("[admin/notifications] send failed:", error);
+    const unavailable = error instanceof Error && error.message === "DB_UNAVAILABLE";
+    return NextResponse.json(
+      { error: unavailable ? "Database unavailable. Please try again." : "Campaign send failed." },
+      { status: unavailable ? 503 : 500 },
+    );
   }
-  return NextResponse.json({
-    ok: true,
-    queued: true,
-    message: "Campaign queued for segmented delivery.",
-  });
+}
+
+export async function DELETE(request: NextRequest) {
+  const gate = await enforceAdminApiAccess(request);
+  if (!gate.ok) return gate.response;
+  const id = request.nextUrl.searchParams.get("id")?.trim() ?? "";
+  if (!id) return NextResponse.json({ error: "id required" }, { status: 400 });
+
+  try {
+    await deleteNotificationCampaign(id);
+    await addAuditLog({
+      actor: gate.subject.email,
+      action: "campaign.delete",
+      target: id,
+    });
+    return NextResponse.json({ ok: true });
+  } catch (error) {
+    console.error("[admin/notifications] delete failed:", error);
+    const unavailable = error instanceof Error && error.message === "DB_UNAVAILABLE";
+    return NextResponse.json(
+      { error: unavailable ? "Database unavailable. Please try again." : "Could not delete campaign." },
+      { status: unavailable ? 503 : 500 },
+    );
+  }
 }

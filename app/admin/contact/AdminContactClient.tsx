@@ -21,6 +21,7 @@ type ConfirmAction =
       name: string;
       email: string;
       subject: string;
+      topic: AdminContactItem["topic"];
       etaHours: 24 | 48;
     }
   | {
@@ -29,6 +30,7 @@ type ConfirmAction =
       name: string;
       email: string;
       subject: string;
+      topic: AdminContactItem["topic"];
     };
 
 const STATUS_OPTIONS: Array<{ value: AdminContactItem["status"]; label: string }> = [
@@ -200,6 +202,7 @@ export default function AdminContactClient({ initialItems }: Props) {
       });
       const json = (await res.json().catch(() => ({}))) as {
         emailSent?: boolean;
+        emailAttempted?: boolean;
         emailWarning?: string;
         error?: string;
       };
@@ -207,17 +210,25 @@ export default function AdminContactClient({ initialItems }: Props) {
       if (!res.ok) {
         setMessage(json.error || "Update failed.");
       } else if (status === "in_progress") {
-        setMessage(
-          json.emailSent
-            ? `Marked In Progress (${body.etaHours}h). User notified by email.`
-            : `Marked In Progress (${body.etaHours}h). Email could not be sent.`,
-        );
+        if (json.emailAttempted) {
+          setMessage(
+            json.emailSent
+              ? `Marked In Progress (${body.etaHours}h). User notified by email.`
+              : `Marked In Progress (${body.etaHours}h). Email could not be sent.`,
+          );
+        } else {
+          setMessage(`Marked In Progress (${body.etaHours}h).`);
+        }
       } else if (status === "solved") {
-        setMessage(
-          json.emailSent
-            ? "Marked Solved. User notified by email."
-            : "Marked Solved. Email could not be sent.",
-        );
+        if (json.emailAttempted) {
+          setMessage(
+            json.emailSent
+              ? "Marked Solved. User notified by email."
+              : "Marked Solved. Email could not be sent.",
+          );
+        } else {
+          setMessage("Marked Solved.");
+        }
       } else {
         setMessage(`Marked as ${statusLabel(status)}.`);
       }
@@ -255,6 +266,7 @@ export default function AdminContactClient({ initialItems }: Props) {
         name: item.name,
         email: item.email,
         subject: item.subject,
+        topic: item.topic,
         etaHours: hours,
       });
       return;
@@ -267,6 +279,7 @@ export default function AdminContactClient({ initialItems }: Props) {
         name: item.name,
         email: item.email,
         subject: item.subject,
+        topic: item.topic,
       });
       return;
     }
@@ -596,8 +609,12 @@ export default function AdminContactClient({ initialItems }: Props) {
             {confirmAction.type === "delete"
               ? "This will permanently remove the contact message. This action cannot be undone."
               : confirmAction.type === "in_progress"
-                ? `The user will get an email that the issue will be resolved within ${confirmAction.etaHours} hours.`
-                : "The user will get an email that the problem has been resolved."}
+                ? confirmAction.topic === "report"
+                  ? `The user will get an email that the issue will be resolved within ${confirmAction.etaHours} hours.`
+                  : `Mark this ${topicLabel(confirmAction.topic).toLowerCase()} message as in progress.`
+                : confirmAction.topic === "report"
+                  ? "The user will get an email that the problem has been resolved."
+                  : `Mark this ${topicLabel(confirmAction.topic).toLowerCase()} message as solved.`}
           </p>
 
           <div className="admin-confirm-meta admin-confirm-meta-rich">
@@ -618,7 +635,7 @@ export default function AdminContactClient({ initialItems }: Props) {
             ) : null}
           </div>
 
-          {confirmAction.type !== "delete" ? (
+          {confirmAction.type !== "delete" && confirmAction.topic === "report" ? (
             <div className="admin-confirm-note" role="note">
               <span className="admin-confirm-note-dot" aria-hidden />
               Email notification will be sent to the user.

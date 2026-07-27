@@ -1,0 +1,84 @@
+.wrap {
+  margin-top: 1.25rem;
+  padding: 0.9rem 1rem;
+  border: 1px solid rgba(69, 196, 176, 0.28);
+  border-radius: 12px;
+  background: rgba(11, 14, 20, 0.55);
+}
+
+.title {
+  margin: 0;
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: #e6edf3;
+}
+
+.copy {
+  margin: 0.35rem 0 0.75rem;
+  font-size: 0.8rem;
+  line-height: 1.4;
+  color: rgba(230, 237, 243, 0.72);
+}
+
+.actions {
+  display: flex;
+  flex-direction: column;
+  gap: 0.55rem;
+}
+
+.btn {
+  appearance: none;
+  border: 0;
+  border-radius: 8px;
+  padding: 0.55rem 0.8rem;
+  background: #45c4b0;
+  color: #0b0e14;
+  font-weight: 700;
+  font-size: 0.85rem;
+  cursor: pointer;
+}
+
+.btn:disabled {
+  opacity: 0.65;
+  cursor: not-allowed;
+}
+
+.email {
+  display: flex;
+  gap: 0.4rem;
+  flex-wrap: wrap;
+}
+
+.email input {
+  flex: 1 1 140px;
+  min-width: 0;
+  border-radius: 8px;
+  border: 1px solid rgba(230, 237, 243, 0.2);
+  background: rgba(0, 0, 0, 0.25);
+  color: #e6edf3;
+  padding: 0.5rem 0.65rem;
+  font-size: 0.85rem;
+}
+
+.email button {
+  appearance: none;
+  border: 1px solid rgba(69, 196, 176, 0.45);
+  border-radius: 8px;
+  padding: 0.5rem 0.7rem;
+  background: transparent;
+  color: #45c4b0;
+  font-weight: 650;
+  font-size: 0.8rem;
+  cursor: pointer;
+}
+
+.email button:disabled {
+  opacity: 0.65;
+  cursor: not-allowed;
+}
+
+.msg {
+  margin: 0;
+  font-size: 0.78rem;
+  color: rgba(230, 237, 243, 0.78);
+}

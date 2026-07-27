@@ -7,6 +7,7 @@ import {
   createPageComment,
   listApprovedPageComments,
 } from "@/src/server/repositories/pageCommentsRepository";
+import { trackEmailForCampaigns } from "@/src/server/repositories/emailSubscribersRepository";
 
 /** Allowed public page comment keys (prevent open spam targets). */
 const ALLOWED_PAGE_KEYS = new Set([
@@ -72,6 +73,8 @@ export async function POST(request: NextRequest) {
   if (!created) {
     return NextResponse.json({ error: "Could not save comment" }, { status: 503 });
   }
+
+  void trackEmailForCampaigns(parsed.data.email, "comment");
 
   return NextResponse.json({
     ok: true,

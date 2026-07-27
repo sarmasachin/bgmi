@@ -119,6 +119,7 @@ export async function PATCH(request: NextRequest) {
       ok: true,
       data: item,
       emailSent,
+      emailAttempted: shouldNotify,
       ...(emailReason && !emailSent ? { emailWarning: emailReason } : {}),
     });
   } catch (err) {

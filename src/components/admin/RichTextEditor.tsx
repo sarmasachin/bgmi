@@ -20,6 +20,37 @@ const DEFAULT_STORAGE_KEY = "bgmi_admin_news_editor_draft_v1";
 const TABLE_PICKER_ROWS = 8;
 const TABLE_PICKER_COLS = 10;
 
+/** Remove paste-only text/background colors that break on the dark editor. */
+const PASTE_STYLE_DROP =
+  /^(?:color|background(?:-color|-image|-position|-size|-repeat|-attachment|-clip|-origin)?|-webkit-text-fill-color|-webkit-text-stroke(?:-color)?|caret-color|text-decoration-color)$/i;
+
+function stripPastedAppearanceStyles(raw: string) {
+  if (typeof window === "undefined") return raw;
+
+  const doc = new DOMParser().parseFromString(raw, "text/html");
+  doc.querySelectorAll("*").forEach((element) => {
+    if (element.hasAttribute("color")) element.removeAttribute("color");
+    if (element.hasAttribute("bgcolor")) element.removeAttribute("bgcolor");
+
+    const style = element.getAttribute("style");
+    if (!style) return;
+
+    const kept = style
+      .split(";")
+      .map((part) => part.trim())
+      .filter(Boolean)
+      .filter((part) => {
+        const prop = part.split(":")[0]?.trim() ?? "";
+        return prop && !PASTE_STYLE_DROP.test(prop);
+      });
+
+    if (kept.length === 0) element.removeAttribute("style");
+    else element.setAttribute("style", kept.join("; "));
+  });
+
+  return doc.body.innerHTML;
+}
+
 function sanitizeHtml(raw: string) {
   if (typeof window === "undefined") return raw;
 
@@ -2468,7 +2499,18 @@ export function RichTextEditor({
     if (files && files.length > 0) {
       event.preventDefault();
       void handleFiles(files);
+      return;
     }
+
+    const html = event.clipboardData.getData("text/html")?.trim() ?? "";
+    if (!html) return;
+
+    // Strip black/white paste colors so text & tables stay readable on dark editor.
+    event.preventDefault();
+    const cleaned = sanitizeHtml(stripPastedAppearanceStyles(html)).trim();
+    const plain = event.clipboardData.getData("text/plain") ?? "";
+    document.execCommand("insertHTML", false, cleaned || plain.replace(/\n/g, "<br>"));
+    syncEditorValue();
   }
 
   function ensureEditableRoot() {

@@ -1,7 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { Geist } from "next/font/google";
 import { DeferredMarketingScripts } from "@/src/components/DeferredMarketingScripts";
-import { FontAwesomeLoader } from "@/src/components/FontAwesomeLoader";
+import { FA_CSS, FA_SOLID_WOFF2 } from "@/src/lib/fontAwesome";
 import { organizationSchema, websiteSchema } from "@/src/lib/schema";
 import {
   parseAdsenseSnippet,
@@ -115,7 +115,18 @@ export default async function RootLayout({
         {/* GA/AdSense injected after LCP via DeferredMarketingScripts (still into document.head) */}
         <link rel="dns-prefetch" href="https://www.googletagmanager.com" />
         <link rel="dns-prefetch" href="https://pagead2.googlesyndication.com" />
-        <link rel="dns-prefetch" href="https://cdnjs.cloudflare.com" />
+        <link rel="preconnect" href="https://cdnjs.cloudflare.com" crossOrigin="anonymous" />
+        {/* FA in head (not deferred) so icons paint with first content — avoids blink on refresh */}
+        <link
+          rel="preload"
+          href={FA_SOLID_WOFF2}
+          as="font"
+          type="font/woff2"
+          crossOrigin="anonymous"
+        />
+        {FA_CSS.map((href) => (
+          <link key={href} rel="stylesheet" href={href} />
+        ))}
       </head>
       <body>
         {/* Critical above-the-fold styles so LCP title can paint before the CSS chunk */}
@@ -151,7 +162,6 @@ export default async function RootLayout({
               : null
           }
         />
-        <FontAwesomeLoader />
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{

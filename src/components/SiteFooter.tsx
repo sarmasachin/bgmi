@@ -1,6 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { FooterShareLinks } from "@/src/components/FooterShareLinks";
+import { NotifyOptIn } from "@/src/components/NotifyOptIn";
 import { ensureFreeFireNavigation } from "@/src/lib/freeFirePages";
 import { ensurePubgMobileCodesNavigation, PUBG_MOBILE_CODES_PATH } from "@/src/lib/pubgMobileCodes";
 import {
@@ -127,6 +128,7 @@ export async function SiteFooter({ settings: settingsProp }: SiteFooterProps = {
                 </li>
               ))}
             </ul>
+            <NotifyOptIn />
           </div>
 
           {showShareLinks ? (

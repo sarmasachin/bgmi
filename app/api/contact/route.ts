@@ -10,6 +10,7 @@ import {
   resolveContactTopic,
 } from "@/src/lib/contactEmailTemplates";
 import { canEmailSubmitFeedback } from "@/src/server/repositories/ratingSummaryRepository";
+import { trackEmailForCampaigns } from "@/src/server/repositories/emailSubscribersRepository";
 
 const SUPPORT_EMAIL = "support@sensitivitysettings.com";
 
@@ -70,6 +71,8 @@ export async function POST(request: NextRequest) {
       { status: unavailable ? 503 : 500 },
     );
   }
+
+  void trackEmailForCampaigns(email, topic === "feedback" ? "feedback" : topic === "report" ? "report" : "contact");
 
   const adminPrefix =
     topic === "report" ? "[Report]" : topic === "feedback" ? "[Feedback]" : "[Contact]";
