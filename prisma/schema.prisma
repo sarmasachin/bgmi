@@ -135,11 +135,28 @@ model PushSubscription {
 }
 
 model EmailSubscriber {
-  id        String   @id @default(cuid())
-  email     String   @unique
-  tags      String[]
-  isActive  Boolean  @default(true)
-  createdAt DateTime @default(now())
+  id                  String    @id @default(cuid())
+  email               String    @unique
+  tags                String[]
+  isActive            Boolean   @default(true)
+  /** Last successful campaign email — used to rotate recipients across days. */
+  lastCampaignEmailAt DateTime?
+  createdAt           DateTime  @default(now())
+
+  @@index([isActive, lastCampaignEmailAt, createdAt])
+}
+
+/// One row per campaign+email — blocks duplicate send in the same campaign.
+model EmailCampaignDelivery {
+  id         String   @id @default(cuid())
+  campaignId String
+  email      String
+  status     String   @default("sent")
+  createdAt  DateTime @default(now())
+
+  @@unique([campaignId, email])
+  @@index([createdAt])
+  @@index([email, createdAt])
 }
 
 /// Admin Campaign Management history (email + browser push)

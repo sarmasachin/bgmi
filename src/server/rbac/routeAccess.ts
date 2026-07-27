@@ -159,7 +159,7 @@ export function resolveAdminApiPermission(
     return { type: "permission", permission: "testimonials.edit" };
   }
 
-  if (path.startsWith("/api/admin/notifications") || path.startsWith("/api/admin/auto-notify")) {
+  if (path.startsWith("/api/admin/notifications") || path.startsWith("/api/admin/auto-notify") || path.startsWith("/api/admin/email-campaign-settings")) {
     if (isRead) return { type: "permission", permission: "notifications.view" };
     return { type: "permission", permission: "notifications.edit" };
   }

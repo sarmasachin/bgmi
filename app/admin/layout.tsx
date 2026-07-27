@@ -109,6 +109,35 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
     setMobileMenuOpen(false);
   }, [pathname]);
 
+  // Admin pages: always open at top (refresh + sidebar nav). Browser otherwise restores bottom scroll.
+  useEffect(() => {
+    const previous = window.history.scrollRestoration;
+    try {
+      window.history.scrollRestoration = "manual";
+    } catch {
+      /* ignore */
+    }
+
+    const scrollAdminToTop = () => {
+      window.scrollTo(0, 0);
+      document.documentElement.scrollTop = 0;
+      document.body.scrollTop = 0;
+    };
+
+    scrollAdminToTop();
+    // After paint/layout (long lists / images) ensure we still land at top.
+    const raf = window.requestAnimationFrame(scrollAdminToTop);
+
+    return () => {
+      window.cancelAnimationFrame(raf);
+      try {
+        window.history.scrollRestoration = previous;
+      } catch {
+        /* ignore */
+      }
+    };
+  }, [pathname]);
+
   useEffect(() => {
     if (isLoginPage) {
       setMe(null);

@@ -23,7 +23,10 @@ export function NotifyOptIn() {
       const res = await fetch("/api/subscribe/email", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email: trimmed, tags: detectPushTags() }),
+        body: JSON.stringify({
+          email: trimmed,
+          tags: ["email-subscribe", ...detectPushTags()],
+        }),
       });
       const json = (await res.json().catch(() => ({}))) as { error?: string };
       if (!res.ok) {

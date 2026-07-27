@@ -74,7 +74,9 @@ export async function POST(request: NextRequest) {
     });
 
     const ok =
-      result.campaign.status === "sent" || result.campaign.status === "partial";
+      result.campaign.status === "sent" ||
+      result.campaign.status === "partial" ||
+      result.campaign.status === "queued";
     return NextResponse.json(
       {
         ok,

@@ -142,6 +142,11 @@ export default function AdminNotificationsClient({
           setMessage(
             `Partial: ${row.sentCount} sent, ${row.failCount} failed.${json.warning ? ` ${json.warning}` : ""}`,
           );
+        } else if (row.status === "queued") {
+          setMessage(
+            json.warning ||
+              "Email campaign queued — sending in background at paced rate. Refresh list for progress.",
+          );
         } else {
           setMessage(json.warning || json.error || "Campaign failed — no recipients reached.");
         }

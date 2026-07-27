@@ -1,3 +1,4 @@
+import { after } from "next/server";
 import { sendEmail } from "@/src/server/services/emailService";
 import { sendPush } from "@/src/server/services/pushService";
 import { normalizePushClickUrl } from "@/src/lib/pushClickUrl";
@@ -12,7 +13,19 @@ import {
   isValidPushKeyPair,
   listPushSubscriptionsForSegment,
 } from "@/src/server/repositories/pushSubscriptionsRepository";
-import { listActiveEmailSubscribersForSegment } from "@/src/server/repositories/emailSubscribersRepository";
+import {
+  countCampaignEmailsSentSince,
+  emailSendIntervalMs,
+  emailsPerMinuteFromDailyLimit,
+  getEmailCampaignSettings,
+  pickEmailCampaignRecipients,
+  recordEmailCampaignDelivery,
+  startOfUtcDay,
+} from "@/src/server/repositories/emailCampaignSendRepository";
+
+function sleep(ms: number) {
+  return new Promise<void>((resolve) => setTimeout(resolve, ms));
+}
 
 export type RunCampaignInput = {
   title: string;
@@ -133,8 +146,32 @@ function absoluteEmailHref(url: string) {
   }
 }
 
-async function deliverEmail(title: string, body: string, segment: string, url: string) {
-  const subs = await listActiveEmailSubscribersForSegment(segment);
+async function deliverEmail(
+  campaignId: string,
+  title: string,
+  body: string,
+  segment: string,
+  url: string,
+) {
+  const settings = await getEmailCampaignSettings();
+  const sentToday = await countCampaignEmailsSentSince(startOfUtcDay());
+  const remainingToday = Math.max(0, settings.dailySendLimit - sentToday);
+
+  if (remainingToday <= 0) {
+    return {
+      recipientCount: 0,
+      sentCount: 0,
+      failCount: 0,
+      errorNote: `Daily email limit reached (${settings.dailySendLimit}/day UTC). Try again tomorrow — remaining subscribers will be rotated next.`,
+    };
+  }
+
+  const recipients = await pickEmailCampaignRecipients({
+    campaignId,
+    segment,
+    limit: remainingToday,
+  });
+
   const showLink = Boolean(url && String(url).trim());
   const linkBlock = showLink
     ? `<p style="margin:16px 0 0;"><a href="${escapeHtml(absoluteEmailHref(url))}" style="color:#0f766e;font-weight:600;">Open link</a></p>`
@@ -142,27 +179,72 @@ async function deliverEmail(title: string, body: string, segment: string, url: s
   const html = `<div style="font-family:Arial,Helvetica,sans-serif;line-height:1.5;color:#0f172a;"><h2 style="margin:0 0 12px;">${escapeHtml(title)}</h2><p style="margin:0;white-space:pre-wrap;">${escapeHtml(body)}</p>${linkBlock}</div>`;
   let sentCount = 0;
   let failCount = 0;
+  // 950/day → ~1 email / 1.5 min (spread evenly over 24h).
+  const intervalMs = emailSendIntervalMs(settings.dailySendLimit);
+  let sentAttempt = 0;
 
-  for (const sub of subs) {
+  // Deduplicate within this run (extra safety).
+  const seen = new Set<string>();
+  for (const sub of recipients) {
+    const email = sub.email.trim().toLowerCase();
+    if (!email || seen.has(email)) continue;
+    seen.add(email);
+    if (sentAttempt > 0 && intervalMs > 0) {
+      await sleep(intervalMs);
+    }
+    sentAttempt += 1;
     try {
-      const result = await sendEmail(sub.email, title, html);
-      if (result.sent) sentCount += 1;
-      else failCount += 1;
+      const result = await sendEmail(email, title, html);
+      if (result.sent) {
+        sentCount += 1;
+        await recordEmailCampaignDelivery({
+          campaignId,
+          email,
+          status: "sent",
+        });
+      } else {
+        failCount += 1;
+        await recordEmailCampaignDelivery({
+          campaignId,
+          email,
+          status: "failed",
+        });
+      }
     } catch {
       failCount += 1;
+      await recordEmailCampaignDelivery({
+        campaignId,
+        email,
+        status: "failed",
+      });
     }
   }
 
+  const hitDailyCap = seen.size >= remainingToday;
+  let errorNote: string | null = null;
+  if (seen.size === 0) {
+    errorNote =
+      remainingToday <= 0
+        ? `Daily email limit reached (${settings.dailySendLimit}/day UTC). Try again tomorrow.`
+        : "No email subscribers left for this segment (or all already got this campaign).";
+  } else if (sentCount === 0) {
+    errorNote = "Email delivery failed for all recipients. Check SMTP settings.";
+  } else {
+    const parts: string[] = [];
+    if (failCount > 0) parts.push(`${failCount} failed`);
+    if (hitDailyCap) {
+      parts.push(
+        `Daily quota ${settings.dailySendLimit}/day — other subscribers rotate on next send / tomorrow`,
+      );
+    }
+    errorNote = parts.length ? parts.join(". ") : null;
+  }
+
   return {
-    recipientCount: subs.length,
+    recipientCount: seen.size,
     sentCount,
     failCount,
-    errorNote:
-      subs.length === 0
-        ? "No email subscribers for this segment."
-        : sentCount === 0
-          ? "Email delivery failed for all subscribers. Check SMTP settings."
-          : null,
+    errorNote,
   };
 }
 
@@ -186,10 +268,67 @@ export async function runNotificationCampaign(
   });
 
   try {
-    const delivery =
-      input.channel === "push"
-        ? await deliverPush(input.title, input.body, input.segment, clickUrl)
-        : await deliverEmail(input.title, input.body, input.segment, input.url?.trim() ? clickUrl : "");
+    if (input.channel === "email") {
+      const settings = await getEmailCampaignSettings();
+      const intervalMs = emailSendIntervalMs(settings.dailySendLimit);
+      const perMin = emailsPerMinuteFromDailyLimit(settings.dailySendLimit);
+      const queuedNote = `Queued — pacing ~${perMin.toFixed(2)}/min (~${Math.round(intervalMs / 1000)}s between emails; ${settings.dailySendLimit}/day over 24h). Refresh list for progress.`;
+
+      const queued = await updateNotificationCampaignResult(campaign.id, {
+        status: "queued",
+        sentCount: 0,
+        failCount: 0,
+        errorNote: queuedNote,
+      });
+
+      after(async () => {
+        try {
+          const delivery = await deliverEmail(
+            campaign.id,
+            input.title,
+            input.body,
+            input.segment,
+            input.url?.trim() ? clickUrl : "",
+          );
+          const status = finalStatus(
+            delivery.sentCount,
+            delivery.failCount,
+            delivery.recipientCount,
+          );
+          await updateNotificationCampaignResult(campaign.id, {
+            status,
+            sentCount: delivery.sentCount,
+            failCount: delivery.failCount,
+            errorNote: delivery.errorNote,
+          });
+        } catch (error) {
+          const note =
+            error instanceof Error && error.message === "DB_UNAVAILABLE"
+              ? "Database unavailable while sending."
+              : error instanceof Error
+                ? error.message
+                : "Campaign send failed.";
+          await updateNotificationCampaignResult(campaign.id, {
+            status: "failed",
+            sentCount: 0,
+            failCount: 0,
+            errorNote: note,
+          }).catch(() => undefined);
+        }
+      });
+
+      return {
+        campaign: queued,
+        recipientCount: 0,
+      };
+    }
+
+    const delivery = await deliverPush(
+      input.title,
+      input.body,
+      input.segment,
+      clickUrl,
+    );
 
     const status = finalStatus(
       delivery.sentCount,
