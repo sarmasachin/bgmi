@@ -1,5 +1,6 @@
 import { createECDH } from "crypto";
 import webpush from "web-push";
+import { normalizePushClickUrl } from "@/src/lib/pushClickUrl";
 
 export type PushPayload = {
   endpoint: string;
@@ -7,6 +8,8 @@ export type PushPayload = {
   auth: string;
   title: string;
   body: string;
+  /** Click destination — relative path or https URL. Invalid values ignored at send. */
+  url?: string;
 };
 
 export type SendPushResult = {
@@ -132,7 +135,11 @@ export async function sendPush(payload: PushPayload): Promise<SendPushResult> {
           auth: payload.auth,
         },
       },
-      JSON.stringify({ title: payload.title, body: payload.body }),
+      JSON.stringify({
+        title: payload.title,
+        body: payload.body,
+        url: normalizePushClickUrl(payload.url),
+      }),
       { TTL: 60 * 60 * 12, urgency: "normal" },
     );
     return { sent: true };

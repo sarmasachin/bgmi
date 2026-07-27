@@ -106,6 +106,7 @@ export default function AdminNotificationsClient({
       body: String(formData.get("body") || "").trim(),
       channel: String(formData.get("channel") || "email"),
       segment: String(formData.get("segment") || "all").trim() || "all",
+      url: String(formData.get("url") || "").trim(),
     };
 
     setBusy(true);
@@ -191,11 +192,18 @@ export default function AdminNotificationsClient({
         <p style={{ margin: "0 0 12px", opacity: 0.8, fontSize: 13 }}>
           Push goes to browsers that enabled notifications. Email goes to footer email subscribers.
           Segment: <code>all</code>, <code>pc</code>, <code>mobile</code>, <code>android</code>, or{" "}
-          <code>ios</code>.
+          <code>ios</code>. Optional link opens when the user taps the notification (e.g.{" "}
+          <code>/news/my-post</code>). Leave blank for homepage.
         </p>
         <form onSubmit={(e) => void sendCampaign(e)} className="admin-inline-form admin-notifications-form">
           <input name="title" placeholder="Campaign title" required minLength={2} />
           <input name="body" placeholder="Message body" required minLength={2} />
+          <input
+            name="url"
+            placeholder="Link (optional) — /page-slug or https://…"
+            maxLength={500}
+            aria-label="Notification link"
+          />
           <select name="channel" defaultValue="push" aria-label="Channel">
             <option value="push">Push (browser)</option>
             <option value="email">Email</option>

@@ -2,126 +2,27 @@
 
 import { FormEvent, useEffect, useMemo, useState } from "react";
 import dynamic from "next/dynamic";
-import type { AdminPageRow } from "@/src/server/admin/mapAdminPageRows";
 import { useAdminFlash } from "@/src/components/admin/AdminToast";
 import { useAdminDuplicateCheck } from "@/src/hooks/useAdminDuplicateCheck";
 import { toCanonicalUrl } from "@/src/lib/siteUrl";
+import {
+  type CloneGame,
+  type PageRow,
+  type TemplateType,
+  cloneGameLabel,
+  coerceCloneGame,
+  coerceTemplateType,
+  comparableSlug,
+  comparableTitle,
+  normalizeSlugInput,
+  parseContent,
+  slugifyFromTitle,
+} from "./adminPagesHelpers";
 
 const RichTextEditor = dynamic(
   () => import("@/src/components/admin/RichTextEditor").then((mod) => mod.RichTextEditor),
   { ssr: false, loading: () => <p>Loading editor...</p> },
 );
-
-type TemplateType = "home" | "article" | "landing";
-type CloneGame = "bgmi" | "pubg" | "freefire" | "freefire-max" | "pubg-mobile-codes";
-
-type PageRow = AdminPageRow;
-
-type PageMeta = {
-  templateType?: TemplateType;
-  game?: CloneGame;
-  socialTitle?: string;
-  socialDescription?: string;
-  socialImageAlt?: string;
-  keywords?: string;
-};
-
-function coerceTemplateType(value: unknown): TemplateType {
-  return value === "article" || value === "landing" || value === "home" ? value : "home";
-}
-
-function coerceCloneGame(value: unknown): CloneGame {
-  if (
-    value === "pubg" ||
-    value === "freefire" ||
-    value === "freefire-max" ||
-    value === "pubg-mobile-codes"
-  ) {
-    return value;
-  }
-  return "bgmi";
-}
-
-function cloneGameLabel(game: CloneGame) {
-  if (game === "pubg") return "PUBG Mobile";
-  if (game === "pubg-mobile-codes") return "PUBG Mobile Code";
-  if (game === "freefire") return "Free Fire";
-  if (game === "freefire-max") return "Free Fire Max";
-  return "BGMI";
-}
-
-function normalizeSlugInput(next: string) {
-  const compact = next.replace(/\s+/g, "-").replace(/-+/g, "-");
-  if (!compact) return "";
-  // Leading "/" is not stored — the public URL path already includes it.
-  return compact.replace(/^\/+/, "").replace(/\/+$/, "").toLowerCase();
-}
-
-function slugifyFromTitle(input: string) {
-  const base = input
-    .toLowerCase()
-    .trim()
-    .replace(/[^a-z0-9\s/-]/g, "")
-    .replace(/\s+/g, "-")
-    .replace(/-+/g, "-")
-    .replace(/\/+/g, "/")
-    .replace(/\/-/g, "/")
-    .replace(/-\/+/g, "/")
-    .replace(/^-+|-+$/g, "")
-    .replace(/^\/+|\/+$/g, "");
-  return base;
-}
-
-function parseContent(content: unknown) {
-  if (typeof content === "string") {
-    return { html: content, meta: {} as PageMeta };
-  }
-  if (typeof content === "object" && content !== null) {
-    const maybeHtml = (content as { html?: unknown }).html;
-    const maybeMeta = (content as { meta?: unknown }).meta;
-    const metaObj =
-      typeof maybeMeta === "object" && maybeMeta !== null
-        ? (maybeMeta as {
-            templateType?: unknown;
-            game?: unknown;
-            socialTitle?: unknown;
-            socialDescription?: unknown;
-            socialImageAlt?: unknown;
-            keywords?: unknown;
-          })
-        : {};
-    return {
-      html: typeof maybeHtml === "string" ? maybeHtml : "",
-      meta: {
-        templateType:
-          metaObj.templateType === "home" || metaObj.templateType === "article" || metaObj.templateType === "landing"
-            ? metaObj.templateType
-            : undefined,
-        game:
-          metaObj.game === "pubg" ||
-          metaObj.game === "bgmi" ||
-          metaObj.game === "freefire" ||
-          metaObj.game === "freefire-max" ||
-          metaObj.game === "pubg-mobile-codes"
-            ? metaObj.game
-            : undefined,
-        socialTitle: typeof metaObj.socialTitle === "string" ? metaObj.socialTitle : undefined,
-        socialDescription: typeof metaObj.socialDescription === "string" ? metaObj.socialDescription : undefined,
-        socialImageAlt: typeof metaObj.socialImageAlt === "string" ? metaObj.socialImageAlt : undefined,
-        keywords: typeof metaObj.keywords === "string" ? metaObj.keywords : undefined,
-      },
-    };
-  }
-  return { html: "", meta: {} as PageMeta };
-}
-
-function comparableSlug(input: string) {
-  return normalizeSlugInput(input.trim()).toLowerCase();
-}
-
-function comparableTitle(input: string) {
-  return input.trim().replace(/\s+/g, " ").toLowerCase();
-}
 
 type Props = {
   initialRows?: PageRow[];
@@ -130,7 +31,7 @@ type Props = {
 const PAGE_SIZE = 10;
 
 type ConfirmAction = {
-  type: "delete" | "unpublish";
+  type: "delete" | "unpublish" | "publish";
   id: string;
   title: string;
   slug: string;
@@ -170,6 +71,7 @@ export default function AdminPagesClient({ initialRows }: Props) {
   const [editorNonce, setEditorNonce] = useState(0);
   const [confirmAction, setConfirmAction] = useState<ConfirmAction | null>(null);
   const [confirmBusy, setConfirmBusy] = useState(false);
+  const [sendPushNotify, setSendPushNotify] = useState(false);
   const [listPage, setListPage] = useState(1);
 
   const totalPages = Math.max(1, Math.ceil(rows.length / PAGE_SIZE));
@@ -466,25 +368,32 @@ export default function AdminPagesClient({ initialRows }: Props) {
     }
   }
 
-  async function setPageStatus(id: string, status: "draft" | "published") {
+  async function setPageStatus(id: string, status: "draft" | "published", sendPush = false) {
     const publishing = status === "published";
     try {
       const res = await fetch("/api/admin/pages", {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ id, status }),
+        body: JSON.stringify({ id, status, ...(publishing ? { sendPush } : {}) }),
       });
-      setMessage(
-        res.ok
-          ? publishing
-            ? "Page published."
-            : "Page unpublished. It is no longer live."
-          : publishing
-            ? "Publish failed."
-            : "Unpublish failed.",
-      );
-      if (res.ok) await loadRows();
-      return res.ok;
+      const json = (await res.json().catch(() => ({}))) as { warning?: string; error?: string };
+      if (!res.ok) {
+        setMessage(json.error || (publishing ? "Publish failed." : "Unpublish failed."));
+        return false;
+      }
+      if (publishing) {
+        setMessage(
+          json.warning
+            ? `Page published. Push: ${json.warning}`
+            : sendPush
+              ? "Page published and push sent."
+              : "Page published.",
+        );
+      } else {
+        setMessage("Page unpublished. It is no longer live.");
+      }
+      await loadRows();
+      return true;
     } catch {
       setMessage("Network error. Please retry.");
       return false;
@@ -506,6 +415,7 @@ export default function AdminPagesClient({ initialRows }: Props) {
   function closeConfirmModal() {
     if (confirmBusy) return;
     setConfirmAction(null);
+    setSendPushNotify(false);
   }
 
   async function confirmPendingAction() {
@@ -514,9 +424,14 @@ export default function AdminPagesClient({ initialRows }: Props) {
     const ok =
       confirmAction.type === "delete"
         ? await deletePage(confirmAction.id)
-        : await setPageStatus(confirmAction.id, "draft");
+        : confirmAction.type === "publish"
+          ? await setPageStatus(confirmAction.id, "published", sendPushNotify)
+          : await setPageStatus(confirmAction.id, "draft");
     setConfirmBusy(false);
-    if (ok) setConfirmAction(null);
+    if (ok) {
+      setConfirmAction(null);
+      setSendPushNotify(false);
+    }
   }
 
   return (
@@ -579,7 +494,15 @@ export default function AdminPagesClient({ initialRows }: Props) {
                         <button
                           type="button"
                           className="admin-pages-btn admin-pages-btn-publish"
-                          onClick={() => void setPageStatus(row.id, "published")}
+                          onClick={() => {
+                            setSendPushNotify(false);
+                            setConfirmAction({
+                              type: "publish",
+                              id: row.id,
+                              title: row.title,
+                              slug: normalizeSlugInput(row.slug) || row.slug,
+                            });
+                          }}
                         >
                           Publish
                         </button>
@@ -929,7 +852,11 @@ export default function AdminPagesClient({ initialRows }: Props) {
         <div className="admin-modal-overlay" role="presentation" onClick={closeConfirmModal}>
           <div
             className={`admin-modal admin-confirm-modal ${
-              confirmAction.type === "delete" ? "is-danger" : "is-warning"
+              confirmAction.type === "delete"
+                ? "is-danger"
+                : confirmAction.type === "publish"
+                  ? ""
+                  : "is-warning"
             }`}
             role="dialog"
             aria-modal="true"
@@ -961,18 +888,44 @@ export default function AdminPagesClient({ initialRows }: Props) {
               )}
             </div>
             <h2 id="admin-pages-confirm-title">
-              {confirmAction.type === "delete" ? "Delete this clone?" : "Unpublish this clone?"}
+              {confirmAction.type === "delete"
+                ? "Delete this clone?"
+                : confirmAction.type === "publish"
+                  ? "Publish this clone?"
+                  : "Unpublish this clone?"}
             </h2>
             <p id="admin-pages-confirm-desc" className="admin-modal-subtitle">
               {confirmAction.type === "delete"
                 ? "This will permanently remove the clone. This action cannot be undone."
-                : "This clone will go offline and stop appearing as a live page."}
+                : confirmAction.type === "publish"
+                  ? "This clone will go live on the site."
+                  : "This clone will go offline and stop appearing as a live page."}
             </p>
             <div className="admin-confirm-meta">
               <span className="admin-confirm-meta-label">Clone</span>
               <strong>{confirmAction.title}</strong>
               <span className="admin-confirm-meta-slug">/{confirmAction.slug}</span>
             </div>
+            {confirmAction.type === "publish" ? (
+              <label
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 8,
+                  marginTop: 12,
+                  fontSize: 14,
+                  cursor: "pointer",
+                }}
+              >
+                <input
+                  type="checkbox"
+                  checked={sendPushNotify}
+                  onChange={(e) => setSendPushNotify(e.target.checked)}
+                  disabled={confirmBusy}
+                />
+                Send push notification to subscribers
+              </label>
+            ) : null}
             <div className="admin-modal-actions">
               <button
                 type="button"
@@ -985,7 +938,11 @@ export default function AdminPagesClient({ initialRows }: Props) {
               <button
                 type="button"
                 className={`admin-modal-btn-primary ${
-                  confirmAction.type === "delete" ? "admin-modal-btn-danger" : "admin-modal-btn-warning"
+                  confirmAction.type === "delete"
+                    ? "admin-modal-btn-danger"
+                    : confirmAction.type === "unpublish"
+                      ? "admin-modal-btn-warning"
+                      : ""
                 }`}
                 onClick={() => void confirmPendingAction()}
                 disabled={confirmBusy}
@@ -993,10 +950,14 @@ export default function AdminPagesClient({ initialRows }: Props) {
                 {confirmBusy
                   ? confirmAction.type === "delete"
                     ? "Deleting…"
-                    : "Unpublishing…"
+                    : confirmAction.type === "publish"
+                      ? "Publishing…"
+                      : "Unpublishing…"
                   : confirmAction.type === "delete"
                     ? "Yes, delete"
-                    : "Yes, unpublish"}
+                    : confirmAction.type === "publish"
+                      ? "Yes, publish"
+                      : "Yes, unpublish"}
               </button>
             </div>
           </div>

@@ -1,5 +1,6 @@
 import { sendEmail } from "@/src/server/services/emailService";
 import { sendPush } from "@/src/server/services/pushService";
+import { normalizePushClickUrl } from "@/src/lib/pushClickUrl";
 import {
   createNotificationCampaign,
   updateNotificationCampaignResult,
@@ -18,6 +19,8 @@ export type RunCampaignInput = {
   body: string;
   channel: CampaignChannel;
   segment: string;
+  /** Optional click / email link. Invalid values fall back to "/" — never fails send. */
+  url?: string;
 };
 
 export type RunCampaignResult = {
@@ -51,7 +54,7 @@ function isCorruptSubscriptionError(reason?: string) {
   return r.includes("p256dh") || r.includes("65 bytes") || r.includes("auth value");
 }
 
-async function deliverPush(title: string, body: string, segment: string) {
+async function deliverPush(title: string, body: string, segment: string, url: string) {
   const subs = await listPushSubscriptionsForSegment(segment);
   let sentCount = 0;
   let failCount = 0;
@@ -71,6 +74,7 @@ async function deliverPush(title: string, body: string, segment: string) {
       auth: sub.auth,
       title,
       body,
+      url,
     });
     if (result.sent) {
       sentCount += 1;
@@ -105,9 +109,37 @@ async function deliverPush(title: string, body: string, segment: string) {
   };
 }
 
-async function deliverEmail(title: string, body: string, segment: string) {
+function siteOriginForEmail() {
+  const raw =
+    process.env.NEXT_PUBLIC_SITE_URL?.trim() ||
+    process.env.SITE_URL?.trim() ||
+    "https://sensitivitysettings.com";
+  try {
+    return new URL(raw).origin;
+  } catch {
+    return "https://sensitivitysettings.com";
+  }
+}
+
+function absoluteEmailHref(url: string) {
+  const normalized = normalizePushClickUrl(url);
+  if (normalized.startsWith("http://") || normalized.startsWith("https://")) {
+    return normalized;
+  }
+  try {
+    return new URL(normalized, siteOriginForEmail()).href;
+  } catch {
+    return siteOriginForEmail() + "/";
+  }
+}
+
+async function deliverEmail(title: string, body: string, segment: string, url: string) {
   const subs = await listActiveEmailSubscribersForSegment(segment);
-  const html = `<div style="font-family:Arial,Helvetica,sans-serif;line-height:1.5;color:#0f172a;"><h2 style="margin:0 0 12px;">${escapeHtml(title)}</h2><p style="margin:0;white-space:pre-wrap;">${escapeHtml(body)}</p></div>`;
+  const showLink = Boolean(url && String(url).trim());
+  const linkBlock = showLink
+    ? `<p style="margin:16px 0 0;"><a href="${escapeHtml(absoluteEmailHref(url))}" style="color:#0f766e;font-weight:600;">Open link</a></p>`
+    : "";
+  const html = `<div style="font-family:Arial,Helvetica,sans-serif;line-height:1.5;color:#0f172a;"><h2 style="margin:0 0 12px;">${escapeHtml(title)}</h2><p style="margin:0;white-space:pre-wrap;">${escapeHtml(body)}</p>${linkBlock}</div>`;
   let sentCount = 0;
   let failCount = 0;
 
@@ -145,13 +177,19 @@ function escapeHtml(value: string) {
 export async function runNotificationCampaign(
   input: RunCampaignInput,
 ): Promise<RunCampaignResult> {
-  const campaign = await createNotificationCampaign(input);
+  const clickUrl = normalizePushClickUrl(input.url);
+  const campaign = await createNotificationCampaign({
+    title: input.title,
+    body: input.body,
+    channel: input.channel,
+    segment: input.segment,
+  });
 
   try {
     const delivery =
       input.channel === "push"
-        ? await deliverPush(input.title, input.body, input.segment)
-        : await deliverEmail(input.title, input.body, input.segment);
+        ? await deliverPush(input.title, input.body, input.segment, clickUrl)
+        : await deliverEmail(input.title, input.body, input.segment, input.url?.trim() ? clickUrl : "");
 
     const status = finalStatus(
       delivery.sentCount,

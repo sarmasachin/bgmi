@@ -10,6 +10,7 @@ import {
 } from "@/src/server/repositories/newsRepository";
 import { addAuditLog } from "@/src/server/repositories/auditRepository";
 import { readAdminJsonBody } from "@/src/server/admin/adminApiHelpers";
+import { maybeSendPublishPush } from "@/src/server/services/publishPushNotify";
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { enforceAdminApiAccess } from "@/src/server/rbac/enforceAdminApiAccess";
@@ -113,6 +114,7 @@ export async function PATCH(request: NextRequest) {
   const statusUpdateSchema = z.object({
     id: z.string(),
     status: z.enum(["draft", "published"]),
+    sendPush: z.boolean().optional(),
   });
   const contentUpdateSchema = z
     .object({
@@ -136,9 +138,29 @@ export async function PATCH(request: NextRequest) {
         actor: "admin",
         action: "news.status.update",
         target: statusParsed.data.id,
-        payload: { status: statusParsed.data.status },
+        payload: {
+          status: statusParsed.data.status,
+          sendPush: Boolean(statusParsed.data.sendPush),
+        },
       });
-      return NextResponse.json({ ok: true, data: item });
+
+      let warning: string | undefined;
+      if (statusParsed.data.status === "published" && statusParsed.data.sendPush) {
+        const pushResult = await maybeSendPublishPush({
+          sendPush: true,
+          source: "news",
+          title: item.title,
+          body: item.excerpt || undefined,
+          urlPath: `/news/${item.slug}`,
+        });
+        warning = pushResult.warning;
+      }
+
+      return NextResponse.json({
+        ok: true,
+        data: item,
+        ...(warning ? { warning } : {}),
+      });
     } catch {
       return NextResponse.json({ error: "Could not update news status." }, { status: 500 });
     }

@@ -8,6 +8,7 @@ import {
 } from "@/src/server/repositories/pagesRepository";
 import { addAuditLog } from "@/src/server/repositories/auditRepository";
 import { readAdminJsonBody } from "@/src/server/admin/adminApiHelpers";
+import { maybeSendPublishPush } from "@/src/server/services/publishPushNotify";
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { enforceAdminApiAccess } from "@/src/server/rbac/enforceAdminApiAccess";
@@ -116,12 +117,14 @@ export async function PATCH(request: NextRequest) {
       metaKeywords: z.string().optional(),
       content: z.string().optional(),
       status: z.enum(["draft", "published"]).optional(),
+      sendPush: z.boolean().optional(),
     })
     .safeParse(bodyResult.data);
   if (!parsed.success) return NextResponse.json({ error: "Invalid update payload" }, { status: 400 });
+  const { sendPush, ...pageUpdate } = parsed.data;
   let page;
   try {
-    page = await updatePage(parsed.data.id, parsed.data);
+    page = await updatePage(pageUpdate.id, pageUpdate);
   } catch (error) {
     return mapPageWriteError(error);
   }
@@ -130,9 +133,25 @@ export async function PATCH(request: NextRequest) {
     actor: "admin",
     action: "page.update",
     target: parsed.data.id,
-    payload: parsed.data,
+    payload: { ...pageUpdate, sendPush: Boolean(sendPush) },
   });
-  return NextResponse.json({ ok: true, data: page });
+
+  let warning: string | undefined;
+  if (pageUpdate.status === "published" && sendPush) {
+    const pushResult = await maybeSendPublishPush({
+      sendPush: true,
+      source: "page",
+      title: page.title,
+      urlPath: `/${page.slug}`,
+    });
+    warning = pushResult.warning;
+  }
+
+  return NextResponse.json({
+    ok: true,
+    data: page,
+    ...(warning ? { warning } : {}),
+  });
 }
 
 export async function DELETE(request: NextRequest) {

@@ -16,6 +16,8 @@ const schema = z.object({
   body: z.string().trim().min(2).max(4000),
   channel: z.enum(["push", "email"]),
   segment: z.string().trim().min(1).max(40),
+  /** Optional. Empty / invalid → homepage. Never rejects the campaign. */
+  url: z.string().max(500).optional(),
 });
 
 export async function GET(request: NextRequest) {
@@ -53,6 +55,7 @@ export async function POST(request: NextRequest) {
       body: parsed.data.body,
       channel: parsed.data.channel,
       segment: parsed.data.segment,
+      url: parsed.data.url || undefined,
     });
 
     await addAuditLog({
@@ -66,6 +69,7 @@ export async function POST(request: NextRequest) {
         sentCount: result.campaign.sentCount,
         failCount: result.campaign.failCount,
         recipientCount: result.recipientCount,
+        url: parsed.data.url || "/",
       },
     });
 

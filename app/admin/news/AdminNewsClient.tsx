@@ -21,7 +21,7 @@ type Props = {
 };
 
 type ConfirmAction = {
-  type: "delete" | "unpublish";
+  type: "delete" | "unpublish" | "publish";
   id: string;
   title: string;
   slug: string;
@@ -63,6 +63,7 @@ export default function AdminNewsClient({ initialRows, initialTotal }: Props) {
   const [editorNonce, setEditorNonce] = useState(0);
   const [confirmAction, setConfirmAction] = useState<ConfirmAction | null>(null);
   const [confirmBusy, setConfirmBusy] = useState(false);
+  const [sendPushNotify, setSendPushNotify] = useState(false);
   const totalPages = Math.max(1, Math.ceil(totalRows / PAGE_SIZE));
   const safeListPage = Math.min(listPage, totalPages);
 
@@ -267,23 +268,35 @@ export default function AdminNewsClient({ initialRows, initialTotal }: Props) {
     }
   }
 
-  async function setNewsStatus(id: string, status: "draft" | "published") {
+  async function setNewsStatus(id: string, status: "draft" | "published", sendPush = false) {
     const publishing = status === "published";
     try {
       const res = await fetch("/api/admin/news", {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ id, status }),
+        body: JSON.stringify({ id, status, ...(publishing ? { sendPush } : {}) }),
       });
-      setMessage(
-        res.ok
-          ? publishing
-            ? "News published."
-            : "News unpublished. It is no longer live."
-          : await readApiError(res, publishing ? "Publish failed." : "Unpublish failed."),
-      );
-      if (res.ok) await loadRows();
-      return res.ok;
+      const json = (await res.json().catch(() => ({}))) as { warning?: string; error?: string };
+      if (!res.ok) {
+        setMessage(
+          json.error ||
+            (await readApiError(res, publishing ? "Publish failed." : "Unpublish failed.")),
+        );
+        return false;
+      }
+      if (publishing) {
+        setMessage(
+          json.warning
+            ? `News published. Push: ${json.warning}`
+            : sendPush
+              ? "News published and push sent."
+              : "News published.",
+        );
+      } else {
+        setMessage("News unpublished. It is no longer live.");
+      }
+      await loadRows();
+      return true;
     } catch {
       setMessage("Network error. Please retry.");
       return false;
@@ -293,6 +306,7 @@ export default function AdminNewsClient({ initialRows, initialTotal }: Props) {
   function closeConfirmModal() {
     if (confirmBusy) return;
     setConfirmAction(null);
+    setSendPushNotify(false);
   }
 
   async function confirmPendingAction() {
@@ -301,9 +315,14 @@ export default function AdminNewsClient({ initialRows, initialTotal }: Props) {
     const ok =
       confirmAction.type === "delete"
         ? await removeNews(confirmAction.id)
-        : await setNewsStatus(confirmAction.id, "draft");
+        : confirmAction.type === "publish"
+          ? await setNewsStatus(confirmAction.id, "published", sendPushNotify)
+          : await setNewsStatus(confirmAction.id, "draft");
     setConfirmBusy(false);
-    if (ok) setConfirmAction(null);
+    if (ok) {
+      setConfirmAction(null);
+      setSendPushNotify(false);
+    }
   }
 
   async function startEdit(id: string) {
@@ -443,7 +462,15 @@ export default function AdminNewsClient({ initialRows, initialTotal }: Props) {
                           <button
                             type="button"
                             className="admin-news-btn admin-news-btn-primary"
-                            onClick={() => void setNewsStatus(row.id, "published")}
+                            onClick={() => {
+                              setSendPushNotify(false);
+                              setConfirmAction({
+                                type: "publish",
+                                id: row.id,
+                                title: row.title,
+                                slug: row.slug,
+                              });
+                            }}
                           >
                             Publish
                           </button>
@@ -701,7 +728,11 @@ export default function AdminNewsClient({ initialRows, initialTotal }: Props) {
         <div className="admin-modal-overlay" role="presentation" onClick={closeConfirmModal}>
           <div
             className={`admin-modal admin-confirm-modal ${
-              confirmAction.type === "delete" ? "is-danger" : "is-warning"
+              confirmAction.type === "delete"
+                ? "is-danger"
+                : confirmAction.type === "publish"
+                  ? ""
+                  : "is-warning"
             }`}
             role="dialog"
             aria-modal="true"
@@ -733,18 +764,44 @@ export default function AdminNewsClient({ initialRows, initialTotal }: Props) {
               )}
             </div>
             <h2 id="admin-news-confirm-title">
-              {confirmAction.type === "delete" ? "Delete this news?" : "Unpublish this news?"}
+              {confirmAction.type === "delete"
+                ? "Delete this news?"
+                : confirmAction.type === "publish"
+                  ? "Publish this news?"
+                  : "Unpublish this news?"}
             </h2>
             <p id="admin-news-confirm-desc" className="admin-modal-subtitle">
               {confirmAction.type === "delete"
                 ? "This will permanently remove the news article. This action cannot be undone."
-                : "This news will go offline and stop appearing on the live site."}
+                : confirmAction.type === "publish"
+                  ? "This news will go live on the site."
+                  : "This news will go offline and stop appearing on the live site."}
             </p>
             <div className="admin-confirm-meta">
               <span className="admin-confirm-meta-label">News</span>
               <strong>{confirmAction.title}</strong>
               <span className="admin-confirm-meta-slug">/news/{confirmAction.slug}</span>
             </div>
+            {confirmAction.type === "publish" ? (
+              <label
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 8,
+                  marginTop: 12,
+                  fontSize: 14,
+                  cursor: "pointer",
+                }}
+              >
+                <input
+                  type="checkbox"
+                  checked={sendPushNotify}
+                  onChange={(e) => setSendPushNotify(e.target.checked)}
+                  disabled={confirmBusy}
+                />
+                Send push notification to subscribers
+              </label>
+            ) : null}
             <div className="admin-modal-actions">
               <button
                 type="button"
@@ -757,7 +814,11 @@ export default function AdminNewsClient({ initialRows, initialTotal }: Props) {
               <button
                 type="button"
                 className={`admin-modal-btn-primary ${
-                  confirmAction.type === "delete" ? "admin-modal-btn-danger" : "admin-modal-btn-warning"
+                  confirmAction.type === "delete"
+                    ? "admin-modal-btn-danger"
+                    : confirmAction.type === "unpublish"
+                      ? "admin-modal-btn-warning"
+                      : ""
                 }`}
                 onClick={() => void confirmPendingAction()}
                 disabled={confirmBusy}
@@ -765,10 +826,14 @@ export default function AdminNewsClient({ initialRows, initialTotal }: Props) {
                 {confirmBusy
                   ? confirmAction.type === "delete"
                     ? "Deleting…"
-                    : "Unpublishing…"
+                    : confirmAction.type === "publish"
+                      ? "Publishing…"
+                      : "Unpublishing…"
                   : confirmAction.type === "delete"
                     ? "Yes, delete"
-                    : "Yes, unpublish"}
+                    : confirmAction.type === "publish"
+                      ? "Yes, publish"
+                      : "Yes, unpublish"}
               </button>
             </div>
           </div>
