@@ -54,6 +54,8 @@ export function PushSoftPrompt() {
         const result = await subscribeWebPush({ syncOnly: true });
         if (result.ok) {
           markDismissed();
+        } else {
+          console.error("[push] Sync failed:", result.message);
         }
       })();
       return;
@@ -102,6 +104,7 @@ export function PushSoftPrompt() {
     }
     // Failed save → allow banner again next visit / refresh
     clearDismissed();
+    console.error("[push] Enable failed:", result.message);
   }
 
   if (!visible) return null;
