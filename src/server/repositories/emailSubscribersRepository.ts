@@ -34,13 +34,23 @@ function mapRow(row: {
 export async function upsertEmailSubscriber(input: {
   email: string;
   tags?: string[];
+  /**
+   * When false (default for sync/track), never revive an admin-removed subscriber.
+   * Footer/email opt-in should pass true so the user can subscribe again.
+   */
+  reactivate?: boolean;
 }) {
   const email = input.email.trim().toLowerCase();
   const incoming = normalizeTags(input.tags);
+  const reactivate = input.reactivate === true;
   if (!email) throw new Error("INVALID_EMAIL");
 
   try {
     const existing = await prisma.emailSubscriber.findUnique({ where: { email } });
+    // Admin removed this email from campaigns — keep it out unless user opts in again.
+    if (existing && !existing.isActive && !reactivate) {
+      return mapRow(existing);
+    }
     const tags = normalizeTags([...(existing?.tags ?? []), ...incoming]);
     const row = await prisma.emailSubscriber.upsert({
       where: { email },
@@ -65,6 +75,7 @@ export async function trackEmailForCampaigns(
     await upsertEmailSubscriber({
       email: normalized,
       tags: ["all", source.trim().toLowerCase() || "site"],
+      reactivate: false,
     });
   } catch (error) {
     console.warn("[email-sub] trackEmailForCampaigns skipped:", error);

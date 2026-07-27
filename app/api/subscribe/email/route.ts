@@ -29,7 +29,11 @@ export async function POST(request: NextRequest) {
   }
 
   try {
-    await upsertEmailSubscriber(parsed.data);
+    await upsertEmailSubscriber({
+      email: parsed.data.email,
+      tags: parsed.data.tags,
+      reactivate: true,
+    });
     return NextResponse.json({ ok: true, subscribed: true });
   } catch (error) {
     const unavailable = error instanceof Error && error.message === "DB_UNAVAILABLE";

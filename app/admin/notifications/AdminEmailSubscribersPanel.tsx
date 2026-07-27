@@ -78,9 +78,9 @@ export function AdminEmailSubscribersPanel({ initialItems }: Props) {
     <div className="admin-notifications-card">
       <h2>Subscriber emails ({rows.length})</h2>
       <p style={{ margin: "0 0 12px", opacity: 0.8, fontSize: 13 }}>
-        Emails users submit on the site (rating, testimonial, contact, comments, footer subscribe).
-        Email campaigns send to this list. Use channel <strong>Email</strong> + segment{" "}
-        <code>all</code> above.
+        Emails collected for campaigns (rating, testimonial, contact, comments, footer subscribe).
+        <strong> Remove</strong> keeps them off this list and email campaigns — even after refresh.
+        They only return if the user subscribes again from the footer.
       </p>
       <div style={{ marginBottom: 10 }}>
         <button type="button" className="admin-pages-btn admin-pages-btn-preview" onClick={() => void load()}>

@@ -1,4 +1,6 @@
 /* Sensitivity Settings — web push service worker */
+/* Do not skipWaiting/clients.claim here — that reloads the open page on first subscribe. */
+
 self.addEventListener("push", (event) => {
   let title = "Sensitivity Settings";
   let body = "You have a new update.";
@@ -34,12 +36,9 @@ self.addEventListener("notificationclick", (event) => {
       ? event.notification.data.url
       : "/";
   event.waitUntil(
-    self.clients.matchAll({ type: "window", includeUncontrolled: true }).then((clients) => {
-      for (const client of clients) {
-        if ("focus" in client) {
-          client.navigate?.(target);
-          return client.focus();
-        }
+    self.clients.matchAll({ type: "window", includeUncontrolled: true }).then((clientList) => {
+      for (const client of clientList) {
+        if ("focus" in client) return client.focus();
       }
       if (self.clients.openWindow) return self.clients.openWindow(target);
     }),

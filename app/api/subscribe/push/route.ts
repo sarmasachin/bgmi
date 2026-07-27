@@ -34,9 +34,16 @@ export async function POST(request: NextRequest) {
     await upsertPushSubscription(parsed.data);
     return NextResponse.json({ ok: true, subscribed: true });
   } catch (error) {
+    if (error instanceof Error && error.message === "INVALID_SUBSCRIPTION") {
+      return NextResponse.json({ error: "Invalid subscription keys." }, { status: 400 });
+    }
     const unavailable = error instanceof Error && error.message === "DB_UNAVAILABLE";
     return NextResponse.json(
-      { error: unavailable ? "Service temporarily unavailable." : "Could not save subscription." },
+      {
+        error: unavailable
+          ? "Server database unavailable. Subscription not saved."
+          : "Could not save subscription.",
+      },
       { status: unavailable ? 503 : 500 },
     );
   }

@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { Geist } from "next/font/google";
 import { DeferredMarketingScripts } from "@/src/components/DeferredMarketingScripts";
+import { PushSoftPrompt } from "@/src/components/PushSoftPrompt";
 import { FA_CSS, FA_SOLID_WOFF2 } from "@/src/lib/fontAwesome";
 import { organizationSchema, websiteSchema } from "@/src/lib/schema";
 import {
@@ -141,6 +142,7 @@ export default async function RootLayout({
           }}
         />
         {children}
+        <PushSoftPrompt />
         <DeferredMarketingScripts
           analytics={
             analytics
