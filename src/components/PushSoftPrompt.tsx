@@ -4,22 +4,22 @@ import { useEffect, useRef, useState } from "react";
 import { isPushSupported, subscribeWebPush } from "@/src/lib/webPushClient";
 import styles from "./PushSoftPrompt.module.css";
 
-const STORAGE_DISMISS = "ss_push_soft_dismissed_session_v1";
+const STORAGE_DISMISS = "ss_push_soft_dismissed_v1";
 const SHOW_AFTER_MS = 5_000;
 const SHOW_AFTER_SCROLL_RATIO = 0.1;
 
-/** Not Now: hide only for this browser session. Closing the tab/site → show again next visit. */
-function wasDismissedThisSession() {
+/** Enable / Not now: hide permanently in this browser (localStorage). */
+function wasDismissed() {
   try {
-    return sessionStorage.getItem(STORAGE_DISMISS) === "1";
+    return localStorage.getItem(STORAGE_DISMISS) === "1";
   } catch {
     return false;
   }
 }
 
-function markDismissedThisSession() {
+function markDismissed() {
   try {
-    sessionStorage.setItem(STORAGE_DISMISS, "1");
+    localStorage.setItem(STORAGE_DISMISS, "1");
   } catch {
     /* ignore */
   }
@@ -28,12 +28,10 @@ function markDismissedThisSession() {
 /**
  * Top soft prompt (not a blocking modal).
  * Never auto-opens the browser permission dialog — only after Enable.
- * Shows after 5s or ~10% scroll. "Not now" lasts for this session only.
+ * Shows after 5s or ~10% scroll. Enable or Not now → hide immediately, no status message.
  */
 export function PushSoftPrompt() {
   const [visible, setVisible] = useState(false);
-  const [busy, setBusy] = useState(false);
-  const [status, setStatus] = useState("");
   const shownRef = useRef(false);
   const busyRef = useRef(false);
 
@@ -42,7 +40,7 @@ export function PushSoftPrompt() {
     if (window.location.pathname.startsWith("/admin")) return;
     if (!isPushSupported()) return;
     if (Notification.permission === "granted" || Notification.permission === "denied") return;
-    if (wasDismissedThisSession()) return;
+    if (wasDismissed()) return;
 
     const reveal = () => {
       if (shownRef.current) return;
@@ -68,29 +66,17 @@ export function PushSoftPrompt() {
   }, []);
 
   function dismiss() {
-    markDismissedThisSession();
+    markDismissed();
     setVisible(false);
-    setStatus("");
   }
 
   async function onEnable() {
     if (busyRef.current) return;
     busyRef.current = true;
-    setBusy(true);
-    setStatus("Waiting for your choice…");
-    const result = await subscribeWebPush();
+    markDismissed();
+    setVisible(false);
+    await subscribeWebPush();
     busyRef.current = false;
-    setBusy(false);
-    if (result.ok) {
-      setStatus("Thanks — alerts enabled.");
-      markDismissedThisSession();
-      window.setTimeout(() => setVisible(false), 1600);
-      return;
-    }
-    setStatus(result.message);
-    if (Notification.permission === "denied") {
-      markDismissedThisSession();
-    }
   }
 
   if (!visible) return null;
@@ -104,17 +90,12 @@ export function PushSoftPrompt() {
             Get Update News, One Tap Headshot Update, Premium Free Fire &amp; FF Max
             Sensitivity Settings
           </p>
-          {status ? (
-            <p className={styles.status} aria-live="polite">
-              {status}
-            </p>
-          ) : null}
         </div>
         <div className={styles.actions}>
-          <button type="button" className={styles.primary} disabled={busy} onClick={() => void onEnable()}>
-            {busy ? "Enabling…" : "Enable"}
+          <button type="button" className={styles.primary} onClick={() => void onEnable()}>
+            Enable
           </button>
-          <button type="button" className={styles.secondary} disabled={busy} onClick={dismiss}>
+          <button type="button" className={styles.secondary} onClick={dismiss}>
             Not now
           </button>
         </div>
