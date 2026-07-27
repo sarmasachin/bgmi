@@ -8,6 +8,7 @@ import {
 } from "@/src/server/repositories/notificationCampaignsRepository";
 import {
   deletePushSubscriptionByEndpoint,
+  isValidPushKeyPair,
   listPushSubscriptionsForSegment,
 } from "@/src/server/repositories/pushSubscriptionsRepository";
 import { listActiveEmailSubscribersForSegment } from "@/src/server/repositories/emailSubscribersRepository";
@@ -44,6 +45,12 @@ function summarizePushFailures(reasons: string[]) {
     .slice(0, 480);
 }
 
+function isCorruptSubscriptionError(reason?: string) {
+  if (!reason) return false;
+  const r = reason.toLowerCase();
+  return r.includes("p256dh") || r.includes("65 bytes") || r.includes("auth value");
+}
+
 async function deliverPush(title: string, body: string, segment: string) {
   const subs = await listPushSubscriptionsForSegment(segment);
   let sentCount = 0;
@@ -51,6 +58,13 @@ async function deliverPush(title: string, body: string, segment: string) {
   const failReasons: string[] = [];
 
   for (const sub of subs) {
+    if (!isValidPushKeyPair(sub.p256dh, sub.auth)) {
+      failCount += 1;
+      failReasons.push("Invalid push keys removed (corrupt subscription)");
+      await deletePushSubscriptionByEndpoint(sub.endpoint);
+      continue;
+    }
+
     const result = await sendPush({
       endpoint: sub.endpoint,
       p256dh: sub.p256dh,
@@ -64,7 +78,11 @@ async function deliverPush(title: string, body: string, segment: string) {
     }
     failCount += 1;
     if (result.reason) failReasons.push(result.reason);
-    if (result.statusCode === 404 || result.statusCode === 410) {
+    if (
+      result.statusCode === 404 ||
+      result.statusCode === 410 ||
+      isCorruptSubscriptionError(result.reason)
+    ) {
       await deletePushSubscriptionByEndpoint(sub.endpoint);
     }
   }
