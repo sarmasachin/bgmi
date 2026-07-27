@@ -9,17 +9,6 @@ export function urlBase64ToUint8Array(base64String: string) {
   return output;
 }
 
-function applicationServerKeysEqual(existing: ArrayBuffer | null | undefined, publicKey: string) {
-  if (!existing) return false;
-  const a = new Uint8Array(existing);
-  const b = urlBase64ToUint8Array(publicKey);
-  if (a.length !== b.length) return false;
-  for (let i = 0; i < a.length; i += 1) {
-    if (a[i] !== b[i]) return false;
-  }
-  return true;
-}
-
 export function detectPushTags(): string[] {
   const tags = ["all"];
   const ua = navigator.userAgent.toLowerCase();
@@ -91,28 +80,17 @@ export async function subscribeWebPush(options?: {
       }));
     await navigator.serviceWorker.ready;
 
-    let subscription = await reg.pushManager.getSubscription();
-    const existingJson = subscription?.toJSON();
-    const keyMismatch =
-      !!subscription &&
-      !applicationServerKeysEqual(
-        subscription.options?.applicationServerKey ?? undefined,
-        vapidJson.publicKey,
-      );
-    const missingKeys =
-      !!subscription && (!existingJson?.keys?.p256dh || !existingJson?.keys?.auth);
-
-    if (subscription && (keyMismatch || missingKeys)) {
-      await subscription.unsubscribe();
-      subscription = null;
+    // Always drop existing browser subscription so it matches CURRENT server VAPID public key.
+    // Stale subs (after key rotation) cause FCM 403 on send.
+    const existing = await reg.pushManager.getSubscription();
+    if (existing) {
+      await existing.unsubscribe();
     }
 
-    if (!subscription) {
-      subscription = await reg.pushManager.subscribe({
-        userVisibleOnly: true,
-        applicationServerKey: urlBase64ToUint8Array(vapidJson.publicKey),
-      });
-    }
+    const subscription = await reg.pushManager.subscribe({
+      userVisibleOnly: true,
+      applicationServerKey: urlBase64ToUint8Array(vapidJson.publicKey),
+    });
 
     const json = subscription.toJSON();
     if (!json.endpoint || !json.keys?.p256dh || !json.keys?.auth) {

@@ -1,10 +1,19 @@
 import { NextResponse } from "next/server";
+import { getVapidConfig } from "@/src/server/services/pushService";
 
-/** Public VAPID key only — safe for browser push subscribe. */
+/** Public VAPID key + safe diagnostics (no private key). */
 export async function GET() {
-  const publicKey = process.env.VAPID_PUBLIC_KEY?.trim() || "";
-  if (!publicKey) {
-    return NextResponse.json({ error: "Push notifications are not configured." }, { status: 503 });
+  const vapid = getVapidConfig();
+  if (!vapid.ok) {
+    return NextResponse.json(
+      { error: vapid.reason, configured: false },
+      { status: 503 },
+    );
   }
-  return NextResponse.json({ publicKey });
+  return NextResponse.json({
+    publicKey: vapid.publicKey,
+    configured: true,
+    pairValid: true,
+    publicKeyPrefix: vapid.publicKey.slice(0, 20),
+  });
 }

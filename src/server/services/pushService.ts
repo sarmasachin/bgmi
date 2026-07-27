@@ -1,3 +1,4 @@
+import { createECDH } from "crypto";
 import webpush from "web-push";
 
 export type PushPayload = {
@@ -29,7 +30,27 @@ function stripWrappingQuotes(value: string) {
   return v;
 }
 
-/** Validate VAPID env before send — catches missing / truncated / mismatched-looking keys. */
+function b64UrlToBuffer(value: string) {
+  const pad = value + "=".repeat((4 - (value.length % 4)) % 4);
+  return Buffer.from(pad.replace(/-/g, "+").replace(/_/g, "/"), "base64");
+}
+
+/** True only if private key derives to the given public key (P-256). */
+export function vapidKeysMatch(publicKey: string, privateKey: string) {
+  try {
+    const priv = b64UrlToBuffer(privateKey);
+    const pub = b64UrlToBuffer(publicKey);
+    if (priv.length !== 32 || pub.length !== 65 || pub[0] !== 0x04) return false;
+    const ecdh = createECDH("prime256v1");
+    ecdh.setPrivateKey(priv);
+    const derived = ecdh.getPublicKey(null, "uncompressed");
+    return Buffer.compare(derived, pub) === 0;
+  } catch {
+    return false;
+  }
+}
+
+/** Validate VAPID env before send — catches missing / truncated / mismatched pair. */
 export function getVapidConfig(): VapidConfig {
   const publicKey = stripWrappingQuotes(process.env.VAPID_PUBLIC_KEY || "");
   const privateKey = stripWrappingQuotes(process.env.VAPID_PRIVATE_KEY || "");
@@ -46,12 +67,18 @@ export function getVapidConfig(): VapidConfig {
   }
   if (!publicKey) return { ok: false, reason: "VAPID_PUBLIC_KEY missing on server" };
   if (!privateKey) return { ok: false, reason: "VAPID_PRIVATE_KEY missing on server" };
-  // Uncompressed P-256 public ≈ 87 chars; private ≈ 43 (url-safe base64).
   if (publicKey.length < 80) {
     return { ok: false, reason: "VAPID_PUBLIC_KEY looks truncated — regenerate both keys together" };
   }
   if (privateKey.length < 20) {
     return { ok: false, reason: "VAPID_PRIVATE_KEY looks truncated — quote it in .env and regenerate if needed" };
+  }
+  if (!vapidKeysMatch(publicKey, privateKey)) {
+    return {
+      ok: false,
+      reason:
+        "VAPID public/private keys do not match in server env (.env vs .env.production mismatch). Put the SAME generate pair in both files and pm2 delete + start.",
+    };
   }
   return { ok: true, publicKey, privateKey, subject };
 }
@@ -71,7 +98,7 @@ function pushErrorDetail(error: unknown): { reason: string; statusCode?: number 
     return {
       statusCode,
       reason:
-        "VAPID auth failed (403/401): public/private key pair mismatch, or keys changed after users subscribed",
+        "VAPID auth failed (403/401): browser subscribed with a different public key — delete PushSubscription, hard refresh, Enable again",
     };
   }
   if (statusCode === 404 || statusCode === 410) {

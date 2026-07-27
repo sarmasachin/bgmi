@@ -14,6 +14,7 @@
     "seed:admin": "node scripts/seed-admin.mjs",
     "seed:ads": "node scripts/seed-ad-slots.mjs",
     "vapid:generate": "node scripts/generate-vapid.mjs",
+    "vapid:verify": "node scripts/verify-vapid-env.mjs",
     "env:check": "node scripts/check-env.mjs",
     "setup:local": "node scripts/setup-local.mjs",
     "setup:phase1": "node scripts/phase1-setup.mjs",
