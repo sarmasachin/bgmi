@@ -7,7 +7,8 @@ function normalizeClickUrl(raw) {
   var value = raw.trim();
   if (!value || value.length > 500) return fallback;
   if (value.indexOf("\\") !== -1 || /\s/.test(value)) return fallback;
-  if (value.charAt(0) === "/" && value.indexOf("//") !== 0) {
+  if (value.indexOf("//") === 0) return fallback;
+  if (value.charAt(0) === "/") {
     if (value.toLowerCase().indexOf("/javascript:") === 0) return fallback;
     return value;
   }
@@ -17,6 +18,10 @@ function normalizeClickUrl(raw) {
     } catch (e) {
       return fallback;
     }
+  }
+  /* Allow "news/foo" without leading slash */
+  if (/^[a-zA-Z0-9._~/-]+$/.test(value)) {
+    return "/" + value.replace(/^\/+/, "");
   }
   return fallback;
 }
@@ -68,19 +73,38 @@ self.addEventListener("notificationclick", (event) => {
   );
 
   event.waitUntil(
-    self.clients.matchAll({ type: "window", includeUncontrolled: true }).then((clientList) => {
+    (async function openTarget() {
+      const clientList = await self.clients.matchAll({
+        type: "window",
+        includeUncontrolled: true,
+      });
+
       for (let i = 0; i < clientList.length; i += 1) {
         const client = clientList[i];
-        if ("focus" in client) {
-          return client.focus().then(() => {
-            if (typeof client.navigate === "function") {
-              return client.navigate(target).catch(() => undefined);
-            }
-          });
+        if (!("focus" in client)) continue;
+        try {
+          await client.focus();
+        } catch (e) {
+          /* continue */
+        }
+        if (typeof client.navigate === "function") {
+          try {
+            await client.navigate(target);
+            return;
+          } catch (e) {
+            /* fall through to openWindow */
+          }
+        }
+        /* navigate missing/failed — open the link instead of staying on whatever tab was focused */
+        if (self.clients.openWindow) {
+          await self.clients.openWindow(target);
+          return;
         }
       }
-      if (self.clients.openWindow) return self.clients.openWindow(target);
-      return undefined;
-    }),
+
+      if (self.clients.openWindow) {
+        await self.clients.openWindow(target);
+      }
+    })(),
   );
 });

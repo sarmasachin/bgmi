@@ -10,7 +10,9 @@ export function normalizePushClickUrl(raw?: string | null): string {
   if (value.length > 500) return fallback;
   if (/[\s\\]/.test(value) || value.includes("\0")) return fallback;
 
-  if (value.startsWith("/") && !value.startsWith("//")) {
+  if (value.startsWith("//")) return fallback;
+
+  if (value.startsWith("/")) {
     if (value.toLowerCase().startsWith("/javascript:")) return fallback;
     return value;
   }
@@ -20,6 +22,10 @@ export function normalizePushClickUrl(raw?: string | null): string {
     if (u.protocol !== "http:" && u.protocol !== "https:") return fallback;
     return u.href;
   } catch {
+    /* Allow "news/foo" without leading slash */
+    if (/^[a-zA-Z0-9._~/-]+$/.test(value)) {
+      return `/${value.replace(/^\/+/, "")}`;
+    }
     return fallback;
   }
 }
