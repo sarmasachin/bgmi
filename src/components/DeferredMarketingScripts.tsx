@@ -13,8 +13,10 @@ export type DeferredScriptPayload = {
 type Props = {
   analytics?: DeferredScriptPayload | null;
   adsense?: DeferredScriptPayload | null;
-  /** Delay before injecting (ms). Keeps LCP free of gtag/ads. */
-  delayMs?: number;
+  /** AdSense delay after open (ms). Short so impressions are not lost. */
+  adsenseDelayMs?: number;
+  /** Analytics delay after open (ms). Longer — less impact on INP/LCP. */
+  analyticsDelayMs?: number;
 };
 
 function isAdminPath(pathname: string | null): boolean {
@@ -49,51 +51,67 @@ function injectPayload(p: DeferredScriptPayload) {
 }
 
 /**
- * Inject GA / AdSense into <head> after LCP window.
- * Still ends up in head (Google-compatible), but not on the critical path.
+ * AdSense: loads soon after page open (revenue).
+ * Analytics: later.
+ * Never inject on first click/tap (that hurt INP).
  */
 export function DeferredMarketingScripts({
   analytics,
   adsense,
-  delayMs = 3500,
+  adsenseDelayMs = 1200,
+  analyticsDelayMs = 4500,
 }: Props) {
   const pathname = usePathname();
 
   useEffect(() => {
-    // Never load GA/AdSense on admin (keeps admin pageviews out of Analytics).
     if (isAdminPath(pathname)) return;
     if (!analytics && !adsense) return;
 
-    let done = false;
-    const run = () => {
-      if (done) return;
-      done = true;
-      if (analytics) injectPayload(analytics);
-      if (adsense) injectPayload(adsense);
+    let adsenseDone = false;
+    let analyticsDone = false;
+    const timers: number[] = [];
+    const idleIds: number[] = [];
+
+    const runAdsense = () => {
+      if (adsenseDone || !adsense) return;
+      adsenseDone = true;
+      injectPayload(adsense);
     };
 
-    const onInteract = () => run();
-    const events = ["scroll", "touchstart", "click", "keydown"] as const;
-    for (const ev of events) {
-      window.addEventListener(ev, onInteract, { once: true, passive: true });
+    const runAnalytics = () => {
+      if (analyticsDone || !analytics) return;
+      analyticsDone = true;
+      injectPayload(analytics);
+    };
+
+    if (adsense) {
+      // Soon after open so ads show; idle may fire even earlier if main thread is free.
+      timers.push(window.setTimeout(runAdsense, adsenseDelayMs));
+      if ("requestIdleCallback" in window) {
+        idleIds.push(
+          window.requestIdleCallback(runAdsense, { timeout: adsenseDelayMs }),
+        );
+      }
     }
 
-    const t = window.setTimeout(run, delayMs);
-    const ric =
-      "requestIdleCallback" in window
-        ? window.requestIdleCallback(() => run(), { timeout: delayMs + 1500 })
-        : 0;
+    if (analytics) {
+      timers.push(window.setTimeout(runAnalytics, analyticsDelayMs));
+      if ("requestIdleCallback" in window) {
+        idleIds.push(
+          window.requestIdleCallback(runAnalytics, {
+            timeout: analyticsDelayMs + 1500,
+          }),
+        );
+      }
+    }
 
     return () => {
-      window.clearTimeout(t);
-      if (ric && "cancelIdleCallback" in window) {
-        window.cancelIdleCallback(ric);
-      }
-      for (const ev of events) {
-        window.removeEventListener(ev, onInteract);
+      for (const t of timers) window.clearTimeout(t);
+      if ("cancelIdleCallback" in window) {
+        for (const id of idleIds) window.cancelIdleCallback(id);
       }
     };
-  }, [analytics, adsense, delayMs, pathname]);
+  }, [analytics, adsense, adsenseDelayMs, analyticsDelayMs, pathname]);
 
   return null;
 }

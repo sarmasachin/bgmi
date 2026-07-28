@@ -50,14 +50,22 @@ export function PushSoftPrompt() {
 
     // Already allowed in browser but row may be missing on server (DB wipe / failed save).
     if (Notification.permission === "granted") {
-      void (async () => {
-        const result = await subscribeWebPush({ syncOnly: true });
-        if (result.ok) {
-          markDismissed();
-        } else {
-          console.error("[push] Sync failed:", result.message);
-        }
-      })();
+      const sync = () => {
+        void (async () => {
+          const result = await subscribeWebPush({ syncOnly: true });
+          if (result.ok) {
+            markDismissed();
+          } else {
+            console.error("[push] Sync failed:", result.message);
+          }
+        })();
+      };
+      // Defer off the first interaction window (helps INP); same sync logic.
+      if ("requestIdleCallback" in window) {
+        window.requestIdleCallback(sync, { timeout: 4000 });
+      } else {
+        window.setTimeout(sync, 2000);
+      }
       return;
     }
 

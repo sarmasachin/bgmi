@@ -125,11 +125,11 @@ export default async function RootLayout({
   return (
     <html lang="en" className={geistSans.variable}>
       <head>
-        {/* GA/AdSense injected after LCP via DeferredMarketingScripts (still into document.head) */}
+        {/* AdSense soon after open; GA a bit later — never on first click (INP). */}
         <link rel="dns-prefetch" href="https://www.googletagmanager.com" />
         <link rel="dns-prefetch" href="https://pagead2.googlesyndication.com" />
         <link rel="preconnect" href="https://cdnjs.cloudflare.com" crossOrigin="anonymous" />
-        {/* FA in head (not deferred) so icons paint with first content — avoids blink on refresh */}
+        {/* Preload FA font; CSS uses media=print→all so it does not block first paint (FCP). */}
         <link
           rel="preload"
           href={FA_SOLID_WOFF2}
@@ -138,8 +138,14 @@ export default async function RootLayout({
           crossOrigin="anonymous"
         />
         {FA_CSS.map((href) => (
-          <link key={href} rel="stylesheet" href={href} />
+          <link key={href} rel="stylesheet" href={href} media="print" data-fa-css="" />
         ))}
+        <script
+          dangerouslySetInnerHTML={{
+            __html:
+              "(function(){function a(l){l.media='all'}document.querySelectorAll('link[data-fa-css]').forEach(function(l){if(l.sheet)a(l);else l.addEventListener('load',function(){a(l)})})})();",
+          }}
+        />
       </head>
       <body>
         {/* Critical above-the-fold styles so LCP title can paint before the CSS chunk */}
