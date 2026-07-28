@@ -5,6 +5,7 @@ import { HomeHeader } from "@/src/components/HomeHeader";
 import { SiteFooter } from "@/src/components/SiteFooter";
 import { toCanonicalUrl } from "@/src/lib/siteUrl";
 import { buildSocialMetadata } from "@/src/lib/socialMeta";
+import { getContactSeo } from "@/src/server/repositories/listingSeoRepository";
 import { getSettings } from "@/src/server/repositories/settingsRepository";
 
 const SUPPORT_EMAIL = "support@sensitivitysettings.com";
@@ -25,9 +26,6 @@ function resolveTopic(raw?: string): ContactTopic {
 function copyForTopic(topic: ContactTopic) {
   if (topic === "report") {
     return {
-      title: "Report Issue",
-      description:
-        "Report an issue with Sensitivity Settings — Free Fire, BGMI, and PUBG Mobile sensitivity calculator support.",
       eyebrow: "Support",
       heading: "Report Issue",
       lead: "Found a bug or something not working? Tell us what happened and we'll look into it.",
@@ -36,9 +34,6 @@ function copyForTopic(topic: ContactTopic) {
   }
   if (topic === "feedback") {
     return {
-      title: "Feedback",
-      description:
-        "Share feedback about Sensitivity Settings — Free Fire, BGMI, and PUBG Mobile sensitivity calculator.",
       eyebrow: "Support",
       heading: "Feedback",
       lead: "Ideas, suggestions, or thoughts on the site — we'd love to hear from you.",
@@ -46,9 +41,6 @@ function copyForTopic(topic: ContactTopic) {
     };
   }
   return {
-    title: "Contact",
-    description:
-      "Contact Sensitivity Settings for support or feedback about the Free Fire, BGMI, and PUBG Mobile sensitivity calculator.",
     eyebrow: "Support",
     heading: "Contact us",
     lead: "Questions, feedback, or help with sensitivity settings — send a message and we'll reply as soon as we can.",
@@ -58,14 +50,16 @@ function copyForTopic(topic: ContactTopic) {
 
 export async function generateMetadata({ searchParams }: Props): Promise<Metadata> {
   const params = await searchParams;
-  const copy = copyForTopic(resolveTopic(params.topic));
+  const topic = resolveTopic(params.topic);
+  const [copy, seo] = await Promise.all([Promise.resolve(copyForTopic(topic)), getContactSeo()]);
+  const topicSeo = seo[topic];
   return {
-    title: copy.title,
-    description: copy.description,
+    title: topicSeo.title,
+    description: topicSeo.description,
     alternates: { canonical: copy.canonical },
     ...buildSocialMetadata({
-      title: copy.title,
-      description: copy.description,
+      title: topicSeo.title,
+      description: topicSeo.description,
       url: copy.canonical,
     }),
   };
@@ -73,7 +67,8 @@ export async function generateMetadata({ searchParams }: Props): Promise<Metadat
 
 export default async function ContactPage({ searchParams }: Props) {
   const [settings, params] = await Promise.all([getSettings(), searchParams]);
-  const copy = copyForTopic(resolveTopic(params.topic));
+  const topic = resolveTopic(params.topic);
+  const copy = copyForTopic(topic);
 
   return (
     <div>

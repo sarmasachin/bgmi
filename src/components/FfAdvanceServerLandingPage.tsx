@@ -7,7 +7,6 @@ import { PageCommentSection } from "@/src/components/PageCommentSection";
 import { RatingWidget } from "@/src/components/RatingWidget";
 import { SiteFooter } from "@/src/components/SiteFooter";
 import {
-  FF_ADVANCE_SERVER_PAGE,
   FREE_FIRE_ADVANCE_SERVER_PAGE_KEY,
   FREE_FIRE_ADVANCE_SERVER_PATH,
 } from "@/src/lib/ffAdvanceServerPage";
@@ -20,6 +19,7 @@ import {
   webPageSchema,
 } from "@/src/lib/schema";
 import { toCanonicalUrl } from "@/src/lib/siteUrl";
+import { getAdvanceServerPage } from "@/src/server/repositories/advanceServerPageRepository";
 import { listApprovedPageComments } from "@/src/server/repositories/pageCommentsRepository";
 import { getRatingSummary } from "@/src/server/repositories/ratingSummaryRepository";
 import { getSettings } from "@/src/server/repositories/settingsRepository";
@@ -29,9 +29,9 @@ import { getSettings } from "@/src/server/repositories/settingsRepository";
  * Does not touch BGMI or calculator logic.
  */
 export async function FfAdvanceServerLandingPage() {
-  const settings = await getSettings();
-  const page = FF_ADVANCE_SERVER_PAGE;
-  const [pageComments, ratingSummary] = await Promise.all([
+  const [settings, page, pageComments, ratingSummary] = await Promise.all([
+    getSettings(),
+    getAdvanceServerPage(),
     listApprovedPageComments(FREE_FIRE_ADVANCE_SERVER_PAGE_KEY),
     getRatingSummary("tool", FREE_FIRE_ADVANCE_SERVER_PAGE_KEY),
   ]);

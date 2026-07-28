@@ -1,8 +1,18 @@
 export const defaultSeoSettings = {
   siteTitle: "Sensitivity Settings",
+  defaultTitle: "Free Fire, BGMI & PUBG Sensitivity Calculator | Sensitivity Settings",
   titleTemplate: "%s | Sensitivity Settings",
   metaDescription:
-    "BGMI sensitivity calculator, gaming news, and pro setup recommendations.",
+    "Free Fire, BGMI, and PUBG Mobile sensitivity calculator with custom settings, pro presets, and gaming news.",
+  keywords: [
+    "Free Fire sensitivity calculator",
+    "Free Fire Max sensitivity",
+    "BGMI sensitivity calculator",
+    "BGMI no recoil",
+    "PUBG Mobile sensitivity",
+    "gyroscope settings",
+    "ADS sensitivity",
+  ],
   ogImage: "/og-default.png",
   twitterCard: "summary_large_image",
 };

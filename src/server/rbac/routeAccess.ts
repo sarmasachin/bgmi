@@ -18,6 +18,18 @@ export const ADMIN_NAV_ACCESS: ReadonlyArray<{
     icon: "gameArticles",
     anyOf: ["gameArticles.view"],
   },
+  {
+    label: "Page Cards",
+    href: "/admin/home-cards",
+    icon: "homeCards",
+    anyOf: ["homeCards.view"],
+  },
+  {
+    label: "Advance Server",
+    href: "/admin/advance-server",
+    icon: "advanceServer",
+    anyOf: ["advanceServer.view"],
+  },
   { label: "Game FAQs", href: "/admin/game-faqs", icon: "gameFaqs", anyOf: ["gameFaqs.view"] },
   { label: "Legal Pages", href: "/admin/legal-pages", icon: "legal", anyOf: ["legal.view"] },
   { label: "Comments", href: "/admin/comments", icon: "comments", anyOf: ["comments.view"] },
@@ -131,6 +143,16 @@ export function resolveAdminApiPermission(
   if (path.startsWith("/api/admin/game-articles")) {
     if (isRead) return { type: "permission", permission: "gameArticles.view" };
     return { type: "permission", permission: "gameArticles.edit" };
+  }
+
+  if (path.startsWith("/api/admin/home-cards")) {
+    if (isRead) return { type: "permission", permission: "homeCards.view" };
+    return { type: "permission", permission: "homeCards.edit" };
+  }
+
+  if (path.startsWith("/api/admin/advance-server")) {
+    if (isRead) return { type: "permission", permission: "advanceServer.view" };
+    return { type: "permission", permission: "advanceServer.edit" };
   }
 
   if (path.startsWith("/api/admin/game-faqs") || path === "/api/admin/faq") {

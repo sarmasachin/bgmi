@@ -1,5 +1,7 @@
 import { randomUUID } from "crypto";
+import { gameContentToSitemapPath } from "@/src/lib/sitemapLastmod";
 import { prisma, tryPrisma, tryPrismaLong } from "@/src/server/dbSafe";
+import { bumpSitemapLastmod } from "@/src/server/repositories/sitemapLastmodRepository";
 
 export type HomeFaqItem = { id: string; question: string; answer: string };
 
@@ -204,6 +206,8 @@ export async function saveGameFaqItems(
   if (!ok) {
     throw new Error("Database unavailable");
   }
+  const path = gameContentToSitemapPath(game);
+  if (path) bumpSitemapLastmod([path]);
   return cleaned;
 }
 

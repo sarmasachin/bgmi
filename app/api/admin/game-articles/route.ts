@@ -23,7 +23,7 @@ export async function POST(request: NextRequest) {
 
   const parsed = z
     .object({
-      game: z.enum(["bgmi", "pubg"]),
+      game: z.enum(["bgmi", "pubg", "freefire", "freefire-max", "pubg-mobile-codes"]),
       html: z.string().max(500_000),
     })
     .safeParse(bodyResult.data);

@@ -4,18 +4,23 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { FF_MAX_SEASON_EVENT, FF_SEASON_EVENT } from "@/src/lib/ffSeasonEvent";
 import { FREE_FIRE_MAX_PATH } from "@/src/lib/freeFirePages";
+import type { FfHomeSeason } from "@/src/lib/homeCardsTypes";
+
+type Props = {
+  homeContent?: FfHomeSeason;
+};
 
 /**
  * Season / event banner.
  * Home = Free Fire copy; Max page = Free Fire Max copy.
  */
-export function FfSeasonBanner() {
+export function FfSeasonBanner({ homeContent }: Props) {
   const pathname = usePathname() ?? "";
   const isHome = pathname === "/" || pathname === "";
   const isMax = pathname === FREE_FIRE_MAX_PATH;
   if (!isHome && !isMax) return null;
 
-  const event = isMax ? FF_MAX_SEASON_EVENT : FF_SEASON_EVENT;
+  const event = homeContent ?? (isMax ? FF_MAX_SEASON_EVENT : FF_SEASON_EVENT);
 
   return (
     <section className="ff-season" aria-labelledby="ff-season-title">

@@ -9,6 +9,8 @@ import { useAdminDuplicateCheck } from "@/src/hooks/useAdminDuplicateCheck";
 import { readApiError } from "@/src/lib/userFacingError";
 import { toCanonicalUrl } from "@/src/lib/siteUrl";
 import { extractNewsHtml, extractNewsMeta } from "@/src/lib/newsContent";
+import { defaultNewsListingSeo, type NewsListingSeo } from "@/src/lib/listingSeoDefaults";
+import { AdminNewsListingSeoPanel } from "./AdminNewsListingSeoPanel";
 
 const RichTextEditor = dynamic(
   () => import("@/src/components/admin/RichTextEditor").then((mod) => mod.RichTextEditor),
@@ -18,6 +20,7 @@ const RichTextEditor = dynamic(
 type Props = {
   initialRows?: AdminNewsRow[];
   initialTotal?: number;
+  initialListingSeo?: NewsListingSeo;
 };
 
 type ConfirmAction = {
@@ -35,9 +38,14 @@ function clearNewsEditorDraft() {
   window.localStorage.removeItem(NEWS_EDITOR_DRAFT_KEY);
 }
 
-export default function AdminNewsClient({ initialRows, initialTotal }: Props) {
+export default function AdminNewsClient({
+  initialRows,
+  initialTotal,
+  initialListingSeo,
+}: Props) {
   const featureImageInputRef = useRef<HTMLInputElement | null>(null);
   const setMessage = useAdminFlash();
+  const listingSeo = initialListingSeo ?? defaultNewsListingSeo;
   const [title, setTitle] = useState("");
   const [slug, setSlug] = useState("");
   const [excerpt, setExcerpt] = useState("");
@@ -406,6 +414,7 @@ export default function AdminNewsClient({ initialRows, initialTotal }: Props) {
     <>
       {!showForm ? (
         <section className="admin-section">
+          <AdminNewsListingSeoPanel initialSeo={listingSeo} />
           <div className="admin-section-head-row">
             <h1>Manage News</h1>
             <button

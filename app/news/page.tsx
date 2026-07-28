@@ -5,6 +5,7 @@ import { SiteFooter } from "@/src/components/SiteFooter";
 import type { Metadata } from "next";
 import { toCanonicalUrl } from "@/src/lib/siteUrl";
 import { buildSocialMetadata } from "@/src/lib/socialMeta";
+import { getNewsListingSeo } from "@/src/server/repositories/listingSeoRepository";
 import { getSettings } from "@/src/server/repositories/settingsRepository";
 
 type Props = {
@@ -18,11 +19,10 @@ function resolveNewsPage(raw?: string) {
 export async function generateMetadata({ searchParams }: Props): Promise<Metadata> {
   const params = await searchParams;
   const page = resolveNewsPage(params.page);
-  const title = page > 1 ? `Gaming News — Page ${page}` : "Free Fire, BGMI & Gaming News";
+  const seo = await getNewsListingSeo();
+  const title = page > 1 ? `${seo.title} — Page ${page}` : seo.title;
   const description =
-    page > 1
-      ? `Page ${page} of latest Free Fire, BGMI, and PUBG Mobile news, updates, and gaming stories from Sensitivity Settings.`
-      : "Latest Free Fire, BGMI, and PUBG Mobile news, updates, and gaming stories from Sensitivity Settings.";
+    page > 1 ? `Page ${page} of ${seo.description}` : seo.description;
   const canonical =
     page > 1 ? toCanonicalUrl(`/news?page=${page}`) : toCanonicalUrl("/news");
 
@@ -37,13 +37,13 @@ export async function generateMetadata({ searchParams }: Props): Promise<Metadat
 export default async function NewsPage({ searchParams }: Props) {
   const params = await searchParams;
   const page = resolveNewsPage(params.page);
-  const settings = await getSettings();
+  const [settings, seo] = await Promise.all([getSettings(), getNewsListingSeo()]);
 
   return (
     <div>
       <HomeHeader siteTitle={settings.homeDisplay.headerTitle} navigation={settings.navigation} />
       <main className="page-container" style={{ paddingBottom: 40 }}>
-        <h1 className="main-title">Free Fire, BGMI &amp; Gaming News</h1>
+        <h1 className="main-title">{seo.title}</h1>
         <AdSlot slotKey="news_list_top" />
         <NewsSection page={page} />
         <AdSlot slotKey="news_list_bottom" />

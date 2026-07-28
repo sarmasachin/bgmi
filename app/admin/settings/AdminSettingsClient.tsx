@@ -10,6 +10,7 @@ import {
 import type { AdminSettingsPageData } from "@/src/server/admin/prefetchAdminSettingsPageData";
 import { useAdminFlash } from "@/src/components/admin/AdminToast";
 import { DEFAULT_FF_TRUST_BAR } from "@/src/lib/ffTrustBar";
+import { defaultSeoSettings } from "@/src/lib/siteSettings";
 
 type LinkItem = { label: string; href: string };
 
@@ -20,6 +21,17 @@ type TrustItem = { label: string; sublabel: string };
 type Props = {
   initialData?: AdminSettingsPageData;
 };
+
+function keywordsToText(list: string[]): string {
+  return list.join("\n");
+}
+
+function textToKeywords(raw: string): string[] {
+  return raw
+    .split(/\r?\n|,/)
+    .map((item) => item.trim())
+    .filter(Boolean);
+}
 
 export default function AdminSettingsClient({ initialData }: Props) {
   /** False until /api/admin/settings + head-snippets load — avoids showing default useState text then swapping. */
@@ -33,8 +45,20 @@ export default function AdminSettingsClient({ initialData }: Props) {
   const [homeHeroTitle, setHomeHeroTitle] = useState(
     initialData?.homeHeroTitle ?? "BGMI Sensitivity Settings calculator",
   );
+  const [siteTitle, setSiteTitle] = useState(
+    initialData?.siteTitle ?? defaultSeoSettings.siteTitle,
+  );
+  const [defaultTitle, setDefaultTitle] = useState(
+    initialData?.defaultTitle ?? defaultSeoSettings.defaultTitle,
+  );
   const [titleTemplate, setTitleTemplate] = useState(
-    initialData?.titleTemplate ?? "%s | Sensitivity Settings",
+    initialData?.titleTemplate ?? defaultSeoSettings.titleTemplate,
+  );
+  const [metaDescription, setMetaDescription] = useState(
+    initialData?.metaDescription ?? defaultSeoSettings.metaDescription,
+  );
+  const [keywordsText, setKeywordsText] = useState(
+    keywordsToText(initialData?.keywords ?? defaultSeoSettings.keywords),
   );
   const [googleVerification, setGoogleVerification] = useState(initialData?.googleVerification ?? "");
   const [analyticsScript, setAnalyticsScript] = useState(initialData?.analyticsScript ?? "");
@@ -140,6 +164,24 @@ export default function AdminSettingsClient({ initialData }: Props) {
           }
         }
         if (settings?.seo?.titleTemplate) setTitleTemplate(settings.seo.titleTemplate);
+        if (typeof settings?.seo?.siteTitle === "string" && settings.seo.siteTitle.trim()) {
+          setSiteTitle(settings.seo.siteTitle.trim());
+        }
+        if (typeof settings?.seo?.defaultTitle === "string" && settings.seo.defaultTitle.trim()) {
+          setDefaultTitle(settings.seo.defaultTitle.trim());
+        }
+        if (
+          typeof settings?.seo?.metaDescription === "string" &&
+          settings.seo.metaDescription.trim()
+        ) {
+          setMetaDescription(settings.seo.metaDescription.trim());
+        }
+        if (Array.isArray(settings?.seo?.keywords)) {
+          const list = settings.seo.keywords
+            .map((item: unknown) => (typeof item === "string" ? item.trim() : ""))
+            .filter(Boolean);
+          if (list.length) setKeywordsText(keywordsToText(list));
+        }
         if (settings?.integrations?.cdn?.baseUrl) setCdnBaseUrl(settings.integrations.cdn.baseUrl);
         if (settings?.integrations?.smtp?.host) setSmtpHost(settings.integrations.smtp.host);
         setShowShareRail(settings?.integrations?.showShareRail !== false);
@@ -198,10 +240,13 @@ export default function AdminSettingsClient({ initialData }: Props) {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           seo: {
-            titleTemplate,
-            metaDefault: "BGMI Sensitivity Tool",
-            ogDefault: "/og-default.png",
-            twitterCard: "summary_large_image",
+            siteTitle: siteTitle.trim() || defaultSeoSettings.siteTitle,
+            defaultTitle: defaultTitle.trim() || defaultSeoSettings.defaultTitle,
+            titleTemplate: titleTemplate.trim() || defaultSeoSettings.titleTemplate,
+            metaDescription: metaDescription.trim() || defaultSeoSettings.metaDescription,
+            keywords: textToKeywords(keywordsText),
+            ogImage: defaultSeoSettings.ogImage,
+            twitterCard: defaultSeoSettings.twitterCard,
           },
           integrations: {
             smtp: { host: smtpHost, user: "" },
@@ -425,11 +470,56 @@ export default function AdminSettingsClient({ initialData }: Props) {
           </div>
         </div>
         <div className="form-group">
+          <label htmlFor="seoSiteTitle">Site name</label>
+          <input
+            id="seoSiteTitle"
+            value={siteTitle}
+            onChange={(e) => setSiteTitle(e.target.value)}
+            placeholder={defaultSeoSettings.siteTitle}
+          />
+          <p className="form-hint" style={{ marginTop: 6, opacity: 0.75, fontSize: 12 }}>
+            Used for brand / Open Graph site name.
+          </p>
+        </div>
+        <div className="form-group">
+          <label htmlFor="seoDefaultTitle">Default meta title</label>
+          <input
+            id="seoDefaultTitle"
+            value={defaultTitle}
+            onChange={(e) => setDefaultTitle(e.target.value)}
+            placeholder={defaultSeoSettings.defaultTitle}
+          />
+        </div>
+        <div className="form-group">
+          <label htmlFor="seoMetaDescription">Default meta description</label>
+          <textarea
+            id="seoMetaDescription"
+            value={metaDescription}
+            onChange={(e) => setMetaDescription(e.target.value)}
+            rows={3}
+            placeholder={defaultSeoSettings.metaDescription}
+          />
+        </div>
+        <div className="form-group">
+          <label htmlFor="seoKeywords">Default SEO keywords</label>
+          <textarea
+            id="seoKeywords"
+            value={keywordsText}
+            onChange={(e) => setKeywordsText(e.target.value)}
+            rows={5}
+            placeholder={defaultSeoSettings.keywords.join("\n")}
+          />
+          <p className="form-hint" style={{ marginTop: 6, opacity: 0.75, fontSize: 12 }}>
+            One keyword per line (commas also OK).
+          </p>
+        </div>
+        <div className="form-group">
           <label htmlFor="seoTitleTemplate">Title Template</label>
           <input
             id="seoTitleTemplate"
             value={titleTemplate}
             onChange={(e) => setTitleTemplate(e.target.value)}
+            placeholder={defaultSeoSettings.titleTemplate}
           />
         </div>
         <div className="form-group">

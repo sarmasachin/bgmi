@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
+import { usePathname } from "next/navigation";
 
 export type DeferredScriptPayload = {
   externalSrc?: string;
@@ -15,6 +16,10 @@ type Props = {
   /** Delay before injecting (ms). Keeps LCP free of gtag/ads. */
   delayMs?: number;
 };
+
+function isAdminPath(pathname: string | null): boolean {
+  return Boolean(pathname?.startsWith("/admin"));
+}
 
 function injectExternal(src: string, id: string, crossOrigin?: boolean) {
   if (document.getElementById(id)) return;
@@ -52,7 +57,11 @@ export function DeferredMarketingScripts({
   adsense,
   delayMs = 3500,
 }: Props) {
+  const pathname = usePathname();
+
   useEffect(() => {
+    // Never load GA/AdSense on admin (keeps admin pageviews out of Analytics).
+    if (isAdminPath(pathname)) return;
     if (!analytics && !adsense) return;
 
     let done = false;
@@ -84,7 +93,7 @@ export function DeferredMarketingScripts({
         window.removeEventListener(ev, onInteract);
       }
     };
-  }, [analytics, adsense, delayMs]);
+  }, [analytics, adsense, delayMs, pathname]);
 
   return null;
 }

@@ -1,10 +1,13 @@
 /** Free Fire Advance Server landing page config. */
 
+import type { FfAdvanceServerPageContent } from "@/src/lib/advanceServerPageTypes";
+
 export const FREE_FIRE_ADVANCE_SERVER_PATH = "/free-fire-advance-server";
 /** Stable key for page comments API / DB. */
 export const FREE_FIRE_ADVANCE_SERVER_PAGE_KEY = "free-fire-advance-server";
 
-export const FF_ADVANCE_SERVER_PAGE = {
+/** Built-in Advance Server page copy — used until admin saves overrides. */
+export const FF_ADVANCE_SERVER_PAGE: FfAdvanceServerPageContent = {
   path: FREE_FIRE_ADVANCE_SERVER_PATH,
   title: "Free Fire Advance Server",
   heroTitle: "FREE FIRE ADVANCE SERVER",
@@ -342,4 +345,8 @@ export const FF_ADVANCE_SERVER_PAGE = {
         "Uninstall the beta if you want, update live Free Fire or Free Fire Max when the OB drops, and recalculate sensitivity if aim feels different.",
     },
   ],
-} as const;
+};
+
+export function getDefaultAdvanceServerPage(): FfAdvanceServerPageContent {
+  return structuredClone(FF_ADVANCE_SERVER_PAGE);
+}

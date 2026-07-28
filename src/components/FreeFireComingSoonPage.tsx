@@ -27,21 +27,13 @@ import {
   getPublishedPageBySlug,
 } from "@/src/server/repositories/pagesRepository";
 import { getGameFaqItems } from "@/src/server/repositories/homeFaqRepository";
+import { getGameArticleHtml } from "@/src/server/repositories/gameArticlesRepository";
+import { getFfPageCards } from "@/src/server/repositories/homeCardsRepository";
 import { listPublishedNews } from "@/src/server/repositories/newsRepository";
 import { getSettings } from "@/src/server/repositories/settingsRepository";
 import { listApprovedTestimonials } from "@/src/server/repositories/testimonialsRepository";
 import { isAdminLoggedIn } from "@/src/server/auth";
 import type { Metadata } from "next";
-
-function extractHtml(content: unknown) {
-  if (!content) return "";
-  if (typeof content === "string") return content;
-  if (typeof content === "object" && content && "html" in content) {
-    const html = (content as { html?: unknown }).html;
-    return typeof html === "string" ? html : "";
-  }
-  return "";
-}
 
 export async function buildFreeFireMetadata(variant: FreeFireVariant): Promise<Metadata> {
   const cfg = freeFireConfig(variant);
@@ -49,17 +41,25 @@ export async function buildFreeFireMetadata(variant: FreeFireVariant): Promise<M
   const page =
     (await getPublishedPageBySlug(cfg.slug)) ??
     (await getPublishedPageBySlug(`/${cfg.slug}`));
-  const rawDescription = page?.seoDescription?.trim() || cfg.seoDescription;
+  const maxCards =
+    variant === "freefire-max" ? await getFfPageCards("freefire-max") : null;
+  const fromCardsDescription = maxCards?.seo.description.trim() || "";
+  const rawDescription =
+    fromCardsDescription || page?.seoDescription?.trim() || cfg.seoDescription;
   // Never expose stale "coming soon" CMS copy once the calculator is live.
   const description = /coming soon|in development|update soon/i.test(rawDescription)
-    ? cfg.seoDescription
+    ? fromCardsDescription || cfg.seoDescription
     : rawDescription;
-  const title = page?.seoTitle?.trim() || page?.title || cfg.title;
+  const title =
+    maxCards?.hero.title.trim() || page?.seoTitle?.trim() || page?.title || cfg.title;
+  const keywords =
+    maxCards?.seo.keywords?.length ? maxCards.seo.keywords : undefined;
   const canonical = toCanonicalUrl(cfg.path);
 
   return {
     title,
     description,
+    ...(keywords ? { keywords } : {}),
     robots: {
       index: true,
       follow: true,
@@ -85,21 +85,25 @@ export async function FreeFireComingSoonPage({ variant }: { variant: FreeFireVar
   const faqGame = variant === "freefire-max" ? "freefire-max" : "freefire";
   const testimonialGame = variant === "freefire-max" ? "freefire-max" : "freefire";
 
-  const [settings, published, draft, faqItems, testimonials, homeNews] = await Promise.all([
-    getSettings(),
-    getPublishedPageBySlug(cfg.slug).then(
-      (p) => p ?? getPublishedPageBySlug(`/${cfg.slug}`),
-    ),
-    isAdminLoggedIn().then(async (ok) => {
-      if (!ok) return null;
-      return (await getPageBySlug(cfg.slug)) ?? (await getPageBySlug(`/${cfg.slug}`));
-    }),
-    getGameFaqItems(faqGame),
-    listApprovedTestimonials({ game: variant === "freefire-max" ? "freefire-max" : "freefire" }),
-    variant === "freefire-max"
-      ? listPublishedNews(1, 10)
-      : Promise.resolve({ data: [] as Awaited<ReturnType<typeof listPublishedNews>>["data"], total: 0 }),
-  ]);
+  const articleGame = variant === "freefire-max" ? "freefire-max" : "freefire";
+  const [settings, published, draft, faqItems, testimonials, homeNews, storedArticleHtml, maxCards] =
+    await Promise.all([
+      getSettings(),
+      getPublishedPageBySlug(cfg.slug).then(
+        (p) => p ?? getPublishedPageBySlug(`/${cfg.slug}`),
+      ),
+      isAdminLoggedIn().then(async (ok) => {
+        if (!ok) return null;
+        return (await getPageBySlug(cfg.slug)) ?? (await getPageBySlug(`/${cfg.slug}`));
+      }),
+      getGameFaqItems(faqGame),
+      listApprovedTestimonials({ game: variant === "freefire-max" ? "freefire-max" : "freefire" }),
+      variant === "freefire-max"
+        ? listPublishedNews(1, 10)
+        : Promise.resolve({ data: [] as Awaited<ReturnType<typeof listPublishedNews>>["data"], total: 0 }),
+      getGameArticleHtml(articleGame),
+      variant === "freefire-max" ? getFfPageCards("freefire-max") : Promise.resolve(null),
+    ]);
 
   const newsItems = (homeNews.data ?? []).map((item) => {
     const rawDate = item.publishedAt ?? item.createdAt ?? null;
@@ -122,9 +126,10 @@ export async function FreeFireComingSoonPage({ variant }: { variant: FreeFireVar
   });
 
   const page = published ?? (draft?.status === "draft" ? null : draft);
-  // Code article is source of truth after deploy; CMS is only a fallback.
-  const html = cfg.defaultArticleHtml || extractHtml(page?.content);
-  const title = page?.title?.trim() || cfg.title;
+  // Article body: Game Articles only (then built-in default). Page clones hold SEO shell.
+  const html = storedArticleHtml ?? cfg.defaultArticleHtml;
+  const title =
+    (maxCards?.hero.title.trim() || page?.title?.trim() || cfg.title);
   const description = page?.seoDescription?.trim() || cfg.seoDescription;
   const faqLd = faqSchema(faqItems);
   const toolLd = toolAppReviewSchema({
@@ -144,22 +149,22 @@ export async function FreeFireComingSoonPage({ variant }: { variant: FreeFireVar
       <HomeHeader siteTitle={settings.homeDisplay.headerTitle} navigation={settings.navigation} />
       <h1 className="main-title ff-gradient-title">{title}</h1>
       <main className="page-container">
-        {variant === "freefire-max" ? <FfOfficialPatchStrip /> : null}
+        {variant === "freefire-max" && maxCards ? <FfOfficialPatchStrip homeContent={maxCards.patchStrip} /> : null}
         <div id="ff-calculator" className="ff-calculator-anchor">
           <FfCalculator isMax={variant === "freefire-max"} trustBar={settings.ffTrustBar} />
         </div>
         <TestimonialsMarquee game={testimonialGame} initialItems={testimonials} />
         <TestimonialForm game={testimonialGame} />
-        {variant === "freefire-max" ? (
+        {variant === "freefire-max" && maxCards ? (
           <>
-            <FfNextUpdateCard />
-            <FfAdvanceServerCard />
-            <FfRoleTips />
-            <FfSeasonBanner />
-            <FfProTips />
+            <FfNextUpdateCard homeContent={maxCards.nextUpdate} />
+            <FfAdvanceServerCard homeContent={maxCards.advanceServer} />
+            <FfRoleTips homeContent={maxCards.roleTips} />
+            <FfSeasonBanner homeContent={maxCards.season} />
+            <FfProTips homeContent={maxCards.proTips} />
             <FfNewsHub items={newsItems} total={homeNews.total} />
-            <FfComparisonTables />
-            <FfExploreCards />
+            <FfComparisonTables homeContent={maxCards.comparison} />
+            <FfExploreCards homeContent={maxCards.explore} />
           </>
         ) : null}
       </main>

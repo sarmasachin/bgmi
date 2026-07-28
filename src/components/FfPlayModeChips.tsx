@@ -3,55 +3,57 @@
 import { usePathname } from "next/navigation";
 import type { CalcInputs } from "@/src/features/ffCalculator/calculator";
 import { FF_SET_ROLE_EVENT } from "@/src/lib/ffPlayModes";
+import type { FfHomePlayModes } from "@/src/lib/homeCardsTypes";
 
-type ModeChip = {
-  id: string;
-  label: string;
-  blurb: string;
-  icon: string;
-  role: CalcInputs["role"];
+const DEFAULT_MODES: FfHomePlayModes = {
+  title: "Choose your play mode",
+  lead: "Tap a mode — calculator Player Role updates automatically.",
+  modes: [
+    {
+      id: "rusher",
+      label: "Rusher",
+      blurb: "Close-range aggressive aim",
+      icon: "fa-person-running",
+      role: "rusher",
+    },
+    {
+      id: "sniper",
+      label: "Sniper",
+      blurb: "Long-range scope control",
+      icon: "fa-crosshairs",
+      role: "sniper",
+    },
+    {
+      id: "clash-squad",
+      label: "Clash Squad",
+      blurb: "Fast 4v4 fights",
+      icon: "fa-users",
+      role: "rusher",
+    },
+    {
+      id: "battle-royale",
+      label: "Battle Royale",
+      blurb: "Full map survival",
+      icon: "fa-map",
+      role: "sniper",
+    },
+  ],
 };
 
-/** Official-site “modes” direction — chips only set role on this site’s calculator. */
-const MODES: ModeChip[] = [
-  {
-    id: "rusher",
-    label: "Rusher",
-    blurb: "Close-range aggressive aim",
-    icon: "fa-person-running",
-    role: "rusher",
-  },
-  {
-    id: "sniper",
-    label: "Sniper",
-    blurb: "Long-range scope control",
-    icon: "fa-crosshairs",
-    role: "sniper",
-  },
-  {
-    id: "clash-squad",
-    label: "Clash Squad",
-    blurb: "Fast 4v4 fights",
-    icon: "fa-users",
-    role: "rusher",
-  },
-  {
-    id: "battle-royale",
-    label: "Battle Royale",
-    blurb: "Full map survival",
-    icon: "fa-map",
-    role: "sniper",
-  },
-];
+type Props = {
+  homeContent?: FfHomePlayModes;
+};
 
-export function FfPlayModeChips() {
+export function FfPlayModeChips({ homeContent }: Props) {
   const pathname = usePathname() ?? "";
   if (pathname !== "/" && pathname !== "") return null;
 
-  function applyMode(mode: ModeChip) {
+  const content = homeContent ?? DEFAULT_MODES;
+
+  function applyMode(mode: FfHomePlayModes["modes"][number]) {
     window.dispatchEvent(
       new CustomEvent(FF_SET_ROLE_EVENT, {
-        detail: { role: mode.role, modeId: mode.id },
+        detail: { role: mode.role as CalcInputs["role"], modeId: mode.id },
       }),
     );
     const el = document.getElementById("ff-calculator");
@@ -66,12 +68,12 @@ export function FfPlayModeChips() {
 
   return (
     <section className="ff-modes" aria-labelledby="ff-modes-title">
-<h2 id="ff-modes-title" className="ff-modes-title">
-        Choose your play mode
+      <h2 id="ff-modes-title" className="ff-modes-title">
+        {content.title}
       </h2>
-      <p className="ff-modes-lead">Tap a mode — calculator Player Role updates automatically.</p>
+      <p className="ff-modes-lead">{content.lead}</p>
       <div className="ff-modes-grid" role="group" aria-label="Play modes">
-        {MODES.map((mode) => (
+        {content.modes.map((mode) => (
           <button
             key={mode.id}
             type="button"

@@ -1,14 +1,15 @@
 import { FfAdvanceServerLandingPage } from "@/src/components/FfAdvanceServerLandingPage";
-import { FF_ADVANCE_SERVER_PAGE } from "@/src/lib/ffAdvanceServerPage";
+import { FREE_FIRE_ADVANCE_SERVER_PATH } from "@/src/lib/ffAdvanceServerPage";
 import { buildSocialMetadata } from "@/src/lib/socialMeta";
 import { toCanonicalUrl } from "@/src/lib/siteUrl";
+import { getAdvanceServerPage } from "@/src/server/repositories/advanceServerPageRepository";
 import type { Metadata } from "next";
 
 export const dynamic = "force-dynamic";
 
 export async function generateMetadata(): Promise<Metadata> {
-  const page = FF_ADVANCE_SERVER_PAGE;
-  const canonical = toCanonicalUrl(page.path);
+  const page = await getAdvanceServerPage();
+  const canonical = toCanonicalUrl(page.path || FREE_FIRE_ADVANCE_SERVER_PATH);
   const ogImage = toCanonicalUrl(page.heroImage);
 
   return {

@@ -182,6 +182,9 @@ export async function pageTitleExists(title: string, excludeId?: string) {
 }
 
 export async function listPages() {
+  await dedupeDuplicatePageSlugs();
+  const { FREE_FIRE_SLUG } = await import("@/src/lib/freeFirePages");
+  await deletePagesBySlugVariants(FREE_FIRE_SLUG);
   const dbData = await tryPrismaLong(async () =>
     prisma.pageTemplate.findMany({
       orderBy: { createdAt: "desc" },
@@ -194,6 +197,7 @@ export async function listPages() {
 export async function listPublishedPagesForSitemap(): Promise<
   Array<{ slug: string; updatedAt: Date }>
 > {
+  await dedupeDuplicatePageSlugs();
   const dbData = await tryPrisma(async () =>
     prisma.pageTemplate.findMany({
       where: { status: "published" },
@@ -221,24 +225,187 @@ export async function listPublishedPagesForSitemap(): Promise<
 }
 
 export const getPublishedPageBySlug = cache(async function getPublishedPageBySlug(slug: string) {
+  const variants = pageSlugVariants(slug);
   const dbData = await tryPrisma(async () =>
     prisma.pageTemplate.findFirst({
-      where: { slug, status: "published" },
+      where: { slug: { in: variants }, status: "published" },
     }),
   );
   if (dbData) return dbData;
-  return mockStore.pages.find((item) => item.slug === slug && item.status === "published") ?? null;
+  return (
+    mockStore.pages.find(
+      (item) => variants.includes(item.slug) && item.status === "published",
+    ) ?? null
+  );
 });
 
 export const getPageBySlug = cache(async function getPageBySlug(slug: string) {
+  const variants = pageSlugVariants(slug);
   const dbData = await tryPrisma(async () =>
     prisma.pageTemplate.findFirst({
-      where: { slug },
+      where: { slug: { in: variants } },
     }),
   );
   if (dbData) return dbData;
-  return mockStore.pages.find((item) => item.slug === slug) ?? null;
+  return mockStore.pages.find((item) => variants.includes(item.slug)) ?? null;
 });
+
+type PageSlugRow = {
+  id: string;
+  slug: string;
+  status: string;
+  updatedAt: Date;
+  createdAt: Date;
+  game?: CloneGame;
+};
+
+function expectedGameForNormalizedSlug(normalized: string): CloneGame | undefined {
+  if (normalized === "free-fire-sensitivity-settings-calculator") return "freefire";
+  if (normalized === "free-fire-max-sensitivity-settings-calculator") return "freefire-max";
+  if (normalized === "bgmi") return "bgmi";
+  if (normalized === "pubg") return "pubg";
+  if (normalized === "pubg-mobile-codes") return "pubg-mobile-codes";
+  return undefined;
+}
+
+function pickPreferredPageSlugRow(rows: PageSlugRow[], normalized: string) {
+  const expectedGame = expectedGameForNormalizedSlug(normalized);
+  return [...rows].sort((a, b) => {
+    if (expectedGame) {
+      const gameRank =
+        Number(b.game === expectedGame) - Number(a.game === expectedGame);
+      if (gameRank !== 0) return gameRank;
+    }
+    const published = Number(b.status === "published") - Number(a.status === "published");
+    if (published !== 0) return published;
+    const normalizedSlug = Number(a.slug === normalized) - Number(b.slug === normalized);
+    if (normalizedSlug !== 0) return normalizedSlug;
+    return b.updatedAt.getTime() - a.updatedAt.getTime();
+  })[0]!;
+}
+
+/**
+ * Collapse `slug` vs `/slug` (and other normalize collisions) to one row each,
+ * and rewrite survivors to the slash-free canonical slug.
+ */
+export async function dedupeDuplicatePageSlugs() {
+  const dbResult = await tryPrismaLong(async () => {
+    const rows = await prisma.pageTemplate.findMany({
+      select: {
+        id: true,
+        slug: true,
+        status: true,
+        updatedAt: true,
+        createdAt: true,
+        content: true,
+      },
+    });
+
+    const mapped: PageSlugRow[] = rows.map((row) => ({
+      id: row.id,
+      slug: row.slug,
+      status: row.status,
+      updatedAt: row.updatedAt,
+      createdAt: row.createdAt,
+      game: extractMeta(row.content).game,
+    }));
+
+    const groups = new Map<string, PageSlugRow[]>();
+    for (const row of mapped) {
+      const key = normalizePageSlug(row.slug);
+      if (!key) continue;
+      const list = groups.get(key) ?? [];
+      list.push(row);
+      groups.set(key, list);
+    }
+
+    let deleted = 0;
+    for (const [key, list] of groups) {
+      const keep = pickPreferredPageSlugRow(list, key);
+      for (const drop of list) {
+        if (drop.id === keep.id) continue;
+        await prisma.pageTemplate.delete({ where: { id: drop.id } });
+        deleted += 1;
+      }
+      if (keep.slug !== key) {
+        // Avoid unique conflicts if a stray row reappeared with the target slug.
+        const clash = await prisma.pageTemplate.findFirst({
+          where: { slug: key, id: { not: keep.id } },
+          select: { id: true },
+        });
+        if (clash) {
+          await prisma.pageTemplate.delete({ where: { id: clash.id } });
+          deleted += 1;
+        }
+        await prisma.pageTemplate.update({
+          where: { id: keep.id },
+          data: { slug: key },
+        });
+      }
+    }
+    return deleted;
+  });
+
+  if (dbResult !== null) return dbResult;
+
+  const groups = new Map<string, typeof mockStore.pages>();
+  for (const row of mockStore.pages) {
+    const key = normalizePageSlug(row.slug);
+    if (!key) continue;
+    const list = groups.get(key) ?? [];
+    list.push(row);
+    groups.set(key, list);
+  }
+
+  let deleted = 0;
+  for (const [key, list] of groups) {
+    const keep = pickPreferredPageSlugRow(
+      list.map((row) => ({
+        id: row.id,
+        slug: row.slug,
+        status: row.status,
+        updatedAt: new Date(0),
+        createdAt: new Date(0),
+        game: extractMeta(row.content).game,
+      })),
+      key,
+    );
+    for (const drop of list) {
+      if (drop.id === keep.id) continue;
+      const index = mockStore.pages.findIndex((item) => item.id === drop.id);
+      if (index !== -1) {
+        mockStore.pages.splice(index, 1);
+        deleted += 1;
+      }
+    }
+    const kept = mockStore.pages.find((item) => item.id === keep.id);
+    if (kept && kept.slug !== key) kept.slug = key;
+  }
+  return deleted;
+}
+
+/** Delete every page row matching slug or `/slug` (used for obsolete redirect shells). */
+async function deletePagesBySlugVariants(slug: string) {
+  const variants = pageSlugVariants(slug);
+  if (!variants.length) return 0;
+
+  const dbResult = await tryPrismaLong(async () => {
+    const result = await prisma.pageTemplate.deleteMany({
+      where: { slug: { in: variants } },
+    });
+    return result.count;
+  });
+  if (dbResult !== null) return dbResult;
+
+  let deleted = 0;
+  for (let i = mockStore.pages.length - 1; i >= 0; i -= 1) {
+    if (variants.includes(mockStore.pages[i]!.slug)) {
+      mockStore.pages.splice(i, 1);
+      deleted += 1;
+    }
+  }
+  return deleted;
+}
 
 export async function createPage(input: PageInput) {
   const slug = normalizePageSlug(input.slug);
@@ -497,59 +664,62 @@ export async function deletePage(id: string) {
   return true;
 }
 
-/** Ensure Free Fire CMS article pages exist and stay in sync with code defaults. */
+/**
+ * Ensure Free Fire Max CMS page shell exists (SEO / sitemap / status).
+ * Plain FF calculator slug redirects to `/` — those shells are removed.
+ * Article body is owned by Game Articles — not synced here.
+ */
 export async function ensureFreeFireCmsPages() {
-  const { freeFireConfig } = await import("@/src/lib/freeFirePages");
-  for (const variant of ["freefire", "freefire-max"] as const) {
-    const cfg = freeFireConfig(variant);
-    const existing =
-      (await getPageBySlug(cfg.slug)) ?? (await getPageBySlug(`/${cfg.slug}`));
-    if (existing) {
-      const currentHtml = extractHtml(existing.content);
-      const staleSeo =
-        !existing.seoDescription?.trim() ||
-        /coming soon|in development|update soon/i.test(existing.seoDescription);
-      const patch: {
-        content?: string;
-        seoDescription?: string;
-        seoTitle?: string;
-        title?: string;
-        status?: "published";
-      } = {};
-      if (currentHtml !== cfg.defaultArticleHtml) {
-        patch.content = cfg.defaultArticleHtml;
-      }
-      if (staleSeo) {
-        patch.seoDescription = cfg.seoDescription;
-      }
-      if (!existing.seoTitle?.trim()) {
-        patch.seoTitle = cfg.title;
-      }
-      if (existing.status !== "published") {
-        patch.status = "published";
-      }
-      if (Object.keys(patch).length > 0) {
-        try {
-          await updatePage(existing.id, patch);
-        } catch {
-          /* DB unavailable — page still uses code default on render */
-        }
-      }
-      continue;
+  await dedupeDuplicatePageSlugs();
+  const { FREE_FIRE_SLUG, freeFireConfig } = await import("@/src/lib/freeFirePages");
+  await deletePagesBySlugVariants(FREE_FIRE_SLUG);
+
+  const variant = "freefire-max" as const;
+  const cfg = freeFireConfig(variant);
+  const existing = await getPageBySlug(cfg.slug);
+  if (existing) {
+    const currentGame = extractMeta(existing.content).game;
+    const staleSeo =
+      !existing.seoDescription?.trim() ||
+      /coming soon|in development|update soon/i.test(existing.seoDescription);
+    const patch: Partial<PageInput> = {};
+    if (staleSeo) {
+      patch.seoDescription = cfg.seoDescription;
     }
-    try {
-      await createPage({
-        title: cfg.title,
-        slug: cfg.slug,
-        seoTitle: cfg.title,
-        seoDescription: cfg.seoDescription,
-        templateType: "landing",
-        content: cfg.defaultArticleHtml,
-        status: "published",
-        publishAsNews: false,
-      });
-    } catch {
-      /* race / already exists */
+    if (!existing.seoTitle?.trim()) {
+      patch.seoTitle = cfg.title;
     }
+    if (existing.status !== "published") {
+      patch.status = "published";
+    }
+    if (existing.slug !== cfg.slug) {
+      patch.slug = cfg.slug;
+    }
+    if (currentGame !== variant) {
+      patch.game = variant;
+    }
+    if (Object.keys(patch).length > 0) {
+      try {
+        await updatePage(existing.id, patch);
+      } catch {
+        /* DB unavailable — page still uses code default on render */
+      }
+    }
+    return;
+  }
+  try {
+    await createPage({
+      title: cfg.title,
+      slug: cfg.slug,
+      seoTitle: cfg.title,
+      seoDescription: cfg.seoDescription,
+      templateType: "landing",
+      game: variant,
+      content: "",
+      status: "published",
+      publishAsNews: false,
+    });
+  } catch {
+    /* race / already exists */
   }
 }

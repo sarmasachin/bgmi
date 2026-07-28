@@ -4,12 +4,14 @@ import { usePathname } from "next/navigation";
 import type { CalcInputs } from "@/src/features/ffCalculator/calculator";
 import { FF_SET_ROLE_EVENT } from "@/src/lib/ffPlayModes";
 import { FREE_FIRE_MAX_PATH } from "@/src/lib/freeFirePages";
+import type { FfHomeRoleTips } from "@/src/lib/homeCardsTypes";
 
 type RoleTip = {
   role: CalcInputs["role"];
   title: string;
   icon: string;
   tips: string[];
+  buttonLabel?: string;
 };
 
 const ROLE_TIPS: RoleTip[] = [
@@ -22,6 +24,7 @@ const ROLE_TIPS: RoleTip[] = [
       "Use 2–3 finger claw for quicker drag headshots",
       "Practice SMG / shotgun sprays in Training Ground first",
     ],
+    buttonLabel: "Use Rusher in calculator",
   },
   {
     role: "sniper",
@@ -32,10 +35,10 @@ const ROLE_TIPS: RoleTip[] = [
       "Fine-tune 2x / 4x before sniper scope",
       "Hold angles and adjust Free Look for better peek aim",
     ],
+    buttonLabel: "Use Sniper in calculator",
   },
 ];
 
-/** Max-only tips — heavier graphics / FPS focus. */
 const MAX_ROLE_TIPS: RoleTip[] = [
   {
     role: "rusher",
@@ -59,17 +62,36 @@ const MAX_ROLE_TIPS: RoleTip[] = [
   },
 ];
 
+type Props = {
+  homeContent?: FfHomeRoleTips;
+};
+
 /**
  * Role tips — home Free Fire copy; Max page Free Fire Max copy.
  * CTA sets calculator role + scrolls up to tool.
  */
-export function FfRoleTips() {
+export function FfRoleTips({ homeContent }: Props) {
   const pathname = usePathname() ?? "";
   const isHome = pathname === "/" || pathname === "";
   const isMax = pathname === FREE_FIRE_MAX_PATH;
   if (!isHome && !isMax) return null;
 
-  const tips = isMax ? MAX_ROLE_TIPS : ROLE_TIPS;
+  const sectionTitle =
+    homeContent?.title ??
+    (isMax ? "Best Free Fire Max sensi tips by role" : "Best sensi tips by role");
+  const sourceItems = homeContent?.items ?? (isMax ? MAX_ROLE_TIPS : ROLE_TIPS);
+  const tips: RoleTip[] = sourceItems.map((item) => ({
+    role: item.role,
+    title: item.title,
+    icon: item.icon,
+    tips: item.tips,
+    buttonLabel:
+      "buttonLabel" in item && typeof item.buttonLabel === "string" && item.buttonLabel
+        ? item.buttonLabel
+        : `Use ${item.role === "rusher" ? "Rusher" : "Sniper"} in ${
+            isMax ? "Max calculator" : "calculator"
+          }`,
+  }));
 
   function applyRole(role: CalcInputs["role"]) {
     window.dispatchEvent(
@@ -88,7 +110,7 @@ export function FfRoleTips() {
   return (
     <section className="ff-role-tips" aria-labelledby="ff-role-tips-title">
       <h2 id="ff-role-tips-title" className="ff-role-tips-title">
-        {isMax ? "Best Free Fire Max sensi tips by role" : "Best sensi tips by role"}
+        {sectionTitle}
       </h2>
       <div className="ff-role-tips-grid">
         {tips.map((card) => (
@@ -109,8 +131,10 @@ export function FfRoleTips() {
               className="ff-role-tip-btn"
               onClick={() => applyRole(card.role)}
             >
-              Use {card.role === "rusher" ? "Rusher" : "Sniper"} in{" "}
-              {isMax ? "Max calculator" : "calculator"}
+              {card.buttonLabel ??
+                `Use ${card.role === "rusher" ? "Rusher" : "Sniper"} in ${
+                  isMax ? "Max calculator" : "calculator"
+                }`}
               <i className="fa-solid fa-arrow-up" aria-hidden />
             </button>
           </article>

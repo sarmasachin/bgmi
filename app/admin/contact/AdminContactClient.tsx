@@ -4,6 +4,8 @@ import { Fragment, useEffect, useMemo, useState } from "react";
 import type { AdminContactItem } from "@/src/server/admin/mapAdminContactMessages";
 import { useAdminFlash } from "@/src/components/admin/AdminToast";
 import { readApiError } from "@/src/lib/userFacingError";
+import { defaultContactSeo, type ContactSeo } from "@/src/lib/listingSeoDefaults";
+import { AdminContactSeoPanel } from "./AdminContactSeoPanel";
 
 type StatusFilter = "all" | AdminContactItem["status"];
 
@@ -111,11 +113,17 @@ function mapLoadedItem(item: Record<string, unknown>): AdminContactItem {
 
 type Props = {
   initialItems?: AdminContactItem[];
+  initialSeo?: ContactSeo;
 };
 
-export default function AdminContactClient({ initialItems }: Props) {
+export default function AdminContactClient({ initialItems, initialSeo }: Props) {
   // SSR seed paints the table immediately — empty client-only load was causing Refresh blink.
   const [items, setItems] = useState<AdminContactItem[]>(initialItems ?? []);
+  const contactSeo = initialSeo ?? {
+    general: { ...defaultContactSeo.general },
+    report: { ...defaultContactSeo.report },
+    feedback: { ...defaultContactSeo.feedback },
+  };
   const [loading, setLoading] = useState(initialItems === undefined);
   const [workingId, setWorkingId] = useState<string | null>(null);
   const [expandedId, setExpandedId] = useState<string | null>(null);
@@ -350,6 +358,7 @@ export default function AdminContactClient({ initialItems }: Props) {
 
   return (
     <>
+    <AdminContactSeoPanel initialSeo={contactSeo} />
     <section className="admin-section admin-comments-section">
       <div className="admin-comments-head">
         <h1>Contact Messages</h1>

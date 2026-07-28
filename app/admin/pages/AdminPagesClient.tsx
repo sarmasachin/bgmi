@@ -6,6 +6,10 @@ import { useAdminFlash } from "@/src/components/admin/AdminToast";
 import { useAdminDuplicateCheck } from "@/src/hooks/useAdminDuplicateCheck";
 import { toCanonicalUrl } from "@/src/lib/siteUrl";
 import {
+  articleBodyGameForPageSlug,
+  gameArticleLabel,
+} from "@/src/lib/gameArticleGames";
+import {
   type CloneGame,
   type PageRow,
   type TemplateType,
@@ -254,6 +258,11 @@ export default function AdminPagesClient({ initialRows }: Props) {
   }, [title, seoDescription, content]);
 
   const previewSlug = useMemo(() => normalizeSlugInput(slug), [slug]);
+  const articleBodyGame = useMemo(() => {
+    // Home clone slug `/` normalizes to "" in the form — still Game Articles (Free Fire).
+    const slugForCheck = !previewSlug && editingId ? "/" : slug;
+    return articleBodyGameForPageSlug(slugForCheck);
+  }, [slug, previewSlug, editingId]);
   const editingStatus = useMemo(
     () => (editingId ? rows.find((row) => row.id === editingId)?.status : undefined),
     [editingId, rows],
@@ -310,7 +319,9 @@ export default function AdminPagesClient({ initialRows }: Props) {
       socialDescription,
       socialImageAlt,
       metaKeywords,
-      content: content.trim() ? content : undefined,
+      ...(articleBodyGame
+        ? {}
+        : { content: content.trim() ? content : undefined }),
       publishAsNews,
       status: "draft" as const,
     };
@@ -336,7 +347,7 @@ export default function AdminPagesClient({ initialRows }: Props) {
                 socialDescription,
                 socialImageAlt,
                 metaKeywords,
-                content,
+                ...(articleBodyGame ? {} : { content }),
               }),
             }
           : {
@@ -804,12 +815,23 @@ export default function AdminPagesClient({ initialRows }: Props) {
           </div>
 
           <div className="admin-pages-editor-wrap">
-            <RichTextEditor
-              key={`pages-editor-${editingId ?? "new"}-${editorNonce}`}
-              value={content}
-              onChange={setContent}
-              storageKey={PAGES_EDITOR_DRAFT_KEY}
-            />
+            {articleBodyGame ? (
+              <div className="admin-field admin-input-wide">
+                <p>
+                  Article body for this page is managed in{" "}
+                  <a href="/admin/game-articles">Game Articles</a>
+                  {` (${gameArticleLabel(articleBodyGame)}).`} Use this form for SEO,
+                  slug, and publish status only.
+                </p>
+              </div>
+            ) : (
+              <RichTextEditor
+                key={`pages-editor-${editingId ?? "new"}-${editorNonce}`}
+                value={content}
+                onChange={setContent}
+                storageKey={PAGES_EDITOR_DRAFT_KEY}
+              />
+            )}
           </div>
 
           <div className="admin-pages-preview-wrap">

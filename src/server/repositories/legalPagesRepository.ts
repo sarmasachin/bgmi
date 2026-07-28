@@ -11,6 +11,8 @@ import {
   normalizeLegalSlug,
   RESERVED_APP_SLUGS,
 } from "@/src/lib/legalPages";
+import { legalSlugToSitemapPath } from "@/src/lib/sitemapLastmod";
+import { bumpSitemapLastmod } from "@/src/server/repositories/sitemapLastmodRepository";
 
 export type LegalPageStatus = "draft" | "published";
 
@@ -150,7 +152,11 @@ export async function createLegalPage(input: LegalPageInput) {
   const dbData = await tryPrismaLong(async () =>
     prisma.legalPage.create({ data }),
   );
-  if (dbData) return dbData;
+  if (dbData) {
+    const path = legalSlugToSitemapPath(dbData.slug);
+    if (path) bumpSitemapLastmod([path]);
+    return dbData;
+  }
   if (process.env.DATABASE_URL) throw new Error("DB_UNAVAILABLE");
 
   const item: LegalPageRecord = {
@@ -160,6 +166,8 @@ export async function createLegalPage(input: LegalPageInput) {
     updatedAt: new Date().toISOString(),
   };
   mockStore.legalPages.unshift(item);
+  const path = legalSlugToSitemapPath(item.slug);
+  if (path) bumpSitemapLastmod([path]);
   return item;
 }
 
@@ -196,7 +204,13 @@ export async function updateLegalPage(id: string, payload: Partial<LegalPageInpu
   const dbData = await tryPrismaLong(async () =>
     prisma.legalPage.update({ where: { id }, data }),
   );
-  if (dbData) return dbData;
+  if (dbData) {
+    const paths = [legalSlugToSitemapPath(dbData.slug), legalSlugToSitemapPath(existing.slug)].filter(
+      (path): path is string => Boolean(path),
+    );
+    if (paths.length) bumpSitemapLastmod(paths);
+    return dbData;
+  }
   if (process.env.DATABASE_URL) throw new Error("DB_UNAVAILABLE");
 
   const item = mockStore.legalPages.find((row) => row.id === id);
@@ -208,6 +222,10 @@ export async function updateLegalPage(id: string, payload: Partial<LegalPageInpu
   if (data.seoDescription !== undefined) item.seoDescription = data.seoDescription;
   if (data.status !== undefined) item.status = data.status;
   item.updatedAt = new Date().toISOString();
+  const paths = [legalSlugToSitemapPath(item.slug), legalSlugToSitemapPath(existing.slug)].filter(
+    (path): path is string => Boolean(path),
+  );
+  if (paths.length) bumpSitemapLastmod(paths);
   return item;
 }
 

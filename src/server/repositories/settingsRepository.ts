@@ -11,6 +11,7 @@ import {
   DEFAULT_FF_TRUST_BAR,
   type FfTrustBarItem,
 } from "@/src/lib/ffTrustBar";
+import { bumpSitemapLastmod } from "@/src/server/repositories/sitemapLastmodRepository";
 
 export type { FfTrustBarItem };
 export { DEFAULT_FF_TRUST_BAR };
@@ -311,6 +312,9 @@ export async function saveSettings(payload: SettingsPayload) {
     }
     return true;
   });
+  if (payload.seo !== undefined) {
+    bumpSitemapLastmod(["/"]);
+  }
 }
 
 export const getHeadSnippets = cache(async function getHeadSnippets() {

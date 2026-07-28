@@ -24,6 +24,7 @@ import { getAdPlacementVisibility } from "@/src/server/repositories/adPlacementR
 import { getCalculatorPhoneModels } from "@/src/server/repositories/calculatorPhoneModelsRepository";
 import { getGameFaqItems } from "@/src/server/repositories/homeFaqRepository";
 import { getGameArticleHtml } from "@/src/server/repositories/gameArticlesRepository";
+import { getFfHomeCards, getFfPageCards } from "@/src/server/repositories/homeCardsRepository";
 import { listPublishedNews } from "@/src/server/repositories/newsRepository";
 import { getSettings } from "@/src/server/repositories/settingsRepository";
 import { listApprovedTestimonials } from "@/src/server/repositories/testimonialsRepository";
@@ -50,7 +51,11 @@ export default async function GamesLayout({ children }: { children: React.ReactN
     freefireFaqItems,
     bgmiArticleHtml,
     pubgArticleHtml,
+    freefireArticleHtml,
     homeNews,
+    homeCards,
+    bgmiCards,
+    pubgCards,
   ] = await Promise.all([
     getSettings(),
     getAdPlacementVisibility(),
@@ -63,7 +68,11 @@ export default async function GamesLayout({ children }: { children: React.ReactN
     getGameFaqItems("freefire"),
     getGameArticleHtml("bgmi"),
     getGameArticleHtml("pubg"),
+    getGameArticleHtml("freefire"),
     listPublishedNews(1, 10),
+    getFfHomeCards(),
+    getFfPageCards("bgmi"),
+    getFfPageCards("pubg"),
   ]);
   const homeNewsItems = (homeNews.data ?? []).map((item) => {
     const rawDate = item.publishedAt ?? item.createdAt ?? null;
@@ -92,24 +101,28 @@ export default async function GamesLayout({ children }: { children: React.ReactN
   const freefireFaqLd = faqSchema(freefireFaqItems);
   const bgmiToolLd = toolAppReviewSchema({
     baseUrl,
-    name: "BGMI Sensitivity Calculator | Free No Recoil Settings 2026",
+    name: bgmiCards.hero.title.trim() || "BGMI Sensitivity Calculator | Free No Recoil Settings 2026",
     description:
+      bgmiCards.seo.description.trim() ||
       "Free BGMI sensitivity calculator for camera, ADS, and gyroscope. Generate custom no-recoil settings for your phone, FPS mode, and play style.",
     url: toCanonicalUrl("/bgmi"),
     reviews: mapReviews(bgmiTestimonials),
   });
   const pubgToolLd = toolAppReviewSchema({
     baseUrl,
-    name: "PUBG Mobile Sensitivity Calculator | Free No Recoil Settings 2026",
+    name:
+      pubgCards.hero.title.trim() ||
+      "PUBG Mobile Sensitivity Calculator | Free No Recoil Settings 2026",
     description:
+      pubgCards.seo.description.trim() ||
       "Free PUBG Mobile sensitivity calculator for camera, ADS, and gyroscope. Get custom no-recoil presets matched to your device and play style.",
     url: toCanonicalUrl("/pubg"),
     reviews: mapReviews(pubgTestimonials),
   });
   const freefireToolLd = toolAppReviewSchema({
     baseUrl,
-    name: ffCfg.title,
-    description: ffCfg.seoDescription,
+    name: homeCards.hero.title.trim() || ffCfg.title,
+    description: homeCards.seo.description.trim() || ffCfg.seoDescription,
     url: toCanonicalUrl("/"),
     reviews: mapReviews(freefireTestimonials),
   });
@@ -122,10 +135,10 @@ export default async function GamesLayout({ children }: { children: React.ReactN
       {children}
       <main className="page-container">
         <ClientErrorBoundary label="Official patch">
-          <FfOfficialPatchStrip />
+          <FfOfficialPatchStrip homeContent={homeCards.patchStrip} />
         </ClientErrorBoundary>
         <ClientErrorBoundary label="Play modes">
-          <FfPlayModeChips />
+          <FfPlayModeChips homeContent={homeCards.playModes} />
         </ClientErrorBoundary>
         {adPlaces.home.home_above_calculator ? <AdSlot slotKey="home_above_calculator" /> : null}
         <ClientErrorBoundary label="Calculator">
@@ -142,31 +155,31 @@ export default async function GamesLayout({ children }: { children: React.ReactN
           />
         </ClientErrorBoundary>
         <ClientErrorBoundary label="Next update">
-          <FfNextUpdateCard />
+          <FfNextUpdateCard homeContent={homeCards.nextUpdate} />
         </ClientErrorBoundary>
         <ClientErrorBoundary label="Advance Server">
-          <FfAdvanceServerCard />
+          <FfAdvanceServerCard homeContent={homeCards.advanceServer} />
         </ClientErrorBoundary>
         <ClientErrorBoundary label="Role tips">
-          <FfRoleTips />
+          <FfRoleTips homeContent={homeCards.roleTips} />
         </ClientErrorBoundary>
         <ClientErrorBoundary label="Season event">
-          <FfSeasonBanner />
+          <FfSeasonBanner homeContent={homeCards.season} />
         </ClientErrorBoundary>
         <ClientErrorBoundary label="Pro tips">
-          <FfProTips />
+          <FfProTips homeContent={homeCards.proTips} />
         </ClientErrorBoundary>
         <ClientErrorBoundary label="News hub">
           <FfNewsHub items={homeNewsItems} total={homeNews.total} />
         </ClientErrorBoundary>
         <ClientErrorBoundary label="How it works">
-          <HowItWorksSection />
+          <HowItWorksSection homeContent={homeCards.howItWorks} />
         </ClientErrorBoundary>
         <ClientErrorBoundary label="Comparison tables">
-          <FfComparisonTables />
+          <FfComparisonTables homeContent={homeCards.comparison} />
         </ClientErrorBoundary>
         <ClientErrorBoundary label="Explore calculators">
-          <FfExploreCards />
+          <FfExploreCards homeContent={homeCards.explore} />
         </ClientErrorBoundary>
       </main>
       <GamePathJsonLd
@@ -184,7 +197,7 @@ export default async function GamesLayout({ children }: { children: React.ReactN
           freefireFaqItems={freefireFaqItems}
           bgmiArticleHtml={bgmiArticleHtml}
           pubgArticleHtml={pubgArticleHtml}
-          freefireArticleHtml={ffCfg.defaultArticleHtml}
+          freefireArticleHtml={freefireArticleHtml ?? ffCfg.defaultArticleHtml}
         />
       </ClientErrorBoundary>
       <SiteFooter settings={settings} />

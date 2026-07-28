@@ -4,19 +4,28 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { FF_ADVANCE_SERVER, FF_MAX_ADVANCE_SERVER } from "@/src/lib/ffAdvanceServer";
 import { FREE_FIRE_MAX_PATH } from "@/src/lib/freeFirePages";
+import type { FfHomeFeatureCard } from "@/src/lib/homeCardsTypes";
+
+type Props = {
+  homeContent?: FfHomeFeatureCard;
+};
 
 /**
  * Advance Server OB55 guide card — SEO copy + bullets.
  * APK CTA opens official Garena portal only (noopener).
  * Home = Free Fire copy; Max page = Free Fire Max copy.
  */
-export function FfAdvanceServerCard() {
+export function FfAdvanceServerCard({ homeContent }: Props) {
   const pathname = usePathname() ?? "";
   const isHome = pathname === "/" || pathname === "";
   const isMax = pathname === FREE_FIRE_MAX_PATH;
   if (!isHome && !isMax) return null;
 
-  const adv = isMax ? FF_MAX_ADVANCE_SERVER : FF_ADVANCE_SERVER;
+  const adv =
+    homeContent ??
+    (isMax
+      ? { ...FF_MAX_ADVANCE_SERVER, features: [...FF_MAX_ADVANCE_SERVER.features] }
+      : { ...FF_ADVANCE_SERVER, features: [...FF_ADVANCE_SERVER.features] });
 
   return (
     <section className="ff-advance" aria-labelledby="ff-advance-title">
@@ -49,7 +58,7 @@ export function FfAdvanceServerCard() {
         <div className="ff-advance-actions">
           <a
             className="ff-advance-btn ff-advance-btn--primary"
-            href={adv.officialUrl}
+            href={adv.officialUrl || FF_ADVANCE_SERVER.officialUrl}
             target="_blank"
             rel="noopener noreferrer"
           >

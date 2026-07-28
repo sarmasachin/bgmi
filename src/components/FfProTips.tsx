@@ -2,6 +2,7 @@
 
 import { usePathname } from "next/navigation";
 import { FREE_FIRE_MAX_PATH } from "@/src/lib/freeFirePages";
+import type { FfHomeProTips } from "@/src/lib/homeCardsTypes";
 
 type ProTip = {
   id: string;
@@ -37,7 +38,6 @@ const PRO_TIPS: ProTip[] = [
   },
 ];
 
-/** Max-only — graphics load / heat / don’t copy classic FF. */
 const MAX_PRO_TIPS: ProTip[] = [
   {
     id: "stable-fps",
@@ -65,16 +65,31 @@ const MAX_PRO_TIPS: ProTip[] = [
   },
 ];
 
+type Props = {
+  homeContent?: FfHomeProTips;
+};
+
 /**
  * Pro tips — home Free Fire copy; Max page Free Fire Max copy.
  */
-export function FfProTips() {
+export function FfProTips({ homeContent }: Props) {
   const pathname = usePathname() ?? "";
   const isHome = pathname === "/" || pathname === "";
   const isMax = pathname === FREE_FIRE_MAX_PATH;
   if (!isHome && !isMax) return null;
 
-  const tips = isMax ? MAX_PRO_TIPS : PRO_TIPS;
+  const title =
+    homeContent?.title ??
+    (isMax ? "Pro tips for Free Fire Max aim" : "Pro tips for better aim");
+  const lead =
+    homeContent?.lead ??
+    (isMax
+      ? "Practical Max habits — graphics, heat, and sensi that actually stick in ranked."
+      : "Practice-first habits that help any sensi stick — no team logos, just usable advice.");
+  const ctaLabel =
+    homeContent?.ctaLabel ??
+    (isMax ? "Apply Max sensi in calculator" : "Apply sensi in calculator");
+  const tips = homeContent?.items ?? (isMax ? MAX_PRO_TIPS : PRO_TIPS);
 
   function goToCalculator() {
     document.getElementById("ff-calculator")?.scrollIntoView({
@@ -86,13 +101,9 @@ export function FfProTips() {
   return (
     <section className="ff-pro-tips" aria-labelledby="ff-pro-tips-title">
       <h2 id="ff-pro-tips-title" className="ff-pro-tips-title">
-        {isMax ? "Pro tips for Free Fire Max aim" : "Pro tips for better aim"}
+        {title}
       </h2>
-      <p className="ff-pro-tips-lead">
-        {isMax
-          ? "Practical Max habits — graphics, heat, and sensi that actually stick in ranked."
-          : "Practice-first habits that help any sensi stick — no team logos, just usable advice."}
-      </p>
+      <p className="ff-pro-tips-lead">{lead}</p>
       <div className="ff-pro-tips-grid">
         {tips.map((card) => (
           <article key={card.id} className="ff-pro-tip-card">
@@ -105,7 +116,7 @@ export function FfProTips() {
         ))}
       </div>
       <button type="button" className="ff-pro-tips-cta" onClick={goToCalculator}>
-        {isMax ? "Apply Max sensi in calculator" : "Apply sensi in calculator"}
+        {ctaLabel}
         <i className="fa-solid fa-arrow-up" aria-hidden />
       </button>
     </section>

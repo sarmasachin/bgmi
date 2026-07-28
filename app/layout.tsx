@@ -11,7 +11,8 @@ import {
 } from "@/src/lib/headSnippets";
 import { getSiteUrl } from "@/src/lib/siteUrl";
 import { DEFAULT_OG_IMAGE_PATH } from "@/src/lib/socialMeta";
-import { getHeadSnippets } from "@/src/server/repositories/settingsRepository";
+import { defaultSeoSettings } from "@/src/lib/siteSettings";
+import { getHeadSnippets, getSettings } from "@/src/server/repositories/settingsRepository";
 import "./globals.css";
 
 /* Limit downloaded axis pressure; swap keeps text visible for LCP */
@@ -29,34 +30,45 @@ export const viewport: Viewport = {
   colorScheme: "dark",
 };
 
+function seoString(value: unknown, fallback: string): string {
+  if (typeof value !== "string") return fallback;
+  const trimmed = value.trim();
+  return trimmed || fallback;
+}
+
+function seoKeywords(value: unknown): string[] {
+  if (!Array.isArray(value)) return defaultSeoSettings.keywords;
+  const list = value
+    .map((item) => (typeof item === "string" ? item.trim() : ""))
+    .filter(Boolean);
+  return list.length ? list : defaultSeoSettings.keywords;
+}
+
 export async function generateMetadata(): Promise<Metadata> {
   const baseUrl = getSiteUrl();
-  const snippets = await getHeadSnippets();
+  const [snippets, settings] = await Promise.all([getHeadSnippets(), getSettings()]);
   const googleFromAdmin = parseGoogleSiteVerification(snippets.googleVerificationMeta);
   const googleFromEnv = parseGoogleSiteVerification(process.env.GOOGLE_SITE_VERIFICATION);
   const google = googleFromAdmin || googleFromEnv;
+  const seo = settings.seo ?? {};
+  const siteTitle = seoString(seo.siteTitle, defaultSeoSettings.siteTitle);
+  const defaultTitle = seoString(seo.defaultTitle, defaultSeoSettings.defaultTitle);
+  const titleTemplate = seoString(seo.titleTemplate, defaultSeoSettings.titleTemplate);
+  const description = seoString(seo.metaDescription, defaultSeoSettings.metaDescription);
+  const keywords = seoKeywords(seo.keywords);
 
   return {
     metadataBase: new URL(baseUrl),
     title: {
-      default: "Free Fire, BGMI & PUBG Sensitivity Calculator | Sensitivity Settings",
-      template: "%s | Sensitivity Settings",
+      default: defaultTitle,
+      template: titleTemplate,
     },
-    description:
-      "Free Fire, BGMI, and PUBG Mobile sensitivity calculator with custom settings, pro presets, and gaming news.",
-    applicationName: "Sensitivity Settings",
-    keywords: [
-      "Free Fire sensitivity calculator",
-      "Free Fire Max sensitivity",
-      "BGMI sensitivity calculator",
-      "BGMI no recoil",
-      "PUBG Mobile sensitivity",
-      "gyroscope settings",
-      "ADS sensitivity",
-    ],
-    authors: [{ name: "Sensitivity Settings", url: baseUrl }],
-    creator: "Sensitivity Settings",
-    publisher: "Sensitivity Settings",
+    description,
+    applicationName: siteTitle,
+    keywords,
+    authors: [{ name: siteTitle, url: baseUrl }],
+    creator: siteTitle,
+    publisher: siteTitle,
     robots: {
       index: true,
       follow: true,
@@ -75,14 +87,14 @@ export async function generateMetadata(): Promise<Metadata> {
     manifest: "/manifest.webmanifest",
     openGraph: {
       type: "website",
-      siteName: "Sensitivity Settings",
+      siteName: siteTitle,
       locale: "en_US",
       images: [
         {
           url: DEFAULT_OG_IMAGE_PATH,
           width: 1200,
           height: 630,
-          alt: "Free Fire, BGMI and PUBG Sensitivity Calculator",
+          alt: defaultTitle,
         },
       ],
     },

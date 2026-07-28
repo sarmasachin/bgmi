@@ -4,6 +4,10 @@ import Link from "next/link";
 import { FormEvent, useEffect, useState } from "react";
 import { useAdminFlash } from "@/src/components/admin/AdminToast";
 import { readApiError } from "@/src/lib/userFacingError";
+import {
+  GAME_ARTICLE_GAMES,
+  type GameArticleGame,
+} from "@/src/lib/gameArticleGames";
 
 function EditorBootSkeleton({ html }: { html?: string }) {
   return (
@@ -20,25 +24,49 @@ function EditorBootSkeleton({ html }: { html?: string }) {
   );
 }
 
-type Game = "bgmi" | "pubg";
+type Game = GameArticleGame;
 
 type InitialData = {
   bgmiHtml: string;
   pubgHtml: string;
+  freefireHtml: string;
+  freefireMaxHtml: string;
+  pubgMobileCodesHtml: string;
   bgmiUsingDefault: boolean;
   pubgUsingDefault: boolean;
+  freefireUsingDefault: boolean;
+  freefireMaxUsingDefault: boolean;
+  pubgMobileCodesUsingDefault: boolean;
 };
 
 type Props = {
   initialData?: InitialData;
 };
 
+function labelFor(game: Game) {
+  return GAME_ARTICLE_GAMES.find((g) => g.id === game)?.label ?? game;
+}
+
+function previewFor(game: Game) {
+  return GAME_ARTICLE_GAMES.find((g) => g.id === game)?.previewPath ?? "/";
+}
+
 export default function AdminGameArticlesClient({ initialData }: Props) {
-  const [game, setGame] = useState<Game>("bgmi");
-  const [bgmiHtml, setBgmiHtml] = useState(initialData?.bgmiHtml ?? "");
-  const [pubgHtml, setPubgHtml] = useState(initialData?.pubgHtml ?? "");
-  const [bgmiDefault, setBgmiDefault] = useState(initialData?.bgmiUsingDefault ?? true);
-  const [pubgDefault, setPubgDefault] = useState(initialData?.pubgUsingDefault ?? true);
+  const [game, setGame] = useState<Game>("freefire");
+  const [htmlByGame, setHtmlByGame] = useState<Record<Game, string>>({
+    bgmi: initialData?.bgmiHtml ?? "",
+    pubg: initialData?.pubgHtml ?? "",
+    freefire: initialData?.freefireHtml ?? "",
+    "freefire-max": initialData?.freefireMaxHtml ?? "",
+    "pubg-mobile-codes": initialData?.pubgMobileCodesHtml ?? "",
+  });
+  const [defaultByGame, setDefaultByGame] = useState<Record<Game, boolean>>({
+    bgmi: initialData?.bgmiUsingDefault ?? true,
+    pubg: initialData?.pubgUsingDefault ?? true,
+    freefire: initialData?.freefireUsingDefault ?? true,
+    "freefire-max": initialData?.freefireMaxUsingDefault ?? true,
+    "pubg-mobile-codes": initialData?.pubgMobileCodesUsingDefault ?? true,
+  });
   const [editorNonce, setEditorNonce] = useState(0);
   const [loading, setLoading] = useState(initialData === undefined);
   const [saving, setSaving] = useState(false);
@@ -47,8 +75,8 @@ export default function AdminGameArticlesClient({ initialData }: Props) {
   );
   const setMessage = useAdminFlash();
 
-  const html = game === "bgmi" ? bgmiHtml : pubgHtml;
-  const usingDefault = game === "bgmi" ? bgmiDefault : pubgDefault;
+  const html = htmlByGame[game];
+  const usingDefault = defaultByGame[game];
 
   useEffect(() => {
     let cancelled = false;
@@ -59,6 +87,24 @@ export default function AdminGameArticlesClient({ initialData }: Props) {
       cancelled = true;
     };
   }, []);
+
+  function applyData(data: InitialData) {
+    setHtmlByGame({
+      bgmi: data.bgmiHtml,
+      pubg: data.pubgHtml,
+      freefire: data.freefireHtml,
+      "freefire-max": data.freefireMaxHtml,
+      "pubg-mobile-codes": data.pubgMobileCodesHtml,
+    });
+    setDefaultByGame({
+      bgmi: data.bgmiUsingDefault,
+      pubg: data.pubgUsingDefault,
+      freefire: data.freefireUsingDefault,
+      "freefire-max": data.freefireMaxUsingDefault,
+      "pubg-mobile-codes": data.pubgMobileCodesUsingDefault,
+    });
+    setEditorNonce((n) => n + 1);
+  }
 
   async function load() {
     setLoading(true);
@@ -72,13 +118,7 @@ export default function AdminGameArticlesClient({ initialData }: Props) {
         return;
       }
       const json = (await res.json()) as { data?: InitialData };
-      if (json.data) {
-        setBgmiHtml(json.data.bgmiHtml);
-        setPubgHtml(json.data.pubgHtml);
-        setBgmiDefault(json.data.bgmiUsingDefault);
-        setPubgDefault(json.data.pubgUsingDefault);
-        setEditorNonce((n) => n + 1);
-      }
+      if (json.data) applyData(json.data);
     } catch {
       setMessage("Network error. Please retry.");
     } finally {
@@ -92,8 +132,7 @@ export default function AdminGameArticlesClient({ initialData }: Props) {
   }, [initialData]);
 
   function setHtml(value: string) {
-    if (game === "bgmi") setBgmiHtml(value);
-    else setPubgHtml(value);
+    setHtmlByGame((prev) => ({ ...prev, [game]: value }));
   }
 
   function switchGame(next: Game) {
@@ -118,17 +157,12 @@ export default function AdminGameArticlesClient({ initialData }: Props) {
         return;
       }
       const json = (await res.json()) as { usingDefault?: boolean; html?: string };
-      if (game === "bgmi") {
-        setBgmiHtml(json.html ?? "");
-        setBgmiDefault(Boolean(json.usingDefault));
-      } else {
-        setPubgHtml(json.html ?? "");
-        setPubgDefault(Boolean(json.usingDefault));
-      }
+      setHtmlByGame((prev) => ({ ...prev, [game]: json.html ?? "" }));
+      setDefaultByGame((prev) => ({ ...prev, [game]: Boolean(json.usingDefault) }));
       setMessage(
         json.usingDefault
-          ? `${game === "bgmi" ? "BGMI" : "PUBG Mobile"} article cleared — site will show the built-in default.`
-          : `${game === "bgmi" ? "BGMI" : "PUBG Mobile"} article saved.`,
+          ? `${labelFor(game)} article cleared — site will show the built-in default.`
+          : `${labelFor(game)} article saved.`,
       );
     } catch {
       setMessage("Network error. Please retry.");
@@ -139,7 +173,6 @@ export default function AdminGameArticlesClient({ initialData }: Props) {
 
   async function clearToDefault() {
     if (!window.confirm("Clear custom article and use the built-in default on the site?")) return;
-    setHtml("");
     setSaving(true);
     try {
       const res = await fetch("/api/admin/game-articles", {
@@ -152,13 +185,9 @@ export default function AdminGameArticlesClient({ initialData }: Props) {
         setMessage(await readApiError(res, "Could not clear article."));
         return;
       }
-      if (game === "bgmi") {
-        setBgmiHtml("");
-        setBgmiDefault(true);
-      } else {
-        setPubgHtml("");
-        setPubgDefault(true);
-      }
+      const json = (await res.json()) as { usingDefault?: boolean; html?: string };
+      setHtmlByGame((prev) => ({ ...prev, [game]: json.html ?? "" }));
+      setDefaultByGame((prev) => ({ ...prev, [game]: Boolean(json.usingDefault) }));
       setEditorNonce((n) => n + 1);
       setMessage("Reverted to built-in default article.");
     } catch {
@@ -178,33 +207,25 @@ export default function AdminGameArticlesClient({ initialData }: Props) {
       </div>
 
       <p style={{ color: "#94a3b8", marginTop: 0, maxWidth: 720 }}>
-        Edit the long guide article under the calculator on <strong>BGMI</strong> (/) and{" "}
-        <strong>PUBG Mobile</strong> (/pubg). FAQ cards are still managed in{" "}
+        Edit the long guide article under the calculator for each game. FAQ cards are managed in{" "}
         <Link href="/admin/game-faqs" style={{ color: "var(--primary)" }}>
           Game FAQs
-        </Link>
-        . Free Fire articles:{" "}
-        <Link href="/admin/pages" style={{ color: "var(--primary)" }}>
-          Pages
         </Link>
         .
       </p>
 
-      <div className="admin-news-actions-wrap" style={{ gap: 8, marginBottom: 16 }}>
-        <button
-          type="button"
-          className={`admin-news-btn ${game === "bgmi" ? "admin-news-btn-primary" : "admin-news-btn-edit"}`}
-          onClick={() => switchGame("bgmi")}
-        >
-          BGMI article
-        </button>
-        <button
-          type="button"
-          className={`admin-news-btn ${game === "pubg" ? "admin-news-btn-primary" : "admin-news-btn-edit"}`}
-          onClick={() => switchGame("pubg")}
-        >
-          PUBG Mobile article
-        </button>
+      <div className="admin-news-actions-wrap" style={{ gap: 8, marginBottom: 16, flexWrap: "wrap" }}>
+        {GAME_ARTICLE_GAMES.map((item) => (
+          <button
+            key={item.id}
+            type="button"
+            className={`admin-news-btn ${game === item.id ? "admin-news-btn-primary" : "admin-news-btn-edit"}`}
+            onClick={() => switchGame(item.id)}
+            style={{ whiteSpace: "nowrap" }}
+          >
+            {item.label} article
+          </button>
+        ))}
       </div>
 
       {loading ? (
@@ -230,7 +251,7 @@ export default function AdminGameArticlesClient({ initialData }: Props) {
 
           <div className="admin-news-actions-wrap" style={{ marginTop: 14, gap: 8 }}>
             <button type="submit" className="admin-news-btn admin-news-btn-primary" disabled={saving}>
-              {saving ? "Saving…" : `Save ${game === "bgmi" ? "BGMI" : "PUBG"} article`}
+              {saving ? "Saving…" : `Save ${labelFor(game)} article`}
             </button>
             <button
               type="button"
@@ -242,7 +263,7 @@ export default function AdminGameArticlesClient({ initialData }: Props) {
             </button>
             <a
               className="admin-news-btn admin-news-btn-edit"
-              href={game === "bgmi" ? "/" : "/pubg"}
+              href={previewFor(game)}
               target="_blank"
               rel="noreferrer"
               style={{ display: "inline-flex", alignItems: "center" }}

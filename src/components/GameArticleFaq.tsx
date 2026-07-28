@@ -46,7 +46,7 @@ export function GameArticleFaq({
     <ArticleFaqContent
       wrapperClassName="light-content--after-home-calculator"
       faqItems={faqItems}
-      game={game === "freefire" ? "bgmi" : game}
+      game={game === "pubg" ? "pubg" : "bgmi"}
       articleHtml={articleHtml}
     />
   );

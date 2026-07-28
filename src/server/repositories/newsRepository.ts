@@ -5,6 +5,7 @@ import { prisma, tryPrisma } from "@/src/server/dbSafe";
 import { sanitizeHtml } from "@/src/lib/sanitizeHtml";
 import { toCanonicalUrl } from "@/src/lib/siteUrl";
 import { extractNewsHtml, extractNewsMeta, type NewsMeta } from "@/src/lib/newsContent";
+import { bumpSitemapLastmod } from "@/src/server/repositories/sitemapLastmodRepository";
 
 export type { NewsMeta };
 export { extractNewsHtml, extractNewsMeta };
@@ -260,7 +261,10 @@ export async function createNews(input: NewsInput) {
       },
     }),
   );
-  if (dbResult) return dbResult;
+  if (dbResult) {
+    bumpSitemapLastmod(["/news"]);
+    return dbResult;
+  }
 
   const item = {
     id: `n${Date.now()}`,
@@ -274,6 +278,7 @@ export async function createNews(input: NewsInput) {
     content,
   };
   mockStore.news.unshift(item);
+  bumpSitemapLastmod(["/news"]);
   return item;
 }
 
@@ -292,7 +297,10 @@ export async function updateNewsStatus(id: string, status: string) {
       data: { status, publishedAt: nextPublishedAt },
     });
   });
-  if (dbResult) return dbResult;
+  if (dbResult) {
+    bumpSitemapLastmod(["/news"]);
+    return dbResult;
+  }
 
   const item = mockStore.news.find((news) => news.id === id);
   if (!item) return null;
@@ -303,6 +311,7 @@ export async function updateNewsStatus(id: string, status: string) {
     delete (item as { publishedAt?: string }).publishedAt;
   }
   item.status = status;
+  bumpSitemapLastmod(["/news"]);
   return item;
 }
 
@@ -344,7 +353,10 @@ export async function updateNews(
       },
     });
   });
-  if (dbResult) return dbResult;
+  if (dbResult) {
+    bumpSitemapLastmod(["/news"]);
+    return dbResult;
+  }
 
   const item = mockStore.news.find((news) => news.id === input.id);
   if (!item) return null;
@@ -362,6 +374,7 @@ export async function updateNews(
   if (input.status) {
     item.status = input.status;
   }
+  bumpSitemapLastmod(["/news"]);
   return item;
 }
 

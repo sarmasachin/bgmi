@@ -8,13 +8,18 @@ import {
   type HomeFaqItem,
 } from "@/src/server/repositories/homeFaqRepository";
 import { getHeadSnippets, getSettings } from "@/src/server/repositories/settingsRepository";
+import { defaultSeoSettings } from "@/src/lib/siteSettings";
 
 export type AdminSettingsLink = { label: string; href: string };
 
 export type AdminSettingsPageData = {
   headerSiteTitle: string;
   homeHeroTitle: string;
+  siteTitle: string;
+  defaultTitle: string;
   titleTemplate: string;
+  metaDescription: string;
+  keywords: string[];
   googleVerification: string;
   analyticsScript: string;
   adsenseScript: string;
@@ -50,13 +55,34 @@ export async function prefetchAdminSettingsPageData(): Promise<AdminSettingsPage
     showShareRail?: boolean;
   };
 
+  const seo = settings.seo as Record<string, unknown>;
+  const keywordsRaw = seo.keywords;
+  const keywords = Array.isArray(keywordsRaw)
+    ? keywordsRaw
+        .map((item) => (typeof item === "string" ? item.trim() : ""))
+        .filter(Boolean)
+    : defaultSeoSettings.keywords;
+
   return {
     headerSiteTitle: settings.homeDisplay.headerTitle,
     homeHeroTitle: settings.homeDisplay.heroTitle,
+    siteTitle:
+      typeof seo.siteTitle === "string" && seo.siteTitle.trim()
+        ? seo.siteTitle.trim()
+        : defaultSeoSettings.siteTitle,
+    defaultTitle:
+      typeof seo.defaultTitle === "string" && seo.defaultTitle.trim()
+        ? seo.defaultTitle.trim()
+        : defaultSeoSettings.defaultTitle,
     titleTemplate:
-      typeof settings.seo.titleTemplate === "string"
-        ? settings.seo.titleTemplate
-        : "%s | SENS MASTER PRO",
+      typeof seo.titleTemplate === "string" && seo.titleTemplate.trim()
+        ? seo.titleTemplate.trim()
+        : defaultSeoSettings.titleTemplate,
+    metaDescription:
+      typeof seo.metaDescription === "string" && seo.metaDescription.trim()
+        ? seo.metaDescription.trim()
+        : defaultSeoSettings.metaDescription,
+    keywords,
     googleVerification: snippets.googleVerificationMeta ?? "",
     analyticsScript: snippets.analyticsScript ?? "",
     adsenseScript: snippets.adsenseScript ?? "",

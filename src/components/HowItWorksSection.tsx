@@ -1,6 +1,7 @@
 "use client";
 
 import { usePathname } from "next/navigation";
+import type { FfHomeHowItWorks } from "@/src/lib/homeCardsTypes";
 
 type Step = {
   title: string;
@@ -86,25 +87,32 @@ const BGMI_STEPS: Step[] = [
   },
 ];
 
-export function HowItWorksSection() {
+type Props = {
+  homeContent?: FfHomeHowItWorks;
+};
+
+export function HowItWorksSection({ homeContent }: Props) {
   const pathname = usePathname() ?? "";
   const isPubg = pathname === "/pubg" || pathname.startsWith("/pubg/");
   const isBgmi = pathname === "/bgmi" || pathname.startsWith("/bgmi/");
-  const steps = isPubg || isBgmi ? BGMI_STEPS : FF_STEPS;
+  const isHomeFf = !isPubg && !isBgmi;
+
+  const steps = isPubg || isBgmi ? BGMI_STEPS : (homeContent?.steps ?? FF_STEPS);
+  const title = isHomeFf ? (homeContent?.title ?? "How It Works") : "How It Works";
   const subtitle =
     isPubg || isBgmi
       ? "Get your pro sensitivity in just 4 simple steps."
-      : "Get your Free Fire pro settings in just 4 simple steps.";
+      : (homeContent?.subtitle ?? "Get your Free Fire pro settings in just 4 simple steps.");
 
   return (
     <section className="how-works" aria-labelledby="how-works-title">
-<h2 id="how-works-title" className="how-works-title">
-        How It Works
+      <h2 id="how-works-title" className="how-works-title">
+        {title}
       </h2>
       <p className="how-works-subtitle">{subtitle}</p>
       <ol className="how-works-grid">
         {steps.map((step, index) => (
-          <li key={step.title} className="how-works-card">
+          <li key={`${step.title}-${index}`} className="how-works-card">
             <span className="how-works-num" aria-hidden>
               {index + 1}
             </span>

@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { FREE_FIRE_MAX_PATH } from "@/src/lib/freeFirePages";
+import type { FfHomeComparison } from "@/src/lib/homeCardsTypes";
 
 const VS_ROWS: Array<{
   icon: string;
@@ -182,20 +183,36 @@ const MAX_RAM_ROWS: Array<{
  * Free Fire vs FF Max comparison + RAM table.
  * Home keeps classic FF RAM table; Max page uses Max ranges + Max-first compare copy.
  */
-export function FfComparisonTables() {
+export function FfComparisonTables({ homeContent }: { homeContent?: FfHomeComparison }) {
   const pathname = usePathname() ?? "";
   const isHome = pathname === "/" || pathname === "";
   const isMax = pathname === FREE_FIRE_MAX_PATH;
   if (!isHome && !isMax) return null;
 
-  const vsRows = isMax ? MAX_VS_ROWS : VS_ROWS;
-  const ramRows = isMax ? MAX_RAM_ROWS : RAM_ROWS;
+  const vsRows = homeContent?.vsRows ?? (isMax ? MAX_VS_ROWS : VS_ROWS);
+  const ramRows = homeContent?.ramRows ?? (isMax ? MAX_RAM_ROWS : RAM_ROWS);
+  const title =
+    homeContent?.title ?? (isMax ? "Free Fire Max vs Free Fire" : "Free Fire vs FF Max");
+  const ramTitle =
+    homeContent?.ramTitle ??
+    (isMax ? "RAM-wise Free Fire Max sensitivity" : "RAM-wise Free Fire sensitivity");
+  const note =
+    homeContent?.note ??
+    (isMax
+      ? "Tip: On Max, if FPS dips in fights, keep General a bit higher — then fine-tune in Training Ground."
+      : "Tip: Lower RAM → keep sensitivity a bit higher. High-end phones usually need slightly lower values.");
+  const ctaBeforeLink =
+    homeContent?.ctaBeforeLink ??
+    (isMax ? "Still on classic Free Fire?" : "Playing Max?");
+  const ctaLinkLabel =
+    homeContent?.ctaLinkLabel ??
+    (isMax ? "Open Free Fire calculator" : "Open Free Fire Max calculator");
+  const ctaHref = homeContent?.ctaHref ?? (isMax ? "/#ff-calculator" : FREE_FIRE_MAX_PATH);
 
   return (
     <section className="ff-compare" aria-labelledby="ff-compare-title">
       <h2 id="ff-compare-title" className="ff-compare-title">
-        <i className="fa-solid fa-table" aria-hidden />{" "}
-        {isMax ? "Free Fire Max vs Free Fire" : "Free Fire vs FF Max"}
+        <i className="fa-solid fa-table" aria-hidden /> {title}
       </h2>
 
       <div className="ff-compare-table-wrap">
@@ -228,22 +245,11 @@ export function FfComparisonTables() {
       </div>
 
       <p className="ff-compare-cta">
-        {isMax ? (
-          <>
-            Still on classic Free Fire?{" "}
-            <Link href="/#ff-calculator">Open Free Fire calculator</Link>
-          </>
-        ) : (
-          <>
-            Playing Max?{" "}
-            <Link href={FREE_FIRE_MAX_PATH}>Open Free Fire Max calculator</Link>
-          </>
-        )}
+        {ctaBeforeLink} <Link href={ctaHref}>{ctaLinkLabel}</Link>
       </p>
 
       <h3 className="ff-compare-subtitle">
-        <i className="fa-solid fa-memory" aria-hidden />{" "}
-        {isMax ? "RAM-wise Free Fire Max sensitivity" : "RAM-wise Free Fire sensitivity"}
+        <i className="fa-solid fa-memory" aria-hidden /> {ramTitle}
       </h3>
 
       <div className="ff-compare-table-wrap ff-compare-table-wrap--scroll">
@@ -280,10 +286,7 @@ export function FfComparisonTables() {
       </div>
 
       <p className="ff-compare-note">
-        <i className="fa-solid fa-circle-info" aria-hidden />{" "}
-        {isMax
-          ? "Tip: On Max, if FPS dips in fights, keep General a bit higher — then fine-tune in Training Ground."
-          : "Tip: Lower RAM → keep sensitivity a bit higher. High-end phones usually need slightly lower values."}
+        <i className="fa-solid fa-circle-info" aria-hidden /> {note}
       </p>
     </section>
   );
