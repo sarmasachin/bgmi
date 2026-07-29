@@ -2096,6 +2096,14 @@ footer,
     inset 0 1px 0 rgba(255, 255, 255, 0.04);
   mask-image: linear-gradient(90deg, transparent, #000 8%, #000 92%, transparent);
   -webkit-mask-image: linear-gradient(90deg, transparent, #000 8%, #000 92%, transparent);
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.testimonials-marquee-viewport::-webkit-scrollbar {
+  display: none;
+  width: 0;
+  height: 0;
 }
 
 .testimonials-marquee-track {
@@ -2116,22 +2124,33 @@ footer,
   animation-play-state: paused;
 }
 
-/* <3 reviews: centered static row — keep full card size (no 50% shrink) */
+/* <3 reviews: clean centered row — no outer box, no scrollbar, no clipped cards */
 .testimonials-marquee-viewport.is-static {
   display: flex;
   justify-content: center;
+  align-items: stretch;
+  overflow: visible;
+  border: none;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
   mask-image: none;
   -webkit-mask-image: none;
-  overflow-x: auto;
-  overflow-y: hidden;
 }
 
 .testimonials-marquee-track.is-static {
   animation: none;
   flex-wrap: nowrap;
   width: max-content;
-  max-width: none;
-  justify-content: flex-start;
+  max-width: 100%;
+  justify-content: center;
+  padding: 2px 0;
+  box-sizing: border-box;
+}
+
+.testimonials-marquee-viewport.is-static .testimonials-marquee-card {
+  width: min(300px, calc(50vw - 28px));
+  min-width: min(260px, 72vw);
 }
 
 @keyframes testimonials-rtl {
@@ -2219,14 +2238,15 @@ footer,
 
 .testimonials-marquee-message {
   margin: 0 0 8px;
-  font-size: 12px;
-  line-height: 1.45;
-  color: #d5dde8;
+  font-size: 13px;
+  line-height: 1.5;
+  color: #e6edf3;
   display: -webkit-box;
-  -webkit-line-clamp: 3;
+  -webkit-line-clamp: 4;
   -webkit-box-orient: vertical;
   overflow: hidden;
   min-height: 0;
+  word-break: break-word;
 }
 
 .testimonials-marquee-meta {
@@ -2266,22 +2286,32 @@ footer,
     margin-bottom: 16px;
   }
 
-  /* Keep cards in one horizontal row (never stack). 3+ uses CSS marquee animation. */
   .testimonials-marquee-card {
-    width: min(260px, 78vw);
+    width: min(280px, 82vw);
   }
 
   .testimonials-marquee-viewport.is-static {
-    overflow-x: auto;
-    overflow-y: hidden;
+    overflow: visible;
   }
 
   .testimonials-marquee-track.is-static {
     flex-direction: row;
     flex-wrap: nowrap;
-    width: max-content;
-    max-width: none;
-    justify-content: flex-start;
+    width: 100%;
+    max-width: 100%;
+    justify-content: center;
+    gap: 10px;
+    padding: 0;
+  }
+
+  .testimonials-marquee-viewport.is-static .testimonials-marquee-card {
+    width: min(280px, calc(50% - 8px));
+    min-width: 0;
+    flex: 1 1 0;
+  }
+
+  .testimonials-marquee-message {
+    font-size: 13px;
   }
 }
 
