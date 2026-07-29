@@ -28,7 +28,11 @@ export function NotifyOptIn() {
           tags: ["email-subscribe", ...detectPushTags()],
         }),
       });
-      const json = (await res.json().catch(() => ({}))) as { error?: string };
+      const json = (await res.json().catch(() => ({}))) as {
+        error?: string;
+        emailSent?: boolean;
+        emailError?: string;
+      };
       if (!res.ok) {
         setEmailMsg(
           json.error ||
@@ -38,7 +42,15 @@ export function NotifyOptIn() {
         );
         return;
       }
-      setEmailMsg("Email subscribed for campaigns.");
+      if (json.emailSent === false) {
+        setEmailMsg(
+          json.emailError
+            ? `Subscribed, but welcome email failed: ${json.emailError}`
+            : "Subscribed, but welcome email was not sent.",
+        );
+      } else {
+        setEmailMsg("Subscribed. Check your inbox for a welcome email.");
+      }
       setEmail("");
     } catch {
       setEmailMsg("Network error. Please retry.");
@@ -48,7 +60,7 @@ export function NotifyOptIn() {
   }
 
   return (
-    <aside className={styles.wrap} aria-label="Email updates">
+    <aside className={styles.wrap} aria-label="Campaign email signup">
       <form className={styles.email} onSubmit={(e) => void subscribeEmail(e)}>
         <input
           type="email"
