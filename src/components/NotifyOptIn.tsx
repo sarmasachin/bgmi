@@ -49,7 +49,7 @@ export function NotifyOptIn() {
             : "Subscribed, but welcome email was not sent.",
         );
       } else {
-        setEmailMsg("Subscribed. Check your inbox for a welcome email.");
+        setEmailMsg("Subscribed.");
       }
       setEmail("");
     } catch {
