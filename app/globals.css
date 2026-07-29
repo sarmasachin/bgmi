@@ -2062,6 +2062,7 @@ footer,
 
 .testimonials-marquee-head {
   margin-bottom: 8px;
+  text-align: center;
 }
 
 .testimonials-marquee-title {
@@ -2070,6 +2071,7 @@ footer,
   font-weight: 800;
   letter-spacing: 0.03em;
   color: var(--primary);
+  text-align: center;
 }
 
 .testimonials-marquee-lead {
@@ -2114,21 +2116,27 @@ footer,
   animation-play-state: paused;
 }
 
+/* <3 reviews: centered static row — no manual horizontal scroll */
 .testimonials-marquee-viewport.is-static {
   display: flex;
   justify-content: center;
   mask-image: none;
   -webkit-mask-image: none;
-  overflow-x: auto;
-  overflow-y: hidden;
+  overflow: hidden;
 }
 
 .testimonials-marquee-track.is-static {
   animation: none;
-  flex-wrap: nowrap;
-  width: max-content;
-  max-width: none;
-  justify-content: flex-start;
+  flex-wrap: wrap;
+  width: 100%;
+  max-width: 100%;
+  justify-content: center;
+  box-sizing: border-box;
+}
+
+.testimonials-marquee-viewport.is-static .testimonials-marquee-card {
+  width: min(260px, calc(50% - 18px));
+  max-width: 100%;
 }
 
 @keyframes testimonials-rtl {
