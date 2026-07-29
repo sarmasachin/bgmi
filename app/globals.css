@@ -2056,12 +2056,12 @@ footer,
 .testimonials-marquee {
   width: 95%;
   max-width: 1100px;
-  margin: 4px auto 12px;
+  margin: 16px auto 16px;
   box-sizing: border-box;
 }
 
 .testimonials-marquee-head {
-  margin-bottom: 8px;
+  margin-bottom: 0;
   text-align: center;
 }
 
@@ -2124,7 +2124,7 @@ footer,
   animation-play-state: paused;
 }
 
-/* <3 reviews: clean centered row — no outer box, no scrollbar, no clipped cards */
+/* <3 reviews: horizontal row, no outer chrome */
 .testimonials-marquee-viewport.is-static {
   display: flex;
   justify-content: center;
@@ -2140,10 +2140,12 @@ footer,
 
 .testimonials-marquee-track.is-static {
   animation: none;
+  flex-direction: row;
   flex-wrap: nowrap;
   width: max-content;
   max-width: 100%;
   justify-content: center;
+  gap: 12px;
   padding: 2px 0;
   box-sizing: border-box;
 }
@@ -2291,23 +2293,33 @@ footer,
   }
 
   .testimonials-marquee-viewport.is-static {
-    overflow: visible;
+    justify-content: flex-start;
+    overflow-x: auto;
+    overflow-y: hidden;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
+
+  .testimonials-marquee-viewport.is-static::-webkit-scrollbar {
+    display: none;
+    height: 0;
   }
 
   .testimonials-marquee-track.is-static {
     flex-direction: row;
     flex-wrap: nowrap;
-    width: 100%;
-    max-width: 100%;
-    justify-content: center;
+    width: max-content;
+    max-width: none;
+    justify-content: flex-start;
     gap: 10px;
     padding: 0;
   }
 
   .testimonials-marquee-viewport.is-static .testimonials-marquee-card {
-    width: min(280px, calc(50% - 8px));
-    min-width: 0;
-    flex: 1 1 0;
+    width: min(300px, calc(50vw - 28px));
+    min-width: min(260px, 72vw);
+    flex: 0 0 auto;
   }
 
   .testimonials-marquee-message {

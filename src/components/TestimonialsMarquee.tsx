@@ -99,7 +99,6 @@ export function TestimonialsMarquee({ game, initialItems }: Props) {
   return (
     <section className="testimonials-marquee" aria-label={`${gameLabel} player reviews`}>
       <div className="testimonials-marquee-head">
-        <h2 className="testimonials-marquee-title">Player reviews</h2>
       </div>
 
       <div
