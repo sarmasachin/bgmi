@@ -358,6 +358,141 @@ export function buildReportSolvedEmailHtml(input: { name: string; subject: strin
 }
 
 /**
+ * Professional welcome email after footer / email campaign subscribe.
+ */
+export function buildEmailSubscribeThankYouEmailHtml(input?: { email?: string }) {
+  const year = new Date().getFullYear();
+  const safeEmail = escapeEmailHtml((input?.email ?? "").trim().toLowerCase());
+
+  return {
+    subject: "You're subscribed — Sensitivity Settings",
+    html: `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="color-scheme" content="light" />
+  <title>You're subscribed</title>
+</head>
+<body style="margin:0;padding:0;background:#e8edf3;font-family:Arial,Helvetica,sans-serif;-webkit-font-smoothing:antialiased;">
+  <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="background:#e8edf3;padding:32px 14px;">
+    <tr>
+      <td align="center">
+        <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="max-width:580px;border-radius:18px;overflow:hidden;border:1px solid #d5dee8;background:#ffffff;box-shadow:0 12px 40px rgba(15,23,42,0.08);">
+          <tr>
+            <td style="background:#0b1220;padding:0;">
+              <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0">
+                <tr>
+                  <td style="padding:30px 32px 26px;">
+                    <p style="margin:0;font-size:11px;letter-spacing:0.22em;text-transform:uppercase;color:#5eead4;font-weight:700;">
+                      Sensitivity Settings
+                    </p>
+                    <p style="margin:12px 0 0;font-size:26px;line-height:1.25;color:#f8fafc;font-weight:800;">
+                      Welcome aboard
+                    </p>
+                    <p style="margin:8px 0 0;font-size:14px;line-height:1.5;color:#94a3b8;">
+                      Subscription confirmed
+                    </p>
+                  </td>
+                </tr>
+                <tr>
+                  <td style="height:3px;background:#2dd4bf;font-size:0;line-height:0;">&nbsp;</td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+
+          <tr>
+            <td style="padding:32px 32px 8px;background:#ffffff;">
+              <p style="margin:0 0 14px;font-size:15px;line-height:1.65;color:#475569;">
+                Thank you for subscribing. You’re now on our official updates list — we’ll send useful sensitivity tips, calculator improvements, and important site news when they matter.
+              </p>
+            </td>
+          </tr>
+
+          <tr>
+            <td style="padding:8px 32px 10px;background:#ffffff;">
+              <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="background:#f0fdfa;border:1px solid #99f6e4;border-radius:14px;">
+                <tr>
+                  <td style="padding:18px 20px;">
+                    <p style="margin:0 0 6px;font-size:11px;letter-spacing:0.12em;text-transform:uppercase;color:#0f766e;font-weight:800;">
+                      Subscribed email
+                    </p>
+                    <p style="margin:0;font-size:16px;line-height:1.45;color:#042f2e;font-weight:700;">
+                      ${safeEmail || "your inbox"}
+                    </p>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+
+          <tr>
+            <td style="padding:16px 32px 8px;background:#ffffff;">
+              <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="border:1px solid #e2e8f0;border-radius:14px;background:#f8fafc;">
+                <tr>
+                  <td style="padding:16px 18px 6px;font-size:12px;letter-spacing:0.1em;text-transform:uppercase;color:#64748b;font-weight:800;">
+                    What you’ll get
+                  </td>
+                </tr>
+                <tr>
+                  <td style="padding:4px 18px 14px;">
+                    <p style="margin:0 0 8px;font-size:14px;line-height:1.55;color:#334155;">• Sensitivity &amp; calculator updates</p>
+                    <p style="margin:0 0 8px;font-size:14px;line-height:1.55;color:#334155;">• Useful tips for Free Fire, BGMI &amp; more</p>
+                    <p style="margin:0;font-size:14px;line-height:1.55;color:#334155;">• Occasional product news — no spam</p>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+
+          <tr>
+            <td style="padding:18px 32px 10px;background:#ffffff;">
+              <p style="margin:0 0 14px;font-size:14px;line-height:1.65;color:#64748b;">
+                Need help anytime? Write to
+                <a href="mailto:${SUPPORT_EMAIL}" style="color:#0f766e;font-weight:700;text-decoration:none;">${SUPPORT_EMAIL}</a>.
+              </p>
+              <table role="presentation" cellspacing="0" cellpadding="0" border="0" style="margin:4px 0 0;">
+                <tr>
+                  <td align="center" style="background:#0b1220;border-radius:999px;padding:12px 22px;">
+                    <a href="${SITE_URL}" style="display:inline-block;font-size:13px;font-weight:800;letter-spacing:0.04em;color:#f8fafc;text-decoration:none;">
+                      Visit Sensitivity Settings
+                    </a>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+
+          <tr>
+            <td style="padding:18px 32px 28px;background:#ffffff;">
+              <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:12px;">
+                <tr>
+                  <td style="padding:14px 16px;font-size:13px;line-height:1.55;color:#64748b;">
+                    This is an automated confirmation from Sensitivity Settings. If you didn’t subscribe, reply to this email and we’ll remove you.
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+
+          <tr>
+            <td style="padding:16px 32px 22px;background:#f8fafc;border-top:1px solid #eef2f7;text-align:center;">
+              <p style="margin:0;font-size:12px;line-height:1.5;color:#94a3b8;">
+                © ${year} Sensitivity Settings · <a href="${SITE_URL}" style="color:#94a3b8;text-decoration:none;">sensitivitysettings.com</a>
+              </p>
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>`.trim(),
+  };
+}
+
+/**
  * Thank-you after homepage star rating.
  * Intentionally has NO feedback invite / “come back later” CTA — only confirmation.
  */

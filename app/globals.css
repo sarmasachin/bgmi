@@ -2134,11 +2134,6 @@ footer,
   box-sizing: border-box;
 }
 
-.testimonials-marquee-viewport.is-static .testimonials-marquee-card {
-  width: min(260px, calc(50% - 18px));
-  max-width: 100%;
-}
-
 @keyframes testimonials-rtl {
   from {
     transform: translateX(0);
