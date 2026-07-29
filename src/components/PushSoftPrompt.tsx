@@ -61,7 +61,8 @@ export function PushSoftPrompt() {
         })();
       };
       // Defer off the first interaction window (helps INP); same sync logic.
-      if ("requestIdleCallback" in window) {
+      // Use typeof (not `in`) so TS does not narrow `window` to `never` in else.
+      if (typeof window.requestIdleCallback === "function") {
         window.requestIdleCallback(sync, { timeout: 4000 });
       } else {
         window.setTimeout(sync, 2000);
