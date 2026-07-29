@@ -41,22 +41,30 @@ export async function POST(request: NextRequest) {
       reactivate: true,
     });
 
-    // Background thank-you — never block the success response.
-    void (async () => {
-      try {
-        const mail = buildEmailSubscribeThankYouEmailHtml({ email });
-        const result = await sendEmail(email, mail.subject, mail.html, {
-          replyTo: SUPPORT_EMAIL,
-        });
-        if (!result.sent) {
-          console.warn("[subscribe-email] thank-you email not sent:", result.reason);
-        }
-      } catch (err) {
-        console.error("[subscribe-email] thank-you email failed:", err);
+    // Await send so PM2/Node does not drop the mail after the response is returned.
+    let emailSent = false;
+    let emailError: string | undefined;
+    try {
+      const mail = buildEmailSubscribeThankYouEmailHtml({ email });
+      const result = await sendEmail(email, mail.subject, mail.html, {
+        replyTo: SUPPORT_EMAIL,
+      });
+      emailSent = result.sent === true;
+      if (!result.sent) {
+        emailError = result.reason || "not sent";
+        console.warn("[subscribe-email] thank-you email not sent:", result.reason);
       }
-    })();
+    } catch (err) {
+      emailError = err instanceof Error ? err.message : "send failed";
+      console.error("[subscribe-email] thank-you email failed:", err);
+    }
 
-    return NextResponse.json({ ok: true, subscribed: true });
+    return NextResponse.json({
+      ok: true,
+      subscribed: true,
+      emailSent,
+      ...(emailError ? { emailError } : {}),
+    });
   } catch (error) {
     const unavailable = error instanceof Error && error.message === "DB_UNAVAILABLE";
     return NextResponse.json(
