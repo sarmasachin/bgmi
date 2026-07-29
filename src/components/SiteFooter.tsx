@@ -131,7 +131,6 @@ export async function SiteFooter({ settings: settingsProp }: SiteFooterProps = {
           </div>
 
           <div className="site-footer-subscribe">
-            <p className="site-footer-col-title">Email updates</p>
             <NotifyOptIn />
           </div>
 
