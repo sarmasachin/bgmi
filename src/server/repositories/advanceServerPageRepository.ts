@@ -115,7 +115,7 @@ export function normalizeAdvanceServerPage(raw: unknown): FfAdvanceServerPageCon
 
   /** Soft-migrate old APK / short / soft-guide titles to the current hero title. */
   const looksLikeLegacyTitle =
-    /apk\s*download|download\s*apk|fan-made info guide|Advance Server Guide \| What It Is|^FREE FIRE ADVANCE SERVER$/i.test(
+    /apk\s*download|download\s*apk|fan-made info guide|Advance Server Guide \| What It Is|FREE FIRE ADVANCE SERVER/i.test(
       `${seoTitleRaw} ${heroTitleRaw}`,
     );
   const hasPublisherUrl = /garena\.com|ff-advance\.ff|Official Garena/i.test(JSON.stringify(raw));

@@ -10,8 +10,8 @@ export const FREE_FIRE_ADVANCE_SERVER_PAGE_KEY = "free-fire-advance-server";
 export const FF_ADVANCE_SERVER_PAGE: FfAdvanceServerPageContent = {
   path: FREE_FIRE_ADVANCE_SERVER_PATH,
   title: "Free Fire Advance Server",
-  heroTitle: "FREE FIRE ADVANCE SERVER, FF & FF Max ADVANCE SERVER",
-  seoTitle: "FREE FIRE ADVANCE SERVER, FF & FF Max ADVANCE SERVER",
+  heroTitle: "FF & FF Max ADVANCE SERVER",
+  seoTitle: "FF & FF Max ADVANCE SERVER",
   seoDescription:
     "Free Fire Advance Server OB55 Download APK: FF Advance server Register, Download OB55 APK Update, and Get Activation Code. OB55 APK Download available — free fire advance server download apk new version & FF advance server update apk.",
   seoKeywords: [
