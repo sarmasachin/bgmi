@@ -558,11 +558,10 @@ export function getDefaultBgmiCards(): FfHomeCards {
     ...home,
     seo: {
       description:
-        "Free BGMI sensitivity calculator for camera, ADS, and gyroscope. Generate custom no-recoil settings for your phone, FPS mode, and play style.",
+        "Free BGMI sensitivity calculator for camera, ADS, and gyroscope. Generate custom settings for your phone, FPS mode, and play style.",
       keywords: [
         "BGMI sensitivity calculator",
         "BGMI sensitivity settings",
-        "BGMI no recoil settings",
         "BGMI gyroscope sensitivity",
         "BGMI ADS sensitivity",
         "BGMI camera sensitivity",
@@ -571,7 +570,7 @@ export function getDefaultBgmiCards(): FfHomeCards {
       ],
     },
     hero: {
-      title: "BGMI Sensitivity Calculator | Free No Recoil Settings 2026",
+      title: "BGMI Sensitivity Calculator",
     },
   };
 }
@@ -583,11 +582,10 @@ export function getDefaultPubgCards(): FfHomeCards {
     ...home,
     seo: {
       description:
-        "Free PUBG Mobile sensitivity calculator for camera, ADS, and gyroscope. Get custom no-recoil presets matched to your device and play style.",
+        "Free PUBG Mobile sensitivity calculator for camera, ADS, and gyroscope. Get custom presets matched to your device and play style.",
       keywords: [
         "PUBG Mobile sensitivity calculator",
         "PUBG sensitivity settings",
-        "PUBG no recoil settings",
         "PUBG gyroscope sensitivity",
         "PUBG ADS sensitivity",
         "PUBG camera sensitivity",
@@ -596,7 +594,7 @@ export function getDefaultPubgCards(): FfHomeCards {
       ],
     },
     hero: {
-      title: "PUBG Mobile Sensitivity Calculator | Free No Recoil Settings 2026",
+      title: "PUBG Mobile Sensitivity Calculator",
     },
   };
 }

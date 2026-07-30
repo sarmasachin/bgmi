@@ -93,8 +93,8 @@ export function toolAppReviewSchema(options: {
     "@context": "https://schema.org",
     "@type": "WebApplication",
     name: options.name,
-    applicationCategory: "GameApplication",
-    operatingSystem: "Android, iOS",
+    applicationCategory: "UtilitiesApplication",
+    operatingSystem: "Any",
     url: options.url,
     description: options.description,
     image: absoluteAsset(options.baseUrl, DEFAULT_OG_IMAGE_PATH),
@@ -288,12 +288,13 @@ export function webPageSchema(options: {
   };
 }
 
-/** Soft APK / beta app entity for Advance Server style pages. */
+/** Soft info-only app entity (no downloadUrl / installUrl claims). */
 export function androidApkAppSchema(options: {
   name: string;
   description: string;
   url: string;
-  downloadUrl: string;
+  /** @deprecated Ignored — do not emit download/install URLs. */
+  downloadUrl?: string;
   operatingSystem?: string;
   image?: string | null;
 }) {
@@ -303,7 +304,7 @@ export function androidApkAppSchema(options: {
     name: options.name.trim(),
     description: options.description.trim(),
     url: options.url,
-    applicationCategory: "GameApplication",
+    applicationCategory: "UtilitiesApplication",
     operatingSystem: options.operatingSystem ?? "Android",
     ...(options.image ? { image: options.image } : {}),
     offers: {
@@ -311,7 +312,5 @@ export function androidApkAppSchema(options: {
       price: "0",
       priceCurrency: "INR",
     },
-    downloadUrl: options.downloadUrl,
-    installUrl: options.downloadUrl,
   };
 }

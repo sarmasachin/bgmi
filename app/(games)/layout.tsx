@@ -99,21 +99,19 @@ export default async function GamesLayout({ children }: { children: React.ReactN
   const freefireFaqLd = faqSchema(freefireFaqItems);
   const bgmiToolLd = toolAppReviewSchema({
     baseUrl,
-    name: bgmiCards.hero.title.trim() || "BGMI Sensitivity Calculator | Free No Recoil Settings 2026",
+    name: bgmiCards.hero.title.trim() || "BGMI Sensitivity Calculator",
     description:
       bgmiCards.seo.description.trim() ||
-      "Free BGMI sensitivity calculator for camera, ADS, and gyroscope. Generate custom no-recoil settings for your phone, FPS mode, and play style.",
+      "Free BGMI sensitivity calculator for camera, ADS, and gyroscope. Generate custom settings for your phone, FPS mode, and play style.",
     url: toCanonicalUrl("/bgmi"),
     reviews: mapReviews(bgmiTestimonials),
   });
   const pubgToolLd = toolAppReviewSchema({
     baseUrl,
-    name:
-      pubgCards.hero.title.trim() ||
-      "PUBG Mobile Sensitivity Calculator | Free No Recoil Settings 2026",
+    name: pubgCards.hero.title.trim() || "PUBG Mobile Sensitivity Calculator",
     description:
       pubgCards.seo.description.trim() ||
-      "Free PUBG Mobile sensitivity calculator for camera, ADS, and gyroscope. Get custom no-recoil presets matched to your device and play style.",
+      "Free PUBG Mobile sensitivity calculator for camera, ADS, and gyroscope. Get custom presets matched to your device and play style.",
     url: toCanonicalUrl("/pubg"),
     reviews: mapReviews(pubgTestimonials),
   });

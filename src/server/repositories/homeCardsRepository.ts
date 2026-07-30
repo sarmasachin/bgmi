@@ -58,12 +58,25 @@ export function normalizeFfHomeCards(
   const merged = deepMerge(defaults, raw);
 
   merged.hero.title = sanitizeString(merged.hero?.title, defaults.hero.title) || defaults.hero.title;
+  if (/no\s*recoil/i.test(merged.hero.title)) {
+    merged.hero.title = defaults.hero.title;
+  }
 
-  merged.seo = {
-    description:
-      sanitizeString(merged.seo?.description, defaults.seo.description) || defaults.seo.description,
-    keywords: sanitizeStringList(merged.seo?.keywords, defaults.seo.keywords),
-  };
+  const seoDescription =
+    sanitizeString(merged.seo?.description, defaults.seo.description) || defaults.seo.description;
+  let seoKeywords = sanitizeStringList(merged.seo?.keywords, defaults.seo.keywords);
+  if (/no\s*recoil/i.test(seoDescription)) {
+    merged.seo = {
+      description: defaults.seo.description,
+      keywords: defaults.seo.keywords.filter((k) => !/no\s*recoil/i.test(k)),
+    };
+  } else {
+    seoKeywords = seoKeywords.filter((k) => !/no\s*recoil/i.test(k));
+    merged.seo = {
+      description: seoDescription,
+      keywords: seoKeywords.length ? seoKeywords : defaults.seo.keywords,
+    };
+  }
 
   merged.patchStrip = {
     ...defaults.patchStrip,

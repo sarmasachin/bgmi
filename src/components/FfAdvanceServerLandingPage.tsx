@@ -14,7 +14,6 @@ import { ratingWidgetRemountKey } from "@/src/lib/ratingWidgetKey";
 import {
   breadcrumbListSchema,
   faqSchema,
-  howToSchema,
   webPageSchema,
 } from "@/src/lib/schema";
 import { toCanonicalUrl } from "@/src/lib/siteUrl";
@@ -42,20 +41,12 @@ export async function FfAdvanceServerLandingPage() {
   const canonical = toCanonicalUrl(FREE_FIRE_ADVANCE_SERVER_PATH);
   const homeUrl = toCanonicalUrl("/");
   const ogImageAbs = toCanonicalUrl("/icon.png?v=3");
-  const registerCard = page.cards.find((c) => c.id === "register-download");
 
   const faqLd = faqSchema(faqItems);
   const breadcrumbLd = breadcrumbListSchema([
     { name: "Home", url: homeUrl },
-    { name: "Free Fire Advance Server", url: canonical },
+    { name: "Advance Server", url: canonical },
   ]);
-  const registerHowToLd = registerCard
-    ? howToSchema({
-        name: registerCard.title,
-        description: registerCard.summary,
-        steps: [...registerCard.points],
-      })
-    : null;
   const webPageLd = webPageSchema({
     name: page.seoTitle,
     description: page.seoDescription,
@@ -244,7 +235,7 @@ export async function FfAdvanceServerLandingPage() {
 
       <section className="ff-as-faq" aria-label="Advance Server FAQ">
         <div className="ff-as-faq-inner">
-          <FaqAccordion items={faqItems} title="Free Fire Advance Server FAQ" />
+          <FaqAccordion items={faqItems} title="Advance Server FAQ" />
         </div>
       </section>
 
@@ -281,12 +272,6 @@ export async function FfAdvanceServerLandingPage() {
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbLd) }}
-        />
-      ) : null}
-      {registerHowToLd ? (
-        <script
-          type="application/ld+json"
-          dangerouslySetInnerHTML={{ __html: JSON.stringify(registerHowToLd) }}
         />
       ) : null}
       <script

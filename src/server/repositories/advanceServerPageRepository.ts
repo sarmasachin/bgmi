@@ -118,20 +118,42 @@ export function normalizeAdvanceServerPage(raw: unknown): FfAdvanceServerPageCon
     /apk\s*download|download\s*apk|fan-made info guide|Advance Server Guide \| What It Is|FREE FIRE ADVANCE SERVER/i.test(
       `${seoTitleRaw} ${heroTitleRaw}`,
     );
-  const hasPublisherUrl = /garena\.com|ff-advance\.ff|Official Garena/i.test(JSON.stringify(raw));
+  const rawJson = JSON.stringify(raw);
+  const hasPublisherUrl = /garena\.com|ff-advance\.ff|Official Garena/i.test(rawJson);
+  /** Soft-migrate “how to get / download APK” style copy that looks like a download hub. */
+  const looksLikeLegacyRiskyCopy =
+    /How do I get an activation code|Where do I download the Advance Server APK|How to Download and Install Free Fire Advance Server APK|How to Access Advance Server Activation Code|Get Activation Code|OB55 Download APK|Download APK:/i.test(
+      rawJson,
+    );
   const heroTitle = looksLikeLegacyTitle ? defaults.heroTitle : heroTitleRaw;
   const seoTitle = looksLikeLegacyTitle ? defaults.seoTitle : seoTitleRaw;
-  const useContentDefaults = hasPublisherUrl;
+  const useContentDefaults = hasPublisherUrl || looksLikeLegacyRiskyCopy;
+  const seoDescriptionRaw =
+    sanitizeString(raw.seoDescription, defaults.seoDescription) || defaults.seoDescription;
+  const seoDescription =
+    useContentDefaults || /Download APK|Get Activation Code|OB55 APK Download/i.test(seoDescriptionRaw)
+      ? defaults.seoDescription
+      : seoDescriptionRaw;
+  const seoKeywords = useContentDefaults
+    ? defaults.seoKeywords
+    : sanitizeStringList(raw.seoKeywords, defaults.seoKeywords);
+  const heroImageAltRaw =
+    sanitizeString(raw.heroImageAlt, defaults.heroImageAlt) || defaults.heroImageAlt;
+  const heroImageAlt =
+    useContentDefaults || /APK download/i.test(heroImageAltRaw)
+      ? defaults.heroImageAlt
+      : heroImageAltRaw;
 
   return {
     path: defaults.path,
-    title: sanitizeString(raw.title, defaults.title) || defaults.title,
+    title: useContentDefaults
+      ? defaults.title
+      : sanitizeString(raw.title, defaults.title) || defaults.title,
     heroTitle,
     seoTitle,
-    seoDescription:
-      sanitizeString(raw.seoDescription, defaults.seoDescription) || defaults.seoDescription,
-    seoKeywords: sanitizeStringList(raw.seoKeywords, defaults.seoKeywords),
-    heroImageAlt: sanitizeString(raw.heroImageAlt, defaults.heroImageAlt) || defaults.heroImageAlt,
+    seoDescription,
+    seoKeywords,
+    heroImageAlt,
     subtitleEn,
     apkCta: "",
     officialUrl: "",
@@ -144,14 +166,24 @@ export function normalizeAdvanceServerPage(raw: unknown): FfAdvanceServerPageCon
           return { label: sanitizeString(row.label, def.label) || def.label };
         }),
     countdown: {
-      label:
-        sanitizeString(countdownRaw.label, defaults.countdown.label) || defaults.countdown.label,
+      label: (() => {
+        const label =
+          sanitizeString(countdownRaw.label, defaults.countdown.label) || defaults.countdown.label;
+        return /Free Fire Advance Server Open|Download APK/i.test(label)
+          ? defaults.countdown.label
+          : label;
+      })(),
       targetIso:
         sanitizeString(countdownRaw.targetIso, defaults.countdown.targetIso) ||
         defaults.countdown.targetIso,
-      dateText:
-        sanitizeString(countdownRaw.dateText, defaults.countdown.dateText) ||
-        defaults.countdown.dateText,
+      dateText: (() => {
+        const dateText =
+          sanitizeString(countdownRaw.dateText, defaults.countdown.dateText) ||
+          defaults.countdown.dateText;
+        return useContentDefaults || /Free Fire Next OB55|Download APK/i.test(dateText)
+          ? defaults.countdown.dateText
+          : dateText;
+      })(),
     },
     cards: useContentDefaults
       ? defaults.cards
