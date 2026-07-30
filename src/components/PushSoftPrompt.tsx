@@ -124,7 +124,7 @@ export function PushSoftPrompt() {
         <div className={styles.copy}>
           <p className={styles.title}>Get Update Alerts for Pro Sensi Setting</p>
           <p className={styles.text}>
-            Get Update News, Calculator Update, Premium Free Fire &amp; FF Max Sensitivity Settings
+            Get Update News, Calculator Update, Pro Free Fire &amp; FF Max Sensitivity Settings
           </p>
         </div>
         <div className={styles.actions}>
