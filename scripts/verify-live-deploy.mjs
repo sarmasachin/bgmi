@@ -21,7 +21,7 @@ console.log("=== git ===");
 console.log("HEAD:", sh("git log -1 --oneline"));
 console.log("origin/main:", sh("git log -1 --oneline origin/main"));
 
-console.log("\n=== subscribe API ===");
+console.log("\n=== subscribe API (should be removed) ===");
 const email = `verify-${Date.now()}@example.com`;
 const res = await fetch(`${base}/api/subscribe/email`, {
   method: "POST",
@@ -29,28 +29,19 @@ const res = await fetch(`${base}/api/subscribe/email`, {
   body: JSON.stringify({ email, tags: ["deploy-verify"] }),
 });
 const body = await res.json().catch(() => ({}));
-console.log({ status: res.status, body, email });
-
-const hasEmailSentField = Object.prototype.hasOwnProperty.call(body, "emailSent");
-console.log("\n=== checks ===");
+console.log({ status: res.status, body });
 console.log(
-  hasEmailSentField
-    ? "PASS: new subscribe thank-you code is live (emailSent field present)"
-    : "FAIL: OLD subscribe code still live (no emailSent) — git pull + rebuild + pm2 restart needed",
+  res.status === 404
+    ? "PASS: public email subscribe API is gone"
+    : "FAIL: /api/subscribe/email still responds — remove deploy / rebuild needed",
 );
-
-if (hasEmailSentField && body.emailSent === false) {
-  console.log("WARN: code is new but SMTP failed:", body.emailError || "(no reason)");
-}
-if (hasEmailSentField && body.emailSent === true) {
-  console.log("PASS: welcome email reported sent");
-}
 
 console.log("\n=== homepage footer sniff ===");
 const html = await (await fetch(`${base}/`, { cache: "no-store" })).text();
-const hasTitle = /site-footer-col-title[^>]*>\s*Email updates/i.test(html);
+const hasSubscribe =
+  /Subscribe email|campaign-email|Email updates|site-footer-subscribe/i.test(html);
 console.log(
-  hasTitle
-    ? "FAIL: visible 'Email updates' title still in HTML — old SiteFooter"
-    : "PASS: no visible Email updates title in HTML",
+  hasSubscribe
+    ? "FAIL: footer email subscribe UI still in HTML"
+    : "PASS: no footer email subscribe UI in HTML",
 );

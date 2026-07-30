@@ -1321,22 +1321,6 @@ footer,
   gap: 20px;
 }
 
-.site-footer-subscribe {
-  grid-column: 1 / -1;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 10px;
-  width: 100%;
-  max-width: none;
-  margin: 4px auto 0;
-  text-align: center;
-}
-
-.site-footer-subscribe .site-footer-col-title {
-  text-align: center;
-}
-
 .site-footer-col-title {
   margin: 0;
   font-size: 11px;
@@ -1603,7 +1587,11 @@ footer,
   }
 
   .site-footer-note {
-    display: none;
+    display: block;
+    max-width: none;
+    font-size: 12px;
+    line-height: 1.55;
+    color: #8b98ab;
   }
 
   .site-footer-tagline {
@@ -1680,12 +1668,6 @@ footer,
   }
 
   .site-footer-col--social {
-    grid-column: 1 / -1;
-    align-items: center;
-    text-align: center;
-  }
-
-  .site-footer-subscribe {
     grid-column: 1 / -1;
     align-items: center;
     text-align: center;
@@ -1784,6 +1766,12 @@ footer,
 .rating-widget-email-label {
   font-size: 12px;
   color: #9fb0c8;
+}
+
+.rating-widget-email-optional {
+  font-weight: 500;
+  color: #64748b;
+  text-transform: none;
 }
 
 .rating-widget-email-input {
@@ -6011,11 +5999,49 @@ footer,
 }
 
 .contact-lead {
-  margin: 0 0 24px;
-  max-width: 38ch;
+  margin: 0 0 18px;
+  max-width: 42ch;
   font-size: 15px;
   line-height: 1.65;
   color: #9fb0c8;
+}
+
+.contact-notice {
+  margin: 0 0 22px;
+  padding: 16px 16px 14px;
+  border: 1px solid rgba(148, 163, 184, 0.22);
+  border-radius: 14px;
+  background: rgba(15, 23, 42, 0.55);
+}
+
+.contact-notice--mobile {
+  display: none;
+  margin: 18px 0 0;
+}
+
+.contact-notice-title {
+  margin: 0 0 8px;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: rgba(var(--primary-rgb), 0.92);
+}
+
+.contact-notice-text {
+  margin: 0 0 10px;
+  font-size: 13px;
+  line-height: 1.6;
+  color: #9fb0c8;
+}
+
+.contact-notice-text:last-child {
+  margin-bottom: 0;
+}
+
+.contact-notice-text strong {
+  color: #e2e8f0;
+  font-weight: 700;
 }
 
 .contact-direct {
@@ -6213,6 +6239,14 @@ footer,
 
   .contact-panel {
     padding: 18px 14px 16px;
+  }
+
+  .contact-notice--desktop {
+    display: none;
+  }
+
+  .contact-notice--mobile {
+    display: block;
   }
 }
 
@@ -7124,6 +7158,8 @@ footer,
   font-weight: 800;
   letter-spacing: 0.03em;
   text-transform: uppercase;
+  white-space: nowrap;
+  flex-shrink: 0;
 }
 
 .ff-patch-badge i {
@@ -8058,6 +8094,73 @@ html {
   color: #e5e7eb;
 }
 
+/* News-style article head + feature image (not full-bleed download hero) */
+.ff-as-article-head {
+  width: 100%;
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 20px 16px 8px;
+  box-sizing: border-box;
+}
+
+.ff-as-article-title {
+  margin: 0 0 12px;
+  font-size: clamp(1.45rem, 4.2vw, 2.1rem);
+  font-weight: 800;
+  line-height: 1.25;
+  color: #f8fafc;
+  letter-spacing: 0.01em;
+}
+
+.ff-as-article-sub {
+  margin: 0 0 14px;
+  font-size: clamp(0.95rem, 2.4vw, 1.05rem);
+  font-weight: 500;
+  line-height: 1.55;
+  color: #cbd5e1;
+}
+
+.ff-as-article-head .ff-as-hero-notice {
+  margin: 0 0 16px;
+  max-width: none;
+}
+
+.ff-as-article-head .ff-as-pills {
+  justify-content: center;
+  margin: 0 0 16px;
+}
+
+.ff-as-article-head .ff-as-countdown {
+  margin: 0 auto 18px;
+  text-align: center;
+}
+
+.ff-as-article-head .ff-as-countdown-units {
+  justify-content: center;
+}
+
+.ff-as-article-head .ff-as-countdown-label,
+.ff-as-article-head .ff-as-countdown-date {
+  text-align: center;
+}
+
+.ff-as-feature-image {
+  width: 100%;
+  height: 280px;
+  border-radius: 12px;
+  margin: 0 0 8px;
+  object-fit: cover;
+  display: block;
+  border: 1px solid #243041;
+  background: #141a23;
+}
+
+@media (min-width: 768px) {
+  .ff-as-feature-image {
+    height: 360px;
+  }
+}
+
 .ff-as-hero {
   position: relative;
   flex: 1;
@@ -8257,12 +8360,25 @@ html {
 }
 
 .ff-as-hero-sub {
-  margin: 0 auto 28px;
+  margin: 0 auto 12px;
   max-width: 34rem;
   font-size: clamp(0.95rem, 2.6vw, 1.08rem);
   font-weight: 500;
   line-height: 1.5;
   color: #e5e7eb;
+}
+
+.ff-as-hero-notice {
+  margin: 0 auto 24px;
+  max-width: 34rem;
+  padding: 10px 14px;
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  background: rgba(0, 0, 0, 0.35);
+  font-size: clamp(0.82rem, 2.2vw, 0.92rem);
+  font-weight: 600;
+  line-height: 1.45;
+  color: #fde68a;
 }
 
 .ff-as-apk-btn {
@@ -9057,6 +9173,13 @@ html {
 
 .ff-as-comments-req {
   color: #f87171;
+}
+
+.ff-as-comments-optional {
+  text-transform: none;
+  letter-spacing: 0;
+  font-weight: 500;
+  color: #94a3b8;
 }
 
 .ff-as-comments-field input,

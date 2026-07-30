@@ -1,7 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
 import { FooterShareLinks } from "@/src/components/FooterShareLinks";
-import { NotifyOptIn } from "@/src/components/NotifyOptIn";
 import { ensureFreeFireNavigation } from "@/src/lib/freeFirePages";
 import { ensurePubgMobileCodesNavigation, PUBG_MOBILE_CODES_PATH } from "@/src/lib/pubgMobileCodes";
 import {
@@ -44,7 +43,14 @@ export async function SiteFooter({ settings: settingsProp }: SiteFooterProps = {
   );
 
   const resourceLinks = (() => {
-    const links = [...settings.footerLinks];
+    const isReportOrFeedback = (item: { label: string; href: string }) =>
+      /report\s*issue/i.test(item.label) ||
+      /^feedback$/i.test(item.label.trim()) ||
+      /topic=report/i.test(item.href) ||
+      /topic=feedback/i.test(item.href) ||
+      /report-issue/i.test(item.href);
+
+    const links = settings.footerLinks.filter((item) => !isReportOrFeedback(item));
     const ensure = (label: string, href: string, match: (item: { label: string; href: string }) => boolean) => {
       if (!links.some(match)) links.push({ label, href });
     };
@@ -54,19 +60,6 @@ export async function SiteFooter({ settings: settingsProp }: SiteFooterProps = {
       "Sitemap",
       "/sitemap.xml",
       (item) => /sitemap/i.test(item.label) || /sitemap/i.test(item.href),
-    );
-    ensure(
-      "Report Issue",
-      "/contact?topic=report",
-      (item) =>
-        /report\s*issue/i.test(item.label) ||
-        /topic=report/i.test(item.href) ||
-        /report-issue/i.test(item.href),
-    );
-    ensure(
-      "Feedback",
-      "/contact?topic=feedback",
-      (item) => /feedback/i.test(item.label) || /topic=feedback/i.test(item.href),
     );
     return links;
   })();
@@ -100,7 +93,8 @@ export async function SiteFooter({ settings: settingsProp }: SiteFooterProps = {
             </Link>
             <p className="site-footer-tagline">{tagline}</p>
             <p className="site-footer-note">
-              Fast recoil control, cleaner flicks, and phone-based sensitivity presets.
+              This website is a sensitivity settings calculator tool made by a gamer for gamers.
+              It is a fan-made website. Not affiliated with Garena.
             </p>
           </div>
 
@@ -130,13 +124,9 @@ export async function SiteFooter({ settings: settingsProp }: SiteFooterProps = {
             </ul>
           </div>
 
-          <div className="site-footer-subscribe">
-            <NotifyOptIn />
-          </div>
-
           {showShareLinks ? (
             <div className="site-footer-col site-footer-col--social">
-              <p className="site-footer-col-title">Connect</p>
+              <p className="site-footer-col-title">Follow on</p>
               <FooterShareLinks />
             </div>
           ) : null}

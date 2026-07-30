@@ -50,10 +50,10 @@ export function FfExploreCards({ homeContent }: Props) {
           title: "Explore calculators",
           freefire: {
             title: "Free Fire",
-            text: "Classic Free Fire sensitivity for all RAM phones — headshot, DPI, and drag settings.",
+            text: "Classic Free Fire sensitivity for all RAM phones — DPI and drag-friendly presets.",
             points: [
               "Low & mid-range friendly",
-              "One-tap & drag tuned",
+              "Drag-friendly presets",
               "Instant calculator on home",
             ],
             buttonLabel: "Explore Free Fire",

@@ -10,12 +10,10 @@ export function getDefaultFfHomeCards(): FfHomeCards {
   return {
     seo: {
       description:
-        "Best Free Fire & FF Max sensitivity settings for auto headshots. Get updated FF sensitivity, DPI settings & control layout for all RAM devices (2GB-8GB).",
+        "Free Fire & FF Max sensitivity settings calculator. Get updated sensitivity, DPI settings, and control layout for all RAM devices (2GB–8GB).",
       keywords: [
         "Free Fire sensitivity calculator",
         "Free Fire sensitivity settings",
-        "Free Fire headshot sensitivity",
-        "Free Fire one tap headshot",
         "Free Fire RAM sensitivity",
         "Free Fire DPI settings",
         "Free Fire Red Dot sensitivity",
@@ -23,7 +21,7 @@ export function getDefaultFfHomeCards(): FfHomeCards {
       ],
     },
     hero: {
-      title: "Free Fire & FF Max Sensitivity Settings for headshot",
+      title: "Free Fire & FF Max Sensitivity Settings Calculator",
     },
     patchStrip: {
       code: FF_SITE_PATCH.code,
@@ -93,7 +91,7 @@ export function getDefaultFfHomeCards(): FfHomeCards {
       summary: FF_ADVANCE_SERVER.summary,
       features: [...FF_ADVANCE_SERVER.features],
       note: FF_ADVANCE_SERVER.note,
-      officialUrl: FF_ADVANCE_SERVER.officialUrl,
+      officialUrl: "",
       primaryCta: FF_ADVANCE_SERVER.primaryCta,
       secondaryPath: FF_ADVANCE_SERVER.secondaryPath,
       secondaryCta: FF_ADVANCE_SERVER.secondaryCta,
@@ -107,7 +105,7 @@ export function getDefaultFfHomeCards(): FfHomeCards {
           icon: "fa-person-running",
           tips: [
             "Keep General & Red Dot a bit higher for fast close fights",
-            "Use 2–3 finger claw for quicker drag headshots",
+            "Use 2–3 finger claw for quicker close-range drag",
             "Practice SMG / shotgun sprays in Training Ground first",
           ],
           buttonLabel: "Use Rusher in calculator",
@@ -237,8 +235,8 @@ export function getDefaultFfHomeCards(): FfHomeCards {
         },
         {
           icon: "fa-bullseye",
-          point: "Headshot aim",
-          freefire: "One-tap / drag friendly",
+          point: "Aim control",
+          freefire: "Drag-friendly presets",
           freefireMax: "Slightly heavier aim feel",
         },
         {
@@ -291,10 +289,10 @@ export function getDefaultFfHomeCards(): FfHomeCards {
       title: "Explore calculators",
       freefire: {
         title: "Free Fire",
-        text: "Classic Free Fire sensitivity for all RAM phones — headshot, DPI, and drag settings.",
+        text: "Classic Free Fire sensitivity for all RAM phones — DPI and drag settings.",
         points: [
           "Low & mid-range friendly",
-          "One-tap & drag tuned",
+          "Drag-tuned presets",
           "Instant calculator on home",
         ],
         buttonLabel: "Explore Free Fire",
@@ -321,11 +319,11 @@ export function getDefaultFfMaxCards(): FfHomeCards {
   return {
     seo: {
       description:
-        "Free Fire Max sensitivity calculator for General, Red Dot, 2x, 4x, sniper scope, and free look. Get RAM-based headshot settings for your phone.",
+        "Free Fire Max sensitivity calculator for General, Red Dot, 2x, 4x, sniper scope, and free look. Get RAM-based settings for your phone.",
       keywords: [
         "Free Fire Max sensitivity calculator",
         "Free Fire Max sensitivity settings",
-        "FF Max headshot sensitivity",
+        "FF Max sensitivity settings",
         "Free Fire Max Red Dot sensitivity",
         "Free Fire Max DPI settings",
         "Free Fire Max RAM sensitivity",
@@ -372,7 +370,7 @@ export function getDefaultFfMaxCards(): FfHomeCards {
       summary: FF_MAX_ADVANCE_SERVER.summary,
       features: [...FF_MAX_ADVANCE_SERVER.features],
       note: FF_MAX_ADVANCE_SERVER.note,
-      officialUrl: FF_MAX_ADVANCE_SERVER.officialUrl,
+      officialUrl: "",
       primaryCta: FF_MAX_ADVANCE_SERVER.primaryCta,
       secondaryPath: FF_MAX_ADVANCE_SERVER.secondaryPath,
       secondaryCta: FF_MAX_ADVANCE_SERVER.secondaryCta,

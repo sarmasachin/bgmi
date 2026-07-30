@@ -1,25 +1,23 @@
 /** Built-in /pubg guide — used until admin saves an override. */
 export const DEFAULT_PUBG_ARTICLE_HTML = `
 <h2>
-  PUBG Mobile No-Recoil Sensitivity Settings Calculator: Get a 100% Working Pro Sensitivity
-  Code
+  PUBG Mobile Sensitivity Settings Calculator: Get a Custom Pro Sensitivity Code
 </h2>
 <p>
   Getting a Chicken Dinner in PUBG Mobile is not only about smart strategy — it also depends
-  on precise aim and zero-recoil spray. Have you ever wondered how top pro players and
-  streamers mount a 3x or 4x on an M416 and spray like a laser with almost no shake? The
-  biggest secret is a perfect no-recoil sensitivity profile and a live cloud sensitivity code.
+  on precise aim and controlled spray. Top players often use a tuned sensitivity profile and a
+  live cloud sensitivity code matched to their device.
 </p>
 <p>
-  Our PUBG Mobile No-Recoil Sensitivity Calculator carefully analyzes your device (phone RAM,
-  gaming FPS, player role, and finger setup). It generates the best sensitivity values for
+  Our PUBG Mobile Sensitivity Calculator carefully analyzes your device (phone RAM,
+  gaming FPS, player role, and finger setup). It generates useful sensitivity values for
   your gameplay, plus a 19-digit live Sensitivity Code.
 </p>
 
 <h3>Why do default game presets fail?</h3>
 <p>
   When you install PUBG Mobile, the game offers basic presets like Low, Medium, and High. Those
-  settings usually fail for true no-recoil spray because:
+  settings usually feel off for controlled spray because:
 </p>
 <ul>
   <li>
@@ -28,8 +26,8 @@ export const DEFAULT_PUBG_ARTICLE_HTML = `
   </li>
   <li>
     <b>Player role (playstyle):</b> An aggressive assaulter needs faster movement for
-    close-range fights, while a sniper needs slower, more stable sensitivity to lock long-range
-    headshots.
+    close-range fights, while a sniper needs slower, more stable sensitivity for long-range
+    aim.
   </li>
   <li>
     <b>90 FOV / iPad View:</b> On iPads or tablets, the larger screen and wider FOV change how
@@ -54,10 +52,10 @@ export const DEFAULT_PUBG_ARTICLE_HTML = `
   <li><b>Scope Camera:</b> How fast you set aim after opening a scope, right before you fire.</li>
 </ul>
 
-<h4>2. ADS (Aim Down Sight) Sensitivity (thumb no-recoil control)</h4>
+<h4>2. ADS (Aim Down Sight) Sensitivity (thumb spray control)</h4>
 <p>
   As soon as you press the fire (shoot) button, camera sensitivity stops and ADS sensitivity
-  takes over. For non-gyro players, this is the biggest secret behind no-recoil spray.
+  takes over. For non-gyro players, ADS is the main control for keeping spray on target.
 </p>
 <p>
   <b>How it works:</b> When a gun fires, the barrel climbs upward. To stop that, you pull your
@@ -65,14 +63,14 @@ export const DEFAULT_PUBG_ARTICLE_HTML = `
   place.
 </p>
 
-<h4>3. Gyroscope &amp; Gyro ADS Sensitivity (tilt the phone for no recoil)</h4>
+<h4>3. Gyroscope &amp; Gyro ADS Sensitivity (tilt the phone for recoil control)</h4>
 <p>
   With gyroscope, you do not need to swipe as much on the screen. You can tilt the phone
-  downward to cancel gun recoil and get close to true no-recoil control. Today, more than 90%
+  downward to help manage gun recoil. Today, more than 90%
   of competitive players use Full Gyroscope (often in the 300%–400% range).
 </p>
 
-<h3>Trending PUBG Mobile pro no-recoil sensitivity ranges</h3>
+<h3>Trending PUBG Mobile pro sensitivity ranges</h3>
 <p>
   Our calculator gives exact numbers from your inputs, but current pro-level trends usually
   fall around these ranges:
@@ -100,7 +98,7 @@ export const DEFAULT_PUBG_ARTICLE_HTML = `
   <li>8x Scope: 10% – 13%</li>
 </ul>
 
-<h4>Gyroscope Sensitivity (No-Recoil)</h4>
+<h4>Gyroscope Sensitivity (recoil control)</h4>
 <ul>
   <li>TPP No Scope: 300% – 400%</li>
   <li>Red Dot / Holo: 300% – 400%</li>
@@ -119,7 +117,7 @@ export const DEFAULT_PUBG_ARTICLE_HTML = `
   <li>Copy the Live Generated Sensitivity Code from our calculator.</li>
   <li>Open PUBG Mobile and go to Settings &gt; Sensitivity.</li>
   <li>Open Layout Management, tap Search, and paste the copied 19-digit code.</li>
-  <li>When the code matches, the no-recoil settings apply to your game right away.</li>
+  <li>When the code matches, the new settings apply to your game right away.</li>
 </ul>
 
 <h4>Method 2: Setting percentage (%) numbers manually</h4>

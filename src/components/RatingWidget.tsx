@@ -157,11 +157,11 @@ export function RatingWidget({
       return;
     }
     const trimmed = email.trim();
-    if (!trimmed || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(trimmed)) {
+    if (trimmed && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(trimmed)) {
       setError("Please enter a valid email.");
       return;
     }
-    void submitRating(value, trimmed);
+    void submitRating(value, trimmed || undefined);
   }
 
   if (showUI === null) {
@@ -212,7 +212,7 @@ export function RatingWidget({
       {isHome ? (
         <form className="rating-widget-home-form" onSubmit={onHomeSubmit} noValidate>
           <label className="rating-widget-email-label" htmlFor="home-rating-email">
-            Email
+            Email <span className="rating-widget-email-optional">(optional)</span>
           </label>
           <input
             id="home-rating-email"
@@ -225,7 +225,6 @@ export function RatingWidget({
             value={email}
             disabled={submitting}
             onChange={(e) => setEmail(e.target.value)}
-            required
           />
           <button className="rating-widget-submit" type="submit" disabled={submitting || !value}>
             {submitting ? "Submitting…" : "Submit rating"}

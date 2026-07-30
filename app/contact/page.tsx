@@ -9,66 +9,48 @@ import { getContactSeo } from "@/src/server/repositories/listingSeoRepository";
 import { getSettings } from "@/src/server/repositories/settingsRepository";
 
 const SUPPORT_EMAIL = "support@sensitivitysettings.com";
+const canonical = toCanonicalUrl("/contact");
 
-type ContactTopic = "report" | "feedback" | "general";
+function ContactNotice({ variant }: { variant: "desktop" | "mobile" }) {
+  const cta =
+    variant === "mobile"
+      ? "please contact us using the form above or the email on this page."
+      : "please contact us using the form or email below.";
 
-type Props = {
-  searchParams: Promise<{ topic?: string }>;
-};
-
-function resolveTopic(raw?: string): ContactTopic {
-  const topic = raw?.trim().toLowerCase();
-  if (topic === "report" || topic === "issue") return "report";
-  if (topic === "feedback") return "feedback";
-  return "general";
+  return (
+    <div className={`contact-notice contact-notice--${variant}`} role="note">
+      <p className="contact-notice-title">Please note</p>
+      <p className="contact-notice-text">
+        Sensitivity Settings is a fan-made website and is not a Garena, Free Fire, PUBG
+        Mobile, or BGMI service. We cannot help with game accounts, top-ups, bans, or
+        publisher support.
+      </p>
+      <p className="contact-notice-text">
+        For anything related to <strong>this website</strong> — the calculator, pages, content, or
+        technical issues — {cta}
+      </p>
+    </div>
+  );
 }
 
-function copyForTopic(topic: ContactTopic) {
-  if (topic === "report") {
-    return {
-      eyebrow: "Support",
-      heading: "Report Issue",
-      lead: "Found a bug or something not working? Tell us what happened and we'll look into it.",
-      canonical: toCanonicalUrl("/contact?topic=report"),
-    };
-  }
-  if (topic === "feedback") {
-    return {
-      eyebrow: "Support",
-      heading: "Feedback",
-      lead: "Ideas, suggestions, or thoughts on the site — we'd love to hear from you.",
-      canonical: toCanonicalUrl("/contact?topic=feedback"),
-    };
-  }
+export async function generateMetadata(): Promise<Metadata> {
+  const seo = await getContactSeo();
+  const title = seo.general.title;
+  const description = seo.general.description;
   return {
-    eyebrow: "Support",
-    heading: "Contact us",
-    lead: "Questions, feedback, or help with sensitivity settings — send a message and we'll reply as soon as we can.",
-    canonical: toCanonicalUrl("/contact"),
-  };
-}
-
-export async function generateMetadata({ searchParams }: Props): Promise<Metadata> {
-  const params = await searchParams;
-  const topic = resolveTopic(params.topic);
-  const [copy, seo] = await Promise.all([Promise.resolve(copyForTopic(topic)), getContactSeo()]);
-  const topicSeo = seo[topic];
-  return {
-    title: topicSeo.title,
-    description: topicSeo.description,
-    alternates: { canonical: copy.canonical },
+    title,
+    description,
+    alternates: { canonical },
     ...buildSocialMetadata({
-      title: topicSeo.title,
-      description: topicSeo.description,
-      url: copy.canonical,
+      title,
+      description,
+      url: canonical,
     }),
   };
 }
 
-export default async function ContactPage({ searchParams }: Props) {
-  const [settings, params] = await Promise.all([getSettings(), searchParams]);
-  const topic = resolveTopic(params.topic);
-  const copy = copyForTopic(topic);
+export default async function ContactPage() {
+  const settings = await getSettings();
 
   return (
     <div>
@@ -76,9 +58,14 @@ export default async function ContactPage({ searchParams }: Props) {
       <main className="page-container contact-page">
         <section className="contact-shell">
           <div className="contact-intro">
-            <p className="contact-eyebrow">{copy.eyebrow}</p>
-            <h1 className="contact-title">{copy.heading}</h1>
-            <p className="contact-lead">{copy.lead}</p>
+            <p className="contact-eyebrow">Support</p>
+            <h1 className="contact-title">Contact us</h1>
+            <p className="contact-lead">
+              Have a question about this website or our sensitivity calculator tools? Send us a
+              message and we&apos;ll get back to you as soon as we can.
+            </p>
+
+            <ContactNotice variant="desktop" />
 
             <div className="contact-direct">
               <p className="contact-direct-label">Email</p>
@@ -95,6 +82,7 @@ export default async function ContactPage({ searchParams }: Props) {
             <Suspense fallback={<p className="contact-panel-lead">Loading form…</p>}>
               <ContactForm />
             </Suspense>
+            <ContactNotice variant="mobile" />
           </div>
         </section>
       </main>

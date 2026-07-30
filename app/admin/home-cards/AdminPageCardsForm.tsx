@@ -336,7 +336,7 @@ export function AdminPageCardsForm({
                       ["primaryPath", "Primary path"],
                       ["secondaryCta", "Secondary CTA"],
                       ["secondaryPath", "Secondary path"],
-                      ["officialUrl", "Official URL"],
+                      ["officialUrl", "Publisher URL"],
                     ] as const
                   ).map(([field, label]) => {
                     if (field === "officialUrl" && key !== "advanceServer") return null;

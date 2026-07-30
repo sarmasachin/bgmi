@@ -3,9 +3,9 @@ import { toCanonicalUrl } from "@/src/lib/siteUrl";
 import { buildSocialMetadata } from "@/src/lib/socialMeta";
 import { getFfHomeCards } from "@/src/server/repositories/homeCardsRepository";
 
-const fallbackTitle = "Free Fire & FF Max Sensitivity Settings for headshot";
+const fallbackTitle = "Free Fire & FF Max Sensitivity Settings Calculator";
 const fallbackDescription =
-  "Best Free Fire & FF Max sensitivity settings for auto headshots. Get updated FF sensitivity, DPI settings & control layout for all RAM devices (2GB-8GB).";
+  "Free Fire & FF Max sensitivity settings calculator. Get updated sensitivity, DPI settings, and control layout for all RAM devices (2GB–8GB).";
 const canonical = toCanonicalUrl("/");
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -17,8 +17,6 @@ export async function generateMetadata(): Promise<Metadata> {
     : [
         "Free Fire sensitivity calculator",
         "Free Fire sensitivity settings",
-        "Free Fire headshot sensitivity",
-        "Free Fire one tap headshot",
         "Free Fire RAM sensitivity",
         "Free Fire DPI settings",
         "Free Fire Red Dot sensitivity",
@@ -38,8 +36,8 @@ export async function generateMetadata(): Promise<Metadata> {
       title,
       description,
       url: canonical,
-      image: "/ff/og-freefire.jpg?v=2",
-      imageAlt: "Free Fire sensitivity settings wallpaper",
+      image: "/icon.png?v=3",
+      imageAlt: "Sensitivity Settings calculator",
     }),
   };
 }

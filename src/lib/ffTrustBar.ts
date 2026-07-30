@@ -4,9 +4,9 @@ export type FfTrustBarItem = { label: string; sublabel: string };
 
 export const DEFAULT_FF_TRUST_BAR: FfTrustBarItem[] = [
   { label: "10,000+ Devices", sublabel: "All RAM Phones" },
-  { label: "Auto Headshot Ready", sublabel: "One-Tap Tuned" },
+  { label: "Aim-Friendly Presets", sublabel: "Drag tuned" },
   { label: "100% Free", sublabel: "No Login Needed" },
-  { label: "OB54 Update Ready", sublabel: "DPI + Sensitivity" },
+  { label: "Updated for OB54", sublabel: "DPI + Sensitivity" },
 ];
 
 export const FF_TRUST_BAR_ICONS = [

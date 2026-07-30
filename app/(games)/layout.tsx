@@ -7,9 +7,7 @@ import { HomeHeader } from "@/src/components/HomeHeader";
 import { HowItWorksSection } from "@/src/components/HowItWorksSection";
 import { FfComparisonTables } from "@/src/components/FfComparisonTables";
 import { FfExploreCards } from "@/src/components/FfExploreCards";
-import { FfOfficialPatchStrip } from "@/src/components/FfOfficialPatchStrip";
-import { FfNextUpdateCard } from "@/src/components/FfNextUpdateCard";
-import { FfAdvanceServerCard } from "@/src/components/FfAdvanceServerCard";
+import { FfPatchStrip } from "@/src/components/FfPatchStrip";
 import { FfPlayModeChips } from "@/src/components/FfPlayModeChips";
 import { FfRoleTips } from "@/src/components/FfRoleTips";
 import { FfSeasonBanner } from "@/src/components/FfSeasonBanner";
@@ -134,8 +132,8 @@ export default async function GamesLayout({ children }: { children: React.ReactN
       </ClientErrorBoundary>
       {children}
       <main className="page-container">
-        <ClientErrorBoundary label="Official patch">
-          <FfOfficialPatchStrip homeContent={homeCards.patchStrip} />
+        <ClientErrorBoundary label="Patch strip">
+          <FfPatchStrip homeContent={homeCards.patchStrip} />
         </ClientErrorBoundary>
         <ClientErrorBoundary label="Play modes">
           <FfPlayModeChips homeContent={homeCards.playModes} />
@@ -153,12 +151,6 @@ export default async function GamesLayout({ children }: { children: React.ReactN
             pubgTestimonials={pubgTestimonials}
             freefireTestimonials={freefireTestimonials}
           />
-        </ClientErrorBoundary>
-        <ClientErrorBoundary label="Next update">
-          <FfNextUpdateCard homeContent={homeCards.nextUpdate} />
-        </ClientErrorBoundary>
-        <ClientErrorBoundary label="Advance Server">
-          <FfAdvanceServerCard homeContent={homeCards.advanceServer} />
         </ClientErrorBoundary>
         <ClientErrorBoundary label="Role tips">
           <FfRoleTips homeContent={homeCards.roleTips} />

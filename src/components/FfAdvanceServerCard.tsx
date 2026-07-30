@@ -12,7 +12,7 @@ type Props = {
 
 /**
  * Advance Server OB55 guide card — SEO copy + bullets.
- * APK CTA opens official Garena portal only (noopener).
+ * Primary CTA opens our info page only (no publisher outbound links).
  * Home = Free Fire copy; Max page = Free Fire Max copy.
  */
 export function FfAdvanceServerCard({ homeContent }: Props) {
@@ -56,15 +56,13 @@ export function FfAdvanceServerCard({ homeContent }: Props) {
         {adv.note ? <p className="ff-advance-note">{adv.note}</p> : null}
 
         <div className="ff-advance-actions">
-          <a
+          <Link
             className="ff-advance-btn ff-advance-btn--primary"
-            href={adv.officialUrl || FF_ADVANCE_SERVER.officialUrl}
-            target="_blank"
-            rel="noopener noreferrer"
+            href="/free-fire-advance-server"
           >
             {adv.primaryCta}
-            <i className="fa-solid fa-arrow-up-right-from-square" aria-hidden />
-          </a>
+            <i className="fa-solid fa-arrow-right" aria-hidden />
+          </Link>
           <Link className="ff-advance-btn ff-advance-btn--ghost" href={adv.secondaryPath}>
             {adv.secondaryCta}
           </Link>

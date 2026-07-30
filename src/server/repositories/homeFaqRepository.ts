@@ -48,7 +48,7 @@ export const DEFAULT_PUBG_FAQ: HomeFaqItem[] = [
     id: "pubg-faq-1",
     question: "Can using the sensitivity calculator get my account banned?",
     answer:
-      "Absolutely not. This is not a hack, a 90 FPS config file, or a third-party tool that tampers with the game database. It is only a mathematical utility that helps you set the official in-game options correctly. It is 100% safe.",
+      "Absolutely not. This is not a hack, a 90 FPS config file, or a third-party tool that tampers with the game database. It is only a mathematical utility that helps you set in-game sensitivity options correctly. It is 100% safe.",
   },
   {
     id: "pubg-faq-2",
@@ -154,7 +154,25 @@ export async function getGameFaqItems(game: GameFaqGame): Promise<HomeFaqItem[]>
   if (stale && (game === "freefire" || game === "freefire-max")) {
     return defaults;
   }
-  return parsed;
+  return parsed.map((item) => {
+    if (!/\bofficial\b/i.test(item.answer) && !/\bofficial\b/i.test(item.question)) {
+      return item;
+    }
+    const fromDefault = defaults.find((d) => d.id === item.id);
+    if (fromDefault) return { ...fromDefault };
+    return {
+      ...item,
+      answer: item.answer
+        .replace(/\bthe official in-game options\b/gi, "in-game sensitivity options")
+        .replace(/\bofficial\b/gi, "")
+        .replace(/\s{2,}/g, " ")
+        .trim(),
+      question: item.question
+        .replace(/\bofficial\b/gi, "")
+        .replace(/\s{2,}/g, " ")
+        .trim(),
+    };
+  });
 }
 
 /** FAQ cards on the home page article block (BGMI). */

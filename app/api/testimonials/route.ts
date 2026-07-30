@@ -15,7 +15,10 @@ const SUPPORT_EMAIL = "support@sensitivitysettings.com";
 
 const postSchema = z.object({
   name: z.string().trim().min(1).max(80),
-  email: z.string().trim().email().max(200),
+  email: z.preprocess(
+    (value) => (typeof value === "string" && value.trim() === "" ? undefined : value),
+    z.string().trim().email().max(200).optional(),
+  ),
   rating: z.number().int().min(1).max(5),
   message: z.string().trim().min(2).max(300),
   game: z.enum(["bgmi", "pubg", "freefire", "freefire-max"]),
@@ -68,7 +71,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "Invalid testimonial payload" }, { status: 400 });
   }
 
-  const email = parsed.data.email.trim().toLowerCase();
+  const email = parsed.data.email?.trim().toLowerCase() || null;
   const created = await createTestimonial({
     name: parsed.data.name,
     email,
@@ -83,22 +86,24 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "Database unavailable" }, { status: 503 });
   }
 
-  void trackEmailForCampaigns(email, "testimonial");
+  if (email) {
+    void trackEmailForCampaigns(email, "testimonial");
 
-  // Background thank-you — never block the success response.
-  void (async () => {
-    try {
-      const mail = buildHomeRatingThankYouEmailHtml({ email, value: parsed.data.rating });
-      const result = await sendEmail(email, mail.subject, mail.html, {
-        replyTo: SUPPORT_EMAIL,
-      });
-      if (!result.sent) {
-        console.warn("[testimonials] thank-you email not sent:", result.reason);
+    // Background thank-you — never block the success response.
+    void (async () => {
+      try {
+        const mail = buildHomeRatingThankYouEmailHtml({ email, value: parsed.data.rating });
+        const result = await sendEmail(email, mail.subject, mail.html, {
+          replyTo: SUPPORT_EMAIL,
+        });
+        if (!result.sent) {
+          console.warn("[testimonials] thank-you email not sent:", result.reason);
+        }
+      } catch (err) {
+        console.error("[testimonials] thank-you email failed:", err);
       }
-    } catch (err) {
-      console.error("[testimonials] thank-you email failed:", err);
-    }
-  })();
+    })();
+  }
 
   return NextResponse.json({
     ok: true,

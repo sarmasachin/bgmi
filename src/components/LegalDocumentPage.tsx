@@ -1,6 +1,7 @@
 import { HomeHeader } from "@/src/components/HomeHeader";
 import { SiteFooter } from "@/src/components/SiteFooter";
 import {
+  defaultHtmlForSlug,
   defaultSeoForSlug,
   defaultTitleForSlug,
   isCoreLegalSlug,
@@ -52,7 +53,36 @@ export async function LegalDocumentPage({ slug, softFallback = false }: Props) {
     item?.title?.trim() ||
     defaultTitleForSlug(slug) ||
     "Legal";
-  const html = item ? extractLegalHtml(item.content) : "";
+  const rawHtml = item ? extractLegalHtml(item.content) : "";
+  const legacyDisclaimer =
+    slug === "disclaimer" &&
+    rawHtml.length > 0 &&
+    (/\bofficial\b/i.test(rawHtml) ||
+      (rawHtml.includes("independent fan resource") &&
+        !rawHtml.includes("created by a gamer for other gamers")));
+  const legacyPrivacy =
+    slug === "privacy" &&
+    rawHtml.length > 0 &&
+    (/\bofficial\b/i.test(rawHtml) ||
+      (!rawHtml.includes("What this policy covers") &&
+        (rawHtml.includes("Last updated:") ||
+          rawHtml.includes("We do not sell your personal information") ||
+          rawHtml.includes("Public email newsletter subscribe"))));
+  const legacyTerms =
+    slug === "terms" &&
+    rawHtml.length > 0 &&
+    (/\bofficial\b/i.test(rawHtml) ||
+      (!rawHtml.includes("About the Site") &&
+        (rawHtml.includes("By using Sensitivity Settings") ||
+          rawHtml.includes("Calculator outputs are estimates") ||
+          !rawHtml.includes("Last updated:"))));
+  const html =
+    legacyDisclaimer ||
+    legacyPrivacy ||
+    legacyTerms ||
+    (!rawHtml && softFallback && isCoreLegalSlug(slug))
+      ? defaultHtmlForSlug(slug)
+      : rawHtml;
   const fallbackHtml =
     softFallback && !html
       ? `<p>This page will show content once it is published from the admin Legal Pages section.</p>`

@@ -7,14 +7,15 @@ export const FF_SITE_PATCH = {
   label: "OB54 Update Ready",
   dateLabel: "23 Jun 2026",
   dateIso: "2026-06-23",
-  typeLabel: "Patch Notes",
-  summary: "9th Anniversary update with Skill Boost, Weapon Awakening & match updates.",
+  typeLabel: "FF Update",
+  summary:
+    "Season update is live — if aim feels different, recalculate your sensi and test in Training Ground.",
   /** Primary button → your news article (update slug after you publish). */
   articlePath: "/news",
   /** Secondary button → news list on this site. */
   newsListPath: "/news",
-  primaryCta: "Read Patch notes",
-  secondaryCta: "All patch notes",
+  primaryCta: "See what's new",
+  secondaryCta: "More news",
 } as const;
 
 /** Max page strip — same patch, Max player angle. */
@@ -23,13 +24,13 @@ export const FF_MAX_SITE_PATCH = {
   label: "OB54 on Free Fire Max",
   dateLabel: "23 Jun 2026",
   dateIso: "2026-06-23",
-  typeLabel: "Max Patch Notes",
+  typeLabel: "FF Update",
   summary:
-    "Anniversary content is live on Max too — if drag feels off after the update, recalculate for Max (not classic Free Fire).",
+    "Max players: if drag feels off after the season update, recalculate for Max (not classic Free Fire).",
   articlePath: "/news",
   newsListPath: "/news",
-  primaryCta: "Read Max notes",
-  secondaryCta: "All updates",
+  primaryCta: "See what's new",
+  secondaryCta: "More news",
 } as const;
 
 /** @deprecated use FF_SITE_PATCH */

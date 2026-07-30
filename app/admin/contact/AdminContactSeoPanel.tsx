@@ -14,9 +14,7 @@ type Props = {
 };
 
 const TOPICS: Array<{ id: ContactSeoTopic; label: string }> = [
-  { id: "general", label: "Contact (general)" },
-  { id: "report", label: "Report Issue" },
-  { id: "feedback", label: "Feedback" },
+  { id: "general", label: "Contact" },
 ];
 
 export function AdminContactSeoPanel({ initialSeo }: Props) {

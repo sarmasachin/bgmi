@@ -14,7 +14,7 @@ type Props = {
  * Update strip — CTAs stay on this website (news).
  * Home = Free Fire copy; Max page = Free Fire Max copy.
  */
-export function FfOfficialPatchStrip({ homeContent }: Props) {
+export function FfPatchStrip({ homeContent }: Props) {
   const pathname = usePathname() ?? "";
   const isHome = pathname === "/" || pathname === "";
   const isMax = pathname === FREE_FIRE_MAX_PATH;

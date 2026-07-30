@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 
-/** Default social share image (1200×630) in /public. */
-export const DEFAULT_OG_IMAGE_PATH = "/og-default.png";
+/** Default social share image — site icon (safe, no game promo art). */
+export const DEFAULT_OG_IMAGE_PATH = "/icon.png?v=3";
 
 type SocialShareInput = {
   title: string;
@@ -18,7 +18,7 @@ type SocialShareInput = {
 
 /**
  * Consistent Open Graph + Twitter cards. Always includes an image
- * (falls back to /og-default.png) so shares never miss a preview.
+ * (falls back to /icon.png?v=3) so shares never miss a preview.
  *
  * Note: do not invent hreflang / alternates.languages unless real
  * alternate-language URLs exist (e.g. /en and /hi).

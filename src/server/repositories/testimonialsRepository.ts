@@ -23,7 +23,7 @@ export type TestimonialRecord = {
 
 export type CreateTestimonialInput = {
   name: string;
-  email: string;
+  email?: string | null;
   rating: number;
   message: string;
   game: TestimonialGame;
@@ -44,7 +44,65 @@ export type PublicTestimonial = {
 
 type MockRow = TestimonialRecord;
 
-const mockTestimonials: MockRow[] = [];
+function buildDummyMockTestimonials(): MockRow[] {
+  // Local layout checks when Postgres is unavailable / empty.
+  if (process.env.NODE_ENV === "production") return [];
+  if (process.env.DISABLE_DUMMY_TESTIMONIALS === "1") return [];
+  const now = new Date();
+  const count = Math.min(5, Math.max(1, Number(process.env.DUMMY_TESTIMONIAL_COUNT || "2") || 2));
+  const pool: Omit<MockRow, "id" | "createdAt" | "approvedAt" | "status" | "game">[] = [
+    {
+      name: "Pranjal Thakur",
+      email: "pranjal.dummy@example.com",
+      rating: 5,
+      message: "Best Calculator 💯 working",
+      phoneModel: "Poco X6",
+      showName: true,
+    },
+    {
+      name: "akrambarodi404@gmail.com",
+      email: "akrambarodi404@gmail.com",
+      rating: 5,
+      message: "اريد حساسية خارقة فقط احمر وسريع ومكتملة فقط احر",
+      phoneModel: null,
+      showName: true,
+    },
+    {
+      name: "Rahul Sharma",
+      email: "rahul.dummy@example.com",
+      rating: 5,
+      message: "Sensi presets work well on my Redmi phone. Thanks!",
+      phoneModel: "Redmi Note 13",
+      showName: true,
+    },
+    {
+      name: "Ayesha Khan",
+      email: "ayesha.dummy@example.com",
+      rating: 4,
+      message: "Easy to use Free Fire calculator. Drag feel is good.",
+      phoneModel: "iPhone 13",
+      showName: true,
+    },
+    {
+      name: "Vikram",
+      email: "vikram.dummy@example.com",
+      rating: 5,
+      message: "Finally proper settings for 90 FPS. Working well.",
+      phoneModel: "IQOO Neo 9",
+      showName: true,
+    },
+  ];
+  return pool.slice(0, count).map((item, index) => ({
+    ...item,
+    id: `dummy-ff-${index + 1}`,
+    game: "freefire" as TestimonialGame,
+    status: "approved" as TestimonialStatus,
+    createdAt: now,
+    approvedAt: now,
+  }));
+}
+
+const mockTestimonials: MockRow[] = buildDummyMockTestimonials();
 
 /** Coalesce concurrent identical submits in the same process (double-click race). */
 const inflightCreates = new Map<string, Promise<TestimonialRecord | null>>();
@@ -157,7 +215,7 @@ export async function createTestimonial(
 ): Promise<TestimonialRecord | null> {
   const data = {
     name: displayNameForCreate(input.name),
-    email: input.email.trim().toLowerCase().slice(0, 200),
+    email: input.email?.trim() ? input.email.trim().toLowerCase().slice(0, 200) : null,
     rating: input.rating,
     message: input.message.trim().slice(0, 300),
     game: input.game,

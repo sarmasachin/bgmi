@@ -195,7 +195,7 @@ export default function AdminNotificationsClient({
       <div className="admin-notifications-card">
         <h2>Send Campaign</h2>
         <p style={{ margin: "0 0 12px", opacity: 0.8, fontSize: 13 }}>
-          Push goes to browsers that enabled notifications. Email goes to footer email subscribers.
+          Push goes to browsers that enabled notifications. Email goes to saved email subscribers.
           Segment: <code>all</code>, <code>pc</code>, <code>mobile</code>, <code>android</code>, or{" "}
           <code>ios</code>. Optional link opens when the user taps the notification (e.g.{" "}
           <code>/news/my-post</code>). Leave blank for homepage.

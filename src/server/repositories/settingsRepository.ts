@@ -65,8 +65,6 @@ const defaultSettings = {
     { label: "Terms", href: "/terms" },
     { label: "Disclaimer", href: "/disclaimer" },
     { label: "Contact", href: "/contact" },
-    { label: "Report Issue", href: "/contact?topic=report" },
-    { label: "Feedback", href: "/contact?topic=feedback" },
     { label: "News", href: "/news" },
     { label: "Sitemap", href: "/sitemap.xml" },
   ],
@@ -111,6 +109,12 @@ function normalizeTrustText(input: unknown, fallback: string, max = 60): string 
   return t.slice(0, max);
 }
 
+/** Soft-migrate old cheat-optics trust bar copy to safer defaults. */
+const LEGACY_TRUST_LABELS = new Set([
+  "auto headshot ready",
+  "ob54 update ready",
+]);
+
 export function parseFfTrustBarValue(raw: unknown): FfTrustBarItem[] {
   const defaults = DEFAULT_FF_TRUST_BAR;
   if (!Array.isArray(raw)) return defaults.map((row) => ({ ...row }));
@@ -118,8 +122,12 @@ export function parseFfTrustBarValue(raw: unknown): FfTrustBarItem[] {
     const item = raw[index];
     if (!item || typeof item !== "object") return { ...fallback };
     const rec = item as Record<string, unknown>;
+    const label = normalizeTrustText(rec.label, fallback.label, 48);
+    if (LEGACY_TRUST_LABELS.has(label.toLowerCase())) {
+      return { ...fallback };
+    }
     return {
-      label: normalizeTrustText(rec.label, fallback.label, 48),
+      label,
       sublabel: normalizeTrustText(rec.sublabel, fallback.sublabel, 48),
     };
   });
@@ -178,7 +186,14 @@ export const getSettings = cache(async function getSettings() {
         parseLinkList(map[SETTINGS_KEYS.navigation], defaultSettings.navigation),
       ),
     ),
-    footerLinks: parseLinkList(map[SETTINGS_KEYS.footerLinks], defaultSettings.footerLinks),
+    footerLinks: parseLinkList(map[SETTINGS_KEYS.footerLinks], defaultSettings.footerLinks).filter(
+      (item) =>
+        !/report\s*issue/i.test(item.label) &&
+        !/^feedback$/i.test(item.label) &&
+        !/topic=report/i.test(item.href) &&
+        !/topic=feedback/i.test(item.href) &&
+        !/report-issue/i.test(item.href),
+    ),
     footerCopyright: parseFooterCopyright(map[SETTINGS_KEYS.footerCopyright]),
     footerBranding: parseFooterBrandingValue(map[SETTINGS_KEYS.footerBranding]),
     homeDisplay: parseHomeDisplayValue(map[SETTINGS_KEYS.homeDisplay]),

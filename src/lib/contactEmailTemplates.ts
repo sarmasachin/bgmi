@@ -405,7 +405,7 @@ export function buildEmailSubscribeThankYouEmailHtml(input?: { email?: string })
           <tr>
             <td style="padding:32px 32px 8px;background:#ffffff;">
               <p style="margin:0 0 14px;font-size:15px;line-height:1.65;color:#475569;">
-                Thank you for subscribing. You’re now on our official updates list — we’ll send useful sensitivity tips, calculator improvements, and important site news when they matter.
+                Thank you for subscribing. You’re now on our updates list — we’ll send useful sensitivity tips, calculator improvements, and important site news when they matter.
               </p>
             </td>
           </tr>

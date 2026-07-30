@@ -330,14 +330,14 @@ export function AdminAdvanceServerForm({ page, openIds, onToggle, onPatch }: Pro
           onChange={(subtitleEn) => onPatch((p) => ({ ...p, subtitleEn }))}
         />
         <Field
-          label="APK button label"
+          label="CTA label (unused — no outbound link)"
           value={page.apkCta}
           onChange={(apkCta) => onPatch((p) => ({ ...p, apkCta }))}
         />
         <Field
-          label="Official Garena URL"
+          label="Publisher URL (kept blank — no outbound links)"
           value={page.officialUrl}
-          onChange={(officialUrl) => onPatch((p) => ({ ...p, officialUrl }))}
+          onChange={() => onPatch((p) => ({ ...p, officialUrl: "" }))}
         />
         <Field
           label="Hero image path"

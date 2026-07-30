@@ -21,7 +21,7 @@ const ROLE_TIPS: RoleTip[] = [
     icon: "fa-person-running",
     tips: [
       "Keep General & Red Dot a bit higher for fast close fights",
-      "Use 2–3 finger claw for quicker drag headshots",
+      "Use 2–3 finger claw for quicker close-range drag",
       "Practice SMG / shotgun sprays in Training Ground first",
     ],
     buttonLabel: "Use Rusher in calculator",

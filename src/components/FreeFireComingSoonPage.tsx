@@ -1,10 +1,8 @@
 import { FaqAccordion } from "@/src/components/FaqAccordion";
-import { FfAdvanceServerCard } from "@/src/components/FfAdvanceServerCard";
 import { FfComparisonTables } from "@/src/components/FfComparisonTables";
 import { FfExploreCards } from "@/src/components/FfExploreCards";
 import { FfNewsHub } from "@/src/components/FfNewsHub";
-import { FfNextUpdateCard } from "@/src/components/FfNextUpdateCard";
-import { FfOfficialPatchStrip } from "@/src/components/FfOfficialPatchStrip";
+import { FfPatchStrip } from "@/src/components/FfPatchStrip";
 import { FfProTips } from "@/src/components/FfProTips";
 import { FfRoleTips } from "@/src/components/FfRoleTips";
 import { FfSeasonBanner } from "@/src/components/FfSeasonBanner";
@@ -70,11 +68,8 @@ export async function buildFreeFireMetadata(variant: FreeFireVariant): Promise<M
       title,
       description,
       url: canonical,
-      image: "/ff/og-freefire.jpg?v=2",
-      imageAlt:
-        variant === "freefire-max"
-          ? "Free Fire Max sensitivity settings wallpaper"
-          : "Free Fire sensitivity settings wallpaper",
+      image: "/icon.png?v=3",
+      imageAlt: "Sensitivity Settings calculator",
     }),
   };
 }
@@ -149,7 +144,7 @@ export async function FreeFireComingSoonPage({ variant }: { variant: FreeFireVar
       <HomeHeader siteTitle={settings.homeDisplay.headerTitle} navigation={settings.navigation} />
       <h1 className="main-title ff-gradient-title">{title}</h1>
       <main className="page-container">
-        {variant === "freefire-max" && maxCards ? <FfOfficialPatchStrip homeContent={maxCards.patchStrip} /> : null}
+        {variant === "freefire-max" && maxCards ? <FfPatchStrip homeContent={maxCards.patchStrip} /> : null}
         <div id="ff-calculator" className="ff-calculator-anchor">
           <FfCalculator isMax={variant === "freefire-max"} trustBar={settings.ffTrustBar} />
         </div>
@@ -157,8 +152,6 @@ export async function FreeFireComingSoonPage({ variant }: { variant: FreeFireVar
         <TestimonialForm game={testimonialGame} />
         {variant === "freefire-max" && maxCards ? (
           <>
-            <FfNextUpdateCard homeContent={maxCards.nextUpdate} />
-            <FfAdvanceServerCard homeContent={maxCards.advanceServer} />
             <FfRoleTips homeContent={maxCards.roleTips} />
             <FfSeasonBanner homeContent={maxCards.season} />
             <FfProTips homeContent={maxCards.proTips} />

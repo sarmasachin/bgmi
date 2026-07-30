@@ -18,7 +18,10 @@ const ALLOWED_PAGE_KEYS = new Set([
 const postSchema = z.object({
   pageKey: z.string().trim().min(1).max(120),
   name: z.string().trim().min(1).max(80),
-  email: z.string().trim().email().max(200),
+  email: z
+    .union([z.string().trim().email().max(200), z.literal(""), z.undefined()])
+    .optional()
+    .transform((v) => (typeof v === "string" && v.trim() ? v.trim().toLowerCase() : undefined)),
   message: z.string().trim().min(2).max(1000),
 });
 
@@ -66,7 +69,7 @@ export async function POST(request: NextRequest) {
   const created = await createPageComment({
     pageKey: parsed.data.pageKey,
     name: parsed.data.name,
-    email: parsed.data.email,
+    email: parsed.data.email ?? null,
     message: parsed.data.message,
   });
 
@@ -74,7 +77,9 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "Could not save comment" }, { status: 503 });
   }
 
-  void trackEmailForCampaigns(parsed.data.email, "comment");
+  if (parsed.data.email) {
+    void trackEmailForCampaigns(parsed.data.email, "comment");
+  }
 
   return NextResponse.json({
     ok: true,

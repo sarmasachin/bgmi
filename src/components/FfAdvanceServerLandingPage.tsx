@@ -15,7 +15,6 @@ import {
   breadcrumbListSchema,
   faqSchema,
   howToSchema,
-  androidApkAppSchema,
   webPageSchema,
 } from "@/src/lib/schema";
 import { toCanonicalUrl } from "@/src/lib/siteUrl";
@@ -25,8 +24,8 @@ import { getRatingSummary } from "@/src/server/repositories/ratingSummaryReposit
 import { getSettings } from "@/src/server/repositories/settingsRepository";
 
 /**
- * Free Fire Advance Server landing — hero + one long official APK button.
- * Does not touch BGMI or calculator logic.
+ * Free Fire Advance Server info guide — fan-made only.
+ * No APK hosted and no publisher / Garena outbound links.
  */
 export async function FfAdvanceServerLandingPage() {
   const [settings, page, pageComments, ratingSummary] = await Promise.all([
@@ -42,9 +41,8 @@ export async function FfAdvanceServerLandingPage() {
   }));
   const canonical = toCanonicalUrl(FREE_FIRE_ADVANCE_SERVER_PATH);
   const homeUrl = toCanonicalUrl("/");
-  const heroImageAbs = toCanonicalUrl(page.heroImage);
+  const ogImageAbs = toCanonicalUrl("/icon.png?v=3");
   const registerCard = page.cards.find((c) => c.id === "register-download");
-  const installCard = page.cards.find((c) => c.id === "apk-steps");
 
   const faqLd = faqSchema(faqItems);
   const breadcrumbLd = breadcrumbListSchema([
@@ -58,29 +56,14 @@ export async function FfAdvanceServerLandingPage() {
         steps: [...registerCard.points],
       })
     : null;
-  const installHowToLd = installCard
-    ? howToSchema({
-        name: installCard.title,
-        description: installCard.summary,
-        steps: [...installCard.points],
-      })
-    : null;
   const webPageLd = webPageSchema({
     name: page.seoTitle,
     description: page.seoDescription,
     url: canonical,
-    image: heroImageAbs,
+    image: ogImageAbs,
     dateModified: new Date().toISOString().slice(0, 10),
     keywords: [...page.seoKeywords],
     inLanguage: "en",
-  });
-  const apkAppLd = androidApkAppSchema({
-    name: "Free Fire Advance Server OB55",
-    description: page.seoDescription,
-    url: canonical,
-    downloadUrl: page.officialUrl,
-    operatingSystem: "Android",
-    image: heroImageAbs,
   });
 
   return (
@@ -96,73 +79,36 @@ export async function FfAdvanceServerLandingPage() {
         </ol>
       </nav>
 
-      <section
-        className={`ff-as-hero${page.heroLayout === "split" ? " ff-as-hero--split" : " ff-as-hero--center"}`}
-        aria-labelledby="ff-as-hero-title"
-      >
-        <div
-          className="ff-as-hero-bg"
-          style={{ backgroundImage: `url(${page.heroImage})` }}
-          aria-hidden
+      <header className="ff-as-article-head" aria-labelledby="ff-as-hero-title">
+            <h1 id="ff-as-hero-title" className="ff-as-article-title">
+          {page.heroTitle}
+        </h1>
+        <p className="ff-as-article-sub">{page.subtitleEn}</p>
+
+        <ul className="ff-as-pills" aria-label="Advance Server details">
+          {page.pills.map((pill) => (
+            <li key={pill.label} className="ff-as-pill">
+              {pill.label}
+            </li>
+          ))}
+        </ul>
+
+        <FfAdvanceServerCountdown
+          label={page.countdown.label}
+          targetIso={page.countdown.targetIso}
+          dateText={page.countdown.dateText}
         />
-        <div className="ff-as-hero-overlay" aria-hidden />
 
-        <div className="ff-as-hero-inner">
-          <div className="ff-as-hero-copy">
-            <h1 id="ff-as-hero-title" className="ff-as-hero-title">
-              {page.heroTitle}
-            </h1>
-            <p className="ff-as-hero-sub">{page.subtitleEn}</p>
-
-            <a
-              className="ff-as-apk-btn"
-              href={page.officialUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              <svg
-                className="ff-as-apk-btn-icon"
-                viewBox="0 0 24 24"
-                width="22"
-                height="22"
-                aria-hidden="true"
-                focusable="false"
-              >
-                <path
-                  fill="currentColor"
-                  d="M12 3a1 1 0 0 1 1 1v8.59l2.3-2.3a1 1 0 1 1 1.4 1.42l-4 4a1 1 0 0 1-1.4 0l-4-4a1 1 0 0 1 1.4-1.42L11 12.59V4a1 1 0 0 1 1-1zm-7 13a1 1 0 0 1 1 1v2h12v-2a1 1 0 1 1 2 0v3a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1v-3a1 1 0 0 1 1-1z"
-                />
-              </svg>
-              <span>{page.apkCta}</span>
-            </a>
-
-            <ul className="ff-as-pills" aria-label="Advance Server details">
-              {page.pills.map((pill) => (
-                <li key={pill.label} className="ff-as-pill">
-                  {pill.label}
-                </li>
-              ))}
-            </ul>
-
-            <FfAdvanceServerCountdown
-              label={page.countdown.label}
-              targetIso={page.countdown.targetIso}
-              dateText={page.countdown.dateText}
-            />
-          </div>
-
-          {page.heroLayout === "split" ? (
-            <div className="ff-as-hero-visual">
-              <img
-                className="ff-as-hero-visual-img"
-                src={page.heroImage}
-                alt={page.heroImageAlt}
-                decoding="async"
-              />
-            </div>
-          ) : null}
-        </div>
-      </section>
+        {page.heroImage ? (
+          <img
+            className="ff-as-feature-image"
+            src={page.heroImage}
+            alt={page.heroImageAlt}
+            loading="eager"
+            decoding="async"
+          />
+        ) : null}
+      </header>
 
       <main className="ff-as-main">
         <div className="ff-as-cards">
@@ -343,19 +289,9 @@ export async function FfAdvanceServerLandingPage() {
           dangerouslySetInnerHTML={{ __html: JSON.stringify(registerHowToLd) }}
         />
       ) : null}
-      {installHowToLd ? (
-        <script
-          type="application/ld+json"
-          dangerouslySetInnerHTML={{ __html: JSON.stringify(installHowToLd) }}
-        />
-      ) : null}
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(webPageLd) }}
-      />
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(apkAppLd) }}
       />
 
       <SiteFooter settings={settings} />

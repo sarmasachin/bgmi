@@ -44,8 +44,8 @@ export function PageCommentSection({ pageKey, initialComments = [] }: Props) {
       setError("Please enter your name.");
       return;
     }
-    if (!trimmedEmail || !EMAIL_RE.test(trimmedEmail)) {
-      setError("Please enter a valid email.");
+    if (trimmedEmail && !EMAIL_RE.test(trimmedEmail)) {
+      setError("Please enter a valid email, or leave it blank.");
       return;
     }
     if (trimmedMessage.length < 2) {
@@ -69,7 +69,7 @@ export function PageCommentSection({ pageKey, initialComments = [] }: Props) {
         body: JSON.stringify({
           pageKey,
           name: trimmedName.slice(0, 80),
-          email: trimmedEmail.slice(0, 200),
+          ...(trimmedEmail ? { email: trimmedEmail.slice(0, 200) } : {}),
           message: trimmedMessage.slice(0, 1000),
         }),
       });
@@ -121,13 +121,12 @@ export function PageCommentSection({ pageKey, initialComments = [] }: Props) {
 
           <label className="ff-as-comments-field">
             <span className="ff-as-comments-label">
-              Email <span className="ff-as-comments-req">*</span>
+              Email <span className="ff-as-comments-optional">(optional)</span>
             </span>
             <input
               type="email"
               name="email"
               autoComplete="email"
-              required
               maxLength={200}
               value={email}
               disabled={submitting}

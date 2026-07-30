@@ -280,7 +280,7 @@ export function FfCalculator({ isMax: _isMax = false, trustBar }: Props) {
               <option value="rusher">Rusher</option>
               <option value="sniper">Sniper</option>
               <option value="flanker">Flanker</option>
-              <option value="headshot">One-Tap Headshot</option>
+              <option value="headshot">Precision aim</option>
             </select>
           </div>
 

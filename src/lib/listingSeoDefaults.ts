@@ -12,17 +12,17 @@ export const defaultContactSeo = {
   general: {
     title: "Contact",
     description:
-      "Contact Sensitivity Settings for support or feedback about the Free Fire, BGMI, and PUBG Mobile sensitivity calculator.",
+      "Contact Sensitivity Settings for help with the Free Fire, BGMI, and PUBG Mobile sensitivity calculator.",
   },
   report: {
-    title: "Report Issue",
+    title: "Contact",
     description:
-      "Report an issue with Sensitivity Settings — Free Fire, BGMI, and PUBG Mobile sensitivity calculator support.",
+      "Contact Sensitivity Settings for help with the Free Fire, BGMI, and PUBG Mobile sensitivity calculator.",
   },
   feedback: {
-    title: "Feedback",
+    title: "Contact",
     description:
-      "Share feedback about Sensitivity Settings — Free Fire, BGMI, and PUBG Mobile sensitivity calculator.",
+      "Contact Sensitivity Settings for help with the Free Fire, BGMI, and PUBG Mobile sensitivity calculator.",
   },
 };
 

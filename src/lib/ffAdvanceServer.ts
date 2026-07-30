@@ -1,49 +1,48 @@
 /**
- * Free Fire Advance Server APK / OB55 guide card.
- * Download CTA → official Garena portal only (never third-party APKs).
+ * Free Fire Advance Server info defaults (home/Max cards if enabled).
+ * No publisher / Garena outbound URLs.
  */
 export const FF_ADVANCE_SERVER = {
   badge: "Advance Server",
   code: "OB55",
-  title: "Free Fire Advance Server APK Download OB55",
-  meta: "Official beta · Android only",
+  title: "Free Fire Advance Server — info guide",
+  meta: "Fan-made guide · Android beta info",
   summary:
-    "Register for Free Fire Advance Server OB55, then download the official APK from Garena after selection. Test upcoming features before the global update.",
+    "Learn what Free Fire Advance Server is and how the usual OB beta cycle works. We do not host APKs or link to publisher download pages.",
   features: [
-    "Free Fire Advance Server APK download only from the official Garena portal",
-    "Register with the Google or Facebook account linked to your Free Fire ID",
-    "Activation code required — registration does not guarantee selection",
+    "Info-only guide — not a Free Fire / Garena publisher page",
+    "Registration and downloads happen only on the publisher’s own portal",
+    "Activation code is required after selection — not guaranteed",
     "Android only (no iOS) · separate beta app, main account progress stays safe",
-    "OB55 Advance Server expected before the global OB55 update (dates unofficial)",
+    "OB55 Advance Server is expected before the global OB55 update (dates may change)",
     "Never buy codes or install APKs from third-party / random sites",
   ],
-  note: "We do not host APK files. Use Garena’s official Advance Server site only.",
-  /** Official Garena Advance Server registration + APK portal */
-  officialUrl: "https://ff-advance.ff.garena.com/",
-  primaryCta: "Official register / APK",
+  note: "We do not host APK files and we do not link to publisher download pages.",
+  officialUrl: "",
+  primaryCta: "Read Advance Server guide",
   secondaryPath: "/news",
   secondaryCta: "Read guides",
 } as const;
 
-/** Max page — same official portal, copy aimed at Max players. */
+/** Max page — same info-only approach. */
 export const FF_MAX_ADVANCE_SERVER = {
   badge: "Advance Server",
   code: "OB55",
-  title: "Test OB55 early — then retune Free Fire Max sensi",
-  meta: "Official Garena beta · Android only",
+  title: "Advance Server info — then retune Free Fire Max sensi",
+  meta: "Fan-made guide · Android beta info",
   summary:
-    "Advance Server is the early OB55 build. Max players should try new weapons there, then come back here and recalculate — Max aim feels heavier than classic Free Fire.",
+    "Advance Server is the early OB test build. After you learn what changed, come back here and recalculate — Max aim often feels heavier than classic Free Fire.",
   features: [
-    "Register / download only from Garena’s official Advance Server site",
+    "Info only — use the publisher’s own portal for register / download",
     "Use the Google or Facebook account tied to your Free Fire / Max ID",
     "Selection is not guaranteed — wait for your activation code",
     "Beta is Android-only and separate from your main Max install",
-    "After you feel the new OB55 weapons, recalculate on this Max page",
-    "Skip random APK sites — they are not safe and not needed",
+    "After you feel new OB weapons, recalculate on this Max page",
+    "Skip random APK sites — they are not safe",
   ],
-  note: "",
-  officialUrl: "https://ff-advance.ff.garena.com/",
-  primaryCta: "Official register / APK",
+  note: "We do not host APKs or link to publisher download pages.",
+  officialUrl: "",
+  primaryCta: "Read Advance Server guide",
   secondaryPath: "/news",
   secondaryCta: "Read Max guides",
 } as const;

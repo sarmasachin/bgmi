@@ -13,7 +13,7 @@ export const defaultSeoSettings = {
     "gyroscope settings",
     "ADS sensitivity",
   ],
-  ogImage: "/og-default.png",
+  ogImage: "/icon.png?v=3",
   twitterCard: "summary_large_image",
 };
 

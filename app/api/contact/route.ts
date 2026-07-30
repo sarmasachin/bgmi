@@ -7,9 +7,7 @@ import { sendEmail } from "@/src/server/services/emailService";
 import {
   buildContactAdminNotifyHtml,
   buildContactThankYouEmailHtml,
-  resolveContactTopic,
 } from "@/src/lib/contactEmailTemplates";
-import { canEmailSubmitFeedback } from "@/src/server/repositories/ratingSummaryRepository";
 import { trackEmailForCampaigns } from "@/src/server/repositories/emailSubscribersRepository";
 
 const SUPPORT_EMAIL = "support@sensitivitysettings.com";
@@ -42,18 +40,8 @@ export async function POST(request: NextRequest) {
   }
 
   const { name, email, subject, message } = parsed.data;
-  const topic = resolveContactTopic({ topic: parsed.data.topic, subject });
-
-  // Same email that rated on home must wait 20 days before feedback — no special UI copy.
-  if (topic === "feedback") {
-    const allowed = await canEmailSubmitFeedback(email);
-    if (!allowed) {
-      return NextResponse.json(
-        { error: "Unable to submit right now. Please try again later." },
-        { status: 429 },
-      );
-    }
-  }
+  // Public site only exposes Contact us — always store as general.
+  const topic = "general" as const;
 
   let saved: { id: string };
   try {
@@ -72,10 +60,9 @@ export async function POST(request: NextRequest) {
     );
   }
 
-  void trackEmailForCampaigns(email, topic === "feedback" ? "feedback" : topic === "report" ? "report" : "contact");
+  void trackEmailForCampaigns(email, "contact");
 
-  const adminPrefix =
-    topic === "report" ? "[Report]" : topic === "feedback" ? "[Feedback]" : "[Contact]";
+  const adminPrefix = "[Contact]";
 
   // 1) Notify support inbox
   try {

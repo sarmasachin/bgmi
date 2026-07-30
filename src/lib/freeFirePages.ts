@@ -10,8 +10,8 @@ export const FREE_FIRE_MAX_PATH = `/${FREE_FIRE_MAX_SLUG}`;
 
 /** Free Fire calculator lives on home (`/`); dedicated slug page still works. */
 export const FREE_FIRE_NAV = [
-  { label: "Free Fire", href: "/" },
-  { label: "Free Fire Max", href: FREE_FIRE_MAX_PATH },
+  { label: "Home", href: "/" },
+  { label: "FF Max", href: FREE_FIRE_MAX_PATH },
   { label: "Advance Server", href: FREE_FIRE_ADVANCE_SERVER_PATH },
 ] as const;
 
@@ -26,7 +26,7 @@ export function freeFireConfig(variant: FreeFireVariant) {
       title: "Free Fire Max Sensitivity Settings Calculator",
       soonMessage: "Free Fire Max Sensitivity Settings calculator — Update Soon",
       seoDescription:
-        "Free Fire Max sensitivity calculator for General, Red Dot, 2x, 4x, sniper scope, and free look. Get RAM-based headshot settings for your phone.",
+        "Free Fire Max sensitivity calculator for General, Red Dot, 2x, 4x, sniper scope, and free look. Get RAM-based settings for your phone.",
       defaultArticleHtml: `<h2>Free Fire Max Sensitivity Settings Calculator</h2>
 <p>Free Fire Max runs with higher graphics and can feel heavier on mid-range phones. That is why copying a normal Free Fire sensitivity often feels too fast or too slow in Max.</p>
 <p>Use the Free Fire Max Sensitivity Settings Calculator above to generate settings from your phone RAM, DPI, FPS, and play style — then fine-tune in Training Ground.</p>
@@ -53,7 +53,7 @@ export function freeFireConfig(variant: FreeFireVariant) {
 <li><strong>Custom DPI 420 - 480:</strong> Lower General and Red Dot by about 5 - 10 points so aim does not overshoot.</li>
 <li><strong>Fire button size:</strong> 42% - 52% works well for most phones in Max.</li>
 </ul>
-<h2>One-Tap and Drag Headshot Practice</h2>
+<h2>Aim practice tips</h2>
 <p>After you calculate settings, practice 15 - 20 minutes in Training Ground with M1887, Desert Eagle, and an SMG. Adjust Red Dot first, then scopes.</p>
 <h2>Conclusion</h2>
 <p>Free Fire Max sensitivity should match your device performance, not a random pro code. Use the calculator on this page, test in Training Ground, and lock the values that feel stable in real matches.</p>`,
@@ -66,14 +66,14 @@ export function freeFireConfig(variant: FreeFireVariant) {
     navLabel: "Free Fire",
     title: "Free Fire Sensitivity Settings Calculator",
     soonMessage: "Free Fire Sensitivity Settings calculator — Update Soon",
-    seoDescription:
-      "Best Free Fire & FF Max sensitivity settings for auto headshots. Get updated FF sensitivity, DPI settings & control layout for all RAM devices (2GB-8GB).",
-    defaultArticleHtml: `<h2>Free Fire Sensitivity Settings Calculator: The Easiest Way to Hit Headshots!</h2>
-<p>If you play Free Fire (or FF MAX), you already know how important the right sensitivity settings are for landing "One-Tap Headshot" or "Drag Headshot" in the game.</p>
-<p>Players often copy the sensitivity of pro players (like Total Gaming, White444, or Rai Star), but their headshots still don't land. This happens because every phone has a different processor, RAM, and screen refresh rate.</p>
-<p>The solution to this problem is — the Free Fire Sensitivity Settings Calculator. Let's find out what it is and how you can get the perfect sensitivity for your phone.</p>
+      seoDescription:
+        "Free Fire & FF Max sensitivity settings calculator. Get updated sensitivity, DPI settings, and control layout for all RAM devices (2GB–8GB).",
+      defaultArticleHtml: `<h2>Free Fire Sensitivity Settings Calculator</h2>
+<p>If you play Free Fire (or FF MAX), the right sensitivity settings help your aim feel stable and consistent in-game.</p>
+<p>Players often copy the sensitivity of pro players, but the feel still does not match. This happens because every phone has a different processor, RAM, and screen refresh rate.</p>
+<p>The Free Fire Sensitivity Settings Calculator helps you build a starting setup for your phone.</p>
 <h2>What is the Free Fire Sensitivity Calculator?</h2>
-<p>The Free Fire sensitivity calculator is a tool or formula that calculates pinpoint-accurate sensitivity settings for you based on your smartphone's specifications (RAM, Screen DPI, and Display Refresh Rate).</p>
+<p>The Free Fire sensitivity calculator is a tool that suggests sensitivity settings based on your smartphone specifications (RAM, screen DPI, and display refresh rate).</p>
 <h2>Best Sensitivity Based on Your Phone's RAM (Quick Formula)</h2>
 <p>If you don't want to use a tool, you can use this RAM-Based Sensitivity Rule:</p>
 <div class="ff-table-wrap">
@@ -95,16 +95,16 @@ export function freeFireConfig(variant: FreeFireVariant) {
 <li><strong>Default DPI (360 - 400):</strong> Keep General Sensitivity at 95 - 100.</li>
 <li><strong>Custom DPI (450 - 500):</strong> Keep General Sensitivity at 85 - 90 (because increasing DPI already makes the phone much faster).</li>
 </ul>
-<h2>3 Secret Tips for 100% Headshots</h2>
+<h2>3 Practical Tips for Better Aim</h2>
 <ul>
 <li><strong>Fire Button Size:</strong> If your phone is small (2GB-4GB RAM), keep the button size at 40% to 45%. On bigger phones, keep the button size at 45% to 50%.</li>
-<li><strong>Drag Technique:</strong> Changing sensitivity alone won't get you headshots. Always drag the fire button towards the enemy's head using "Straight Up" or "Rotational Drag".</li>
-<li><strong>Training Ground Practice:</strong> After setting any new sensitivity, make sure to practice in the Training Ground for at least 15-20 minutes.</li>
+<li><strong>Drag Technique:</strong> Changing sensitivity alone is not enough. Practice dragging the fire button smoothly using "Straight Up" or "Rotational Drag".</li>
+<li><strong>Training Ground Practice:</strong> After setting any new sensitivity, practice in the Training Ground for at least 15-20 minutes.</li>
 </ul>
-<h2>Best Sensitivity for Free Fire One Tap Headshot 2026 (All RAM Variants)</h2>
+<h2>Best Free Fire Sensitivity Settings 2026 (All RAM Variants)</h2>
 <p>The table below is built according to your device's RAM so your screen movement stays smooth:</p>
-<h3>1. Free Fire Sensitivity for 4GB RAM Headshot (Most Popular)</h3>
-<p>This is the most balanced setting to make touch response faster on 4GB RAM Android phones:</p>
+<h3>1. Free Fire Sensitivity for 4GB RAM (Most Popular)</h3>
+<p>This is a balanced starting setup for touch response on 4GB RAM Android phones:</p>
 <ul>
 <li><strong>General:</strong> 175 – 190</li>
 <li><strong>Red Dot:</strong> 170 – 185</li>
@@ -128,36 +128,36 @@ export function freeFireConfig(variant: FreeFireVariant) {
 </tbody>
 </table>
 </div>
-<h2>📱 Brand Wise: Best Sensitivity for Free Fire (Vivo, Redmi, Samsung)</h2>
-<p>Android phones from different companies have different UIs and processors. If you use a phone from these specific brands, try these:</p>
-<h3>📱 Free Fire Sensitivity for 4GB RAM Headshot (Vivo Phones)</h3>
+<h2>Brand-wise starting points (Vivo, Redmi, Samsung)</h2>
+<p>Android phones from different companies have different UIs and processors. If you use a phone from these brands, try these starting values:</p>
+<h3>Free Fire Sensitivity for 4GB RAM (Vivo Phones)</h3>
 <p>On Vivo Y-Series and T-Series, keep the Red Dot slightly higher to improve touch smoothness:</p>
 <p><strong>General:</strong> 185 | <strong>Red Dot:</strong> 180 | <strong>2X Scope:</strong> 175 | <strong>4X Scope:</strong> 165</p>
 <p><strong>Best DPI for Vivo (4GB):</strong> Default + 40 (e.g. 360 to 400)</p>
-<h3>📱 Free Fire Sensitivity for 4GB RAM Headshot (Redmi / Poco)</h3>
+<h3>Free Fire Sensitivity for 4GB RAM (Redmi / Poco)</h3>
 <p>On Redmi/Xiaomi devices, there can be a slight response delay while dragging due to MIUI/HyperOS:</p>
 <p><strong>General:</strong> 188 | <strong>Red Dot:</strong> 182 | <strong>2X Scope:</strong> 178 | <strong>4X Scope:</strong> 168</p>
 <p><strong>Best DPI for Redmi (4GB):</strong> 420 - 450</p>
-<h3>📱 Best Sensitivity for Free Fire One Tap Headshot (Samsung Phones)</h3>
+<h3>Free Fire Sensitivity for 4GB RAM (Samsung Phones)</h3>
 <p>On Samsung's 4GB RAM phones (M-series / A-series), medium sensitivity works better to avoid frame drops:</p>
 <p><strong>General:</strong> 178 | <strong>Red Dot:</strong> 172 | <strong>2X Scope:</strong> 168 | <strong>4X Scope:</strong> 155</p>
-<h2>🔫 All Gun Headshot Sensitivity &amp; Secret Drag Trick</h2>
-<p>One-tap headshots don't depend on sensitivity alone — they also depend on your Drag Technique and the gun:</p>
-<h3>Shortgun (M1887 &amp; M1014):</h3>
-<p>In close range, always use Rotation Drag (swiping the fire button up in a U-shape).</p>
+<h2>Gun control and drag tips</h2>
+<p>Aim consistency depends on sensitivity, drag technique, and the gun:</p>
+<h3>Shotgun (M1887 &amp; M1014):</h3>
+<p>In close range, practice Rotation Drag (swiping the fire button up in a U-shape).</p>
 <h3>Pistols (Desert Eagle):</h3>
-<p>In mid range, do a Straight Drag (pull straight up). Always keep the aim (Crosshair) white near the enemy's neck or chest, then drag instantly.</p>
+<p>In mid range, do a Straight Drag (pull straight up). Keep the crosshair near the enemy's upper body, then drag smoothly.</p>
 <h3>SMG &amp; AR Guns (MP40, AK, Woodpecker):</h3>
-<p>Do a gentle drag so the bullets don't go above the head.</p>
-<h2>⚙️ Free Fire 4GB RAM Headshot DPI Settings</h2>
-<p><strong>⚠️ Warning:</strong> Never increase DPI above 500 — it can make your phone hang or get damaged.</p>
+<p>Do a gentle drag so the spray stays controlled.</p>
+<h2>Free Fire 4GB RAM DPI Settings</h2>
+<p><strong>Warning:</strong> Avoid raising DPI above 500 — it can make your phone lag or feel unstable.</p>
 <ul>
 <li><strong>4GB RAM Default DPI:</strong> Usually 360 to 390.</li>
-<li><strong>Best Headshot DPI:</strong> Increase it and keep it between 410 and 440. This will make your screen's response time much faster.</li>
+<li><strong>Suggested custom DPI:</strong> Keep it between 410 and 440 for a faster screen response.</li>
 </ul>
 <h2>Conclusion</h2>
-<p>Instead of copying another player's settings in Free Fire, setting your sensitivity according to your device's capability is the smartest move. Use the tables above, set the perfect sensitivity for your phone, and become a pro in the game!</p>`,
-  };
+<p>Instead of copying another player's settings in Free Fire, set sensitivity according to your device. Use the tables above, test in Training Ground, and keep the values that feel stable for you.</p>`,
+};
 }
 
 export function isFreeFirePath(pathname: string) {
@@ -171,15 +171,23 @@ export function isFreeFirePath(pathname: string) {
   );
 }
 
-/** Merge Free Fire nav links if missing, and pin Free Fire / Free Fire Max / Advance Server to positions 1–3. */
+/** Merge Free Fire nav links if missing; pin Home / FF Max / Advance Server first. */
 export function ensureFreeFireNavigation(
   links: Array<{ label: string; href: string }>,
 ): Array<{ label: string; href: string }> {
   const out = [...links];
   for (const item of FREE_FIRE_NAV) {
     const isFfHome = item.href === "/";
+    const isFfMaxItem = item.href === FREE_FIRE_MAX_PATH;
     const has = out.some((row) => {
       if (new RegExp(item.label.replace(/\s+/g, "\\s*"), "i").test(row.label)) return true;
+      if (isFfHome && (/^home$/i.test(row.label) || /^free\s*fire$/i.test(row.label))) return true;
+      if (
+        isFfMaxItem &&
+        (/^ff\s*max$/i.test(row.label) || /free\s*fire\s*max/i.test(row.label))
+      ) {
+        return true;
+      }
       if (row.href === item.href || row.href === item.href.replace(/^\//, "")) return true;
       if (isFfHome && (row.href === FREE_FIRE_PATH || row.href === FREE_FIRE_SLUG)) return true;
       return false;
@@ -187,25 +195,40 @@ export function ensureFreeFireNavigation(
     if (!has) out.push({ label: item.label, href: item.href });
   }
 
-  const isAdvance = (row: { label: string; href: string }) =>
-    /advance\s*server/i.test(row.label) ||
-    row.href === FREE_FIRE_ADVANCE_SERVER_PATH ||
-    row.href === FREE_FIRE_ADVANCE_SERVER_PATH.replace(/^\//, "");
-
   const normalized = out.map((row) => {
+    const href = row.href.trim();
+    const isHomeHref =
+      href === "/" ||
+      href === FREE_FIRE_PATH ||
+      href === FREE_FIRE_SLUG ||
+      href === FREE_FIRE_PATH.replace(/^\//, "");
+    const isMaxHref =
+      href === FREE_FIRE_MAX_PATH ||
+      href === FREE_FIRE_MAX_SLUG ||
+      href === FREE_FIRE_MAX_PATH.replace(/^\//, "");
+
     if (
-      /free\s*fire/i.test(row.label) &&
-      !/max/i.test(row.label) &&
-      !isAdvance(row)
+      isHomeHref ||
+      /^home$/i.test(row.label) ||
+      (/free\s*fire/i.test(row.label) && !/max/i.test(row.label) && !/advance/i.test(row.label))
     ) {
-      return { ...row, href: "/" };
+      return { ...row, label: "Home", href: "/" };
+    }
+    if (isMaxHref || /^ff\s*max$/i.test(row.label) || /free\s*fire\s*max/i.test(row.label)) {
+      return { ...row, label: "FF Max", href: FREE_FIRE_MAX_PATH };
+    }
+    if (/advance\s*server/i.test(row.label) || /free-fire-advance-server/i.test(row.href)) {
+      return { ...row, label: "Advance Server", href: FREE_FIRE_ADVANCE_SERVER_PATH };
     }
     return row;
   });
 
   const isFf = (row: { label: string; href: string }) =>
-    /free\s*fire/i.test(row.label) && !/max/i.test(row.label) && !isAdvance(row);
-  const isFfMax = (row: { label: string }) => /free\s*fire\s*max/i.test(row.label);
+    row.href === "/" || /^home$/i.test(row.label);
+  const isFfMax = (row: { label: string; href: string }) =>
+    row.href === FREE_FIRE_MAX_PATH || /^ff\s*max$/i.test(row.label);
+  const isAdvance = (row: { label: string; href: string }) =>
+    /advance\s*server/i.test(row.label) || /free-fire-advance-server/i.test(row.href);
 
   const freefire = normalized.find(isFf);
   const freefireMax = normalized.find(isFfMax);

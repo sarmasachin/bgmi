@@ -10,7 +10,6 @@ export const dynamic = "force-dynamic";
 export async function generateMetadata(): Promise<Metadata> {
   const page = await getAdvanceServerPage();
   const canonical = toCanonicalUrl(page.path || FREE_FIRE_ADVANCE_SERVER_PATH);
-  const ogImage = toCanonicalUrl(page.heroImage);
 
   return {
     title: page.seoTitle,
@@ -33,8 +32,8 @@ export async function generateMetadata(): Promise<Metadata> {
       title: page.seoTitle,
       description: page.seoDescription,
       url: canonical,
-      image: ogImage,
-      imageAlt: page.heroImageAlt,
+      image: "/icon.png?v=3",
+      imageAlt: "Sensitivity Settings — Advance Server guide",
     }),
   };
 }

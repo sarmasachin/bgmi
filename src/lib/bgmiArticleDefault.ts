@@ -1,6 +1,6 @@
 /** Built-in /bgmi guide — used until admin saves an override. */
 export const DEFAULT_BGMI_ARTICLE_HTML = `
-<h2>BGMI Sensitivity Settings Calculator: Perfect No Recoil Code &amp; Guide (2026)</h2>
+<h2>BGMI Sensitivity Settings Calculator: Guide &amp; Custom Codes (2026)</h2>
 <p>
   Are you losing close-range fights in BGMI (Battlegrounds Mobile India) again and again? Or
   when you spray with a 4x or 6x scope at long range, does your gun climb into the sky? If yes,
@@ -9,8 +9,8 @@ export const DEFAULT_BGMI_ARTICLE_HTML = `
 <p>
   There are thousands of "Best BGMI Sensitivity Codes" online, but they often fail
   because every player has a different phone, play style (Thumbs vs Claw), and reflex speed. To
-  solve that, we built the BGMI Sensitivity Settings Calculator — a tool that generates perfect
-  no-recoil sensitivity values based on your device and gaming style.
+  solve that, we built the BGMI Sensitivity Settings Calculator — a tool that generates custom
+  sensitivity values based on your device and gaming style.
 </p>
 
 <h3>Why Sensitivity Settings Matter in BGMI</h3>
@@ -19,9 +19,9 @@ export const DEFAULT_BGMI_ARTICLE_HTML = `
   loss. The right sensitivity gives you these advantages:
 </p>
 <ul>
-  <li><b>Zero Recoil:</b> Gun shake is controlled, so your sprays land on the enemy.</li>
+  <li><b>Better recoil control:</b> Gun shake is easier to manage, so sprays stay on target.</li>
   <li><b>Fast Reflexes:</b> You can transfer aim quickly in close-range fights.</li>
-  <li><b>More Headshots:</b> Proper sensitivity helps lock your aim on the enemy's head.</li>
+  <li><b>Stable aim:</b> Proper sensitivity helps track enemies more consistently.</li>
 </ul>
 
 <h3>What Is the BGMI Sensitivity Settings Calculator and How Does It Work?</h3>

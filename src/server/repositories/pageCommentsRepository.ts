@@ -14,7 +14,7 @@ export type PublicPageComment = {
 export type CreatePageCommentInput = {
   pageKey: string;
   name: string;
-  email: string;
+  email?: string | null;
   message: string;
 };
 
@@ -98,9 +98,10 @@ export async function listAllPageComments() {
 export async function createPageComment(input: CreatePageCommentInput) {
   const pageKey = input.pageKey.trim().slice(0, 120);
   const name = input.name.trim().slice(0, 80);
-  const email = input.email.trim().toLowerCase().slice(0, 200);
+  const emailRaw = typeof input.email === "string" ? input.email.trim().toLowerCase() : "";
+  const email = emailRaw ? emailRaw.slice(0, 200) : null;
   const message = input.message.trim().slice(0, 1000);
-  if (!pageKey || !name || !email || message.length < 2) return null;
+  if (!pageKey || !name || message.length < 2) return null;
 
   const dbData = await tryPrisma(async () => {
     const pc = pageCommentDb();

@@ -108,24 +108,41 @@ export function normalizeAdvanceServerPage(raw: unknown): FfAdvanceServerPageCon
   const tablesRaw = Array.isArray(raw.tables) ? raw.tables : defaults.tables;
   const faqsRaw = Array.isArray(raw.faqs) ? raw.faqs : defaults.faqs;
 
+  const seoTitleRaw = sanitizeString(raw.seoTitle, defaults.seoTitle) || defaults.seoTitle;
+  const subtitleRaw = sanitizeString(raw.subtitleEn, defaults.subtitleEn) || defaults.subtitleEn;
+  const heroTitleRaw = sanitizeString(raw.heroTitle, defaults.heroTitle) || defaults.heroTitle;
+  const subtitleEn = /^Garena opens\b/i.test(subtitleRaw) ? defaults.subtitleEn : subtitleRaw;
+
+  /** Soft-migrate old APK / short / soft-guide titles to the current hero title. */
+  const looksLikeLegacyTitle =
+    /apk\s*download|download\s*apk|fan-made info guide|Advance Server Guide \| What It Is|^FREE FIRE ADVANCE SERVER$/i.test(
+      `${seoTitleRaw} ${heroTitleRaw}`,
+    );
+  const hasPublisherUrl = /garena\.com|ff-advance\.ff|Official Garena/i.test(JSON.stringify(raw));
+  const heroTitle = looksLikeLegacyTitle ? defaults.heroTitle : heroTitleRaw;
+  const seoTitle = looksLikeLegacyTitle ? defaults.seoTitle : seoTitleRaw;
+  const useContentDefaults = hasPublisherUrl;
+
   return {
     path: defaults.path,
     title: sanitizeString(raw.title, defaults.title) || defaults.title,
-    heroTitle: sanitizeString(raw.heroTitle, defaults.heroTitle) || defaults.heroTitle,
-    seoTitle: sanitizeString(raw.seoTitle, defaults.seoTitle) || defaults.seoTitle,
+    heroTitle,
+    seoTitle,
     seoDescription:
       sanitizeString(raw.seoDescription, defaults.seoDescription) || defaults.seoDescription,
     seoKeywords: sanitizeStringList(raw.seoKeywords, defaults.seoKeywords),
     heroImageAlt: sanitizeString(raw.heroImageAlt, defaults.heroImageAlt) || defaults.heroImageAlt,
-    subtitleEn: sanitizeString(raw.subtitleEn, defaults.subtitleEn) || defaults.subtitleEn,
-    apkCta: sanitizeString(raw.apkCta, defaults.apkCta) || defaults.apkCta,
-    officialUrl: sanitizeString(raw.officialUrl, defaults.officialUrl) || defaults.officialUrl,
+    subtitleEn,
+    apkCta: "",
+    officialUrl: "",
     heroImage: sanitizeString(raw.heroImage, defaults.heroImage) || defaults.heroImage,
     heroLayout,
-    pills: defaults.pills.map((def, index) => {
-      const row = isPlainObject(pillsRaw[index]) ? pillsRaw[index] : {};
-      return { label: sanitizeString(row.label, def.label) || def.label };
-    }),
+    pills: useContentDefaults
+      ? defaults.pills
+      : defaults.pills.map((def, index) => {
+          const row = isPlainObject(pillsRaw[index]) ? pillsRaw[index] : {};
+          return { label: sanitizeString(row.label, def.label) || def.label };
+        }),
     countdown: {
       label:
         sanitizeString(countdownRaw.label, defaults.countdown.label) || defaults.countdown.label,
@@ -136,9 +153,15 @@ export function normalizeAdvanceServerPage(raw: unknown): FfAdvanceServerPageCon
         sanitizeString(countdownRaw.dateText, defaults.countdown.dateText) ||
         defaults.countdown.dateText,
     },
-    cards: defaults.cards.map((def, index) => normalizeCard(cardsRaw[index], def)),
-    tables: defaults.tables.map((def, index) => normalizeTable(tablesRaw[index], def)),
-    faqs: defaults.faqs.map((def, index) => normalizeFaq(faqsRaw[index], def)),
+    cards: useContentDefaults
+      ? defaults.cards
+      : defaults.cards.map((def, index) => normalizeCard(cardsRaw[index], def)),
+    tables: useContentDefaults
+      ? defaults.tables
+      : defaults.tables.map((def, index) => normalizeTable(tablesRaw[index], def)),
+    faqs: useContentDefaults
+      ? defaults.faqs
+      : defaults.faqs.map((def, index) => normalizeFaq(faqsRaw[index], def)),
   };
 }
 

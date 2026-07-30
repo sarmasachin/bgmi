@@ -243,11 +243,78 @@ export async function deleteLegalPage(id: string) {
   return true;
 }
 
-/** Ensure the three core pages exist (draft) so admin can edit them immediately. */
+/** Ensure the three core pages exist (published) so admin can edit them immediately. */
 export async function ensureCoreLegalPages() {
   for (const slug of CORE_LEGAL_SLUGS) {
     const existing = await getLegalPageBySlug(slug);
-    if (existing) continue;
+    if (existing) {
+      if (slug === "disclaimer") {
+        const currentHtml = extractLegalHtml(existing.content);
+        const looksLegacy =
+          /\bofficial\b/i.test(currentHtml) ||
+          (currentHtml.includes("independent fan resource") &&
+            !currentHtml.includes("created by a gamer for other gamers"));
+        if (looksLegacy) {
+          const seo = defaultSeoForSlug(slug);
+          try {
+            await updateLegalPage(existing.id, {
+              content: defaultHtmlForSlug(slug),
+              seoTitle: seo.seoTitle,
+              seoDescription: seo.seoDescription,
+              status: "published",
+            });
+          } catch {
+            /* ignore */
+          }
+        }
+      }
+      if (slug === "privacy") {
+        const currentHtml = extractLegalHtml(existing.content);
+        const looksLegacy =
+          /\bofficial\b/i.test(currentHtml) ||
+          (currentHtml.length > 0 &&
+            !currentHtml.includes("What this policy covers") &&
+            (currentHtml.includes("Last updated:") ||
+              currentHtml.includes("We do not sell your personal information") ||
+              currentHtml.includes("Public email newsletter subscribe")));
+        if (looksLegacy) {
+          const seo = defaultSeoForSlug(slug);
+          try {
+            await updateLegalPage(existing.id, {
+              content: defaultHtmlForSlug(slug),
+              seoTitle: seo.seoTitle,
+              seoDescription: seo.seoDescription,
+              status: "published",
+            });
+          } catch {
+            /* ignore */
+          }
+        }
+      }
+      if (slug === "terms") {
+        const currentHtml = extractLegalHtml(existing.content);
+        const looksLegacy =
+          /\bofficial\b/i.test(currentHtml) ||
+          (currentHtml.length > 0 &&
+            !currentHtml.includes("About the Site") &&
+            (currentHtml.includes("By using Sensitivity Settings") ||
+              !currentHtml.includes("Last updated:")));
+        if (looksLegacy) {
+          const seo = defaultSeoForSlug(slug);
+          try {
+            await updateLegalPage(existing.id, {
+              content: defaultHtmlForSlug(slug),
+              seoTitle: seo.seoTitle,
+              seoDescription: seo.seoDescription,
+              status: "published",
+            });
+          } catch {
+            /* ignore */
+          }
+        }
+      }
+      continue;
+    }
     try {
       await createLegalPage({
         title: defaultTitleForSlug(slug),

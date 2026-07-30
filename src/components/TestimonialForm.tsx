@@ -63,7 +63,7 @@ export function TestimonialForm({ game }: Props) {
       setError("Please enter your name.");
       return;
     }
-    if (!trimmedEmail || !EMAIL_RE.test(trimmedEmail)) {
+    if (trimmedEmail && !EMAIL_RE.test(trimmedEmail)) {
       setError("Please enter a valid email.");
       return;
     }
@@ -91,7 +91,7 @@ export function TestimonialForm({ game }: Props) {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           name: trimmedName.slice(0, 80),
-          email: trimmedEmail.slice(0, 200),
+          ...(trimmedEmail ? { email: trimmedEmail.slice(0, 200) } : {}),
           rating,
           message: trimmedMessage.slice(0, 300),
           game,
@@ -191,7 +191,7 @@ export function TestimonialForm({ game }: Props) {
 
             <div className="testimonial-form-group">
               <label className="testimonial-form-label" htmlFor="testimonial-email">
-                Email <span className="testimonial-form-req">*</span>
+                Email <span className="testimonial-form-optional">(optional)</span>
               </label>
               <input
                 id="testimonial-email"

@@ -68,7 +68,7 @@ export function FfAdvanceServerCountdown({ label, targetIso, dateText }: Props) 
           </span>
         </div>
       ) : (
-        <p className="ff-as-countdown-live">Advance Server is open — check Garena now</p>
+        <p className="ff-as-countdown-live">Advance Server is open — check the publisher portal</p>
       )}
       <p className="ff-as-countdown-date">{dateText}</p>
     </div>

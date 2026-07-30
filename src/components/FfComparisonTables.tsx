@@ -31,8 +31,8 @@ const VS_ROWS: Array<{
   },
   {
     icon: "fa-bullseye",
-    point: "Headshot aim",
-    freefire: "One-tap / drag friendly",
+    point: "Aim control",
+    freefire: "Drag-friendly presets",
     freefireMax: "Slightly heavier aim feel",
   },
   {
