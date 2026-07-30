@@ -54,8 +54,15 @@ export async function SiteFooter({ settings: settingsProp }: SiteFooterProps = {
     const ensure = (label: string, href: string, match: (item: { label: string; href: string }) => boolean) => {
       if (!links.some(match)) links.push({ label, href });
     };
-    ensure("Contact", "/contact", (item) => /^contact$/i.test(item.label) || item.href === "/contact");
     ensure("News", "/news", (item) => /^news$/i.test(item.label) || item.href === "/news");
+    ensure("Privacy", "/privacy", (item) => /^privacy$/i.test(item.label) || item.href === "/privacy");
+    ensure("Terms", "/terms", (item) => /^terms$/i.test(item.label) || item.href === "/terms");
+    ensure(
+      "Disclaimer",
+      "/disclaimer",
+      (item) => /^disclaimer$/i.test(item.label) || item.href === "/disclaimer",
+    );
+    ensure("Contact", "/contact", (item) => /^contact$/i.test(item.label) || item.href === "/contact");
     ensure(
       "Sitemap",
       "/sitemap.xml",
@@ -68,9 +75,25 @@ export async function SiteFooter({ settings: settingsProp }: SiteFooterProps = {
     /^(privacy|terms|disclaimer|contact|news|sitemap)$/i.test(item.label.trim()),
   );
 
-  const resourcesColumnLinks = resourceLinks.filter(
-    (item) => !/^(privacy|terms|disclaimer|contact|sitemap)$/i.test(item.label.trim()),
-  );
+  /** Resources column: News first, then legal/info links under it. */
+  const resourcesPreferredOrder = [
+    "news",
+    "privacy",
+    "terms",
+    "disclaimer",
+    "contact",
+    "sitemap",
+  ];
+  const resourcesColumnLinks = [
+    ...resourcesPreferredOrder
+      .map((key) =>
+        resourceLinks.find((item) => item.label.trim().toLowerCase() === key),
+      )
+      .filter((item): item is { label: string; href: string } => Boolean(item)),
+    ...resourceLinks.filter(
+      (item) => !resourcesPreferredOrder.includes(item.label.trim().toLowerCase()),
+    ),
+  ];
 
   return (
     <footer className="site-footer">
