@@ -1681,7 +1681,14 @@ footer,
   }
 
   .site-footer-bottom-links {
-    display: none;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 8px 12px;
+  }
+
+  .site-footer-bottom-link {
+    font-size: 12px;
   }
 
   .site-footer-copyright {
