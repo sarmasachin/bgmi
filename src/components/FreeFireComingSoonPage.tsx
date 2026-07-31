@@ -16,6 +16,7 @@ import {
   freeFireConfig,
   type FreeFireVariant,
 } from "@/src/lib/freeFirePages";
+import { formatNewsPublishedAtIst } from "@/src/lib/formatNewsPublishedAt";
 import { faqSchema, toolAppReviewSchema } from "@/src/lib/schema";
 import { getSiteUrl, toCanonicalUrl } from "@/src/lib/siteUrl";
 import { buildSocialMetadata } from "@/src/lib/socialMeta";
@@ -109,13 +110,7 @@ export async function FreeFireComingSoonPage({ variant }: { variant: FreeFireVar
       slug: item.slug ?? item.id,
       title: item.title,
       excerpt: excerpt.length > 120 ? `${excerpt.slice(0, 117).trimEnd()}…` : excerpt,
-      dateLabel: date
-        ? date.toLocaleDateString("en-IN", {
-            day: "2-digit",
-            month: "short",
-            year: "numeric",
-          })
-        : "—",
+      dateLabel: formatNewsPublishedAtIst(rawDate),
       dateIso: date && !Number.isNaN(date.getTime()) ? date.toISOString().slice(0, 10) : "",
     };
   });
