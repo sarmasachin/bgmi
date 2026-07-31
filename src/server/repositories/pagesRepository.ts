@@ -523,18 +523,22 @@ export async function createPage(input: PageInput) {
     });
 
     if (input.publishAsNews) {
-      await upsertNewsFromPage({
-        title: input.title,
-        pageSlug: slug,
-        seoTitle: input.seoTitle,
-        seoDescription: input.seoDescription,
-        ogImageUrl: input.ogImageUrl,
-        socialTitle: input.socialTitle,
-        socialDescription: input.socialDescription,
-        socialImageAlt: input.socialImageAlt,
-        metaKeywords: input.metaKeywords,
-        pageContent: nextContent,
-      });
+      try {
+        await upsertNewsFromPage({
+          title: input.title,
+          pageSlug: slug,
+          seoTitle: input.seoTitle,
+          seoDescription: input.seoDescription,
+          ogImageUrl: input.ogImageUrl,
+          socialTitle: input.socialTitle,
+          socialDescription: input.socialDescription,
+          socialImageAlt: input.socialImageAlt,
+          metaKeywords: input.metaKeywords,
+          pageContent: nextContent,
+        });
+      } catch {
+        // Page create must succeed even if news sync fails; admin can retry Update.
+      }
     }
 
     return page;
@@ -667,34 +671,43 @@ export async function updatePage(id: string, payload: Partial<PageInput>) {
       },
     });
 
-    let newsPublished = false;
-    if (nextPayload.publishAsNews) {
-      const meta = extractMeta(nextContent ?? current.content);
-      await upsertNewsFromPage({
-        title: page.title,
-        pageSlug: page.slug,
-        seoTitle: page.seoTitle,
-        seoDescription: page.seoDescription,
-        ogImageUrl: page.ogImageUrl,
-        socialTitle: nextPayload.socialTitle ?? meta.socialTitle,
-        socialDescription: nextPayload.socialDescription ?? meta.socialDescription,
-        socialImageAlt: nextPayload.socialImageAlt ?? meta.socialImageAlt,
-        metaKeywords: nextPayload.metaKeywords ?? meta.keywords,
-        pageContent: nextContent ?? current.content,
-      });
-      newsPublished = true;
-    }
-
-    return { kind: "ok" as const, page, newsPublished };
+    return { kind: "ok" as const, page, contentForNews: nextContent ?? current.content };
   });
 
-  if (dbData?.kind === "ok") {
-    return { page: dbData.page, newsPublished: dbData.newsPublished };
-  }
   if (dbData?.kind === "not_found") return null;
+  if (!dbData || dbData.kind !== "ok") {
+    if (process.env.NODE_ENV === "production" && process.env.DATABASE_URL) {
+      throw new Error("DB_UNAVAILABLE");
+    }
+  }
 
-  if (process.env.NODE_ENV === "production" && process.env.DATABASE_URL) {
-    throw new Error("DB_UNAVAILABLE");
+  if (dbData?.kind === "ok") {
+    let newsPublished = false;
+    let newsError: string | undefined;
+    if (nextPayload.publishAsNews) {
+      try {
+        const meta = extractMeta(dbData.contentForNews);
+        await upsertNewsFromPage({
+          title: dbData.page.title,
+          pageSlug: dbData.page.slug,
+          seoTitle: dbData.page.seoTitle,
+          seoDescription: dbData.page.seoDescription,
+          ogImageUrl: dbData.page.ogImageUrl,
+          socialTitle: nextPayload.socialTitle ?? meta.socialTitle,
+          socialDescription: nextPayload.socialDescription ?? meta.socialDescription,
+          socialImageAlt: nextPayload.socialImageAlt ?? meta.socialImageAlt,
+          metaKeywords: nextPayload.metaKeywords ?? meta.keywords,
+          pageContent: dbData.contentForNews,
+        });
+        newsPublished = true;
+      } catch (error) {
+        newsError =
+          error instanceof Error && error.message
+            ? `Publish in News failed: ${error.message}`
+            : "Publish in News failed. Clone was saved, but news was not created.";
+      }
+    }
+    return { page: dbData.page, newsPublished, newsError };
   }
 
   const page = mockStore.pages.find((item) => item.id === id);
@@ -745,25 +758,33 @@ export async function updatePage(id: string, payload: Partial<PageInput>) {
   }
 
   let newsPublished = false;
+  let newsError: string | undefined;
   if (nextPayload.publishAsNews) {
-    const newsSlug = newsSlugFromPageSlug(page.slug);
-    const html =
-      extractHtml(page.content).trim() ||
-      `<p>${page.title}</p><p><a href="/${normalizePageSlug(page.slug)}">Open page</a></p>`;
-    const existingIdx = mockStore.news.findIndex((item) => item.slug === newsSlug);
-    const newsItem = {
-      id: existingIdx >= 0 ? mockStore.news[existingIdx]!.id : `n${Date.now()}`,
-      title: page.title,
-      slug: newsSlug,
-      status: "published",
-      content: { html },
-    };
-    if (existingIdx >= 0) mockStore.news[existingIdx] = newsItem;
-    else mockStore.news.unshift(newsItem);
-    newsPublished = true;
+    try {
+      const newsSlug = newsSlugFromPageSlug(page.slug);
+      const html =
+        extractHtml(page.content).trim() ||
+        `<p>${page.title}</p><p><a href="/${normalizePageSlug(page.slug)}">Open page</a></p>`;
+      const existingIdx = mockStore.news.findIndex((item) => item.slug === newsSlug);
+      const newsItem = {
+        id: existingIdx >= 0 ? mockStore.news[existingIdx]!.id : `n${Date.now()}`,
+        title: page.title,
+        slug: newsSlug,
+        status: "published",
+        content: { html },
+      };
+      if (existingIdx >= 0) mockStore.news[existingIdx] = newsItem;
+      else mockStore.news.unshift(newsItem);
+      newsPublished = true;
+    } catch (error) {
+      newsError =
+        error instanceof Error && error.message
+          ? `Publish in News failed: ${error.message}`
+          : "Publish in News failed. Clone was saved, but news was not created.";
+    }
   }
 
-  return { page, newsPublished };
+  return { page, newsPublished, newsError };
 }
 
 export async function deletePage(id: string) {

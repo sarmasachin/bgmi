@@ -163,6 +163,7 @@ export async function PATCH(request: NextRequest) {
     ok: true,
     data: page,
     newsPublished: updated.newsPublished,
+    ...(updated.newsError ? { newsError: updated.newsError } : {}),
     pushSent,
     ...(warning ? { warning } : {}),
   });

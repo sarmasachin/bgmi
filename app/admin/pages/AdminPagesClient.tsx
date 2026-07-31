@@ -372,8 +372,20 @@ export default function AdminPagesClient({ initialRows }: Props) {
         return;
       }
 
-      const json = (await res.json()) as { newsPublished?: boolean };
-      if (json.newsPublished) {
+      const json = (await res.json()) as {
+        newsPublished?: boolean;
+        newsError?: string;
+        error?: string;
+      };
+      if (json.newsError) {
+        setMessage(json.newsError);
+      } else if (publishAsNews && !json.newsPublished) {
+        setMessage(
+          editingId
+            ? "Clone updated, but Publish in News did not create a news post. Check News list or retry."
+            : "Clone created, but Publish in News did not create a news post. Check News list or retry.",
+        );
+      } else if (json.newsPublished) {
         setMessage(
           editingId
             ? "Clone updated and published to News."
@@ -385,8 +397,12 @@ export default function AdminPagesClient({ initialRows }: Props) {
       resetFormFields();
       setShowForm(false);
       await loadRows();
-    } catch {
-      setMessage("Network error. Please retry.");
+    } catch (error) {
+      setMessage(
+        error instanceof Error && error.message
+          ? `Network error: ${error.message}`
+          : "Network error. Please retry.",
+      );
     }
   }
 
