@@ -1,4 +1,5 @@
 import { listPublishedNews } from "@/src/server/repositories/newsRepository";
+import { formatNewsPublishedAtIst } from "@/src/lib/formatNewsPublishedAt";
 import Link from "next/link";
 
 const NEWS_PAGE_SIZE = 12;
@@ -21,11 +22,7 @@ export async function NewsSection({ page = 1 }: Props) {
     title: item.title,
     excerpt: item.excerpt ?? "",
     category: "NEWS",
-    publishedAt: item.publishedAt
-      ? new Date(item.publishedAt).toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" })
-      : item.createdAt
-        ? new Date(item.createdAt).toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" })
-        : "-",
+    publishedAt: formatNewsPublishedAtIst(item.publishedAt ?? item.createdAt),
     featureImage: item.featureImage ?? "",
     imageClass: "news-image-1",
   }));
@@ -37,7 +34,6 @@ export async function NewsSection({ page = 1 }: Props) {
     <section className="news-section">
       <div className="news-section-head">
         <h2 className="section-heading">Latest News</h2>
-        <span className="news-section-kicker">{result.total} stories</span>
       </div>
 
       <Link

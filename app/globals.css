@@ -2364,6 +2364,12 @@ footer,
   padding: 20px;
 }
 
+.news-detail-published {
+  margin: 0 0 14px;
+  color: #94a3b8;
+  font-size: 0.92rem;
+}
+
 .news-detail-card a {
   color: var(--primary);
   text-decoration: underline;

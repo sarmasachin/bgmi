@@ -17,6 +17,7 @@ import { getSettings } from "@/src/server/repositories/settingsRepository";
 import { getSiteUrl } from "@/src/lib/siteUrl";
 import { newsArticleSchema } from "@/src/lib/schema";
 import { buildSocialMetadata, DEFAULT_OG_IMAGE_PATH } from "@/src/lib/socialMeta";
+import { formatNewsPublishedAtIst } from "@/src/lib/formatNewsPublishedAt";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 
@@ -115,6 +116,9 @@ export default async function NewsDetailPage({ params }: Props) {
       <main className="page-container news-detail-page">
         <article className="news-detail-card">
           <h1>{item.title}</h1>
+          <p className="news-detail-published">
+            {formatNewsPublishedAtIst(item.publishedAt ?? item.createdAt)}
+          </p>
           {adPlaces.newsArticle.news_detail_top ? <AdSlot slotKey="news_detail_top" /> : null}
           {item.featureImage ? (
             <img
