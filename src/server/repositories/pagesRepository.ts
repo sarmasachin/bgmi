@@ -140,6 +140,16 @@ async function upsertNewsFromPage(input: {
   return { newsSlug, created: true };
 }
 
+/** Hide news created from a page clone when Publish in News is unchecked. */
+async function unpublishNewsFromPageSlug(pageSlug: string) {
+  const newsSlug = newsSlugFromPageSlug(pageSlug);
+  const result = await prisma.newsPost.updateMany({
+    where: { slug: newsSlug, status: "published" },
+    data: { status: "draft" },
+  });
+  return { newsSlug, unpublished: result.count > 0 };
+}
+
 function extractMeta(content: unknown): PageMeta {
   if (!isRecord(content)) return {};
   const rawMeta = content.meta;
@@ -683,8 +693,9 @@ export async function updatePage(id: string, payload: Partial<PageInput>) {
 
   if (dbData?.kind === "ok") {
     let newsPublished = false;
+    let newsUnpublished = false;
     let newsError: string | undefined;
-    if (nextPayload.publishAsNews) {
+    if (nextPayload.publishAsNews === true) {
       try {
         const meta = extractMeta(dbData.contentForNews);
         await upsertNewsFromPage({
@@ -706,8 +717,18 @@ export async function updatePage(id: string, payload: Partial<PageInput>) {
             ? `Publish in News failed: ${error.message}`
             : "Publish in News failed. Clone was saved, but news was not created.";
       }
+    } else if (nextPayload.publishAsNews === false) {
+      try {
+        const result = await unpublishNewsFromPageSlug(dbData.page.slug);
+        newsUnpublished = result.unpublished;
+      } catch (error) {
+        newsError =
+          error instanceof Error && error.message
+            ? `Unpublish from News failed: ${error.message}`
+            : "Clone was saved, but linked news could not be unpublished.";
+      }
     }
-    return { page: dbData.page, newsPublished, newsError };
+    return { page: dbData.page, newsPublished, newsUnpublished, newsError };
   }
 
   const page = mockStore.pages.find((item) => item.id === id);
@@ -758,8 +779,9 @@ export async function updatePage(id: string, payload: Partial<PageInput>) {
   }
 
   let newsPublished = false;
+  let newsUnpublished = false;
   let newsError: string | undefined;
-  if (nextPayload.publishAsNews) {
+  if (nextPayload.publishAsNews === true) {
     try {
       const newsSlug = newsSlugFromPageSlug(page.slug);
       const html =
@@ -782,9 +804,16 @@ export async function updatePage(id: string, payload: Partial<PageInput>) {
           ? `Publish in News failed: ${error.message}`
           : "Publish in News failed. Clone was saved, but news was not created.";
     }
+  } else if (nextPayload.publishAsNews === false) {
+    const newsSlug = newsSlugFromPageSlug(page.slug);
+    const existing = mockStore.news.find((item) => item.slug === newsSlug);
+    if (existing && existing.status === "published") {
+      existing.status = "draft";
+      newsUnpublished = true;
+    }
   }
 
-  return { page, newsPublished, newsError };
+  return { page, newsPublished, newsUnpublished, newsError };
 }
 
 export async function deletePage(id: string) {

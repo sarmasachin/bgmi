@@ -110,8 +110,9 @@ function checkApiPatchSchema() {
   const block = src.slice(patchFn);
   assert(block.includes("publishAsNews"), "FAIL: PATCH zod schema missing publishAsNews");
   assert(block.includes("newsError"), "FAIL: PATCH response missing newsError");
+  assert(block.includes("newsUnpublished") || src.includes("newsUnpublished"), "FAIL: missing newsUnpublished handling");
   assert(block.includes("newsPublished"), "FAIL: PATCH response missing newsPublished");
-  console.log("PASS  API PATCH accepts publishAsNews and returns newsError");
+  console.log("PASS  API PATCH accepts publishAsNews and returns newsError/newsUnpublished");
 }
 
 async function main() {
@@ -197,7 +198,56 @@ async function main() {
     assert(news2.status === "published", "news not published after upsert");
     console.log("PASS  upsert updated same news row");
 
-    console.log("VERDICT PASS");
+    console.log("4) Uncheck Publish in News → linked news must become draft...");
+    await prisma.pageTemplate.update({
+      where: { id: pageId },
+      data: { publishAsNews: false },
+    });
+    const unpub = await prisma.newsPost.updateMany({
+      where: { slug: newsSlug, status: "published" },
+      data: { status: "draft" },
+    });
+    assert(unpub.count === 1, `expected 1 news unpublished, got ${unpub.count}`);
+    const news3 = await prisma.newsPost.findUnique({ where: { slug: newsSlug } });
+    assert(news3?.status === "draft", "news still published after uncheck");
+    const stillPublic = await prisma.newsPost.count({
+      where: { slug: newsSlug, status: "published" },
+    });
+    assert(stillPublic === 0, "published news still visible after uncheck");
+    console.log("PASS  uncheck unpublishes linked news (hidden from Latest News)");
+
+    console.log("5) Feature-image file check (redeem news if present)...");
+    const liveNews = await prisma.newsPost.findFirst({
+      where: {
+        OR: [
+          { slug: { contains: "free-fire-max-redeem" } },
+          { title: { contains: "Free Fire MAX Redeem" } },
+        ],
+      },
+      orderBy: { updatedAt: "desc" },
+      select: { id: true, slug: true, featureImage: true, status: true },
+    });
+    let featureImageOk = true;
+    if (!liveNews?.featureImage) {
+      console.log("SKIP  no redeem news with featureImage in DB");
+    } else if (!liveNews.featureImage.startsWith("/")) {
+      console.log("SKIP  featureImage is absolute URL —", liveNews.featureImage);
+    } else {
+      const diskPath = path.join(root, "public", liveNews.featureImage.replace(/^\//, ""));
+      console.log("   DB featureImage:", liveNews.featureImage);
+      console.log("   diskPath:", diskPath);
+      if (fs.existsSync(diskPath)) {
+        console.log("PASS  feature image file exists on disk");
+      } else {
+        featureImageOk = false;
+        console.log("FAIL_EVIDENCE  featureImage in DB but file MISSING on disk");
+        console.log("   HTML still renders <img src=...> → browser shows broken image.");
+        console.log("   Fix: Admin → News → Edit → Upload Feature Image again → Save.");
+      }
+    }
+
+    console.log(featureImageOk ? "VERDICT PASS" : "VERDICT PASS_PUBLISH_FAIL_FEATURE_IMAGE");
+    if (!featureImageOk) process.exitCode = 2;
   } catch (err) {
     const msg = err instanceof Error ? err.message : String(err);
     if (/Authentication failed|Can't reach database|P1001|P1000|credentials/i.test(msg)) {

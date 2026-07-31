@@ -374,22 +374,25 @@ export default function AdminPagesClient({ initialRows }: Props) {
 
       const json = (await res.json()) as {
         newsPublished?: boolean;
+        newsUnpublished?: boolean;
         newsError?: string;
         error?: string;
       };
       if (json.newsError) {
         setMessage(json.newsError);
-      } else if (publishAsNews && !json.newsPublished) {
-        setMessage(
-          editingId
-            ? "Clone updated, but Publish in News did not create a news post. Check News list or retry."
-            : "Clone created, but Publish in News did not create a news post. Check News list or retry.",
-        );
       } else if (json.newsPublished) {
         setMessage(
           editingId
             ? "Clone updated and published to News."
             : "Clone created and published to News.",
+        );
+      } else if (json.newsUnpublished) {
+        setMessage("Clone updated. Linked news unpublished (hidden from Latest News).");
+      } else if (publishAsNews && !json.newsPublished) {
+        setMessage(
+          editingId
+            ? "Clone updated, but Publish in News did not create a news post. Check News list or retry."
+            : "Clone created, but Publish in News did not create a news post. Check News list or retry.",
         );
       } else {
         setMessage(editingId ? "Clone updated." : "Clone created.");

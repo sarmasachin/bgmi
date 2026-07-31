@@ -143,7 +143,7 @@ export async function PATCH(request: NextRequest) {
     actor: "admin",
     action: "page.update",
     target: parsed.data.id,
-    payload: { ...pageUpdate, sendPush, newsPublished: updated.newsPublished },
+    payload: { ...pageUpdate, sendPush, newsPublished: updated.newsPublished, newsUnpublished: updated.newsUnpublished },
   });
 
   let warning: string | undefined;
@@ -163,6 +163,7 @@ export async function PATCH(request: NextRequest) {
     ok: true,
     data: page,
     newsPublished: updated.newsPublished,
+    newsUnpublished: updated.newsUnpublished,
     ...(updated.newsError ? { newsError: updated.newsError } : {}),
     pushSent,
     ...(warning ? { warning } : {}),
