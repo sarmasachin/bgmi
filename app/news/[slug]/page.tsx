@@ -128,9 +128,14 @@ export default async function NewsDetailPage({ params }: Props) {
               loading="eager"
             />
           ) : null}
-          <p>{item.excerpt ?? ""}</p>
+          {item.excerpt?.trim() ? (
+            <p className="news-detail-lead">{item.excerpt.trim()}</p>
+          ) : null}
           {item.content && typeof item.content === "object" && "html" in item.content ? (
-            <div dangerouslySetInnerHTML={{ __html: String(item.content.html ?? "") }} />
+            <div
+              className="news-detail-body"
+              dangerouslySetInnerHTML={{ __html: String(item.content.html ?? "") }}
+            />
           ) : null}
           {adPlaces.newsArticle.news_detail_mid ? <AdSlot slotKey="news_detail_mid" /> : null}
           {adPlaces.newsArticle.news_detail_bottom ? <AdSlot slotKey="news_detail_bottom" /> : null}
