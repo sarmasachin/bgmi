@@ -14,12 +14,13 @@ import {
 } from "@/src/server/repositories/newsRepository";
 import { getRatingSummary } from "@/src/server/repositories/ratingSummaryRepository";
 import { getSettings } from "@/src/server/repositories/settingsRepository";
-import { getSiteUrl } from "@/src/lib/siteUrl";
-import { newsArticleSchema } from "@/src/lib/schema";
+import { getSiteUrl, toCanonicalUrl } from "@/src/lib/siteUrl";
+import { breadcrumbListSchema, newsArticleSchema } from "@/src/lib/schema";
 import { buildSocialMetadata, DEFAULT_OG_IMAGE_PATH } from "@/src/lib/socialMeta";
 import { formatNewsPublishedAtIst } from "@/src/lib/formatNewsPublishedAt";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
+import Link from "next/link";
 
 type Props = {
   params: Promise<{ slug: string }>;
@@ -95,6 +96,13 @@ export default async function NewsDetailPage({ params }: Props) {
 
   const baseUrl = getSiteUrl();
   const articleUrl = resolveNewsCanonicalUrl(item.slug, meta.canonicalUrl);
+  const crumbTitle =
+    item.title.length > 48 ? `${item.title.slice(0, 45).trimEnd()}…` : item.title;
+  const breadcrumbLd = breadcrumbListSchema([
+    { name: "Home", url: toCanonicalUrl("/") },
+    { name: "News", url: toCanonicalUrl("/news") },
+    { name: item.title, url: articleUrl },
+  ]);
   const articleSchema = newsArticleSchema({
     baseUrl,
     headline: item.seoTitle?.trim() || item.title,
@@ -115,6 +123,17 @@ export default async function NewsDetailPage({ params }: Props) {
       <HomeHeader siteTitle={settings.homeDisplay.headerTitle} navigation={settings.navigation} />
       <main className="page-container news-detail-page">
         <article className="news-detail-card">
+          <nav className="news-detail-breadcrumb" aria-label="Breadcrumb">
+            <ol className="news-detail-breadcrumb-list">
+              <li>
+                <Link href="/">Home</Link>
+              </li>
+              <li>
+                <Link href="/news">News</Link>
+              </li>
+              <li aria-current="page">{crumbTitle}</li>
+            </ol>
+          </nav>
           <h1>{item.title}</h1>
           <p className="news-detail-published">
             {formatNewsPublishedAtIst(item.publishedAt ?? item.createdAt)}
@@ -152,6 +171,12 @@ export default async function NewsDetailPage({ params }: Props) {
         <ClientErrorBoundary label="Comments">
           <NewsCommentSection newsId={item.id} initialComments={comments} />
         </ClientErrorBoundary>
+        {breadcrumbLd ? (
+          <script
+            type="application/ld+json"
+            dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbLd) }}
+          />
+        ) : null}
         <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(articleSchema) }} />
       </main>
       <SiteFooter settings={settings} />
