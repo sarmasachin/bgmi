@@ -118,6 +118,7 @@ export async function PATCH(request: NextRequest) {
       metaKeywords: z.string().optional(),
       content: z.string().optional(),
       status: z.enum(["draft", "published"]).optional(),
+      publishAsNews: z.boolean().optional(),
     })
     .safeParse(bodyResult.data);
   if (!parsed.success) return NextResponse.json({ error: "Invalid update payload" }, { status: 400 });

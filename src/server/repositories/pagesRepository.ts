@@ -566,6 +566,21 @@ export async function updatePage(id: string, payload: Partial<PageInput>) {
         ? resolveCanonicalUrl(nextPayload.slug ?? current.slug, nextPayload.canonicalUrl)
         : undefined;
 
+    const nextContent = shouldPatchContent
+      ? buildContent({
+          html: nextPayload.content,
+          existing: current.content,
+          metaPatch: {
+            templateType: nextPayload.templateType,
+            game: nextPayload.game,
+            socialTitle: nextPayload.socialTitle,
+            socialDescription: nextPayload.socialDescription,
+            socialImageAlt: nextPayload.socialImageAlt,
+            keywords: nextPayload.metaKeywords,
+          },
+        })
+      : undefined;
+
     const page = await prisma.pageTemplate.update({
       where: { id },
       data: {
@@ -575,23 +590,39 @@ export async function updatePage(id: string, payload: Partial<PageInput>) {
         seoDescription: nextPayload.seoDescription,
         canonicalUrl: resolvedCanonical,
         ogImageUrl: nextPayload.ogImageUrl,
-        content: shouldPatchContent
-          ? buildContent({
-              html: nextPayload.content,
-              existing: current.content,
-              metaPatch: {
-                templateType: nextPayload.templateType,
-                game: nextPayload.game,
-                socialTitle: nextPayload.socialTitle,
-                socialDescription: nextPayload.socialDescription,
-                socialImageAlt: nextPayload.socialImageAlt,
-                keywords: nextPayload.metaKeywords,
-              },
-            })
-          : undefined,
+        content: nextContent,
         status: nextPayload.status,
+        ...(nextPayload.publishAsNews !== undefined
+          ? { publishAsNews: Boolean(nextPayload.publishAsNews) }
+          : {}),
       },
     });
+
+    if (nextPayload.publishAsNews) {
+      const newsSlug =
+        (nextPayload.slug ?? current.slug).replaceAll("/", "-").replace(/^-+/, "") ||
+        `page-${Date.now()}`;
+      const existingNews = await prisma.newsPost.findUnique({
+        where: { slug: newsSlug },
+        select: { id: true },
+      });
+      if (!existingNews) {
+        await prisma.newsPost.create({
+          data: {
+            title: nextPayload.title ?? page.title,
+            slug: newsSlug,
+            status: "published",
+            content:
+              typeof (nextContent ?? current.content) === "object" &&
+              (nextContent ?? current.content)
+                ? ((nextContent ?? current.content) as object)
+                : {},
+            publishedAt: new Date(),
+          },
+        });
+      }
+    }
+
     return { kind: "ok" as const, page };
   });
 
@@ -623,6 +654,7 @@ export async function updatePage(id: string, payload: Partial<PageInput>) {
     page.canonicalUrl = resolveCanonicalUrl(nextPayload.slug ?? page.slug, nextPayload.canonicalUrl);
   }
   if (nextPayload.ogImageUrl !== undefined) page.ogImageUrl = nextPayload.ogImageUrl;
+  if (nextPayload.publishAsNews !== undefined) page.publishAsNews = Boolean(nextPayload.publishAsNews);
 
   const shouldPatchContent =
     nextPayload.content !== undefined ||
@@ -646,6 +678,21 @@ export async function updatePage(id: string, payload: Partial<PageInput>) {
         keywords: nextPayload.metaKeywords,
       },
     });
+  }
+
+  if (nextPayload.publishAsNews) {
+    const newsSlug =
+      (nextPayload.slug ?? page.slug).replaceAll("/", "-").replace(/^-+/, "") || `page-${Date.now()}`;
+    const exists = mockStore.news.some((item) => item.slug === newsSlug);
+    if (!exists) {
+      mockStore.news.unshift({
+        id: `n${Date.now()}`,
+        title: nextPayload.title ?? page.title,
+        slug: newsSlug,
+        status: "published",
+        content: typeof page.content === "object" && page.content ? page.content : {},
+      });
+    }
   }
 
   return page;

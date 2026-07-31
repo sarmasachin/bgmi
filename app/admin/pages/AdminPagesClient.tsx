@@ -158,6 +158,7 @@ export default function AdminPagesClient({ initialRows }: Props) {
           canonicalUrl?: string;
           ogImageUrl?: string;
           content?: unknown;
+          publishAsNews?: boolean;
         }>;
       };
 
@@ -180,6 +181,7 @@ export default function AdminPagesClient({ initialRows }: Props) {
             socialDescription: parsed.meta.socialDescription ?? "",
             socialImageAlt: parsed.meta.socialImageAlt ?? "",
             metaKeywords: parsed.meta.keywords ?? "",
+            publishAsNews: Boolean(item.publishAsNews),
           };
         }),
       );
@@ -347,6 +349,7 @@ export default function AdminPagesClient({ initialRows }: Props) {
                 socialDescription,
                 socialImageAlt,
                 metaKeywords,
+                publishAsNews,
                 ...(articleBodyGame ? {} : { content }),
               }),
             }
@@ -554,6 +557,7 @@ export default function AdminPagesClient({ initialRows }: Props) {
                           setTemplateType(row.templateType ?? "home");
                           setGame(coerceCloneGame(row.game));
                           setContent(row.contentHtml ?? "");
+                          setPublishAsNews(Boolean(row.publishAsNews));
                           setEditorNonce((n) => n + 1);
                         }}
                       >

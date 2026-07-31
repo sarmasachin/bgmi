@@ -18,6 +18,7 @@ export type AdminPageRow = {
   socialDescription?: string;
   socialImageAlt?: string;
   metaKeywords?: string;
+  publishAsNews?: boolean;
 };
 
 type PageMeta = {
@@ -99,6 +100,7 @@ export function mapAdminPageRows(
     canonicalUrl?: string | null;
     ogImageUrl?: string | null;
     content?: unknown;
+    publishAsNews?: boolean | null;
   }>,
 ): AdminPageRow[] {
   return pages.map((item) => {
@@ -119,6 +121,7 @@ export function mapAdminPageRows(
       socialDescription: parsed.meta.socialDescription ?? "",
       socialImageAlt: parsed.meta.socialImageAlt ?? "",
       metaKeywords: parsed.meta.keywords ?? "",
+      publishAsNews: Boolean(item.publishAsNews),
     };
   });
 }
