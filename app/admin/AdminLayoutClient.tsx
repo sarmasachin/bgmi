@@ -153,7 +153,14 @@ export default function AdminLayoutClient({ children }: { children: ReactNode })
 
     let cancelled = false;
     setMeLoaded(false);
-    void fetch("/api/admin/me", { cache: "no-store", credentials: "include" })
+    const controller = new AbortController();
+    const timeoutId = window.setTimeout(() => controller.abort(), 8000);
+
+    void fetch("/api/admin/me", {
+      cache: "no-store",
+      credentials: "include",
+      signal: controller.signal,
+    })
       .then(async (res) => {
         if (res.status === 401) {
           window.location.replace("/admin/login");
@@ -172,10 +179,15 @@ export default function AdminLayoutClient({ children }: { children: ReactNode })
         if (cancelled) return;
         setMe(null);
         setMeLoaded(true);
+      })
+      .finally(() => {
+        window.clearTimeout(timeoutId);
       });
 
     return () => {
       cancelled = true;
+      window.clearTimeout(timeoutId);
+      controller.abort();
     };
   }, [isLoginPage]);
 
@@ -244,6 +256,18 @@ export default function AdminLayoutClient({ children }: { children: ReactNode })
               <nav className="admin-nav">
                 {!meLoaded ? (
                   <p style={{ padding: "8px 12px", opacity: 0.7, fontSize: 13 }}>Loading menu…</p>
+                ) : !me ? (
+                  <p style={{ padding: "8px 12px", opacity: 0.7, fontSize: 13 }}>
+                    Menu unavailable.{" "}
+                    <button
+                      type="button"
+                      className="admin-pages-btn"
+                      style={{ marginLeft: 4 }}
+                      onClick={() => window.location.reload()}
+                    >
+                      Retry
+                    </button>
+                  </p>
                 ) : visibleNav.length === 0 ? (
                   <p style={{ padding: "8px 12px", opacity: 0.7, fontSize: 13 }}>No modules assigned.</p>
                 ) : (
