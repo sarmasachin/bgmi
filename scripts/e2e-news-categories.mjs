@@ -58,7 +58,7 @@ function checkLineLimits() {
     "src/features/news/NewsDetailView.tsx",
     "src/features/news/CategoryNewsListingPage.tsx",
     "src/lib/newsCategories.ts",
-    "app/[category]/[slug]/page.tsx",
+    "app/[slug]/[newsSlug]/page.tsx",
     "app/api/admin/news/route.ts",
     "app/sitemap.ts",
     "app/[slug]/page.tsx",
@@ -107,10 +107,17 @@ function checkStaticWiring() {
   assert(schema.includes("primaryCategory"), "Prisma missing primaryCategory");
   assert(schema.includes("extraCategories"), "Prisma missing extraCategories");
 
-  const articleRoute = read("app/[category]/[slug]/page.tsx");
+  const articleRoute = read("app/[slug]/[newsSlug]/page.tsx");
   assert(articleRoute.includes("isNewsCategorySlug"), "article route missing category guard");
   assert(articleRoute.includes("permanentRedirect"), "wrong-category should redirect");
   assert(articleRoute.includes("NewsDetailView"), "article route missing detail view");
+  assert(articleRoute.includes("newsSlug"), "article route must use newsSlug param");
+
+  // Next.js forbids app/[category] beside app/[slug]
+  assert(
+    !fs.existsSync(path.join(root, "app", "[category]")),
+    "FAIL: app/[category] conflicts with app/[slug] — use app/[slug]/[newsSlug]",
+  );
 
   const legacy = read("app/news/[slug]/page.tsx");
   assert(legacy.includes("permanentRedirect"), "legacy /news/[slug] must redirect");

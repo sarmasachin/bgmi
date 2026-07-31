@@ -13,18 +13,19 @@ import { notFound, permanentRedirect } from "next/navigation";
 import type { Metadata } from "next";
 
 type Props = {
-  params: Promise<{ category: string; slug: string }>;
+  /** First segment must share the name `slug` with `app/[slug]` (Next.js rule). */
+  params: Promise<{ slug: string; newsSlug: string }>;
 };
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
-  const { category, slug } = await params;
+  const { slug: category, newsSlug } = await params;
   if (!isNewsCategorySlug(category)) {
     return {
       title: "News Not Found",
       robots: { index: false, follow: false },
     };
   }
-  const item = await getPublishedNewsBySlug(slug);
+  const item = await getPublishedNewsBySlug(newsSlug);
   if (!item) {
     return {
       title: "News Not Found",
@@ -45,10 +46,10 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 }
 
 export default async function CategoryNewsArticlePage({ params }: Props) {
-  const { category, slug } = await params;
+  const { slug: category, newsSlug } = await params;
   if (!isNewsCategorySlug(category)) notFound();
 
-  const item = await getPublishedNewsBySlug(slug);
+  const item = await getPublishedNewsBySlug(newsSlug);
   if (!item) notFound();
 
   const primary = coerceNewsCategory(
