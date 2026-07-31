@@ -92,7 +92,11 @@ export async function POST(request: NextRequest) {
     target: page.id,
     payload: { slug: parsed.data.slug, publishAsNews: parsed.data.publishAsNews },
   });
-  return NextResponse.json({ ok: true, data: page });
+  return NextResponse.json({
+    ok: true,
+    data: page,
+    newsPublished: Boolean(parsed.data.publishAsNews),
+  });
 }
 
 export async function PATCH(request: NextRequest) {
@@ -123,13 +127,14 @@ export async function PATCH(request: NextRequest) {
     .safeParse(bodyResult.data);
   if (!parsed.success) return NextResponse.json({ error: "Invalid update payload" }, { status: 400 });
   const pageUpdate = parsed.data;
-  let page;
+  let updated;
   try {
-    page = await updatePage(pageUpdate.id, pageUpdate);
+    updated = await updatePage(pageUpdate.id, pageUpdate);
   } catch (error) {
     return mapPageWriteError(error);
   }
-  if (!page) return NextResponse.json({ error: "Not found" }, { status: 404 });
+  if (!updated) return NextResponse.json({ error: "Not found" }, { status: 404 });
+  const page = updated.page;
 
   const autoNotify = await getAutoNotifySettings();
   const sendPush = pageUpdate.status === "published" && autoNotify.pagesOnPublish;
@@ -138,7 +143,7 @@ export async function PATCH(request: NextRequest) {
     actor: "admin",
     action: "page.update",
     target: parsed.data.id,
-    payload: { ...pageUpdate, sendPush },
+    payload: { ...pageUpdate, sendPush, newsPublished: updated.newsPublished },
   });
 
   let warning: string | undefined;
@@ -157,6 +162,7 @@ export async function PATCH(request: NextRequest) {
   return NextResponse.json({
     ok: true,
     data: page,
+    newsPublished: updated.newsPublished,
     pushSent,
     ...(warning ? { warning } : {}),
   });

@@ -75,6 +75,71 @@ function extractHtml(content: unknown) {
   return "";
 }
 
+function newsSlugFromPageSlug(slug: string) {
+  return (
+    normalizePageSlug(slug).replaceAll("/", "-").replace(/^-+/, "") || `page-${Date.now()}`
+  );
+}
+
+/** Create or refresh a News post from a page clone (Publish in News). */
+async function upsertNewsFromPage(input: {
+  title: string;
+  pageSlug: string;
+  seoTitle?: string | null;
+  seoDescription?: string | null;
+  ogImageUrl?: string | null;
+  socialTitle?: string | null;
+  socialDescription?: string | null;
+  socialImageAlt?: string | null;
+  metaKeywords?: string | null;
+  pageContent: unknown;
+}) {
+  const newsSlug = newsSlugFromPageSlug(input.pageSlug);
+  let html = extractHtml(input.pageContent).trim();
+  if (!html) {
+    const desc = (input.seoDescription || input.socialDescription || "").trim();
+    const safeTitle = input.title.trim() || "Update";
+    html = desc
+      ? `<p>${desc}</p><p><a href="/${normalizePageSlug(input.pageSlug)}">Open ${safeTitle}</a></p>`
+      : `<p>${safeTitle}</p><p><a href="/${normalizePageSlug(input.pageSlug)}">Open page</a></p>`;
+  }
+
+  const content = {
+    html: sanitizeHtml(html),
+    meta: {
+      ...(input.socialTitle?.trim() ? { socialTitle: input.socialTitle.trim() } : {}),
+      ...(input.socialDescription?.trim()
+        ? { socialDescription: input.socialDescription.trim() }
+        : {}),
+      ...(input.socialImageAlt?.trim() ? { socialImageAlt: input.socialImageAlt.trim() } : {}),
+      ...(input.ogImageUrl?.trim() ? { ogImageUrl: input.ogImageUrl.trim() } : {}),
+      ...(input.metaKeywords?.trim() ? { keywords: input.metaKeywords.trim() } : {}),
+    },
+  } as Prisma.InputJsonValue;
+
+  const data = {
+    title: input.title,
+    slug: newsSlug,
+    status: "published",
+    seoTitle: input.seoTitle?.trim() || null,
+    seoDescription: input.seoDescription?.trim() || null,
+    featureImage: input.ogImageUrl?.trim() || null,
+    content,
+    publishedAt: new Date(),
+  };
+
+  const existing = await prisma.newsPost.findUnique({
+    where: { slug: newsSlug },
+    select: { id: true },
+  });
+  if (existing) {
+    await prisma.newsPost.update({ where: { id: existing.id }, data });
+    return { newsSlug, created: false };
+  }
+  await prisma.newsPost.create({ data });
+  return { newsSlug, created: true };
+}
+
 function extractMeta(content: unknown): PageMeta {
   if (!isRecord(content)) return {};
   const rawMeta = content.meta;
@@ -458,13 +523,17 @@ export async function createPage(input: PageInput) {
     });
 
     if (input.publishAsNews) {
-      await prisma.newsPost.create({
-        data: {
-          title: input.title,
-          slug: slug.replaceAll("/", "-").replace(/^-+/, "") || `page-${Date.now()}`,
-          status: "published",
-          content: typeof nextContent === "object" && nextContent ? nextContent : {},
-        },
+      await upsertNewsFromPage({
+        title: input.title,
+        pageSlug: slug,
+        seoTitle: input.seoTitle,
+        seoDescription: input.seoDescription,
+        ogImageUrl: input.ogImageUrl,
+        socialTitle: input.socialTitle,
+        socialDescription: input.socialDescription,
+        socialImageAlt: input.socialImageAlt,
+        metaKeywords: input.metaKeywords,
+        pageContent: nextContent,
       });
     }
 
@@ -598,35 +667,30 @@ export async function updatePage(id: string, payload: Partial<PageInput>) {
       },
     });
 
+    let newsPublished = false;
     if (nextPayload.publishAsNews) {
-      const newsSlug =
-        (nextPayload.slug ?? current.slug).replaceAll("/", "-").replace(/^-+/, "") ||
-        `page-${Date.now()}`;
-      const existingNews = await prisma.newsPost.findUnique({
-        where: { slug: newsSlug },
-        select: { id: true },
+      const meta = extractMeta(nextContent ?? current.content);
+      await upsertNewsFromPage({
+        title: page.title,
+        pageSlug: page.slug,
+        seoTitle: page.seoTitle,
+        seoDescription: page.seoDescription,
+        ogImageUrl: page.ogImageUrl,
+        socialTitle: nextPayload.socialTitle ?? meta.socialTitle,
+        socialDescription: nextPayload.socialDescription ?? meta.socialDescription,
+        socialImageAlt: nextPayload.socialImageAlt ?? meta.socialImageAlt,
+        metaKeywords: nextPayload.metaKeywords ?? meta.keywords,
+        pageContent: nextContent ?? current.content,
       });
-      if (!existingNews) {
-        await prisma.newsPost.create({
-          data: {
-            title: nextPayload.title ?? page.title,
-            slug: newsSlug,
-            status: "published",
-            content:
-              typeof (nextContent ?? current.content) === "object" &&
-              (nextContent ?? current.content)
-                ? ((nextContent ?? current.content) as object)
-                : {},
-            publishedAt: new Date(),
-          },
-        });
-      }
+      newsPublished = true;
     }
 
-    return { kind: "ok" as const, page };
+    return { kind: "ok" as const, page, newsPublished };
   });
 
-  if (dbData?.kind === "ok") return dbData.page;
+  if (dbData?.kind === "ok") {
+    return { page: dbData.page, newsPublished: dbData.newsPublished };
+  }
   if (dbData?.kind === "not_found") return null;
 
   if (process.env.NODE_ENV === "production" && process.env.DATABASE_URL) {
@@ -656,7 +720,7 @@ export async function updatePage(id: string, payload: Partial<PageInput>) {
   if (nextPayload.ogImageUrl !== undefined) page.ogImageUrl = nextPayload.ogImageUrl;
   if (nextPayload.publishAsNews !== undefined) page.publishAsNews = Boolean(nextPayload.publishAsNews);
 
-  const shouldPatchContent =
+  const shouldPatchContentMock =
     nextPayload.content !== undefined ||
     nextPayload.templateType !== undefined ||
     nextPayload.game !== undefined ||
@@ -665,7 +729,7 @@ export async function updatePage(id: string, payload: Partial<PageInput>) {
     nextPayload.socialImageAlt !== undefined ||
     nextPayload.metaKeywords !== undefined;
 
-  if (shouldPatchContent) {
+  if (shouldPatchContentMock) {
     page.content = buildContent({
       html: nextPayload.content,
       existing: page.content,
@@ -680,22 +744,26 @@ export async function updatePage(id: string, payload: Partial<PageInput>) {
     });
   }
 
+  let newsPublished = false;
   if (nextPayload.publishAsNews) {
-    const newsSlug =
-      (nextPayload.slug ?? page.slug).replaceAll("/", "-").replace(/^-+/, "") || `page-${Date.now()}`;
-    const exists = mockStore.news.some((item) => item.slug === newsSlug);
-    if (!exists) {
-      mockStore.news.unshift({
-        id: `n${Date.now()}`,
-        title: nextPayload.title ?? page.title,
-        slug: newsSlug,
-        status: "published",
-        content: typeof page.content === "object" && page.content ? page.content : {},
-      });
-    }
+    const newsSlug = newsSlugFromPageSlug(page.slug);
+    const html =
+      extractHtml(page.content).trim() ||
+      `<p>${page.title}</p><p><a href="/${normalizePageSlug(page.slug)}">Open page</a></p>`;
+    const existingIdx = mockStore.news.findIndex((item) => item.slug === newsSlug);
+    const newsItem = {
+      id: existingIdx >= 0 ? mockStore.news[existingIdx]!.id : `n${Date.now()}`,
+      title: page.title,
+      slug: newsSlug,
+      status: "published",
+      content: { html },
+    };
+    if (existingIdx >= 0) mockStore.news[existingIdx] = newsItem;
+    else mockStore.news.unshift(newsItem);
+    newsPublished = true;
   }
 
-  return page;
+  return { page, newsPublished };
 }
 
 export async function deletePage(id: string) {

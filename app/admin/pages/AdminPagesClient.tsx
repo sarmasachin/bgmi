@@ -372,7 +372,16 @@ export default function AdminPagesClient({ initialRows }: Props) {
         return;
       }
 
-      setMessage(editingId ? "Clone updated." : "Clone created.");
+      const json = (await res.json()) as { newsPublished?: boolean };
+      if (json.newsPublished) {
+        setMessage(
+          editingId
+            ? "Clone updated and published to News."
+            : "Clone created and published to News.",
+        );
+      } else {
+        setMessage(editingId ? "Clone updated." : "Clone created.");
+      }
       resetFormFields();
       setShowForm(false);
       await loadRows();
