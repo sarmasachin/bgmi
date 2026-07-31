@@ -6,7 +6,12 @@ import { PubgMobileCodesPanel } from "@/src/components/PubgMobileCodesPanel";
 import { SiteFooter } from "@/src/components/SiteFooter";
 import { FfCalculator } from "@/src/features/ffCalculator/FfCalculator";
 import "@/src/features/ffCalculator/ffCalculator.css";
+import {
+  buildCategoryNewsMetadata,
+  CategoryNewsListingPage,
+} from "@/src/features/news/CategoryNewsListingPage";
 import { SensCalculator } from "@/src/features/sensCalculator/SensCalculator";
+import { isNewsCategorySlug } from "@/src/lib/newsCategories";
 import { isAdminLoggedIn } from "@/src/server/auth";
 import { getCalculatorPhoneModels } from "@/src/server/repositories/calculatorPhoneModelsRepository";
 import { getPageBySlug, getPublishedPageBySlug } from "@/src/server/repositories/pagesRepository";
@@ -19,7 +24,7 @@ type CloneGame = "bgmi" | "pubg" | "freefire" | "freefire-max" | "pubg-mobile-co
 
 type Props = {
   params: Promise<{ slug: string }>;
-  searchParams: Promise<{ preview?: string }>;
+  searchParams: Promise<{ preview?: string; page?: string }>;
 };
 
 function extractContentData(content: unknown) {
@@ -90,6 +95,10 @@ async function getPageForSlug(slug: string, allowDraftPreview = false) {
 export async function generateMetadata({ params, searchParams }: Props): Promise<Metadata> {
   const { slug } = await params;
   const query = await searchParams;
+  if (isNewsCategorySlug(slug)) {
+    const listingPage = Math.max(Number(query.page ?? "1") || 1, 1);
+    return buildCategoryNewsMetadata(slug, listingPage);
+  }
   const isPreview = query.preview === "1";
   const allowDraftPreview = isPreview && (await isAdminLoggedIn());
   const page = await getPageForSlug(slug, allowDraftPreview);
@@ -143,6 +152,10 @@ export async function generateMetadata({ params, searchParams }: Props): Promise
 export default async function DynamicTemplatePage({ params, searchParams }: Props) {
   const { slug } = await params;
   const query = await searchParams;
+  if (isNewsCategorySlug(slug)) {
+    const listingPage = Math.max(Number(query.page ?? "1") || 1, 1);
+    return <CategoryNewsListingPage category={slug} page={listingPage} />;
+  }
   const allowDraftPreview = query.preview === "1" && (await isAdminLoggedIn());
 
   const [page, phoneModels, settings] = await Promise.all([

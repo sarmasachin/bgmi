@@ -8,6 +8,7 @@ import {
   updateNews,
   updateNewsStatus,
 } from "@/src/server/repositories/newsRepository";
+import { newsArticlePath } from "@/src/lib/newsCategories";
 import { addAuditLog } from "@/src/server/repositories/auditRepository";
 import { readAdminJsonBody } from "@/src/server/admin/adminApiHelpers";
 import { getAutoNotifySettings } from "@/src/server/repositories/autoNotifySettingsRepository";
@@ -34,6 +35,8 @@ const createSchema = z.object({
   content: z.string().optional(),
   featureImage: z.string().optional(),
   status: z.enum(["draft", "published"]).default("draft"),
+  primaryCategory: z.enum(["ff-max", "free-fire"]).optional(),
+  extraCategories: z.array(z.enum(["ff-max", "free-fire"])).optional(),
   ...seoFields,
 });
 
@@ -125,6 +128,8 @@ export async function PATCH(request: NextRequest) {
       content: z.string().optional(),
       featureImage: z.string().optional(),
       status: z.enum(["draft", "published"]).optional(),
+      primaryCategory: z.enum(["ff-max", "free-fire"]).optional(),
+      extraCategories: z.array(z.enum(["ff-max", "free-fire"])).optional(),
       ...seoFields,
     })
     .strict();
@@ -156,7 +161,10 @@ export async function PATCH(request: NextRequest) {
           source: "news",
           title: item.title,
           body: item.excerpt || undefined,
-          urlPath: `/news/${item.slug}`,
+          urlPath: newsArticlePath(
+            (item as { primaryCategory?: string | null }).primaryCategory,
+            item.slug,
+          ),
         });
         warning = pushResult.warning;
         pushSent = pushResult.sent;

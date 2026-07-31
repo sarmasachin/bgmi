@@ -3,6 +3,7 @@ import { mockStore } from "@/src/server/mockStore";
 import { prisma, tryPrisma, tryPrismaLong } from "@/src/server/dbSafe";
 import type { Prisma } from "@prisma/client";
 import { sanitizeHtml } from "@/src/lib/sanitizeHtml";
+import { newsArticlePath, newsCategoryFromCloneGame } from "@/src/lib/newsCategories";
 import { toCanonicalUrl } from "@/src/lib/siteUrl";
 
 type TemplateType = "home" | "article" | "landing";
@@ -104,6 +105,8 @@ async function upsertNewsFromPage(input: {
       : `<p>${safeTitle}</p><p><a href="/${normalizePageSlug(input.pageSlug)}">Open page</a></p>`;
   }
 
+  const primaryCategory = newsCategoryFromCloneGame(extractMeta(input.pageContent).game);
+
   const content = {
     html: sanitizeHtml(html),
     meta: {
@@ -114,6 +117,7 @@ async function upsertNewsFromPage(input: {
       ...(input.socialImageAlt?.trim() ? { socialImageAlt: input.socialImageAlt.trim() } : {}),
       ...(input.ogImageUrl?.trim() ? { ogImageUrl: input.ogImageUrl.trim() } : {}),
       ...(input.metaKeywords?.trim() ? { keywords: input.metaKeywords.trim() } : {}),
+      canonicalUrl: toCanonicalUrl(newsArticlePath(primaryCategory, newsSlug)),
     },
   } as Prisma.InputJsonValue;
 
@@ -121,6 +125,7 @@ async function upsertNewsFromPage(input: {
     title: input.title,
     slug: newsSlug,
     status: "published",
+    primaryCategory,
     seoTitle: input.seoTitle?.trim() || null,
     seoDescription: input.seoDescription?.trim() || null,
     featureImage: input.ogImageUrl?.trim() || null,
@@ -594,11 +599,15 @@ export async function createPage(input: PageInput) {
   };
   mockStore.pages.unshift(page);
   if (input.publishAsNews) {
+    const newsSlug = slug.replaceAll("/", "-").replace(/^-+/, "") || `page-${Date.now()}`;
+    const primaryCategory = newsCategoryFromCloneGame(input.game);
     mockStore.news.unshift({
       id: `n${Date.now()}`,
       title: input.title,
-      slug: slug.replaceAll("/", "-").replace(/^-+/, "") || `page-${Date.now()}`,
+      slug: newsSlug,
       status: "published",
+      primaryCategory,
+      extraCategories: [],
       content: typeof nextContent === "object" && nextContent ? nextContent : {},
     });
   }
@@ -793,6 +802,8 @@ export async function updatePage(id: string, payload: Partial<PageInput>) {
         title: page.title,
         slug: newsSlug,
         status: "published",
+        primaryCategory: newsCategoryFromCloneGame(extractMeta(page.content).game),
+        extraCategories: [],
         content: { html },
       };
       if (existingIdx >= 0) mockStore.news[existingIdx] = newsItem;

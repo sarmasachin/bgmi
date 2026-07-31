@@ -3,6 +3,7 @@ export type AdminNewsRow = {
   title: string;
   status: string;
   slug: string;
+  primaryCategory?: string;
   updatedAt?: string;
 };
 
@@ -12,6 +13,7 @@ export function mapAdminNewsRows(
     title: string;
     status: string;
     slug: string;
+    primaryCategory?: string | null;
     updatedAt?: Date | string | null;
   }>,
 ): AdminNewsRow[] {
@@ -20,6 +22,7 @@ export function mapAdminNewsRows(
     title: item.title,
     status: item.status,
     slug: item.slug,
+    primaryCategory: item.primaryCategory ?? undefined,
     updatedAt:
       item.updatedAt instanceof Date
         ? item.updatedAt.toISOString()

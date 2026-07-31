@@ -7,6 +7,14 @@ import type { AdminNewsRow } from "@/src/server/admin/mapAdminNewsRows";
 import { useAdminFlash } from "@/src/components/admin/AdminToast";
 import { useAdminDuplicateCheck } from "@/src/hooks/useAdminDuplicateCheck";
 import { readApiError } from "@/src/lib/userFacingError";
+import {
+  DEFAULT_NEWS_CATEGORY,
+  NEWS_CATEGORIES,
+  coerceNewsCategory,
+  newsArticlePath,
+  normalizeExtraCategories,
+  type NewsCategorySlug,
+} from "@/src/lib/newsCategories";
 import { toCanonicalUrl } from "@/src/lib/siteUrl";
 import { extractNewsHtml, extractNewsMeta } from "@/src/lib/newsContent";
 import { defaultNewsListingSeo, type NewsListingSeo } from "@/src/lib/listingSeoDefaults";
@@ -28,6 +36,7 @@ type ConfirmAction = {
   id: string;
   title: string;
   slug: string;
+  primaryCategory?: string;
 };
 
 const PAGE_SIZE = 10;
@@ -63,6 +72,9 @@ export default function AdminNewsClient({
   const [metaKeywords, setMetaKeywords] = useState("");
   const [metaKeywordDraft, setMetaKeywordDraft] = useState("");
   const [showMetaKeywords, setShowMetaKeywords] = useState(false);
+  const [primaryCategory, setPrimaryCategory] =
+    useState<NewsCategorySlug>(DEFAULT_NEWS_CATEGORY);
+  const [extraCategories, setExtraCategories] = useState<NewsCategorySlug[]>([]);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [rows, setRows] = useState<AdminNewsRow[]>(initialRows ?? []);
   const [listPage, setListPage] = useState(1);
@@ -139,6 +151,8 @@ export default function AdminNewsClient({
     setMetaKeywords("");
     setMetaKeywordDraft("");
     setShowMetaKeywords(false);
+    setPrimaryCategory(DEFAULT_NEWS_CATEGORY);
+    setExtraCategories([]);
     clearNewsEditorDraft();
     setEditorNonce((n) => n + 1);
   }
@@ -171,13 +185,23 @@ export default function AdminNewsClient({
         return;
       }
       setRows(
-        (json.data ?? []).map((item: { id: string; title: string; status: string; slug: string; updatedAt?: string }) => ({
+        (json.data ?? []).map(
+          (item: {
+            id: string;
+            title: string;
+            status: string;
+            slug: string;
+            primaryCategory?: string;
+            updatedAt?: string;
+          }) => ({
           id: item.id,
           title: item.title,
           status: item.status,
           slug: item.slug,
+          primaryCategory: item.primaryCategory,
           updatedAt: item.updatedAt ?? "",
-        })),
+        }),
+        ),
       );
       setTotalRows(total);
       setListPage(nextPage);
@@ -200,19 +224,23 @@ export default function AdminNewsClient({
       setCanonicalUrl("");
       return;
     }
-    setCanonicalUrl(toCanonicalUrl(`/news/${safeSlug}`));
-  }, [slug, canonicalManualOverride]);
+    setCanonicalUrl(toCanonicalUrl(newsArticlePath(primaryCategory, safeSlug)));
+  }, [slug, primaryCategory, canonicalManualOverride]);
 
   function buildSeoPayload() {
+    const extras = normalizeExtraCategories(primaryCategory, extraCategories);
     return {
       title,
       slug,
       excerpt,
       featureImage,
       content,
+      primaryCategory,
+      extraCategories: extras,
       seoTitle,
       seoDescription,
-      canonicalUrl: canonicalUrl.trim() || toCanonicalUrl(`/news/${slug.trim()}`),
+      canonicalUrl:
+        canonicalUrl.trim() || toCanonicalUrl(newsArticlePath(primaryCategory, slug.trim())),
       ogImageUrl,
       socialTitle,
       socialDescription,
@@ -350,9 +378,12 @@ export default function AdminNewsClient({
         featureImage?: string | null;
         seoTitle?: string | null;
         seoDescription?: string | null;
+        primaryCategory?: string | null;
+        extraCategories?: string[] | null;
         content?: unknown;
       };
       const meta = extractNewsMeta(item.content);
+      const nextPrimary = coerceNewsCategory(item.primaryCategory);
       clearNewsEditorDraft();
       setEditingId(item.id);
       setTitle(item.title ?? "");
@@ -361,7 +392,11 @@ export default function AdminNewsClient({
       setFeatureImage(item.featureImage ?? "");
       setSeoTitle(item.seoTitle ?? "");
       setSeoDescription(item.seoDescription ?? "");
-      setCanonicalUrl(meta.canonicalUrl?.trim() || toCanonicalUrl(`/news/${item.slug}`));
+      setPrimaryCategory(nextPrimary);
+      setExtraCategories(normalizeExtraCategories(nextPrimary, item.extraCategories));
+      setCanonicalUrl(
+        meta.canonicalUrl?.trim() || toCanonicalUrl(newsArticlePath(nextPrimary, item.slug)),
+      );
       setCanonicalManualOverride(Boolean(meta.canonicalUrl?.trim()));
       setOgImageUrl(meta.ogImageUrl ?? "");
       setSocialTitle(meta.socialTitle ?? "");
@@ -446,7 +481,12 @@ export default function AdminNewsClient({
                   <td>{(safeListPage - 1) * PAGE_SIZE + index + 1}</td>
                   <td>{row.title}</td>
                     <td>{row.status}</td>
-                    <td>{row.slug}</td>
+                    <td>
+                      {newsArticlePath(
+                        coerceNewsCategory(row.primaryCategory),
+                        row.slug,
+                      )}
+                    </td>
                     <td>{row.updatedAt || "-"}</td>
                     <td className="admin-news-actions">
                       <div className="admin-news-actions-wrap">
@@ -463,6 +503,7 @@ export default function AdminNewsClient({
                                 id: row.id,
                                 title: row.title,
                                 slug: row.slug,
+                                primaryCategory: row.primaryCategory,
                               })
                             }
                           >
@@ -478,6 +519,7 @@ export default function AdminNewsClient({
                                 id: row.id,
                                 title: row.title,
                                 slug: row.slug,
+                                primaryCategory: row.primaryCategory,
                               });
                             }}
                           >
@@ -493,6 +535,7 @@ export default function AdminNewsClient({
                               id: row.id,
                               title: row.title,
                               slug: row.slug,
+                              primaryCategory: row.primaryCategory,
                             })
                           }
                         >
@@ -569,6 +612,59 @@ export default function AdminNewsClient({
                 <p className="admin-field-error">This slug is already in use.</p>
               ) : null}
             </div>
+            <div className="admin-field admin-input-wide">
+              <label htmlFor="news-primary-category">
+                Main category (URL){" "}
+                <span className="admin-confirm-meta-slug">
+                  {slug.trim()
+                    ? newsArticlePath(primaryCategory, slug.trim())
+                    : `/${primaryCategory}/…`}
+                </span>
+              </label>
+              <select
+                id="news-primary-category"
+                value={primaryCategory}
+                onChange={(e) => {
+                  const next = coerceNewsCategory(e.target.value);
+                  setPrimaryCategory(next);
+                  setExtraCategories((prev) => normalizeExtraCategories(next, prev));
+                }}
+              >
+                {NEWS_CATEGORIES.map((cat) => (
+                  <option key={cat.slug} value={cat.slug}>
+                    {cat.label}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <fieldset className="admin-field admin-input-wide">
+              <legend>Also show in (optional)</legend>
+              <div style={{ display: "flex", flexWrap: "wrap", gap: 12 }}>
+                {NEWS_CATEGORIES.filter((cat) => cat.slug !== primaryCategory).map((cat) => {
+                  const checked = extraCategories.includes(cat.slug);
+                  return (
+                    <label key={cat.slug} style={{ display: "inline-flex", gap: 6, alignItems: "center" }}>
+                      <input
+                        type="checkbox"
+                        checked={checked}
+                        onChange={(e) => {
+                          setExtraCategories((prev) => {
+                            if (e.target.checked) {
+                              return normalizeExtraCategories(primaryCategory, [...prev, cat.slug]);
+                            }
+                            return prev.filter((item) => item !== cat.slug);
+                          });
+                        }}
+                      />
+                      {cat.label}
+                    </label>
+                  );
+                })}
+              </div>
+              <p className="admin-muted" style={{ margin: "6px 0 0" }}>
+                Article always appears on /news. Extra hubs share the same primary URL.
+              </p>
+            </fieldset>
             <input
               name="excerpt"
               className="admin-input-wide"
@@ -789,7 +885,12 @@ export default function AdminNewsClient({
             <div className="admin-confirm-meta">
               <span className="admin-confirm-meta-label">News</span>
               <strong>{confirmAction.title}</strong>
-              <span className="admin-confirm-meta-slug">/news/{confirmAction.slug}</span>
+              <span className="admin-confirm-meta-slug">
+                {newsArticlePath(
+                  coerceNewsCategory(confirmAction.primaryCategory),
+                  confirmAction.slug,
+                )}
+              </span>
             </div>
             <div className="admin-modal-actions">
               <button

@@ -16,6 +16,11 @@ import { FfNewsHub } from "@/src/components/FfNewsHub";
 import { SensCalculatorHost } from "@/src/components/SensCalculatorHost";
 import { SiteFooter } from "@/src/components/SiteFooter";
 import { freeFireConfig } from "@/src/lib/freeFirePages";
+import {
+  coerceNewsCategory,
+  newsArticlePath,
+  newsCategoryLabel,
+} from "@/src/lib/newsCategories";
 import { formatNewsPublishedAtIst } from "@/src/lib/formatNewsPublishedAt";
 import { faqSchema, toolAppReviewSchema } from "@/src/lib/schema";
 import { getSiteUrl, toCanonicalUrl } from "@/src/lib/siteUrl";
@@ -77,13 +82,18 @@ export default async function GamesLayout({ children }: { children: React.ReactN
     const rawDate = item.publishedAt ?? item.createdAt ?? null;
     const date = rawDate ? new Date(rawDate) : null;
     const excerpt = (item.excerpt ?? "").trim();
+    const primary = coerceNewsCategory(
+      (item as { primaryCategory?: string | null }).primaryCategory,
+    );
     return {
     id: item.id,
     slug: item.slug ?? item.id,
+    href: newsArticlePath(primary, item.slug ?? item.id),
     title: item.title,
     excerpt: excerpt.length > 120 ? `${excerpt.slice(0, 117).trimEnd()}…` : excerpt,
     dateLabel: formatNewsPublishedAtIst(rawDate),
     dateIso: date && !Number.isNaN(date.getTime()) ? date.toISOString().slice(0, 10) : "",
+    categoryLabel: newsCategoryLabel(primary),
     };
   });
   const baseUrl = getSiteUrl();

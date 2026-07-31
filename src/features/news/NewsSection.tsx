@@ -1,4 +1,13 @@
-import { listPublishedNews } from "@/src/server/repositories/newsRepository";
+import {
+  listPublishedNews,
+  listPublishedNewsByCategory,
+} from "@/src/server/repositories/newsRepository";
+import {
+  coerceNewsCategory,
+  newsArticlePath,
+  newsCategoryLabel,
+  type NewsCategorySlug,
+} from "@/src/lib/newsCategories";
 import { formatNewsPublishedAtIst } from "@/src/lib/formatNewsPublishedAt";
 import Link from "next/link";
 
@@ -6,40 +15,63 @@ const NEWS_PAGE_SIZE = 12;
 
 type Props = {
   page?: number;
+  /** When set, only articles in this category (primary or extra). */
+  category?: NewsCategorySlug;
+  heading?: string;
 };
 
-export async function NewsSection({ page = 1 }: Props) {
+export async function NewsSection({ page = 1, category, heading }: Props) {
   const requestedPage = Math.max(1, page);
-  const first = await listPublishedNews(requestedPage, NEWS_PAGE_SIZE);
+  const first = category
+    ? await listPublishedNewsByCategory(category, requestedPage, NEWS_PAGE_SIZE)
+    : await listPublishedNews(requestedPage, NEWS_PAGE_SIZE);
   const totalPages = Math.max(1, Math.ceil(first.total / NEWS_PAGE_SIZE));
   const currentPage = Math.min(requestedPage, totalPages);
   const result =
-    currentPage === requestedPage ? first : await listPublishedNews(currentPage, NEWS_PAGE_SIZE);
+    currentPage === requestedPage
+      ? first
+      : category
+        ? await listPublishedNewsByCategory(category, currentPage, NEWS_PAGE_SIZE)
+        : await listPublishedNews(currentPage, NEWS_PAGE_SIZE);
 
-  const items = (result.data ?? []).map((item) => ({
-    id: item.id,
-    slug: item.slug ?? item.id,
-    title: item.title,
-    excerpt: item.excerpt ?? "",
-    category: "NEWS",
-    publishedAt: formatNewsPublishedAtIst(item.publishedAt ?? item.createdAt),
-    featureImage: item.featureImage ?? "",
-    imageClass: "news-image-1",
-  }));
+  const basePath = category ? `/${category}` : "/news";
+
+  const items = (result.data ?? []).map((item) => {
+    const primary = coerceNewsCategory(
+      (item as { primaryCategory?: string | null }).primaryCategory,
+    );
+    return {
+      id: item.id,
+      slug: item.slug ?? item.id,
+      href: newsArticlePath(primary, item.slug ?? item.id),
+      title: item.title,
+      excerpt: item.excerpt ?? "",
+      category: newsCategoryLabel(primary),
+      publishedAt: formatNewsPublishedAtIst(item.publishedAt ?? item.createdAt),
+      featureImage: item.featureImage ?? "",
+      imageClass: "news-image-1",
+    };
+  });
 
   const [featured, ...rest] = items;
-  if (!featured) return null;
+  if (!featured) {
+    return (
+      <section className="news-section">
+        <div className="news-section-head">
+          <h2 className="section-heading">{heading ?? "Latest News"}</h2>
+        </div>
+        <p>No published articles yet.</p>
+      </section>
+    );
+  }
 
   return (
     <section className="news-section">
       <div className="news-section-head">
-        <h2 className="section-heading">Latest News</h2>
+        <h2 className="section-heading">{heading ?? "Latest News"}</h2>
       </div>
 
-      <Link
-        href={`/news/${featured.slug}`}
-        className={`news-featured ${featured.imageClass}`}
-      >
+      <Link href={featured.href} className={`news-featured ${featured.imageClass}`}>
         {featured.featureImage ? (
           <img
             className="news-featured-image"
@@ -60,7 +92,7 @@ export async function NewsSection({ page = 1 }: Props) {
 
       <div className="news-grid">
         {rest.map((item) => (
-          <Link href={`/news/${item.slug}`} className="news-card" key={item.id}>
+          <Link href={item.href} className="news-card" key={item.id}>
             {item.featureImage ? (
               <img
                 className="news-thumb news-thumb-image"
@@ -76,9 +108,7 @@ export async function NewsSection({ page = 1 }: Props) {
                 <span className="news-category">{item.category}</span>
                 <span className="news-date">{item.publishedAt}</span>
               </div>
-              <h4>
-                {item.title}
-              </h4>
+              <h4>{item.title}</h4>
               <p>{item.excerpt}</p>
             </div>
           </Link>
@@ -88,7 +118,9 @@ export async function NewsSection({ page = 1 }: Props) {
       {totalPages > 1 ? (
         <div className="news-pagination-row">
           {currentPage > 1 ? (
-            <Link href={currentPage === 2 ? "/news" : `/news?page=${currentPage - 1}`}>Prev</Link>
+            <Link href={currentPage === 2 ? basePath : `${basePath}?page=${currentPage - 1}`}>
+              Prev
+            </Link>
           ) : (
             <span aria-disabled="true">Prev</span>
           )}
@@ -96,7 +128,7 @@ export async function NewsSection({ page = 1 }: Props) {
             Page {currentPage} of {totalPages}
           </span>
           {currentPage < totalPages ? (
-            <Link href={`/news?page=${currentPage + 1}`}>Next</Link>
+            <Link href={`${basePath}?page=${currentPage + 1}`}>Next</Link>
           ) : (
             <span aria-disabled="true">Next</span>
           )}

@@ -6,6 +6,8 @@ type News = {
   excerpt?: string;
   content?: unknown;
   featureImage?: string | null;
+  primaryCategory?: string;
+  extraCategories?: string[];
   createdAt?: string | Date;
   updatedAt?: string | Date;
   publishedAt?: string | Date | null;

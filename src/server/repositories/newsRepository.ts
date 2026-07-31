@@ -5,6 +5,12 @@ import { prisma, tryPrisma } from "@/src/server/dbSafe";
 import { sanitizeHtml } from "@/src/lib/sanitizeHtml";
 import { toCanonicalUrl } from "@/src/lib/siteUrl";
 import { extractNewsHtml, extractNewsMeta, type NewsMeta } from "@/src/lib/newsContent";
+import {
+  coerceNewsCategory,
+  newsArticlePath,
+  normalizeExtraCategories,
+  type NewsCategorySlug,
+} from "@/src/lib/newsCategories";
 import { bumpSitemapLastmod } from "@/src/server/repositories/sitemapLastmodRepository";
 
 export type { NewsMeta };
@@ -17,6 +23,8 @@ export type NewsInput = {
   content?: string;
   featureImage?: string;
   status: string;
+  primaryCategory?: string;
+  extraCategories?: string[];
   seoTitle?: string;
   seoDescription?: string;
   canonicalUrl?: string;
@@ -31,11 +39,38 @@ function isRecord(value: unknown): value is Record<string, unknown> {
   return Boolean(value) && typeof value === "object" && !Array.isArray(value);
 }
 
-export function resolveNewsCanonicalUrl(slug: string, canonicalUrl?: string | null) {
-  const trimmed = canonicalUrl?.trim();
-  if (trimmed) return toCanonicalUrl(trimmed);
+function readPrimaryCategory(item: { primaryCategory?: string | null }) {
+  return coerceNewsCategory(item.primaryCategory);
+}
+
+function readExtraCategories(
+  primary: NewsCategorySlug,
+  item: { extraCategories?: string[] | null },
+) {
+  return normalizeExtraCategories(primary, item.extraCategories);
+}
+
+export function resolveNewsCanonicalUrl(
+  slug: string,
+  canonicalUrl?: string | null,
+  primaryCategory?: string | null,
+) {
   const safeSlug = slug.trim().replace(/^\/+|\/+$/g, "");
-  return toCanonicalUrl(safeSlug ? `/news/${safeSlug}` : "/news");
+  if (!safeSlug) return toCanonicalUrl("/news");
+  const primaryPath = newsArticlePath(primaryCategory, safeSlug);
+  const trimmed = canonicalUrl?.trim();
+  if (trimmed) {
+    try {
+      const path = new URL(trimmed, "https://sensitivitysettings.com").pathname.replace(/\/+$/, "") || "/";
+      const legacyPath = `/news/${safeSlug}`;
+      // Ignore auto-saved legacy /news/slug canonicals after category URLs.
+      if (path === legacyPath) return toCanonicalUrl(primaryPath);
+      return toCanonicalUrl(trimmed);
+    } catch {
+      return toCanonicalUrl(trimmed);
+    }
+  }
+  return toCanonicalUrl(primaryPath);
 }
 
 function normalizeNewsSlug(slug: string) {
@@ -44,6 +79,15 @@ function normalizeNewsSlug(slug: string) {
 
 function normalizeComparableTitle(title: string) {
   return title.trim().replace(/\s+/g, " ").toLowerCase();
+}
+
+function resolveCategoriesFromInput(input: {
+  primaryCategory?: string;
+  extraCategories?: string[];
+}) {
+  const primaryCategory = coerceNewsCategory(input.primaryCategory);
+  const extraCategories = normalizeExtraCategories(primaryCategory, input.extraCategories);
+  return { primaryCategory, extraCategories };
 }
 
 export async function newsSlugExists(slug: string, excludeId?: string) {
@@ -137,6 +181,7 @@ function buildNewsContent(input: {
 
 function newsMetaPatchFromInput(input: {
   slug: string;
+  primaryCategory?: string;
   socialTitle?: string;
   socialDescription?: string;
   socialImageAlt?: string;
@@ -149,9 +194,22 @@ function newsMetaPatchFromInput(input: {
     socialDescription: input.socialDescription,
     socialImageAlt: input.socialImageAlt,
     ogImageUrl: input.ogImageUrl,
-    canonicalUrl: resolveNewsCanonicalUrl(input.slug, input.canonicalUrl),
+    canonicalUrl: resolveNewsCanonicalUrl(
+      input.slug,
+      input.canonicalUrl,
+      input.primaryCategory,
+    ),
     keywords: input.metaKeywords ?? "",
   };
+}
+
+function articleBelongsToCategory(
+  item: { primaryCategory?: string | null; extraCategories?: string[] | null },
+  category: NewsCategorySlug,
+) {
+  const primary = readPrimaryCategory(item);
+  if (primary === category) return true;
+  return readExtraCategories(primary, item).includes(category);
 }
 
 export async function listNews(page: number, pageSize: number) {
@@ -200,12 +258,50 @@ export async function listPublishedNews(page: number, pageSize: number) {
   };
 }
 
-/** All published news for sitemap.xml (slug + dates only). */
+export async function listPublishedNewsByCategory(
+  category: NewsCategorySlug,
+  page: number,
+  pageSize: number,
+) {
+  const dbResult = await tryPrisma(async () => {
+    const where: Prisma.NewsPostWhereInput = {
+      status: "published",
+      OR: [{ primaryCategory: category }, { extraCategories: { has: category } }],
+    };
+    const [data, total] = await Promise.all([
+      prisma.newsPost.findMany({
+        where,
+        orderBy: [{ publishedAt: "desc" }, { createdAt: "desc" }],
+        skip: (page - 1) * pageSize,
+        take: pageSize,
+      }),
+      prisma.newsPost.count({ where }),
+    ]);
+    return { data, total };
+  });
+
+  if (dbResult) return dbResult;
+  const onlyPublished = mockStore.news.filter(
+    (item) => item.status === "published" && articleBelongsToCategory(item, category),
+  );
+  const start = (page - 1) * pageSize;
+  return {
+    data: onlyPublished.slice(start, start + pageSize),
+    total: onlyPublished.length,
+  };
+}
+
+/** All published news for sitemap.xml (slug + primary category + dates). */
 export async function listPublishedNewsForSitemap() {
   const dbResult = await tryPrisma(async () =>
     prisma.newsPost.findMany({
       where: { status: "published" },
-      select: { slug: true, updatedAt: true, publishedAt: true },
+      select: {
+        slug: true,
+        primaryCategory: true,
+        updatedAt: true,
+        publishedAt: true,
+      },
       orderBy: [{ publishedAt: "desc" }, { updatedAt: "desc" }],
     }),
   );
@@ -215,6 +311,7 @@ export async function listPublishedNewsForSitemap() {
     .filter((item) => item.status === "published" && item.slug)
     .map((item) => ({
       slug: item.slug,
+      primaryCategory: readPrimaryCategory(item),
       updatedAt: item.updatedAt ? new Date(item.updatedAt) : new Date(),
       publishedAt: item.publishedAt ? new Date(item.publishedAt) : null,
     }));
@@ -242,9 +339,10 @@ export async function createNews(input: NewsInput) {
   if (await newsSlugExists(slug)) throw new Error("SLUG_EXISTS");
   if (await newsTitleExists(input.title)) throw new Error("TITLE_EXISTS");
 
+  const { primaryCategory, extraCategories } = resolveCategoriesFromInput(input);
   const content = buildNewsContent({
     html: input.content ?? "",
-    metaPatch: newsMetaPatchFromInput(input),
+    metaPatch: newsMetaPatchFromInput({ ...input, primaryCategory }),
   });
 
   const dbResult = await tryPrisma(async () =>
@@ -255,6 +353,8 @@ export async function createNews(input: NewsInput) {
         excerpt: input.excerpt,
         featureImage: input.featureImage,
         status: input.status,
+        primaryCategory,
+        extraCategories,
         seoTitle: input.seoTitle?.trim() || null,
         seoDescription: input.seoDescription?.trim() || null,
         content,
@@ -262,7 +362,7 @@ export async function createNews(input: NewsInput) {
     }),
   );
   if (dbResult) {
-    bumpSitemapLastmod(["/news"]);
+    bumpSitemapLastmod(["/news", `/${primaryCategory}`]);
     return dbResult;
   }
 
@@ -273,12 +373,14 @@ export async function createNews(input: NewsInput) {
     excerpt: input.excerpt ?? "",
     featureImage: input.featureImage ?? "",
     status: input.status,
+    primaryCategory,
+    extraCategories,
     seoTitle: input.seoTitle?.trim() || "",
     seoDescription: input.seoDescription?.trim() || "",
     content,
   };
   mockStore.news.unshift(item);
-  bumpSitemapLastmod(["/news"]);
+  bumpSitemapLastmod(["/news", `/${primaryCategory}`]);
   return item;
 }
 
@@ -288,9 +390,7 @@ export async function updateNewsStatus(id: string, status: string) {
     if (!existing) return null;
 
     const nextPublishedAt =
-      status === "published"
-        ? (existing.publishedAt ?? new Date())
-        : null;
+      status === "published" ? (existing.publishedAt ?? new Date()) : null;
 
     return prisma.newsPost.update({
       where: { id },
@@ -298,7 +398,7 @@ export async function updateNewsStatus(id: string, status: string) {
     });
   });
   if (dbResult) {
-    bumpSitemapLastmod(["/news"]);
+    bumpSitemapLastmod(["/news", `/${readPrimaryCategory(dbResult)}`]);
     return dbResult;
   }
 
@@ -311,7 +411,7 @@ export async function updateNewsStatus(id: string, status: string) {
     delete (item as { publishedAt?: string }).publishedAt;
   }
   item.status = status;
-  bumpSitemapLastmod(["/news"]);
+  bumpSitemapLastmod(["/news", `/${readPrimaryCategory(item)}`]);
   return item;
 }
 
@@ -322,6 +422,8 @@ export async function updateNews(
   if (!slug) throw new Error("INVALID_SLUG");
   if (await newsSlugExists(slug, input.id)) throw new Error("SLUG_EXISTS");
   if (await newsTitleExists(input.title, input.id)) throw new Error("TITLE_EXISTS");
+
+  const { primaryCategory, extraCategories } = resolveCategoriesFromInput(input);
 
   const dbResult = await tryPrisma(async () => {
     const existing = await prisma.newsPost.findUnique({ where: { id: input.id } });
@@ -341,12 +443,14 @@ export async function updateNews(
         slug,
         excerpt: input.excerpt,
         featureImage: input.featureImage,
+        primaryCategory,
+        extraCategories,
         seoTitle: input.seoTitle?.trim() || null,
         seoDescription: input.seoDescription?.trim() || null,
         content: buildNewsContent({
           html: input.content ?? "",
           existing: existing.content,
-          metaPatch: newsMetaPatchFromInput(input),
+          metaPatch: newsMetaPatchFromInput({ ...input, primaryCategory }),
         }),
         status: input.status ?? undefined,
         publishedAt: nextPublishedAt,
@@ -354,7 +458,7 @@ export async function updateNews(
     });
   });
   if (dbResult) {
-    bumpSitemapLastmod(["/news"]);
+    bumpSitemapLastmod(["/news", `/${primaryCategory}`]);
     return dbResult;
   }
 
@@ -364,17 +468,19 @@ export async function updateNews(
   item.slug = slug;
   item.excerpt = input.excerpt ?? "";
   item.featureImage = input.featureImage ?? "";
+  item.primaryCategory = primaryCategory;
+  item.extraCategories = extraCategories;
   (item as { seoTitle?: string }).seoTitle = input.seoTitle?.trim() || "";
   (item as { seoDescription?: string }).seoDescription = input.seoDescription?.trim() || "";
   (item as { content?: unknown }).content = buildNewsContent({
     html: input.content ?? "",
     existing: (item as { content?: unknown }).content,
-    metaPatch: newsMetaPatchFromInput(input),
+    metaPatch: newsMetaPatchFromInput({ ...input, primaryCategory }),
   });
   if (input.status) {
     item.status = input.status;
   }
-  bumpSitemapLastmod(["/news"]);
+  bumpSitemapLastmod(["/news", `/${primaryCategory}`]);
   return item;
 }
 

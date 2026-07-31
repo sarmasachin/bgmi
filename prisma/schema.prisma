@@ -61,21 +61,27 @@ model PageTemplate {
 }
 
 model NewsPost {
-  id             String   @id @default(cuid())
-  title          String
-  slug           String   @unique
-  excerpt        String?
-  content        Json
-  featureImage   String?
-  status         String   @default("draft")
-  seoTitle       String?
-  seoDescription String?
-  authorName     String?
-  publishedAt    DateTime?
-  createdAt      DateTime @default(now())
-  updatedAt      DateTime @updatedAt
-  comments       NewsComment[]
-  ratings        NewsRating[]
+  id               String   @id @default(cuid())
+  title            String
+  slug             String   @unique
+  excerpt          String?
+  content          Json
+  featureImage     String?
+  status           String   @default("draft")
+  /** Primary category = public URL segment (e.g. ff-max → /ff-max/slug). */
+  primaryCategory  String   @default("ff-max")
+  /** Extra hubs only (listing); does not change the public URL. */
+  extraCategories  String[] @default([])
+  seoTitle         String?
+  seoDescription   String?
+  authorName       String?
+  publishedAt      DateTime?
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+  comments         NewsComment[]
+  ratings          NewsRating[]
+
+  @@index([primaryCategory])
 }
 
 model NewsComment {

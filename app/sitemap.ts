@@ -1,4 +1,5 @@
 import { MetadataRoute } from "next";
+import { newsArticlePath } from "@/src/lib/newsCategories";
 import { getSiteUrl } from "@/src/lib/siteUrl";
 import { listPublishedNewsForSitemap } from "@/src/server/repositories/newsRepository";
 import { listPublishedPagesForSitemap } from "@/src/server/repositories/pagesRepository";
@@ -16,6 +17,8 @@ const RESERVED_TOP_SEGMENTS = new Set([
   "bgmi",
   "pubg",
   "news",
+  "ff-max",
+  "free-fire",
   "admin",
   "api",
   "privacy",
@@ -119,10 +122,27 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const seen = new Set(staticEntries.map((e) => e.url));
 
   const newsEntries: MetadataRoute.Sitemap = [];
+  for (const cat of ["ff-max", "free-fire"] as const) {
+    const catUrl = `${baseUrl}/${cat}`;
+    if (!seen.has(catUrl)) {
+      seen.add(catUrl);
+      newsEntries.push({
+        url: catUrl,
+        lastModified: lastmod(`/${cat}`),
+        changeFrequency: "daily",
+        priority: 0.8,
+      });
+    }
+  }
+
   for (const item of newsRows) {
     const slug = (item.slug || "").trim().replace(/^\/+|\/+$/g, "");
     if (!slug) continue;
-    const url = `${baseUrl}/news/${slug}`;
+    const path = newsArticlePath(
+      (item as { primaryCategory?: string | null }).primaryCategory,
+      slug,
+    );
+    const url = `${baseUrl}${path}`;
     if (seen.has(url)) continue;
     seen.add(url);
     newsEntries.push({

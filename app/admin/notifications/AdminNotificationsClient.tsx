@@ -198,7 +198,7 @@ export default function AdminNotificationsClient({
           Push goes to browsers that enabled notifications. Email goes to saved email subscribers.
           Segment: <code>all</code>, <code>pc</code>, <code>mobile</code>, <code>android</code>, or{" "}
           <code>ios</code>. Optional link opens when the user taps the notification (e.g.{" "}
-          <code>/news/my-post</code>). Leave blank for homepage.
+          <code>/ff-max/my-post</code>). Leave blank for homepage.
         </p>
         <form onSubmit={(e) => void sendCampaign(e)} className="admin-inline-form admin-notifications-form">
           <input name="title" placeholder="Campaign title" required minLength={2} />

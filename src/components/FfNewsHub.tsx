@@ -7,10 +7,12 @@ import { FREE_FIRE_MAX_PATH } from "@/src/lib/freeFirePages";
 export type FfNewsHubItem = {
   id: string;
   slug: string;
+  href: string;
   title: string;
   excerpt: string;
   dateLabel: string;
   dateIso: string;
+  categoryLabel?: string;
 };
 
 type Props = {
@@ -53,12 +55,12 @@ export function FfNewsHub({ items, total }: Props) {
         {items.map((item) => (
           <Link
             key={item.id}
-            href={`/news/${item.slug}`}
+            href={item.href}
             className="ff-news-hub-card"
             role="listitem"
           >
             <span className="ff-news-hub-card-meta">
-              <span className="ff-news-hub-pill">News</span>
+              <span className="ff-news-hub-pill">{item.categoryLabel ?? "News"}</span>
               <time dateTime={item.dateIso}>{item.dateLabel}</time>
             </span>
             <h3 className="ff-news-hub-card-title">{item.title}</h3>
