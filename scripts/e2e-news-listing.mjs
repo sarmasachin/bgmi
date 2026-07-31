@@ -134,8 +134,9 @@ function checkLightStylesAndArticle() {
   const view = read("src/features/news/NewsDetailView.tsx");
   assert(view.includes("news-detail-breadcrumb"), "detail breadcrumb missing");
   assert(view.includes('href="/news"'), "breadcrumb News link");
-  assert(!view.includes("categoryHref"), "unused categoryHref should be gone");
-  assert(!view.includes("newsCategoryLabel"), "unused newsCategoryLabel import should be gone");
+  assert(view.includes("categoryHref"), "breadcrumb category link missing");
+  assert(view.includes("categoryLabel"), "breadcrumb category label missing");
+  assert(view.includes("newsCategoryLabel"), "newsCategoryLabel must be used");
   console.log("PASS  light listing + article breadcrumb/rating CSS");
 }
 

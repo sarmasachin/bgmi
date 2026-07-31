@@ -13,6 +13,7 @@ import {
 import { SensCalculator } from "@/src/features/sensCalculator/SensCalculator";
 import { isNewsCategorySlug } from "@/src/lib/newsCategories";
 import { isAdminLoggedIn } from "@/src/server/auth";
+import { listNewsCategorySlugs } from "@/src/server/repositories/newsCategoryRepository";
 import { getCalculatorPhoneModels } from "@/src/server/repositories/calculatorPhoneModelsRepository";
 import { getPageBySlug, getPublishedPageBySlug } from "@/src/server/repositories/pagesRepository";
 import { getSettings } from "@/src/server/repositories/settingsRepository";
@@ -95,7 +96,8 @@ async function getPageForSlug(slug: string, allowDraftPreview = false) {
 export async function generateMetadata({ params, searchParams }: Props): Promise<Metadata> {
   const { slug } = await params;
   const query = await searchParams;
-  if (isNewsCategorySlug(slug)) {
+  const knownCategorySlugs = await listNewsCategorySlugs();
+  if (isNewsCategorySlug(slug, knownCategorySlugs)) {
     const listingPage = Math.max(Number(query.page ?? "1") || 1, 1);
     return buildCategoryNewsMetadata(slug, listingPage);
   }
@@ -152,7 +154,8 @@ export async function generateMetadata({ params, searchParams }: Props): Promise
 export default async function DynamicTemplatePage({ params, searchParams }: Props) {
   const { slug } = await params;
   const query = await searchParams;
-  if (isNewsCategorySlug(slug)) {
+  const knownCategorySlugs = await listNewsCategorySlugs();
+  if (isNewsCategorySlug(slug, knownCategorySlugs)) {
     const listingPage = Math.max(Number(query.page ?? "1") || 1, 1);
     return <CategoryNewsListingPage category={slug} page={listingPage} />;
   }

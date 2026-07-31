@@ -8,6 +8,7 @@ import {
   isNewsCategorySlug,
   newsArticlePath,
 } from "@/src/lib/newsCategories";
+import { listNewsCategorySlugs } from "@/src/server/repositories/newsCategoryRepository";
 import { getPublishedNewsBySlug } from "@/src/server/repositories/newsRepository";
 import { notFound, permanentRedirect } from "next/navigation";
 import type { Metadata } from "next";
@@ -19,7 +20,8 @@ type Props = {
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug: category, newsSlug } = await params;
-  if (!isNewsCategorySlug(category)) {
+  const known = await listNewsCategorySlugs();
+  if (!isNewsCategorySlug(category, known)) {
     return {
       title: "News Not Found",
       robots: { index: false, follow: false },
@@ -35,6 +37,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   }
   const primary = coerceNewsCategory(
     (item as { primaryCategory?: string | null }).primaryCategory,
+    known,
   );
   if (primary !== category) {
     return {
@@ -47,13 +50,15 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 export default async function CategoryNewsArticlePage({ params }: Props) {
   const { slug: category, newsSlug } = await params;
-  if (!isNewsCategorySlug(category)) notFound();
+  const known = await listNewsCategorySlugs();
+  if (!isNewsCategorySlug(category, known)) notFound();
 
   const item = await getPublishedNewsBySlug(newsSlug);
   if (!item) notFound();
 
   const primary = coerceNewsCategory(
     (item as { primaryCategory?: string | null }).primaryCategory,
+    known,
   );
   if (primary !== category) {
     permanentRedirect(newsArticlePath(primary, item.slug));

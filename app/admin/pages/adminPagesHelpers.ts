@@ -110,3 +110,36 @@ export function comparableSlug(input: string) {
 export function comparableTitle(input: string) {
   return input.trim().replace(/\s+/g, " ").toLowerCase();
 }
+
+export function mapApiItemToPageRow(item: {
+  id: string;
+  title: string;
+  status: string;
+  slug: string;
+  seoTitle?: string;
+  seoDescription?: string;
+  canonicalUrl?: string;
+  ogImageUrl?: string;
+  content?: unknown;
+  publishAsNews?: boolean;
+}): PageRow {
+  const parsed = parseContent(item.content);
+  return {
+    id: item.id,
+    title: item.title,
+    status: item.status,
+    slug: item.slug,
+    seoTitle: item.seoTitle ?? "",
+    seoDescription: item.seoDescription ?? "",
+    canonicalUrl: item.canonicalUrl ?? "",
+    ogImageUrl: item.ogImageUrl ?? "",
+    contentHtml: parsed.html,
+    templateType: coerceTemplateType(parsed.meta.templateType),
+    game: coerceCloneGame(parsed.meta.game),
+    socialTitle: parsed.meta.socialTitle ?? "",
+    socialDescription: parsed.meta.socialDescription ?? "",
+    socialImageAlt: parsed.meta.socialImageAlt ?? "",
+    metaKeywords: parsed.meta.keywords ?? "",
+    publishAsNews: Boolean(item.publishAsNews),
+  };
+}

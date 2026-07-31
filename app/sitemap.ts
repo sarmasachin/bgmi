@@ -1,6 +1,7 @@
 import { MetadataRoute } from "next";
 import { newsArticlePath } from "@/src/lib/newsCategories";
 import { getSiteUrl } from "@/src/lib/siteUrl";
+import { listNewsCategorySlugs } from "@/src/server/repositories/newsCategoryRepository";
 import { listPublishedNewsForSitemap } from "@/src/server/repositories/newsRepository";
 import { listPublishedPagesForSitemap } from "@/src/server/repositories/pagesRepository";
 import {
@@ -17,8 +18,6 @@ const RESERVED_TOP_SEGMENTS = new Set([
   "bgmi",
   "pubg",
   "news",
-  "ff-max",
-  "free-fire",
   "admin",
   "api",
   "privacy",
@@ -32,11 +31,11 @@ const RESERVED_TOP_SEGMENTS = new Set([
   "free-fire-advance-server",
 ]);
 
-function toPathFromCmsSlug(slug: string): string | null {
+function toPathFromCmsSlug(slug: string, reserved: Set<string>): string | null {
   const cleaned = slug.trim().replace(/^\/+|\/+$/g, "");
   if (!cleaned) return null;
   const top = cleaned.split("/")[0]?.toLowerCase() ?? "";
-  if (RESERVED_TOP_SEGMENTS.has(top)) return null;
+  if (reserved.has(top)) return null;
   return `/${cleaned}`;
 }
 
@@ -44,6 +43,8 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const baseUrl = getSiteUrl();
   const lastmodMap = await getSitemapLastmodMap();
   const lastmod = (path: string) => resolveSitemapLastmod(lastmodMap, path);
+  const categorySlugs = await listNewsCategorySlugs();
+  const reserved = new Set([...RESERVED_TOP_SEGMENTS, ...categorySlugs]);
 
   const staticEntries: MetadataRoute.Sitemap = [
     {
@@ -122,7 +123,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const seen = new Set(staticEntries.map((e) => e.url));
 
   const newsEntries: MetadataRoute.Sitemap = [];
-  for (const cat of ["ff-max", "free-fire"] as const) {
+  for (const cat of categorySlugs) {
     const catUrl = `${baseUrl}/${cat}`;
     if (!seen.has(catUrl)) {
       seen.add(catUrl);
@@ -155,7 +156,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
   const pageEntries: MetadataRoute.Sitemap = [];
   for (const item of pageRows) {
-    const path = toPathFromCmsSlug(item.slug);
+    const path = toPathFromCmsSlug(item.slug, reserved);
     if (!path) continue;
     const url = `${baseUrl}${path}`;
     if (seen.has(url)) continue;

@@ -6,9 +6,10 @@ import { NewsCommentSection } from "@/src/components/NewsCommentSection";
 import { SiteFooter } from "@/src/components/SiteFooter";
 import { ratingWidgetRemountKey } from "@/src/lib/ratingWidgetKey";
 import { extractNewsMeta, resolveNewsSeoDescription } from "@/src/lib/newsContent";
-import { coerceNewsCategory } from "@/src/lib/newsCategories";
+import { coerceNewsCategory, newsCategoryLabel } from "@/src/lib/newsCategories";
 import { getAdPlacementVisibility } from "@/src/server/repositories/adPlacementRepository";
 import { listApprovedCommentsByNewsId } from "@/src/server/repositories/commentsRepository";
+import { listNewsCategories } from "@/src/server/repositories/newsCategoryRepository";
 import { resolveNewsCanonicalUrl } from "@/src/server/repositories/newsRepository";
 import { getRatingSummary } from "@/src/server/repositories/ratingSummaryRepository";
 import { getSettings } from "@/src/server/repositories/settingsRepository";
@@ -79,16 +80,21 @@ export function buildNewsDetailMetadata(item: NewsDetailItem): Metadata {
 }
 
 export async function NewsDetailView({ item }: { item: NewsDetailItem }) {
-  const primary = coerceNewsCategory(item.primaryCategory);
   const meta = extractNewsMeta(item.content);
   const imageAlt = meta.socialImageAlt?.trim() || item.title;
 
-  const [adPlaces, ratingSummary, settings, comments] = await Promise.all([
+  const [adPlaces, ratingSummary, settings, comments, categories] = await Promise.all([
     getAdPlacementVisibility(),
     getRatingSummary("news", item.id),
     getSettings(),
     listApprovedCommentsByNewsId(item.id),
+    listNewsCategories(),
   ]);
+
+  const knownSlugs = categories.map((c) => c.slug);
+  const primary = coerceNewsCategory(item.primaryCategory, knownSlugs);
+  const categoryHref = `/${primary}`;
+  const categoryLabel = newsCategoryLabel(primary, categories);
 
   const baseUrl = getSiteUrl();
   const articleUrl = resolveNewsCanonicalUrl(item.slug, meta.canonicalUrl, primary);
@@ -97,6 +103,7 @@ export async function NewsDetailView({ item }: { item: NewsDetailItem }) {
   const breadcrumbLd = breadcrumbListSchema([
     { name: "Home", url: toCanonicalUrl("/") },
     { name: "News", url: toCanonicalUrl("/news") },
+    { name: categoryLabel, url: toCanonicalUrl(categoryHref) },
     { name: item.title, url: articleUrl },
   ]);
   const articleSchema = newsArticleSchema({
@@ -126,6 +133,9 @@ export async function NewsDetailView({ item }: { item: NewsDetailItem }) {
               </li>
               <li>
                 <Link href="/news">News</Link>
+              </li>
+              <li>
+                <Link href={categoryHref}>{categoryLabel}</Link>
               </li>
               <li aria-current="page">{crumbTitle}</li>
             </ol>

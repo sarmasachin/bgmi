@@ -1,32 +1,70 @@
 /** Public news category hubs + primary URL segment (Sportskeeda-style). */
 
-export const NEWS_CATEGORIES = [
+export type NewsCategoryDef = { slug: string; label: string };
+
+/** Seeded when DB is empty; also offline fallback. */
+export const DEFAULT_NEWS_CATEGORIES: readonly NewsCategoryDef[] = [
   { slug: "ff-max", label: "FF Max" },
   { slug: "free-fire", label: "Free Fire" },
 ] as const;
 
-export type NewsCategorySlug = (typeof NEWS_CATEGORIES)[number]["slug"];
+/** @deprecated Prefer DB-loaded list; alias of defaults for offline UI. */
+export const NEWS_CATEGORIES = DEFAULT_NEWS_CATEGORIES;
 
-export const DEFAULT_NEWS_CATEGORY: NewsCategorySlug = "ff-max";
+/** @deprecated Use string slugs from DB; kept as alias for call sites. */
+export type NewsCategorySlug = string;
 
-const CATEGORY_SET = new Set<string>(NEWS_CATEGORIES.map((c) => c.slug));
+export const DEFAULT_NEWS_CATEGORY = "ff-max";
 
-export function isNewsCategorySlug(value: string): value is NewsCategorySlug {
-  return CATEGORY_SET.has(value);
+const SLUG_RE = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
+
+export function isValidCategorySlugFormat(value: string): boolean {
+  return SLUG_RE.test(value);
 }
 
-export function normalizeNewsCategory(value?: string | null): NewsCategorySlug | null {
+export function normalizeCategorySlugInput(value: string): string {
+  return value
+    .trim()
+    .toLowerCase()
+    .replace(/\s+/g, "-")
+    .replace(/[^a-z0-9-]/g, "")
+    .replace(/-+/g, "-")
+    .replace(/^-+|-+$/g, "");
+}
+
+/** True when slug is in the known list (DB or defaults). */
+export function isNewsCategorySlug(
+  value: string,
+  knownSlugs?: readonly string[],
+): boolean {
+  const trimmed = value.trim().toLowerCase();
+  if (!trimmed || !isValidCategorySlugFormat(trimmed)) return false;
+  if (knownSlugs && knownSlugs.length) return knownSlugs.includes(trimmed);
+  return DEFAULT_NEWS_CATEGORIES.some((c) => c.slug === trimmed);
+}
+
+export function normalizeNewsCategory(
+  value?: string | null,
+  knownSlugs?: readonly string[],
+): string | null {
   const trimmed = (value ?? "").trim().toLowerCase();
   if (!trimmed) return null;
-  return isNewsCategorySlug(trimmed) ? trimmed : null;
+  return isNewsCategorySlug(trimmed, knownSlugs) ? trimmed : null;
 }
 
-export function coerceNewsCategory(value?: string | null): NewsCategorySlug {
-  return normalizeNewsCategory(value) ?? DEFAULT_NEWS_CATEGORY;
+export function coerceNewsCategory(
+  value?: string | null,
+  knownSlugs?: readonly string[],
+): string {
+  return normalizeNewsCategory(value, knownSlugs) ?? DEFAULT_NEWS_CATEGORY;
 }
 
-export function newsCategoryLabel(slug: string): string {
-  const found = NEWS_CATEGORIES.find((c) => c.slug === slug);
+export function newsCategoryLabel(
+  slug: string,
+  categories?: readonly NewsCategoryDef[],
+): string {
+  const list = categories?.length ? categories : DEFAULT_NEWS_CATEGORIES;
+  const found = list.find((c) => c.slug === slug);
   return found?.label ?? slug;
 }
 
@@ -38,33 +76,47 @@ export function newsArticlePath(primaryCategory: string | null | undefined, slug
 }
 
 export function normalizeExtraCategories(
-  primary: NewsCategorySlug,
+  primary: string,
   extras?: string[] | null,
-): NewsCategorySlug[] {
-  const seen = new Set<NewsCategorySlug>();
+  knownSlugs?: readonly string[],
+): string[] {
+  const primaryNorm = coerceNewsCategory(primary, knownSlugs);
+  const seen = new Set<string>();
   for (const raw of extras ?? []) {
-    const cat = normalizeNewsCategory(raw);
-    if (!cat || cat === primary || seen.has(cat)) continue;
+    const cat = normalizeNewsCategory(raw, knownSlugs);
+    if (!cat || cat === primaryNorm || seen.has(cat)) continue;
     seen.add(cat);
   }
   return [...seen];
 }
 
 /** Map Home Clone game → default news primary category. */
-export function newsCategoryFromCloneGame(game?: string | null): NewsCategorySlug {
+export function newsCategoryFromCloneGame(game?: string | null): string {
   if (game === "freefire") return "free-fire";
   if (game === "freefire-max") return "ff-max";
   return DEFAULT_NEWS_CATEGORY;
 }
 
-export function newsCategoryListingTitle(slug: NewsCategorySlug): string {
+export function newsCategoryListingTitle(
+  slug: string,
+  categories?: readonly NewsCategoryDef[],
+): string {
+  const label = newsCategoryLabel(slug, categories);
   if (slug === "ff-max") return "Free Fire Max News";
-  return "Free Fire News";
+  if (slug === "free-fire") return "Free Fire News";
+  return `${label} News`;
 }
 
-export function newsCategoryListingDescription(slug: NewsCategorySlug): string {
+export function newsCategoryListingDescription(
+  slug: string,
+  categories?: readonly NewsCategoryDef[],
+): string {
+  const label = newsCategoryLabel(slug, categories);
   if (slug === "ff-max") {
     return "Latest Free Fire Max news, redeem codes, updates, and guides.";
   }
-  return "Latest Free Fire news, redeem codes, updates, and guides.";
+  if (slug === "free-fire") {
+    return "Latest Free Fire news, redeem codes, updates, and guides.";
+  }
+  return `Latest ${label} news, updates, and guides.`;
 }

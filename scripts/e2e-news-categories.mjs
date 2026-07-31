@@ -52,7 +52,9 @@ function read(rel) {
 function checkLineLimits() {
   const mustStayUnder = [
     "app/admin/news/AdminNewsClient.tsx",
+    "app/admin/news-categories/AdminNewsCategoriesClient.tsx",
     "src/server/repositories/newsRepository.ts",
+    "src/server/repositories/newsCategoryRepository.ts",
     "src/server/repositories/pagesRepository.ts",
     "src/features/news/NewsSection.tsx",
     "src/features/news/NewsDetailView.tsx",
@@ -60,6 +62,7 @@ function checkLineLimits() {
     "src/lib/newsCategories.ts",
     "app/[slug]/[newsSlug]/page.tsx",
     "app/api/admin/news/route.ts",
+    "app/api/admin/news-categories/route.ts",
     "app/sitemap.ts",
     "app/[slug]/page.tsx",
   ];
@@ -96,19 +99,36 @@ function checkStaticWiring() {
   assert(admin.includes("Main category"), "admin missing main category UI");
   assert(admin.includes("Also show in"), "admin missing extra category UI");
   assert(admin.includes("newsArticlePath"), "admin missing primary URL helper");
+  assert(admin.includes("/api/admin/news-categories"), "admin news form must load categories from API");
   assert(!admin.includes("toCanonicalUrl(`/news/${"), "admin still auto-canonical to /news/slug");
 
+  const catAdmin = read("app/admin/news-categories/AdminNewsCategoriesClient.tsx");
+  assert(catAdmin.includes("Add Category"), "categories UI missing add");
+  assert(catAdmin.includes("Update Category"), "categories UI missing update");
+  assert(catAdmin.includes("Delete"), "categories UI missing delete");
+
+  const catApi = read("app/api/admin/news-categories/route.ts");
+  assert(catApi.includes("createNewsCategory"), "categories API missing create");
+  assert(catApi.includes("updateNewsCategory"), "categories API missing update");
+  assert(catApi.includes("deleteNewsCategory"), "categories API missing delete");
+
+  const nav = read("src/server/rbac/routeAccess.ts");
+  assert(nav.includes("/admin/news-categories"), "nav missing News Categories");
+
   const api = read("app/api/admin/news/route.ts");
-  assert(api.includes('primaryCategory: z.enum(["ff-max", "free-fire"])'), "API missing primaryCategory zod");
+  assert(api.includes("categorySlugSchema"), "API missing dynamic categorySlugSchema");
+  assert(api.includes("assertKnownCategories"), "API missing known-category check");
   assert(api.includes("extraCategories"), "API missing extraCategories");
   assert(api.includes("newsArticlePath"), "API push urlPath missing newsArticlePath");
 
   const schema = read("prisma/schema.prisma");
   assert(schema.includes("primaryCategory"), "Prisma missing primaryCategory");
   assert(schema.includes("extraCategories"), "Prisma missing extraCategories");
+  assert(schema.includes("model NewsCategory"), "Prisma missing NewsCategory model");
 
   const articleRoute = read("app/[slug]/[newsSlug]/page.tsx");
   assert(articleRoute.includes("isNewsCategorySlug"), "article route missing category guard");
+  assert(articleRoute.includes("listNewsCategorySlugs"), "article route must use DB category list");
   assert(articleRoute.includes("permanentRedirect"), "wrong-category should redirect");
   assert(articleRoute.includes("NewsDetailView"), "article route missing detail view");
   assert(articleRoute.includes("newsSlug"), "article route must use newsSlug param");
@@ -125,16 +145,26 @@ function checkStaticWiring() {
 
   const slugPage = read("app/[slug]/page.tsx");
   assert(slugPage.includes("isNewsCategorySlug"), "category hub not wired in [slug]");
+  assert(slugPage.includes("listNewsCategorySlugs"), "[slug] must use DB category list");
   assert(slugPage.includes("CategoryNewsListingPage"), "category listing page missing");
 
   const sitemap = read("app/sitemap.ts");
   assert(sitemap.includes("newsArticlePath"), "sitemap not using primary path");
-  assert(sitemap.includes("ff-max"), "sitemap missing ff-max hub");
+  assert(sitemap.includes("listNewsCategorySlugs"), "sitemap must list hubs from DB");
 
   const repo = read("src/server/repositories/newsRepository.ts");
   assert(repo.includes("listPublishedNewsByCategory"), "repo missing category listing");
   assert(repo.includes("primaryCategory"), "repo missing primaryCategory writes");
   assert(repo.includes("extraCategories"), "repo missing extraCategories writes");
+
+  const catRepo = read("src/server/repositories/newsCategoryRepository.ts");
+  assert(catRepo.includes("createNewsCategory"), "category repo missing create");
+  assert(catRepo.includes("deleteNewsCategory"), "category repo missing delete");
+  assert(catRepo.includes("tryPrismaLong"), "category mutations must use tryPrismaLong");
+  assert(
+    (catRepo.match(/tryPrismaLong/g) || []).length >= 3,
+    "create/update/delete must all use tryPrismaLong",
+  );
 
   console.log("PASS  static wiring (admin/API/routes/schema/sitemap)");
 }
@@ -166,6 +196,68 @@ function helperSuite() {
   assert(JSON.stringify(extras("ff-max", ["free-fire", "ff-max", "free-fire"])) === '["free-fire"]', "extras dedupe + drop primary");
   assert(JSON.stringify(extras("free-fire", ["ff-max"])) === '["ff-max"]', "extras allow other hub");
   console.log("PASS  helper: one primary URL + extras listing-only");
+}
+
+/** In-memory NewsCategory CRUD rules (no DB). */
+function categoryCrudSuite() {
+  const rows = [
+    { id: "1", slug: "ff-max", label: "FF Max" },
+    { id: "2", slug: "free-fire", label: "Free Fire" },
+  ];
+  const posts = [{ id: "p1", primaryCategory: "ff-max", extraCategories: ["free-fire"] }];
+
+  function create(slug, label) {
+    if (rows.some((r) => r.slug === slug)) throw new Error("SLUG_EXISTS");
+    const row = { id: String(Date.now()), slug, label };
+    rows.push(row);
+    return row;
+  }
+  function update(id, slug, label) {
+    const existing = rows.find((r) => r.id === id);
+    if (!existing) return null;
+    if (slug !== existing.slug && rows.some((r) => r.slug === slug)) throw new Error("SLUG_EXISTS");
+    const old = existing.slug;
+    existing.slug = slug;
+    existing.label = label;
+    for (const p of posts) {
+      if (p.primaryCategory === old) p.primaryCategory = slug;
+      p.extraCategories = p.extraCategories.map((c) => (c === old ? slug : c));
+    }
+    return existing;
+  }
+  function del(id) {
+    const existing = rows.find((r) => r.id === id);
+    if (!existing) return { ok: false, reason: "NOT_FOUND" };
+    if (posts.some((p) => p.primaryCategory === existing.slug)) {
+      return { ok: false, reason: "IN_USE_PRIMARY" };
+    }
+    if (posts.some((p) => p.extraCategories.includes(existing.slug))) {
+      return { ok: false, reason: "IN_USE_EXTRA" };
+    }
+    if (rows.length <= 1) return { ok: false, reason: "LAST_CATEGORY" };
+    const i = rows.findIndex((r) => r.id === id);
+    rows.splice(i, 1);
+    return { ok: true };
+  }
+
+  const made = create("bgmi-news", "BGMI News");
+  assert(made.slug === "bgmi-news", "create category");
+  try {
+    create("bgmi-news", "Dup");
+    assert(false, "dup slug should throw");
+  } catch (e) {
+    assert(e.message === "SLUG_EXISTS", "dup slug SLUG_EXISTS");
+  }
+  assert(del("2").reason === "IN_USE_EXTRA", "block delete when used as extra");
+  assert(del("1").reason === "IN_USE_PRIMARY", "block delete when used as primary");
+  update("1", "ff-max-v2", "FF Max v2");
+  assert(posts[0].primaryCategory === "ff-max-v2", "slug rename updates posts primary");
+  assert(posts[0].extraCategories.includes("free-fire"), "extras untouched");
+  posts[0].primaryCategory = "free-fire";
+  posts[0].extraCategories = [];
+  assert(del("1").ok === true, "delete unused category");
+  assert(rows.some((r) => r.slug === "bgmi-news"), "other categories remain");
+  console.log("PASS  category CRUD rules (create/dup/in-use/rename/delete)");
 }
 
 async function dbSuite(prisma) {
@@ -271,6 +363,7 @@ async function main() {
   checkLineLimits();
   checkStaticWiring();
   helperSuite();
+  categoryCrudSuite();
 
   if (!process.env.DATABASE_URL) {
     console.log("SKIP  DB tests (no DATABASE_URL)");

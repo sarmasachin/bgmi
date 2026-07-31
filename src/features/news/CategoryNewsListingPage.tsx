@@ -10,6 +10,7 @@ import {
   newsCategoryListingTitle,
   type NewsCategorySlug,
 } from "@/src/lib/newsCategories";
+import { listNewsCategories } from "@/src/server/repositories/newsCategoryRepository";
 import { getSettings } from "@/src/server/repositories/settingsRepository";
 
 type Props = {
@@ -21,12 +22,13 @@ function resolvePage(raw?: number) {
   return Math.max(Number(raw ?? 1) || 1, 1);
 }
 
-export function buildCategoryNewsMetadata(
+export async function buildCategoryNewsMetadata(
   category: NewsCategorySlug,
   page = 1,
-): Metadata {
-  const titleBase = newsCategoryListingTitle(category);
-  const description = newsCategoryListingDescription(category);
+): Promise<Metadata> {
+  const categories = await listNewsCategories();
+  const titleBase = newsCategoryListingTitle(category, categories);
+  const description = newsCategoryListingDescription(category, categories);
   const title = page > 1 ? `${titleBase} — Page ${page}` : titleBase;
   const desc = page > 1 ? `Page ${page} of ${description}` : description;
   const path = page > 1 ? `/${category}?page=${page}` : `/${category}`;
@@ -41,8 +43,8 @@ export function buildCategoryNewsMetadata(
 
 export async function CategoryNewsListingPage({ category, page }: Props) {
   const currentPage = resolvePage(page);
-  const settings = await getSettings();
-  const title = newsCategoryListingTitle(category);
+  const [settings, categories] = await Promise.all([getSettings(), listNewsCategories()]);
+  const title = newsCategoryListingTitle(category, categories);
 
   return (
     <div>

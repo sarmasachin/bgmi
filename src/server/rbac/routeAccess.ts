@@ -11,6 +11,12 @@ export const ADMIN_NAV_ACCESS: ReadonlyArray<{
 }> = [
   { label: "Dashboard", href: "/admin", icon: "dashboard", anyOf: ["dashboard.view"] },
   { label: "News", href: "/admin/news", icon: "news", anyOf: ["news.view"] },
+  {
+    label: "News Categories",
+    href: "/admin/news-categories",
+    icon: "news",
+    anyOf: ["news.view"],
+  },
   { label: "Pages", href: "/admin/pages", icon: "pages", anyOf: ["pages.view"] },
   {
     label: "Game Articles",

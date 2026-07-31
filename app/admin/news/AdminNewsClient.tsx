@@ -6,13 +6,15 @@ import dynamic from "next/dynamic";
 import type { AdminNewsRow } from "@/src/server/admin/mapAdminNewsRows";
 import { useAdminFlash } from "@/src/components/admin/AdminToast";
 import { useAdminDuplicateCheck } from "@/src/hooks/useAdminDuplicateCheck";
+import { useAdminEditorHistory } from "@/src/hooks/useAdminEditorHistory";
 import { readApiError } from "@/src/lib/userFacingError";
 import {
+  DEFAULT_NEWS_CATEGORIES,
   DEFAULT_NEWS_CATEGORY,
-  NEWS_CATEGORIES,
   coerceNewsCategory,
   newsArticlePath,
   normalizeExtraCategories,
+  type NewsCategoryDef,
   type NewsCategorySlug,
 } from "@/src/lib/newsCategories";
 import { toCanonicalUrl } from "@/src/lib/siteUrl";
@@ -75,6 +77,7 @@ export default function AdminNewsClient({
   const [primaryCategory, setPrimaryCategory] =
     useState<NewsCategorySlug>(DEFAULT_NEWS_CATEGORY);
   const [extraCategories, setExtraCategories] = useState<NewsCategorySlug[]>([]);
+  const [categories, setCategories] = useState<NewsCategoryDef[]>([...DEFAULT_NEWS_CATEGORIES]);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [rows, setRows] = useState<AdminNewsRow[]>(initialRows ?? []);
   const [listPage, setListPage] = useState(1);
@@ -162,8 +165,14 @@ export default function AdminNewsClient({
     setShowForm(true);
   }
 
+  const { dismissEditorHistory } = useAdminEditorHistory(showForm, () => {
+    resetFormFields();
+    setShowForm(false);
+  });
+
   function closeForm() {
     resetFormFields();
+    dismissEditorHistory();
     setShowForm(false);
   }
 
@@ -216,6 +225,25 @@ export default function AdminNewsClient({
     if (initialRows !== undefined) return;
     void loadRows(1);
   }, [initialRows]);
+
+  useEffect(() => {
+    let cancelled = false;
+    void (async () => {
+      try {
+        const res = await fetch("/api/admin/news-categories");
+        if (!res.ok) return;
+        const json = await res.json();
+        const rows = (json.data ?? []) as Array<{ slug: string; label: string }>;
+        if (cancelled || !rows.length) return;
+        setCategories(rows.map((r) => ({ slug: r.slug, label: r.label })));
+      } catch {
+        // keep defaults
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   useEffect(() => {
     if (canonicalManualOverride) return;
@@ -630,7 +658,7 @@ export default function AdminNewsClient({
                   setExtraCategories((prev) => normalizeExtraCategories(next, prev));
                 }}
               >
-                {NEWS_CATEGORIES.map((cat) => (
+                {categories.map((cat) => (
                   <option key={cat.slug} value={cat.slug}>
                     {cat.label}
                   </option>
@@ -640,7 +668,7 @@ export default function AdminNewsClient({
             <fieldset className="admin-field admin-input-wide">
               <legend>Also show in (optional)</legend>
               <div style={{ display: "flex", flexWrap: "wrap", gap: 12 }}>
-                {NEWS_CATEGORIES.filter((cat) => cat.slug !== primaryCategory).map((cat) => {
+                {categories.filter((cat) => cat.slug !== primaryCategory).map((cat) => {
                   const checked = extraCategories.includes(cat.slug);
                   return (
                     <label key={cat.slug} style={{ display: "inline-flex", gap: 6, alignItems: "center" }}>

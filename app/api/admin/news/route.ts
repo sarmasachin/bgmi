@@ -8,8 +8,9 @@ import {
   updateNews,
   updateNewsStatus,
 } from "@/src/server/repositories/newsRepository";
-import { newsArticlePath } from "@/src/lib/newsCategories";
+import { isValidCategorySlugFormat, newsArticlePath } from "@/src/lib/newsCategories";
 import { addAuditLog } from "@/src/server/repositories/auditRepository";
+import { listNewsCategorySlugs } from "@/src/server/repositories/newsCategoryRepository";
 import { readAdminJsonBody } from "@/src/server/admin/adminApiHelpers";
 import { getAutoNotifySettings } from "@/src/server/repositories/autoNotifySettingsRepository";
 import { maybeSendPublishPush } from "@/src/server/services/publishPushNotify";
@@ -28,6 +29,12 @@ const seoFields = {
   metaKeywords: z.string().optional(),
 };
 
+const categorySlugSchema = z
+  .string()
+  .min(1)
+  .max(64)
+  .refine((value) => isValidCategorySlugFormat(value), "Invalid category slug");
+
 const createSchema = z.object({
   title: z.string().min(3),
   slug: z.string().min(1),
@@ -35,10 +42,27 @@ const createSchema = z.object({
   content: z.string().optional(),
   featureImage: z.string().optional(),
   status: z.enum(["draft", "published"]).default("draft"),
-  primaryCategory: z.enum(["ff-max", "free-fire"]).optional(),
-  extraCategories: z.array(z.enum(["ff-max", "free-fire"])).optional(),
+  primaryCategory: categorySlugSchema.optional(),
+  extraCategories: z.array(categorySlugSchema).optional(),
   ...seoFields,
 });
+
+async function assertKnownCategories(input: {
+  primaryCategory?: string;
+  extraCategories?: string[];
+}) {
+  const known = await listNewsCategorySlugs();
+  const knownSet = new Set(known);
+  if (input.primaryCategory && !knownSet.has(input.primaryCategory)) {
+    return NextResponse.json({ error: "Unknown primary category." }, { status: 400 });
+  }
+  for (const cat of input.extraCategories ?? []) {
+    if (!knownSet.has(cat)) {
+      return NextResponse.json({ error: "Unknown extra category." }, { status: 400 });
+    }
+  }
+  return null;
+}
 
 function mapNewsWriteError(error: unknown) {
   if (error instanceof Error && error.message === "SLUG_EXISTS") {
@@ -95,6 +119,8 @@ export async function POST(request: NextRequest) {
   if (!parsed.success) {
     return NextResponse.json({ error: "Invalid news payload" }, { status: 400 });
   }
+  const categoryError = await assertKnownCategories(parsed.data);
+  if (categoryError) return categoryError;
   try {
     const item = await createNews(parsed.data);
     await addAuditLog({
@@ -128,8 +154,8 @@ export async function PATCH(request: NextRequest) {
       content: z.string().optional(),
       featureImage: z.string().optional(),
       status: z.enum(["draft", "published"]).optional(),
-      primaryCategory: z.enum(["ff-max", "free-fire"]).optional(),
-      extraCategories: z.array(z.enum(["ff-max", "free-fire"])).optional(),
+      primaryCategory: categorySlugSchema.optional(),
+      extraCategories: z.array(categorySlugSchema).optional(),
       ...seoFields,
     })
     .strict();
@@ -185,6 +211,8 @@ export async function PATCH(request: NextRequest) {
   if (!contentParsed.success) {
     return NextResponse.json({ error: "Invalid update" }, { status: 400 });
   }
+  const categoryError = await assertKnownCategories(contentParsed.data);
+  if (categoryError) return categoryError;
   try {
     const item = await updateNews(contentParsed.data);
     if (!item) return NextResponse.json({ error: "Not found" }, { status: 404 });

@@ -4,6 +4,7 @@ import { FormEvent, useEffect, useMemo, useState } from "react";
 import dynamic from "next/dynamic";
 import { useAdminFlash } from "@/src/components/admin/AdminToast";
 import { useAdminDuplicateCheck } from "@/src/hooks/useAdminDuplicateCheck";
+import { useAdminEditorHistory } from "@/src/hooks/useAdminEditorHistory";
 import { toCanonicalUrl } from "@/src/lib/siteUrl";
 import {
   articleBodyGameForPageSlug,
@@ -15,12 +16,11 @@ import {
   type TemplateType,
   cloneGameLabel,
   coerceCloneGame,
-  coerceTemplateType,
   comparableSlug,
   comparableTitle,
   normalizeSlugInput,
-  parseContent,
   slugifyFromTitle,
+  mapApiItemToPageRow,
 } from "./adminPagesHelpers";
 
 const RichTextEditor = dynamic(
@@ -139,6 +139,17 @@ export default function AdminPagesClient({ initialRows }: Props) {
     setShowForm(true);
   }
 
+  const { dismissEditorHistory } = useAdminEditorHistory(showForm, () => {
+    resetFormFields();
+    setShowForm(false);
+  });
+
+  function closeForm() {
+    resetFormFields();
+    dismissEditorHistory();
+    setShowForm(false);
+  }
+
   async function loadRows() {
     try {
       const res = await fetch("/api/admin/pages");
@@ -148,43 +159,9 @@ export default function AdminPagesClient({ initialRows }: Props) {
         return;
       }
       const json = (await res.json()) as {
-        data?: Array<{
-          id: string;
-          title: string;
-          status: string;
-          slug: string;
-          seoTitle?: string;
-          seoDescription?: string;
-          canonicalUrl?: string;
-          ogImageUrl?: string;
-          content?: unknown;
-          publishAsNews?: boolean;
-        }>;
+        data?: Array<Parameters<typeof mapApiItemToPageRow>[0]>;
       };
-
-      setRows(
-        (json.data ?? []).map((item) => {
-          const parsed = parseContent(item.content);
-          return {
-            id: item.id,
-            title: item.title,
-            status: item.status,
-            slug: item.slug,
-            seoTitle: item.seoTitle ?? "",
-            seoDescription: item.seoDescription ?? "",
-            canonicalUrl: item.canonicalUrl ?? "",
-            ogImageUrl: item.ogImageUrl ?? "",
-            contentHtml: parsed.html,
-            templateType: coerceTemplateType(parsed.meta.templateType),
-            game: coerceCloneGame(parsed.meta.game),
-            socialTitle: parsed.meta.socialTitle ?? "",
-            socialDescription: parsed.meta.socialDescription ?? "",
-            socialImageAlt: parsed.meta.socialImageAlt ?? "",
-            metaKeywords: parsed.meta.keywords ?? "",
-            publishAsNews: Boolean(item.publishAsNews),
-          };
-        }),
-      );
+      setRows((json.data ?? []).map(mapApiItemToPageRow));
     } catch {
       setMessage("Network error. Please retry.");
       setRows([]);
@@ -397,8 +374,7 @@ export default function AdminPagesClient({ initialRows }: Props) {
       } else {
         setMessage(editingId ? "Clone updated." : "Clone created.");
       }
-      resetFormFields();
-      setShowForm(false);
+      closeForm();
       await loadRows();
     } catch (error) {
       setMessage(
@@ -640,10 +616,7 @@ export default function AdminPagesClient({ initialRows }: Props) {
           <button
             type="button"
             className="admin-pages-btn admin-pages-btn-edit"
-            onClick={() => {
-              resetFormFields();
-              setShowForm(false);
-            }}
+            onClick={closeForm}
           >
             Close
           </button>
