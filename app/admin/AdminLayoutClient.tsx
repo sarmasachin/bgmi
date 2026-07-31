@@ -277,6 +277,7 @@ export default function AdminLayoutClient({ children }: { children: ReactNode })
                       <Link
                         key={item.label}
                         href={item.href}
+                        replace
                         className={`admin-nav-link ${isActive ? "is-active" : ""}`}
                         onClick={() => setMobileMenuOpen(false)}
                       >

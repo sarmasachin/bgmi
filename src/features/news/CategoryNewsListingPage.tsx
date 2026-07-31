@@ -47,7 +47,7 @@ export async function CategoryNewsListingPage({ category, page }: Props) {
   return (
     <div>
       <HomeHeader siteTitle={settings.homeDisplay.headerTitle} navigation={settings.navigation} />
-      <main className="page-container" style={{ paddingBottom: 40 }}>
+      <main className="page-container news-listing-page">
         <h1 className="main-title">{title}</h1>
         <AdSlot slotKey="news_list_top" />
         <NewsSection page={currentPage} category={category} heading="Latest News" />

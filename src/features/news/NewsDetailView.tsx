@@ -6,10 +6,7 @@ import { NewsCommentSection } from "@/src/components/NewsCommentSection";
 import { SiteFooter } from "@/src/components/SiteFooter";
 import { ratingWidgetRemountKey } from "@/src/lib/ratingWidgetKey";
 import { extractNewsMeta, resolveNewsSeoDescription } from "@/src/lib/newsContent";
-import {
-  coerceNewsCategory,
-  newsCategoryLabel,
-} from "@/src/lib/newsCategories";
+import { coerceNewsCategory } from "@/src/lib/newsCategories";
 import { getAdPlacementVisibility } from "@/src/server/repositories/adPlacementRepository";
 import { listApprovedCommentsByNewsId } from "@/src/server/repositories/commentsRepository";
 import { resolveNewsCanonicalUrl } from "@/src/server/repositories/newsRepository";
@@ -83,8 +80,6 @@ export function buildNewsDetailMetadata(item: NewsDetailItem): Metadata {
 
 export async function NewsDetailView({ item }: { item: NewsDetailItem }) {
   const primary = coerceNewsCategory(item.primaryCategory);
-  const categoryHref = `/${primary}`;
-  const categoryLabel = newsCategoryLabel(primary);
   const meta = extractNewsMeta(item.content);
   const imageAlt = meta.socialImageAlt?.trim() || item.title;
 
@@ -102,7 +97,6 @@ export async function NewsDetailView({ item }: { item: NewsDetailItem }) {
   const breadcrumbLd = breadcrumbListSchema([
     { name: "Home", url: toCanonicalUrl("/") },
     { name: "News", url: toCanonicalUrl("/news") },
-    { name: categoryLabel, url: toCanonicalUrl(categoryHref) },
     { name: item.title, url: articleUrl },
   ]);
   const articleSchema = newsArticleSchema({
@@ -132,9 +126,6 @@ export async function NewsDetailView({ item }: { item: NewsDetailItem }) {
               </li>
               <li>
                 <Link href="/news">News</Link>
-              </li>
-              <li>
-                <Link href={categoryHref}>{categoryLabel}</Link>
               </li>
               <li aria-current="page">{crumbTitle}</li>
             </ol>

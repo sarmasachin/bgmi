@@ -73,7 +73,7 @@ export default async function GamesLayout({ children }: { children: React.ReactN
     getGameArticleHtml("bgmi"),
     getGameArticleHtml("pubg"),
     getGameArticleHtml("freefire"),
-    listPublishedNews(1, 10),
+    listPublishedNews(1, 5),
     getFfHomeCards(),
     getFfPageCards("bgmi"),
     getFfPageCards("pubg"),
@@ -94,6 +94,7 @@ export default async function GamesLayout({ children }: { children: React.ReactN
     dateLabel: formatNewsPublishedAtIst(rawDate),
     dateIso: date && !Number.isNaN(date.getTime()) ? date.toISOString().slice(0, 10) : "",
     categoryLabel: newsCategoryLabel(primary),
+    featureImage: (item.featureImage ?? "").trim(),
     };
   });
   const baseUrl = getSiteUrl();

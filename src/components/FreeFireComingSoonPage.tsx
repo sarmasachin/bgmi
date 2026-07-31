@@ -100,7 +100,7 @@ export async function FreeFireComingSoonPage({ variant }: { variant: FreeFireVar
       getGameFaqItems(faqGame),
       listApprovedTestimonials({ game: variant === "freefire-max" ? "freefire-max" : "freefire" }),
       variant === "freefire-max"
-        ? listPublishedNews(1, 10)
+        ? listPublishedNews(1, 5)
         : Promise.resolve({ data: [] as Awaited<ReturnType<typeof listPublishedNews>>["data"], total: 0 }),
       getGameArticleHtml(articleGame),
       variant === "freefire-max" ? getFfPageCards("freefire-max") : Promise.resolve(null),
@@ -122,6 +122,7 @@ export async function FreeFireComingSoonPage({ variant }: { variant: FreeFireVar
       dateLabel: formatNewsPublishedAtIst(rawDate),
       dateIso: date && !Number.isNaN(date.getTime()) ? date.toISOString().slice(0, 10) : "",
       categoryLabel: newsCategoryLabel(primary),
+      featureImage: (item.featureImage ?? "").trim(),
     };
   });
 
