@@ -33,7 +33,7 @@ function maxDate(dates: Date[]): Date | null {
   return best;
 }
 
-/** Record that admin updated these public paths (sitemap lastmod). */
+/** Kept for admin save hooks; sitemap lastmod itself uses content updatedAt only. */
 export async function touchSitemapLastmod(paths: string[]): Promise<void> {
   const unique = [
     ...new Set(
@@ -59,18 +59,20 @@ export async function touchSitemapLastmod(paths: string[]): Promise<void> {
   });
 }
 
-/** Safe fire-and-forget bump — never fails the parent admin save. */
 export function bumpSitemapLastmod(paths: string[]): void {
   void touchSitemapLastmod(paths).catch(() => {
     /* ignore */
   });
 }
 
-async function loadContentLastmods(): Promise<Map<string, Date>> {
-  const map = new Map<string, Date>();
+/**
+ * lastmod per static URL = that page's own content `updatedAt` in DB.
+ * Does not stamp "now" on sitemap generate, and does not use old publishedAt.
+ */
+export async function getSitemapLastmodMap(): Promise<Map<string, Date>> {
   const allKeys = [...new Set(Object.values(SITEMAP_PATH_CONTENT_KEYS).flat())];
 
-  const [settingRows, legalRows, latestNews] = await Promise.all([
+  const [settingRows, legalRows] = await Promise.all([
     tryPrismaLong(async () =>
       prisma.siteSetting.findMany({
         where: { key: { in: allKeys } },
@@ -83,12 +85,6 @@ async function loadContentLastmods(): Promise<Map<string, Date>> {
         select: { slug: true, updatedAt: true },
       }),
     ),
-    tryPrismaLong(async () =>
-      prisma.newsPost.findFirst({
-        orderBy: { updatedAt: "desc" },
-        select: { updatedAt: true },
-      }),
-    ),
   ]);
 
   const keyToDate = new Map<string, Date>();
@@ -96,64 +92,27 @@ async function loadContentLastmods(): Promise<Map<string, Date>> {
     keyToDate.set(row.key, row.updatedAt);
   }
 
-  for (const [path, keys] of Object.entries(SITEMAP_PATH_CONTENT_KEYS)) {
+  const out = new Map<string, Date>();
+  for (const path of SITEMAP_STATIC_PATHS) {
+    const keys = SITEMAP_PATH_CONTENT_KEYS[path] ?? [];
     const dates = keys
       .map((key) => keyToDate.get(key))
       .filter((value): value is Date => value instanceof Date);
     const best = maxDate(dates);
-    if (best) map.set(path, best);
+    if (best) out.set(path, best);
   }
 
   for (const row of legalRows ?? []) {
     const path = `/${row.slug}`;
-    const prev = map.get(path);
+    const prev = out.get(path);
     if (!prev || row.updatedAt.getTime() > prev.getTime()) {
-      map.set(path, row.updatedAt);
+      out.set(path, row.updatedAt);
     }
-  }
-
-  if (latestNews?.updatedAt) {
-    const prev = map.get("/news");
-    if (!prev || latestNews.updatedAt.getTime() > prev.getTime()) {
-      map.set("/news", latestNews.updatedAt);
-    }
-  }
-
-  return map;
-}
-
-/**
- * Effective lastmod per static path = newest of:
- * - admin touch timestamp
- * - real content `updatedAt` in DB (Page Cards, articles, FAQs, legal, news, …)
- * Never uses a fake fixed calendar date like 2026-01-01.
- */
-export async function getSitemapLastmodMap(): Promise<Map<string, Date>> {
-  const [touchRow, contentMap] = await Promise.all([
-    tryPrismaLong(async () => prisma.siteSetting.findUnique({ where: { key: KEY } })),
-    loadContentLastmods(),
-  ]);
-
-  const touchMap = parseMap(touchRow?.value);
-  const out = new Map<string, Date>();
-
-  for (const path of SITEMAP_STATIC_PATHS) {
-    const candidates: Date[] = [];
-    const touchIso = touchMap[path];
-    if (touchIso) {
-      const touchDate = new Date(touchIso);
-      if (!Number.isNaN(touchDate.getTime())) candidates.push(touchDate);
-    }
-    const contentDate = contentMap.get(path);
-    if (contentDate) candidates.push(contentDate);
-    const best = maxDate(candidates);
-    if (best) out.set(path, best);
   }
 
   return out;
 }
 
-/** Returns undefined when no real update history exists yet. */
 export function resolveSitemapLastmod(
   map: Map<string, Date>,
   path: string,

@@ -293,16 +293,17 @@ export async function listPublishedNewsByCategory(
 
 /** All published news for sitemap.xml (slug + primary category + dates). */
 export async function listPublishedNewsForSitemap() {
-  const dbResult = await tryPrisma(async () =>
+  const dbResult = await tryPrismaLong(async () =>
     prisma.newsPost.findMany({
       where: { status: "published" },
       select: {
         slug: true,
         primaryCategory: true,
+        extraCategories: true,
         updatedAt: true,
-        publishedAt: true,
+        featureImage: true,
       },
-      orderBy: [{ publishedAt: "desc" }, { updatedAt: "desc" }],
+      orderBy: [{ updatedAt: "desc" }],
     }),
   );
   if (dbResult) return dbResult;
@@ -312,8 +313,9 @@ export async function listPublishedNewsForSitemap() {
     .map((item) => ({
       slug: item.slug,
       primaryCategory: readPrimaryCategory(item),
-      updatedAt: item.updatedAt ? new Date(item.updatedAt) : new Date(),
-      publishedAt: item.publishedAt ? new Date(item.publishedAt) : null,
+      extraCategories: Array.isArray(item.extraCategories) ? item.extraCategories : [],
+      updatedAt: item.updatedAt ? new Date(item.updatedAt) : undefined,
+      featureImage: item.featureImage ?? null,
     }));
 }
 

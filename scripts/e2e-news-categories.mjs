@@ -63,7 +63,7 @@ function checkLineLimits() {
     "app/[slug]/[newsSlug]/page.tsx",
     "app/api/admin/news/route.ts",
     "app/api/admin/news-categories/route.ts",
-    "app/sitemap.ts",
+    "src/server/sitemap/buildSitemap.ts",
     "app/[slug]/page.tsx",
   ];
   const failures = [];
@@ -148,7 +148,7 @@ function checkStaticWiring() {
   assert(slugPage.includes("listNewsCategorySlugs"), "[slug] must use DB category list");
   assert(slugPage.includes("CategoryNewsListingPage"), "category listing page missing");
 
-  const sitemap = read("app/sitemap.ts");
+  const sitemap = read("src/server/sitemap/buildSitemap.ts");
   assert(sitemap.includes("newsArticlePath"), "sitemap not using primary path");
   assert(sitemap.includes("listNewsCategorySlugs"), "sitemap must list hubs from DB");
 

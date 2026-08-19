@@ -277,8 +277,7 @@ export async function listPages() {
 export async function listPublishedPagesForSitemap(): Promise<
   Array<{ slug: string; updatedAt: Date }>
 > {
-  await dedupeDuplicatePageSlugs();
-  const dbData = await tryPrisma(async () =>
+  const dbData = await tryPrismaLong(async () =>
     prisma.pageTemplate.findMany({
       where: { status: "published" },
       select: { slug: true, updatedAt: true },
@@ -295,8 +294,14 @@ export async function listPublishedPagesForSitemap(): Promise<
         .filter((p) => p.status === "published")
         .map((row) => ({
           slug: row.slug,
-          updatedAt: new Date(),
-        }));
+          updatedAt:
+            row.updatedAt instanceof Date
+              ? row.updatedAt
+              : typeof row.updatedAt === "string"
+                ? new Date(row.updatedAt)
+                : new Date(0),
+        }))
+        .filter((row) => !Number.isNaN(row.updatedAt.getTime()) && row.updatedAt.getTime() > 0);
 
   return rows.filter((row) => {
     const slug = (row.slug || "").trim();

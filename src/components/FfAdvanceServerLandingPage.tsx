@@ -17,7 +17,8 @@ import {
   webPageSchema,
 } from "@/src/lib/schema";
 import { toCanonicalUrl } from "@/src/lib/siteUrl";
-import { getAdvanceServerPage } from "@/src/server/repositories/advanceServerPageRepository";
+import { toSitemapLastmodIst } from "@/src/lib/sitemapLastmod";
+import { getAdvanceServerPage, getAdvanceServerUpdatedAt } from "@/src/server/repositories/advanceServerPageRepository";
 import { listApprovedPageComments } from "@/src/server/repositories/pageCommentsRepository";
 import { getRatingSummary } from "@/src/server/repositories/ratingSummaryRepository";
 import { getSettings } from "@/src/server/repositories/settingsRepository";
@@ -39,11 +40,12 @@ function renderCardPoint(cardId: string, point: string) {
  * No APK hosted and no publisher / Garena outbound links.
  */
 export async function FfAdvanceServerLandingPage() {
-  const [settings, page, pageComments, ratingSummary] = await Promise.all([
+  const [settings, page, pageComments, ratingSummary, contentUpdatedAt] = await Promise.all([
     getSettings(),
     getAdvanceServerPage(),
     listApprovedPageComments(FREE_FIRE_ADVANCE_SERVER_PAGE_KEY),
     getRatingSummary("tool", FREE_FIRE_ADVANCE_SERVER_PAGE_KEY),
+    getAdvanceServerUpdatedAt(),
   ]);
   const faqItems = page.faqs.map((item) => ({
     id: item.id,
@@ -64,7 +66,7 @@ export async function FfAdvanceServerLandingPage() {
     description: page.seoDescription,
     url: canonical,
     image: ogImageAbs,
-    dateModified: new Date().toISOString().slice(0, 10),
+    dateModified: toSitemapLastmodIst(contentUpdatedAt),
     keywords: [...page.seoKeywords],
     inLanguage: "en",
   });

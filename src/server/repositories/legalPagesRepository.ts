@@ -88,6 +88,30 @@ export async function listLegalPages() {
   return dbData ?? mockStore.legalPages;
 }
 
+export async function listPublishedLegalForSitemap(): Promise<
+  Array<{ slug: string; updatedAt: Date }>
+> {
+  const dbData = await tryPrismaLong(async () =>
+    prisma.legalPage.findMany({
+      where: { status: "published" },
+      select: { slug: true, updatedAt: true },
+    }),
+  );
+  if (dbData) return dbData;
+  return mockStore.legalPages
+    .filter((row) => row.status === "published" && row.slug)
+    .map((row) => ({
+      slug: row.slug,
+      updatedAt:
+        row.updatedAt instanceof Date
+          ? row.updatedAt
+          : typeof row.updatedAt === "string"
+            ? new Date(row.updatedAt)
+            : new Date(0),
+    }))
+    .filter((row) => row.updatedAt.getTime() > 0);
+}
+
 export const getPublishedLegalPageBySlug = cache(async (slug: string) => {
   const normalized = normalizeLegalSlug(slug);
   if (!normalized) return null;

@@ -1,4 +1,4 @@
-import { getDefaultAdvanceServerPage, FREE_FIRE_ADVANCE_SERVER_PATH } from "@/src/lib/ffAdvanceServerPage";
+import { getDefaultAdvanceServerPage } from "@/src/lib/ffAdvanceServerPage";
 import type {
   FfAdvanceServerPageContent,
   FfAsPageCard,
@@ -6,7 +6,6 @@ import type {
   FfAsPageTable,
 } from "@/src/lib/advanceServerPageTypes";
 import { prisma, tryPrisma, tryPrismaLong } from "@/src/server/dbSafe";
-import { bumpSitemapLastmod } from "@/src/server/repositories/sitemapLastmodRepository";
 
 const KEY = "settings:advanceServerPage";
 
@@ -210,6 +209,17 @@ export async function getAdvanceServerPage(): Promise<FfAdvanceServerPageContent
   return normalizeAdvanceServerPage(row.value);
 }
 
+/** Real DB update time for sitemap / JSON-LD — never a fake UTC "today". */
+export async function getAdvanceServerUpdatedAt(): Promise<Date | null> {
+  const row = await tryPrismaLong(async () =>
+    prisma.siteSetting.findUnique({
+      where: { key: KEY },
+      select: { updatedAt: true },
+    }),
+  );
+  return row?.updatedAt ?? null;
+}
+
 export async function getAdvanceServerPageForAdmin(): Promise<{
   page: FfAdvanceServerPageContent;
   usingDefault: boolean;
@@ -234,7 +244,6 @@ export async function saveAdvanceServerPage(
     return true;
   });
   if (saved === null && process.env.DATABASE_URL) throw new Error("DB_UNAVAILABLE");
-  bumpSitemapLastmod([FREE_FIRE_ADVANCE_SERVER_PATH]);
   return { page, usingDefault: false };
 }
 
@@ -247,6 +256,5 @@ export async function clearAdvanceServerPage(): Promise<{
     return true;
   });
   if (deleted === null && process.env.DATABASE_URL) throw new Error("DB_UNAVAILABLE");
-  bumpSitemapLastmod([FREE_FIRE_ADVANCE_SERVER_PATH]);
   return { page: getDefaultAdvanceServerPage(), usingDefault: true };
 }
