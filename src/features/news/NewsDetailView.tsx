@@ -1,17 +1,14 @@
 import { AdSlot } from "@/src/components/AdSlot";
-import { RatingWidget } from "@/src/components/RatingWidget";
 import { ClientErrorBoundary } from "@/src/components/ClientErrorBoundary";
 import { HomeHeader } from "@/src/components/HomeHeader";
 import { NewsCommentSection } from "@/src/components/NewsCommentSection";
 import { SiteFooter } from "@/src/components/SiteFooter";
-import { ratingWidgetRemountKey } from "@/src/lib/ratingWidgetKey";
 import { extractNewsMeta, resolveNewsSeoDescription } from "@/src/lib/newsContent";
 import { coerceNewsCategory, newsCategoryLabel } from "@/src/lib/newsCategories";
 import { getAdPlacementVisibility } from "@/src/server/repositories/adPlacementRepository";
 import { listApprovedCommentsByNewsId } from "@/src/server/repositories/commentsRepository";
 import { listNewsCategories } from "@/src/server/repositories/newsCategoryRepository";
 import { resolveNewsCanonicalUrl } from "@/src/server/repositories/newsRepository";
-import { getRatingSummary } from "@/src/server/repositories/ratingSummaryRepository";
 import { getSettings } from "@/src/server/repositories/settingsRepository";
 import { getSiteUrl, toCanonicalUrl } from "@/src/lib/siteUrl";
 import { breadcrumbListSchema, newsArticleSchema } from "@/src/lib/schema";
@@ -83,9 +80,8 @@ export async function NewsDetailView({ item }: { item: NewsDetailItem }) {
   const meta = extractNewsMeta(item.content);
   const imageAlt = meta.socialImageAlt?.trim() || item.title;
 
-  const [adPlaces, ratingSummary, settings, comments, categories] = await Promise.all([
+  const [adPlaces, settings, comments, categories] = await Promise.all([
     getAdPlacementVisibility(),
-    getRatingSummary("news", item.id),
     getSettings(),
     listApprovedCommentsByNewsId(item.id),
     listNewsCategories(),
@@ -118,7 +114,6 @@ export async function NewsDetailView({ item }: { item: NewsDetailItem }) {
     dateModified: item.updatedAt,
     image: meta.ogImageUrl?.trim() || item.featureImage || `${baseUrl}${DEFAULT_OG_IMAGE_PATH}`,
     mainEntityOfPage: articleUrl,
-    ratingSummary,
   });
 
   return (
@@ -164,15 +159,6 @@ export async function NewsDetailView({ item }: { item: NewsDetailItem }) {
           ) : null}
           {adPlaces.newsArticle.news_detail_mid ? <AdSlot slotKey="news_detail_mid" /> : null}
           {adPlaces.newsArticle.news_detail_bottom ? <AdSlot slotKey="news_detail_bottom" /> : null}
-          <ClientErrorBoundary label="Rating">
-            <RatingWidget
-              key={ratingWidgetRemountKey("news", item.id)}
-              title="Rate this news article"
-              targetType="news"
-              targetId={item.id}
-              initialSummary={ratingSummary}
-            />
-          </ClientErrorBoundary>
         </article>
         <ClientErrorBoundary label="Comments">
           <NewsCommentSection newsId={item.id} initialComments={comments} />
