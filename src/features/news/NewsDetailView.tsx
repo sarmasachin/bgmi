@@ -16,7 +16,7 @@ import { getSettings } from "@/src/server/repositories/settingsRepository";
 import { getSiteUrl, toCanonicalUrl } from "@/src/lib/siteUrl";
 import { breadcrumbListSchema, newsArticleSchema } from "@/src/lib/schema";
 import { buildSocialMetadata, DEFAULT_OG_IMAGE_PATH } from "@/src/lib/socialMeta";
-import { formatNewsPublishedAtIst } from "@/src/lib/formatNewsPublishedAt";
+import { formatNewsPublishedAtIst, latestNewsDateValue } from "@/src/lib/formatNewsPublishedAt";
 import type { Metadata } from "next";
 import Link from "next/link";
 
@@ -142,7 +142,7 @@ export async function NewsDetailView({ item }: { item: NewsDetailItem }) {
           </nav>
           <h1>{item.title}</h1>
           <p className="news-detail-published">
-            {formatNewsPublishedAtIst(item.publishedAt ?? item.createdAt)}
+            {formatNewsPublishedAtIst(latestNewsDateValue(item))}
           </p>
           {adPlaces.newsArticle.news_detail_top ? <AdSlot slotKey="news_detail_top" /> : null}
           {item.featureImage ? (

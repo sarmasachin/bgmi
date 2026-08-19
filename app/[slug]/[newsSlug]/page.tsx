@@ -13,6 +13,8 @@ import { getPublishedNewsBySlug } from "@/src/server/repositories/newsRepository
 import { notFound, permanentRedirect } from "next/navigation";
 import type { Metadata } from "next";
 
+export const dynamic = "force-dynamic";
+
 type Props = {
   /** First segment must share the name `slug` with `app/[slug]` (Next.js rule). */
   params: Promise<{ slug: string; newsSlug: string }>;

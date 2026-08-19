@@ -21,7 +21,7 @@ import {
   newsArticlePath,
   newsCategoryLabel,
 } from "@/src/lib/newsCategories";
-import { formatNewsPublishedAtIst } from "@/src/lib/formatNewsPublishedAt";
+import { formatNewsPublishedAtIst, latestNewsDateValue } from "@/src/lib/formatNewsPublishedAt";
 import { faqSchema, toolAppReviewSchema } from "@/src/lib/schema";
 import { getSiteUrl, toCanonicalUrl } from "@/src/lib/siteUrl";
 import { buildSocialMetadata } from "@/src/lib/socialMeta";
@@ -107,7 +107,7 @@ export async function FreeFireComingSoonPage({ variant }: { variant: FreeFireVar
     ]);
 
   const newsItems = (homeNews.data ?? []).map((item) => {
-    const rawDate = item.publishedAt ?? item.createdAt ?? null;
+    const rawDate = latestNewsDateValue(item);
     const date = rawDate ? new Date(rawDate) : null;
     const excerpt = (item.excerpt ?? "").trim();
     const primary = coerceNewsCategory(

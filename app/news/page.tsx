@@ -8,6 +8,8 @@ import { buildSocialMetadata } from "@/src/lib/socialMeta";
 import { getNewsListingSeo } from "@/src/server/repositories/listingSeoRepository";
 import { getSettings } from "@/src/server/repositories/settingsRepository";
 
+export const dynamic = "force-dynamic";
+
 type Props = {
   searchParams: Promise<{ page?: string }>;
 };

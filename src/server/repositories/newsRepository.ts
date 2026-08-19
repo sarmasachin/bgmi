@@ -1,7 +1,7 @@
 import { cache } from "react";
 import type { Prisma } from "@prisma/client";
 import { mockStore } from "@/src/server/mockStore";
-import { prisma, tryPrisma } from "@/src/server/dbSafe";
+import { prisma, tryPrisma, tryPrismaLong } from "@/src/server/dbSafe";
 import { sanitizeHtml } from "@/src/lib/sanitizeHtml";
 import { toCanonicalUrl } from "@/src/lib/siteUrl";
 import { extractNewsHtml, extractNewsMeta, type NewsMeta } from "@/src/lib/newsContent";
@@ -385,12 +385,11 @@ export async function createNews(input: NewsInput) {
 }
 
 export async function updateNewsStatus(id: string, status: string) {
-  const dbResult = await tryPrisma(async () => {
+  const dbResult = await tryPrismaLong(async () => {
     const existing = await prisma.newsPost.findUnique({ where: { id } });
     if (!existing) return null;
 
-    const nextPublishedAt =
-      status === "published" ? (existing.publishedAt ?? new Date()) : null;
+    const nextPublishedAt = status === "published" ? new Date() : null;
 
     return prisma.newsPost.update({
       where: { id },
@@ -404,7 +403,7 @@ export async function updateNewsStatus(id: string, status: string) {
 
   const item = mockStore.news.find((news) => news.id === id);
   if (!item) return null;
-  if (status === "published" && !(item as { publishedAt?: string }).publishedAt) {
+  if (status === "published") {
     (item as { publishedAt?: string }).publishedAt = new Date().toISOString();
   }
   if (status !== "published") {
@@ -425,7 +424,7 @@ export async function updateNews(
 
   const { primaryCategory, extraCategories } = resolveCategoriesFromInput(input);
 
-  const dbResult = await tryPrisma(async () => {
+  const dbResult = await tryPrismaLong(async () => {
     const existing = await prisma.newsPost.findUnique({ where: { id: input.id } });
     if (!existing) return null;
 

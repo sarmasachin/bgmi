@@ -8,7 +8,7 @@ import {
   newsCategoryLabel,
   type NewsCategorySlug,
 } from "@/src/lib/newsCategories";
-import { formatNewsPublishedAtIst } from "@/src/lib/formatNewsPublishedAt";
+import { formatNewsPublishedAtIst, latestNewsDateValue } from "@/src/lib/formatNewsPublishedAt";
 import Link from "next/link";
 
 /** 15 per page: pattern = 1 big + 4 cards, repeated (3 blocks). */
@@ -132,7 +132,7 @@ export async function NewsSection({ page = 1, category, heading }: Props) {
       title: item.title,
       excerpt: item.excerpt ?? "",
       category: newsCategoryLabel(primary),
-      publishedAt: formatNewsPublishedAtIst(item.publishedAt ?? item.createdAt),
+      publishedAt: formatNewsPublishedAtIst(latestNewsDateValue(item)),
       featureImage: item.featureImage ?? "",
       imageClass: `news-image-${(index % 5) + 1}`,
     };

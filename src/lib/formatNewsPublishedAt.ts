@@ -1,4 +1,20 @@
-/** Format news publish time for public UI: `Aug 01, 2026 00:00 IST` */
+/** Pick the newest of published / updated / created for public date labels. */
+export function latestNewsDateValue(item: {
+  publishedAt?: Date | string | null;
+  updatedAt?: Date | string | null;
+  createdAt?: Date | string | null;
+}): Date | string | null {
+  const values = [item.publishedAt, item.updatedAt, item.createdAt];
+  let latest: Date | null = null;
+  for (const value of values) {
+    if (!value) continue;
+    const date = value instanceof Date ? value : new Date(value);
+    if (Number.isNaN(date.getTime())) continue;
+    if (!latest || date.getTime() > latest.getTime()) latest = date;
+  }
+  return latest;
+}
+
 export function formatNewsPublishedAtIst(value: Date | string | null | undefined): string {
   if (!value) return "—";
   const date = value instanceof Date ? value : new Date(value);
