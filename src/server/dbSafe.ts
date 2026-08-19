@@ -84,4 +84,17 @@ export async function tryPrismaLong<T>(runner: () => Promise<T>): Promise<T | nu
   }
 }
 
+/**
+ * Best-effort write (audit). Never starts DB cooldown — a slow log
+ * must not log the admin out or skip later Prisma calls.
+ */
+export async function tryPrismaSoft<T>(runner: () => Promise<T>): Promise<T | null> {
+  if (!process.env.DATABASE_URL) return null;
+  try {
+    return await withTimeout(runner(), PRISMA_LONG_TIMEOUT_MS);
+  } catch {
+    return null;
+  }
+}
+
 export { prisma };

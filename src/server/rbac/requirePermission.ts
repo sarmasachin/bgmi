@@ -1,7 +1,6 @@
 import { NextResponse } from "next/server";
 import { getAdminSession } from "@/src/server/auth";
-import { isPrismaUnavailable } from "@/src/server/dbSafe";
-import { getAdminUserAuthSnapshot } from "@/src/server/repositories/adminUsersRepository";
+import { resolveAdminAuthFromDb } from "@/src/server/repositories/adminUsersRepository";
 import {
   can,
   canAll,
@@ -23,26 +22,24 @@ export async function getAdminAuthSubject(): Promise<AdminSessionSubject | null>
   const session = await getAdminSession();
   if (!session) return null;
 
-  const live = await getAdminUserAuthSnapshot(session.sub);
-  if (!live) {
-    // DB timeout/cooldown is not a logout — keep cookie RBAC until Prisma is back.
-    if (isPrismaUnavailable()) {
-      const fromCookie = subjectFromSessionPayload(session);
-      return {
-        userId: fromCookie.userId,
-        email: fromCookie.email,
-        role: fromCookie.role,
-        permissions: fromCookie.permissions,
-      };
-    }
-    return null;
+  const loaded = await resolveAdminAuthFromDb(session.sub);
+  if (loaded.status === "ok") {
+    return {
+      userId: loaded.user.id,
+      email: loaded.user.email,
+      role: loaded.user.role,
+      permissions: loaded.user.permissions,
+    };
   }
+  // Inactive account: real logout. DB miss/timeout: keep signed cookie (do not kick admin).
+  if (loaded.status === "inactive") return null;
 
+  const fromCookie = subjectFromSessionPayload(session);
   return {
-    userId: live.id,
-    email: live.email,
-    role: live.role,
-    permissions: live.permissions,
+    userId: fromCookie.userId,
+    email: fromCookie.email,
+    role: fromCookie.role,
+    permissions: fromCookie.permissions,
   };
 }
 

@@ -1,6 +1,6 @@
 import { randomUUID } from "crypto";
 import { mockStore } from "@/src/server/mockStore";
-import { prisma, tryPrisma } from "@/src/server/dbSafe";
+import { prisma, tryPrisma, tryPrismaLong } from "@/src/server/dbSafe";
 
 export type CommentStatus = "pending" | "approved" | "rejected" | "spam";
 
@@ -89,7 +89,7 @@ export async function createComment(input: CreateCommentInput) {
 }
 
 export async function moderateComment(id: string, status: CommentStatus) {
-  const dbData = await tryPrisma(async () => {
+  const dbData = await tryPrismaLong(async () => {
     const existing = await prisma.newsComment.findUnique({
       where: { id },
       select: { id: true },
@@ -109,7 +109,7 @@ export async function moderateComment(id: string, status: CommentStatus) {
 }
 
 export async function removeComment(id: string) {
-  const dbResult = await tryPrisma(async () => {
+  const dbResult = await tryPrismaLong(async () => {
     const existing = await prisma.newsComment.findUnique({
       where: { id },
       select: { id: true },

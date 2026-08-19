@@ -1,6 +1,6 @@
 import { randomUUID } from "crypto";
 import { mockStore } from "@/src/server/mockStore";
-import { prisma, tryPrisma } from "@/src/server/dbSafe";
+import { prisma, tryPrisma, tryPrismaLong } from "@/src/server/dbSafe";
 
 export type PageCommentStatus = "pending" | "approved" | "rejected" | "spam";
 
@@ -133,7 +133,7 @@ export async function createPageComment(input: CreatePageCommentInput) {
 }
 
 export async function moderatePageComment(id: string, status: PageCommentStatus) {
-  const dbData = await tryPrisma(async () => {
+  const dbData = await tryPrismaLong(async () => {
     const pc = pageCommentDb();
     if (!pc) return null;
     const existing = await pc.findUnique({
@@ -155,7 +155,7 @@ export async function moderatePageComment(id: string, status: PageCommentStatus)
 }
 
 export async function removePageComment(id: string) {
-  const dbResult = await tryPrisma(async () => {
+  const dbResult = await tryPrismaLong(async () => {
     const pc = pageCommentDb();
     if (!pc) return null;
     const existing = await pc.findUnique({

@@ -40,7 +40,7 @@ export default function AdminCommentsClient({ initialItems }: Props) {
   async function loadComments() {
     setLoading(true);
     try {
-      const res = await fetch("/api/admin/comments");
+      const res = await fetch("/api/admin/comments", { credentials: "include", cache: "no-store" });
       if (!res.ok) {
         setMessage("Failed to load comments.");
         setItems([]);

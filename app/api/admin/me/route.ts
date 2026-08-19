@@ -5,9 +5,8 @@ import {
   verifyAdminSessionToken,
 } from "@/src/server/adminSession";
 import { cookies } from "next/headers";
-import { getAdminUserAuthSnapshot } from "@/src/server/repositories/adminUsersRepository";
+import { resolveAdminAuthFromDb } from "@/src/server/repositories/adminUsersRepository";
 import { createSessionTokenFromAuthSnapshot } from "@/src/server/rbac/sessionFromUser";
-import { isPrismaUnavailable } from "@/src/server/dbSafe";
 import { subjectFromSessionPayload } from "@/src/server/rbac/sessionSubject";
 
 function clearSession(response: NextResponse) {
@@ -21,7 +20,7 @@ function clearSession(response: NextResponse) {
 /**
  * Any logged-in admin — sidebar + session probes.
  * Re-check isActive from DB and refresh cookie permissions live.
- * Clears cookie when account is inactive/missing (revocation).
+ * Clears cookie only when the JWT is invalid or the account is inactive.
  */
 export async function GET(_request: NextRequest) {
   const cookieStore = await cookies();
@@ -34,20 +33,8 @@ export async function GET(_request: NextRequest) {
     );
   }
 
-  const live = await getAdminUserAuthSnapshot(session.sub);
-  if (!live) {
-    if (isPrismaUnavailable()) {
-      const fromCookie = subjectFromSessionPayload(session);
-      return NextResponse.json({
-        ok: true,
-        me: {
-          id: fromCookie.userId,
-          email: fromCookie.email,
-          role: fromCookie.role,
-          permissions: fromCookie.permissions,
-        },
-      });
-    }
+  const loaded = await resolveAdminAuthFromDb(session.sub);
+  if (loaded.status === "inactive") {
     return clearSession(
       NextResponse.json(
         { error: "Account inactive or not found. Please log in again." },
@@ -55,6 +42,21 @@ export async function GET(_request: NextRequest) {
       ),
     );
   }
+
+  if (loaded.status === "unavailable") {
+    const fromCookie = subjectFromSessionPayload(session);
+    return NextResponse.json({
+      ok: true,
+      me: {
+        id: fromCookie.userId,
+        email: fromCookie.email,
+        role: fromCookie.role,
+        permissions: fromCookie.permissions,
+      },
+    });
+  }
+
+  const live = loaded.user;
 
   const token = await createSessionTokenFromAuthSnapshot(live);
   const response = NextResponse.json({

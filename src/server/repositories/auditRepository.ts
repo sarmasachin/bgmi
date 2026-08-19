@@ -1,4 +1,4 @@
-import { prisma, tryPrisma } from "@/src/server/dbSafe";
+import { prisma, tryPrisma, tryPrismaSoft } from "@/src/server/dbSafe";
 import { resolveAuditActor } from "@/src/server/rbac/auditActor";
 
 export async function addAuditLog(input: {
@@ -10,7 +10,7 @@ export async function addAuditLog(input: {
 }) {
   const actor = await resolveAuditActor(input.actor);
 
-  await tryPrisma(async () =>
+  await tryPrismaSoft(async () =>
     prisma.auditLog.create({
       data: {
         actor,

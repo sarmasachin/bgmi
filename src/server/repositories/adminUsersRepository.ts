@@ -1,5 +1,5 @@
 import bcrypt from "bcryptjs";
-import { prisma, tryPrisma } from "@/src/server/dbSafe";
+import { prisma, tryPrisma, isPrismaUnavailable } from "@/src/server/dbSafe";
 import { mockStore } from "@/src/server/mockStore";
 import {
   normalizeAdminRole,
@@ -112,11 +112,49 @@ export async function listAdminUsers(): Promise<AdminUserRow[]> {
   });
 }
 
-export async function getAdminUserAuthSnapshot(
+function snapshotFromDbRow(row: {
+  id: string;
+  email: string;
+  role: string;
+  permissions?: unknown;
+  isActive: boolean;
+  roleDefinition?: { name: string; permissions: unknown } | null;
+}): AdminUserAuthSnapshot | "inactive" {
+  if (!row.isActive) return "inactive";
+  const role = normalizeAdminRole(row.role);
+  const permissions =
+    role === "superadmin"
+      ? resolvePermissions(role, [])
+      : row.roleDefinition
+        ? sanitizeSubadminPermissions(row.roleDefinition.permissions)
+        : resolvePermissions(role, row.permissions);
+  return { id: row.id, email: row.email, role, permissions, isActive: true };
+}
+
+function snapshotFromMock(id: string): AdminUserAuthSnapshot | "inactive" | null {
+  const mock = (mockStore.users as MockUser[]).find((u) => u.id === id);
+  if (!mock) return null;
+  if (mock.active === false) return "inactive";
+  const role = normalizeAdminRole(mock.role);
+  return {
+    id: mock.id,
+    email: mock.email,
+    role,
+    permissions: resolvePermissions(role, mock.permissions),
+    isActive: true,
+  };
+}
+
+/** DB/mock auth load. `unavailable` = miss/timeout — do not treat as logout. */
+export async function resolveAdminAuthFromDb(
   userId: string,
-): Promise<AdminUserAuthSnapshot | null> {
+): Promise<
+  | { status: "ok"; user: AdminUserAuthSnapshot }
+  | { status: "inactive" }
+  | { status: "unavailable" }
+> {
   const id = userId.trim();
-  if (!id) return null;
+  if (!id) return { status: "unavailable" };
 
   const row = await tryPrisma(() =>
     prisma.adminUser.findUnique({
@@ -135,33 +173,23 @@ export async function getAdminUserAuthSnapshot(
   );
 
   if (row) {
-    if (!row.isActive) return null;
-    const role = normalizeAdminRole(row.role);
-    const permissions =
-      role === "superadmin"
-        ? resolvePermissions(role, [])
-        : row.roleDefinition
-          ? sanitizeSubadminPermissions(row.roleDefinition.permissions)
-          : resolvePermissions(role, row.permissions);
-    return {
-      id: row.id,
-      email: row.email,
-      role,
-      permissions,
-      isActive: true,
-    };
+    const mapped = snapshotFromDbRow(row);
+    return mapped === "inactive" ? { status: "inactive" } : { status: "ok", user: mapped };
   }
 
-  const mock = (mockStore.users as MockUser[]).find((u) => u.id === id);
-  if (!mock || mock.active === false) return null;
-  const role = normalizeAdminRole(mock.role);
-  return {
-    id: mock.id,
-    email: mock.email,
-    role,
-    permissions: resolvePermissions(role, mock.permissions),
-    isActive: true,
-  };
+  if (isPrismaUnavailable()) return { status: "unavailable" };
+
+  const mock = snapshotFromMock(id);
+  if (mock === "inactive") return { status: "inactive" };
+  if (mock) return { status: "ok", user: mock };
+  return { status: "unavailable" };
+}
+
+export async function getAdminUserAuthSnapshot(
+  userId: string,
+): Promise<AdminUserAuthSnapshot | null> {
+  const loaded = await resolveAdminAuthFromDb(userId);
+  return loaded.status === "ok" ? loaded.user : null;
 }
 
 /**
