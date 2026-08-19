@@ -609,6 +609,9 @@ export async function createPage(input: PageInput) {
       primaryCategory,
       extraCategories: [],
       content: typeof nextContent === "object" && nextContent ? nextContent : {},
+      publishedAt: new Date().toISOString(),
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
     });
   }
   return page;
@@ -805,6 +808,8 @@ export async function updatePage(id: string, payload: Partial<PageInput>) {
         primaryCategory: newsCategoryFromCloneGame(extractMeta(page.content).game),
         extraCategories: [],
         content: { html },
+        publishedAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
       };
       if (existingIdx >= 0) mockStore.news[existingIdx] = newsItem;
       else mockStore.news.unshift(newsItem);

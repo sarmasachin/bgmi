@@ -14,6 +14,28 @@ import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { enforceAdminApiAccess } from "@/src/server/rbac/enforceAdminApiAccess";
 
+function commentSourceSchema() {
+  return z.enum(["news", "page"]).optional();
+}
+
+async function moderateBySource(
+  id: string,
+  status: "pending" | "approved" | "rejected" | "spam",
+  source?: "news" | "page",
+) {
+  if (source === "page") return moderatePageComment(id, status);
+  if (source === "news") return moderateComment(id, status);
+  return (
+    (await moderateComment(id, status)) ?? (await moderatePageComment(id, status))
+  );
+}
+
+async function removeBySource(id: string, source?: "news" | "page") {
+  if (source === "page") return removePageComment(id);
+  if (source === "news") return removeComment(id);
+  return (await removeComment(id)) || (await removePageComment(id));
+}
+
 function toIso(value: unknown) {
   if (value instanceof Date) return value.toISOString();
   if (typeof value === "string") return value;
@@ -62,13 +84,19 @@ export async function PATCH(request: NextRequest) {
   const bodyResult = await readAdminJsonBody(request);
   if (!bodyResult.ok) return bodyResult.response;
   const parsed = z
-    .object({ id: z.string(), status: z.enum(["pending", "approved", "rejected", "spam"]) })
+    .object({
+      id: z.string(),
+      status: z.enum(["pending", "approved", "rejected", "spam"]),
+      source: commentSourceSchema(),
+    })
     .safeParse(bodyResult.data);
   if (!parsed.success) return NextResponse.json({ error: "Invalid moderation payload" }, { status: 400 });
   try {
-    const item =
-      (await moderateComment(parsed.data.id, parsed.data.status)) ??
-      (await moderatePageComment(parsed.data.id, parsed.data.status));
+    const item = await moderateBySource(
+      parsed.data.id,
+      parsed.data.status,
+      parsed.data.source,
+    );
     if (!item) return NextResponse.json({ error: "Not found" }, { status: 404 });
     await addAuditLog({
       actor: "admin",
@@ -86,8 +114,14 @@ export async function DELETE(request: NextRequest) {
   const gate = await enforceAdminApiAccess(request);
   if (!gate.ok) return gate.response;
   const id = request.nextUrl.searchParams.get("id");
+  const sourceParsed = commentSourceSchema().safeParse(
+    request.nextUrl.searchParams.get("source") ?? undefined,
+  );
   if (!id) return NextResponse.json({ error: "id required" }, { status: 400 });
-  const ok = (await removeComment(id)) || (await removePageComment(id));
+  const ok = await removeBySource(
+    id,
+    sourceParsed.success ? sourceParsed.data : undefined,
+  );
   if (!ok) return NextResponse.json({ error: "Not found" }, { status: 404 });
   await addAuditLog({
     actor: "admin",

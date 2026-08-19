@@ -27,6 +27,12 @@ function sanitizeStringList(value: unknown, fallback: string[]): string[] {
   return list.length ? list : fallback;
 }
 
+function findRawByIdOrTitle(list: unknown[], def: { id: string; title: string }): unknown {
+  const byId = list.find((item) => isPlainObject(item) && item.id === def.id);
+  if (byId) return byId;
+  return list.find((item) => isPlainObject(item) && item.title === def.title);
+}
+
 function normalizeCard(raw: unknown, def: FfAsPageCard): FfAsPageCard {
   const row = isPlainObject(raw) ? raw : {};
   const out: FfAsPageCard = {
@@ -187,7 +193,7 @@ export function normalizeAdvanceServerPage(raw: unknown): FfAdvanceServerPageCon
     },
     cards: useContentDefaults
       ? defaults.cards
-      : defaults.cards.map((def, index) => normalizeCard(cardsRaw[index], def)),
+      : defaults.cards.map((def) => normalizeCard(findRawByIdOrTitle(cardsRaw, def), def)),
     tables: useContentDefaults
       ? defaults.tables
       : defaults.tables.map((def, index) => normalizeTable(tablesRaw[index], def)),

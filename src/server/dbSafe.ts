@@ -1,3 +1,4 @@
+import { Prisma } from "@prisma/client";
 import { prisma } from "@/src/db/client";
 
 /** Fail fast when DB host/credentials are wrong instead of hanging every page. */
@@ -11,6 +12,19 @@ let dbCooldownUntil = 0;
 
 function isDbSkipped() {
   return Date.now() < dbCooldownUntil;
+}
+
+/** True while public Prisma calls are on cooldown after a real outage/timeout. */
+export function isPrismaUnavailable() {
+  return isDbSkipped();
+}
+
+/** Record-not-found / unique / validation — DB is up; do not start cooldown. */
+function isPrismaBusinessError(error: unknown) {
+  return (
+    error instanceof Prisma.PrismaClientKnownRequestError ||
+    error instanceof Prisma.PrismaClientValidationError
+  );
 }
 
 function markDbUnavailable() {
@@ -35,7 +49,8 @@ export async function tryPrisma<T>(runner: () => Promise<T>): Promise<T | null> 
   }
   try {
     return await withTimeout(runner(), PRISMA_TIMEOUT_MS);
-  } catch {
+  } catch (error) {
+    if (isPrismaBusinessError(error)) return null;
     markDbUnavailable();
     return null;
   }
@@ -63,6 +78,7 @@ export async function tryPrismaLong<T>(runner: () => Promise<T>): Promise<T | nu
     ) {
       throw error;
     }
+    if (isPrismaBusinessError(error)) return null;
     markDbUnavailable();
     return null;
   }

@@ -30,6 +30,7 @@ type PageCommentRow = {
 
 type PageCommentDelegate = {
   findMany: (args: unknown) => Promise<PageCommentRow[]>;
+  findUnique: (args: unknown) => Promise<PageCommentRow | null>;
   create: (args: unknown) => Promise<PageCommentRow>;
   update: (args: unknown) => Promise<PageCommentRow>;
   delete: (args: unknown) => Promise<unknown>;
@@ -135,6 +136,11 @@ export async function moderatePageComment(id: string, status: PageCommentStatus)
   const dbData = await tryPrisma(async () => {
     const pc = pageCommentDb();
     if (!pc) return null;
+    const existing = await pc.findUnique({
+      where: { id },
+      select: { id: true },
+    });
+    if (!existing) return null;
     return pc.update({
       where: { id },
       data: { status },
@@ -152,6 +158,11 @@ export async function removePageComment(id: string) {
   const dbResult = await tryPrisma(async () => {
     const pc = pageCommentDb();
     if (!pc) return null;
+    const existing = await pc.findUnique({
+      where: { id },
+      select: { id: true },
+    });
+    if (!existing) return false;
     await pc.delete({ where: { id } });
     return true;
   });

@@ -15,6 +15,7 @@ type ConfirmDelete = {
   id: string;
   name: string;
   message: string;
+  source: CommentItem["source"];
 };
 
 export default function AdminCommentsClient({ initialItems }: Props) {
@@ -72,13 +73,18 @@ export default function AdminCommentsClient({ initialItems }: Props) {
     void loadComments();
   }, [initialItems]);
 
-  async function updateStatus(id: string, status: CommentItem["status"]) {
+  async function updateStatus(
+    id: string,
+    status: CommentItem["status"],
+    source: CommentItem["source"],
+  ) {
     setWorkingId(id);
     try {
       const res = await fetch("/api/admin/comments", {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ id, status }),
+        credentials: "include",
+        body: JSON.stringify({ id, status, source }),
       });
       setMessage(
         res.ok
@@ -92,10 +98,15 @@ export default function AdminCommentsClient({ initialItems }: Props) {
     setWorkingId(null);
   }
 
-  async function removeComment(id: string) {
+  async function removeComment(id: string, source: CommentItem["source"]) {
     setWorkingId(id);
     try {
-      const res = await fetch(`/api/admin/comments?id=${id}`, { method: "DELETE" });
+      const params = new URLSearchParams({ id });
+      if (source) params.set("source", source);
+      const res = await fetch(`/api/admin/comments?${params.toString()}`, {
+        method: "DELETE",
+        credentials: "include",
+      });
       setMessage(res.ok ? "Comment deleted." : await readApiError(res, "Delete failed."));
       if (res.ok) await loadComments();
       return res.ok;
@@ -115,7 +126,7 @@ export default function AdminCommentsClient({ initialItems }: Props) {
   async function confirmPendingDelete() {
     if (!confirmDelete || confirmBusy) return;
     setConfirmBusy(true);
-    const ok = await removeComment(confirmDelete.id);
+    const ok = await removeComment(confirmDelete.id, confirmDelete.source);
     setConfirmBusy(false);
     if (ok) setConfirmDelete(null);
   }
@@ -178,19 +189,21 @@ export default function AdminCommentsClient({ initialItems }: Props) {
                     <td>{item.createdAt ? item.createdAt.slice(0, 10) : "-"}</td>
                     <td className="admin-comments-actions">
                       <div className="admin-comments-actions-wrap">
-                        <button
-                          type="button"
-                          className="admin-pages-btn admin-pages-btn-publish"
-                          disabled={workingId === item.id}
-                          onClick={() => void updateStatus(item.id, "approved")}
-                        >
-                          Approve
-                        </button>
+                        {item.status !== "approved" ? (
+                          <button
+                            type="button"
+                            className="admin-pages-btn admin-pages-btn-publish"
+                            disabled={workingId === item.id}
+                            onClick={() => void updateStatus(item.id, "approved", item.source)}
+                          >
+                            Approve
+                          </button>
+                        ) : null}
                         <button
                           type="button"
                           className="admin-pages-btn admin-pages-btn-preview"
                           disabled={workingId === item.id}
-                          onClick={() => void updateStatus(item.id, "rejected")}
+                          onClick={() => void updateStatus(item.id, "rejected", item.source)}
                         >
                           Reject
                         </button>
@@ -198,7 +211,7 @@ export default function AdminCommentsClient({ initialItems }: Props) {
                           type="button"
                           className="admin-pages-btn admin-pages-btn-edit"
                           disabled={workingId === item.id}
-                          onClick={() => void updateStatus(item.id, "spam")}
+                          onClick={() => void updateStatus(item.id, "spam", item.source)}
                         >
                           Spam
                         </button>
@@ -211,6 +224,7 @@ export default function AdminCommentsClient({ initialItems }: Props) {
                               id: item.id,
                               name: item.name,
                               message: item.message,
+                              source: item.source,
                             })
                           }
                         >

@@ -9040,10 +9040,40 @@ html {
   color: #e5e7eb;
 }
 
+.ff-as-card-points li:has(.ff-as-point-with-date) {
+  align-items: center;
+}
+
 .ff-as-card-points i {
   margin-top: 3px;
   color: #22c55e;
   flex-shrink: 0;
+}
+
+.ff-as-date-highlight {
+  display: inline-block;
+  margin-left: 2px;
+  padding: 2px 8px;
+  border-radius: 6px;
+  font-weight: 800;
+  color: #1a1404;
+  background: #f5c518;
+  letter-spacing: 0.01em;
+  white-space: nowrap;
+  flex: 0 0 auto;
+}
+
+.ff-as-point-with-date {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 1;
+  min-width: 0;
+}
+
+.ff-as-point-label {
+  flex: 1 1 auto;
+  min-width: 0;
 }
 
 .ff-as-card-links {
@@ -9756,6 +9786,16 @@ html {
 
   .ff-as-card-points li {
     font-size: 0.88rem;
+  }
+
+  .ff-as-point-with-date {
+    gap: 6px;
+  }
+
+  .ff-as-date-highlight {
+    margin-left: 0;
+    padding: 2px 6px;
+    font-size: 0.78rem;
   }
 
   .ff-as-table-block {

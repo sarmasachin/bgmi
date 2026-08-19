@@ -7,6 +7,8 @@ import {
 import { cookies } from "next/headers";
 import { getAdminUserAuthSnapshot } from "@/src/server/repositories/adminUsersRepository";
 import { createSessionTokenFromAuthSnapshot } from "@/src/server/rbac/sessionFromUser";
+import { isPrismaUnavailable } from "@/src/server/dbSafe";
+import { subjectFromSessionPayload } from "@/src/server/rbac/sessionSubject";
 
 function clearSession(response: NextResponse) {
   response.cookies.set(ADMIN_SESSION_COOKIE, "", {
@@ -34,6 +36,18 @@ export async function GET(_request: NextRequest) {
 
   const live = await getAdminUserAuthSnapshot(session.sub);
   if (!live) {
+    if (isPrismaUnavailable()) {
+      const fromCookie = subjectFromSessionPayload(session);
+      return NextResponse.json({
+        ok: true,
+        me: {
+          id: fromCookie.userId,
+          email: fromCookie.email,
+          role: fromCookie.role,
+          permissions: fromCookie.permissions,
+        },
+      });
+    }
     return clearSession(
       NextResponse.json(
         { error: "Account inactive or not found. Please log in again." },

@@ -85,6 +85,26 @@ async function upsertNewsFromPage(prisma, input) {
   return { newsSlug, created: true };
 }
 
+function checkUpsertSetsPublishedAtNow() {
+  const file = path.join(root, "src", "server", "repositories", "pagesRepository.ts");
+  const src = fs.readFileSync(file, "utf8");
+  const fn = src.indexOf("async function upsertNewsFromPage");
+  assert(fn > 0, "upsertNewsFromPage missing");
+  const block = src.slice(fn, src.indexOf("async function unpublishNewsFromPageSlug"));
+  assert(
+    block.includes("publishedAt: new Date()"),
+    "FAIL: page→news upsert does not set publishedAt to now on update",
+  );
+  const updateIdx = block.indexOf("prisma.newsPost.update");
+  assert(updateIdx > 0, "newsPost.update missing in upsert");
+  assert(
+    block.lastIndexOf("publishedAt: new Date()") < updateIdx ||
+      block.includes("publishedAt: new Date()"),
+    "FAIL: publishedAt now not applied on news update",
+  );
+  console.log("PASS  page update upsert sets publishedAt to current time");
+}
+
 function checkClientPatchSendsPublishAsNews() {
   const file = path.join(root, "app", "admin", "pages", "AdminPagesClient.tsx");
   const src = fs.readFileSync(file, "utf8");
@@ -121,6 +141,7 @@ async function main() {
 
   checkClientPatchSendsPublishAsNews();
   checkApiPatchSchema();
+  checkUpsertSetsPublishedAtNow();
 
   if (!process.env.DATABASE_URL) {
     console.log("SKIP  DB tests (no DATABASE_URL) — static checks only");
@@ -177,12 +198,14 @@ async function main() {
     assert(news1, "news row missing after publish");
     assert(news1.status === "published", "news status not published");
     assert(news1.title === title, "news title mismatch");
+    assert(news1.publishedAt, "news publishedAt missing on create");
     const html1 =
       news1.content && typeof news1.content === "object" ? news1.content.html : "";
     assert(String(html1).includes("E2E body") || String(html1).length > 0, "news html empty");
     console.log("PASS  first publish created news", newsSlug);
 
-    console.log("3) Second update upsert (must not duplicate slug)...");
+    console.log("3) Second update upsert (must not duplicate slug, must bump publishedAt)...");
+    await new Promise((r) => setTimeout(r, 50));
     const sync2 = await upsertNewsFromPage(prisma, {
       title: `${title} Updated`,
       pageSlug: updated.slug,
@@ -196,7 +219,15 @@ async function main() {
     const news2 = await prisma.newsPost.findUnique({ where: { slug: newsSlug } });
     assert(news2.title === `${title} Updated`, "news title not updated on upsert");
     assert(news2.status === "published", "news not published after upsert");
-    console.log("PASS  upsert updated same news row");
+    assert(news2.publishedAt, "news publishedAt missing on update");
+    assert(
+      news2.publishedAt.getTime() > news1.publishedAt.getTime(),
+      `publishedAt did not move forward: ${news1.publishedAt.toISOString()} → ${news2.publishedAt.toISOString()}`,
+    );
+    console.log(
+      "PASS  upsert updated same news row + publishedAt",
+      news2.publishedAt.toISOString(),
+    );
 
     console.log("4) Uncheck Publish in News → linked news must become draft...");
     await prisma.pageTemplate.update({

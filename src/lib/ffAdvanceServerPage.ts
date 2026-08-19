@@ -47,6 +47,18 @@ export const FF_ADVANCE_SERVER_PAGE: FfAdvanceServerPageContent = {
   },
   cards: [
     {
+      id: "ob55-update-date",
+      badge: "Schedule",
+      icon: "fa-calendar-days",
+      title: "Advance Server Free Fire OB55 Update Date",
+      summary: "Check FF Advance Server Schedule and Testing Date",
+      points: [
+        "Advance Server Start: August 21, 2026",
+        "Advance Server End: September 9, 2026",
+        "Global Patch Release Date: September 16, 2026",
+      ],
+    },
+    {
       id: "what-is",
       badge: "About",
       icon: "fa-circle-info",

@@ -430,8 +430,8 @@ export async function updateNews(
     if (!existing) return null;
 
     let nextPublishedAt: Date | null | undefined = undefined;
-    if (input.status === "published") {
-      nextPublishedAt = existing.publishedAt ?? new Date();
+    if (input.status === "published" || (!input.status && existing.status === "published")) {
+      nextPublishedAt = new Date();
     } else if (input.status === "draft") {
       nextPublishedAt = null;
     }
@@ -479,6 +479,12 @@ export async function updateNews(
   });
   if (input.status) {
     item.status = input.status;
+  }
+  if (input.status === "published" || (!input.status && item.status === "published")) {
+    (item as { publishedAt?: string }).publishedAt = new Date().toISOString();
+  }
+  if (input.status === "draft") {
+    delete (item as { publishedAt?: string }).publishedAt;
   }
   bumpSitemapLastmod(["/news", `/${primaryCategory}`]);
   return item;

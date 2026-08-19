@@ -89,12 +89,17 @@ export async function createComment(input: CreateCommentInput) {
 }
 
 export async function moderateComment(id: string, status: CommentStatus) {
-  const dbData = await tryPrisma(async () =>
-    prisma.newsComment.update({
+  const dbData = await tryPrisma(async () => {
+    const existing = await prisma.newsComment.findUnique({
+      where: { id },
+      select: { id: true },
+    });
+    if (!existing) return null;
+    return prisma.newsComment.update({
       where: { id },
       data: { status },
-    }),
-  );
+    });
+  });
   if (dbData) return dbData;
 
   const item = mockStore.comments.find((comment) => comment.id === id);
@@ -105,6 +110,11 @@ export async function moderateComment(id: string, status: CommentStatus) {
 
 export async function removeComment(id: string) {
   const dbResult = await tryPrisma(async () => {
+    const existing = await prisma.newsComment.findUnique({
+      where: { id },
+      select: { id: true },
+    });
+    if (!existing) return false;
     await prisma.newsComment.delete({ where: { id } });
     return true;
   });

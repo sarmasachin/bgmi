@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { getAdminSession } from "@/src/server/auth";
+import { isPrismaUnavailable } from "@/src/server/dbSafe";
 import { getAdminUserAuthSnapshot } from "@/src/server/repositories/adminUsersRepository";
 import {
   can,
@@ -8,6 +9,7 @@ import {
   type AdminPermission,
   type AdminAuthSubject,
 } from "@/src/server/rbac/permissions";
+import { subjectFromSessionPayload } from "@/src/server/rbac/sessionSubject";
 export type AdminSessionSubject = AdminAuthSubject & {
   userId: string;
   email: string;
@@ -22,7 +24,19 @@ export async function getAdminAuthSubject(): Promise<AdminSessionSubject | null>
   if (!session) return null;
 
   const live = await getAdminUserAuthSnapshot(session.sub);
-  if (!live) return null;
+  if (!live) {
+    // DB timeout/cooldown is not a logout — keep cookie RBAC until Prisma is back.
+    if (isPrismaUnavailable()) {
+      const fromCookie = subjectFromSessionPayload(session);
+      return {
+        userId: fromCookie.userId,
+        email: fromCookie.email,
+        role: fromCookie.role,
+        permissions: fromCookie.permissions,
+      };
+    }
+    return null;
+  }
 
   return {
     userId: live.id,

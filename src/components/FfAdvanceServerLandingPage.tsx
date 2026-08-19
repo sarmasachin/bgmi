@@ -22,6 +22,18 @@ import { listApprovedPageComments } from "@/src/server/repositories/pageComments
 import { getRatingSummary } from "@/src/server/repositories/ratingSummaryRepository";
 import { getSettings } from "@/src/server/repositories/settingsRepository";
 
+function renderCardPoint(cardId: string, point: string) {
+  if (cardId !== "ob55-update-date") return <span>{point}</span>;
+  const splitAt = point.indexOf(": ");
+  if (splitAt < 0) return <span>{point}</span>;
+  return (
+    <span className="ff-as-point-with-date">
+      <span className="ff-as-point-label">{point.slice(0, splitAt + 1)}</span>
+      <span className="ff-as-date-highlight">{point.slice(splitAt + 2)}</span>
+    </span>
+  );
+}
+
 /**
  * Free Fire Advance Server info guide — fan-made only.
  * No APK hosted and no publisher / Garena outbound links.
@@ -129,7 +141,7 @@ export async function FfAdvanceServerLandingPage() {
                     {card.points.map((point) => (
                       <li key={point}>
                         <i className="fa-solid fa-check" aria-hidden />
-                        <span>{point}</span>
+                        {renderCardPoint(card.id, point)}
                       </li>
                     ))}
                   </ul>
