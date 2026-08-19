@@ -6,7 +6,7 @@ import {
   PUBG_MOBILE_CODES_LABEL,
   PUBG_MOBILE_CODES_PATH,
 } from "@/src/lib/pubgMobileCodes";
-import { prisma, tryPrisma } from "@/src/server/dbSafe";
+import { prisma, tryPrisma, tryPrismaLong } from "@/src/server/dbSafe";
 import {
   DEFAULT_FF_TRUST_BAR,
   type FfTrustBarItem,
@@ -217,7 +217,7 @@ export function isShareRailEnabled(integrations: unknown): boolean {
 }
 
 export async function saveSettings(payload: SettingsPayload) {
-  await tryPrisma(async () => {
+  await tryPrismaLong(async () => {
     const copyright =
       typeof payload.footerCopyright === "string" && payload.footerCopyright.trim()
         ? payload.footerCopyright.trim()

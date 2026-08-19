@@ -60,13 +60,43 @@ function checkFiles() {
   assert(!build.includes('"/free-fire-sensitivity-settings-calculator"'), "redirect URL must stay out of sitemap");
 
   const repo = read("src/server/repositories/sitemapLastmodRepository.ts");
-  assert(!repo.includes("latestNews"), "/news must not auto-stamp from any article");
-  assert(repo.includes("settings:advanceServerPage") || read("src/lib/sitemapLastmod.ts").includes("settings:advanceServerPage"), "Advance Server key mapped");
+  assert(repo.includes("select: { key: true, updatedAt: true }"), "static lastmod must read DB updatedAt");
+  assert(!repo.includes("latestNews"), "getSitemapLastmodMap must not fake /news from a side query");
+  const getMap = repo.slice(repo.indexOf("export async function getSitemapLastmodMap"));
+  assert(!getMap.includes("settings:sitemapLastmod"), "lastmod map must not use overlay now()");
+
+  const homeCards = read("src/server/repositories/homeCardsRepository.ts");
+  const saveCards = homeCards.slice(homeCards.indexOf("export async function saveFfPageCards"));
+  assert(saveCards.includes("tryPrismaLong"), "home cards save must persist (not 2s timeout mock)");
+  assert(saveCards.includes("prisma.siteSetting.upsert"), "home cards must upsert updatedAt");
+
+  const settings = read("src/server/repositories/settingsRepository.ts");
+  const saveSet = settings.slice(settings.indexOf("export async function saveSettings"));
+  assert(saveSet.includes("tryPrismaLong"), "home settings save must persist for sitemap lastmod");
+  assert(saveSet.includes("SETTINGS_KEYS.homeDisplay") || saveSet.includes("homeDisplayToSave"), "home display included in save");
+
+  const newsRepo = read("src/server/repositories/newsRepository.ts");
+  const updateNews = newsRepo.slice(newsRepo.indexOf("export async function updateNews"));
+  assert(updateNews.includes("tryPrismaLong"), "news update must persist");
+  assert(updateNews.includes("prisma.newsPost.update"), "news update must bump Prisma updatedAt");
+  const createNews = newsRepo.slice(newsRepo.indexOf("export async function createNews"), newsRepo.indexOf("export async function updateNewsStatus"));
+  assert(createNews.includes("tryPrismaLong"), "news create must persist for sitemap");
+
+  const listing = read("src/server/repositories/listingSeoRepository.ts");
+  assert(listing.includes("tryPrismaLong"), "news listing SEO save must persist");
+
+  const advance = read("src/server/repositories/advanceServerPageRepository.ts");
+  const saveAs = advance.slice(advance.indexOf("export async function saveAdvanceServerPage"));
+  assert(saveAs.includes("tryPrismaLong"), "advance server save must persist");
+
+  const buildNews = build.slice(build.indexOf("export async function buildNewsSitemapEntries"));
+  assert(buildNews.includes("pickLatestDate"), "/news lastmod uses latest article updatedAt + listing SEO");
+  assert(buildNews.includes("toSitemapLastmodIst(item.updatedAt)"), "article lastmod is updatedAt not publishedAt");
 
   const keys = read("src/lib/sitemapLastmod.ts");
   assert(keys.includes('"/free-fire-advance-server": ["settings:advanceServerPage"]'), "Advance Server lastmod key");
   assert(keys.includes("settings:homeDisplay"), "home lastmod must include homeDisplay save");
-  assert(keys.includes("settings:newsListingSeo"), "/news lastmod = listing SEO save only");
+  assert(keys.includes("settings:newsListingSeo"), "/news lastmod includes listing SEO updatedAt");
 
   const news = read("src/server/repositories/newsRepository.ts");
   const start = news.indexOf("export async function listPublishedNewsForSitemap");
@@ -100,7 +130,27 @@ function checkIstFormatter() {
   const ist = toIst(utcEvening);
   assert(ist === "2026-08-20T01:30:00+05:30", `IST mismatch: ${ist}`);
   assert(!utcEvening.toISOString().startsWith("2026-08-20"), "UTC day must stay 19th");
-  console.log("PASS  IST formatter (UTC 19 Aug 20:00 → 20 Aug 01:30 +05:30)");
+
+  const now = new Date();
+  const nowIst = toIst(now);
+  const parts = new Intl.DateTimeFormat("en-CA", {
+    timeZone: "Asia/Kolkata",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+    second: "2-digit",
+    hour12: false,
+  }).formatToParts(now);
+  const g = (t) => parts.find((p) => p.type === t)?.value ?? "";
+  let hour = g("hour");
+  if (hour === "24") hour = "00";
+  const expect = `${g("year")}-${g("month")}-${g("day")}T${hour}:${g("minute")}:${g("second")}+05:30`;
+  assert(nowIst === expect, `current lastmod must match now IST: got ${nowIst} expect ${expect}`);
+  assert(nowIst.endsWith("+05:30"), "current lastmod must be IST offset");
+  assert(!now.toISOString().endsWith("+05:30"), "Date.toISOString is UTC — sitemap must not use it raw");
+  console.log(`PASS  IST formatter (UTC 19 Aug 20:00 → 20 Aug 01:30 +05:30; now=${nowIst})`);
 }
 
 function parseLocs(xml) {

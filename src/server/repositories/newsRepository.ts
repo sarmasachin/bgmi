@@ -347,7 +347,7 @@ export async function createNews(input: NewsInput) {
     metaPatch: newsMetaPatchFromInput({ ...input, primaryCategory }),
   });
 
-  const dbResult = await tryPrisma(async () =>
+  const dbResult = await tryPrismaLong(async () =>
     prisma.newsPost.create({
       data: {
         title: input.title,

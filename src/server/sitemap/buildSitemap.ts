@@ -1,6 +1,6 @@
 import { newsArticlePath } from "@/src/lib/newsCategories";
 import { getSiteUrl, toCanonicalUrl } from "@/src/lib/siteUrl";
-import { legalSlugToSitemapPath, toSitemapLastmodIst } from "@/src/lib/sitemapLastmod";
+import { legalSlugToSitemapPath, pickLatestDate, toSitemapLastmodIst } from "@/src/lib/sitemapLastmod";
 import { listPublishedLegalForSitemap } from "@/src/server/repositories/legalPagesRepository";
 import { listNewsCategorySlugs } from "@/src/server/repositories/newsCategoryRepository";
 import { listPublishedNewsForSitemap } from "@/src/server/repositories/newsRepository";
@@ -103,9 +103,14 @@ export async function buildPageSitemapEntries(): Promise<SitemapUrlEntry[]> {
 export async function buildNewsSitemapEntries(): Promise<SitemapUrlEntry[]> {
   const baseUrl = getSiteUrl();
   const lastmodMap = await getSitemapLastmodMap();
-  const listingLastmod = toSitemapLastmodIst(resolveSitemapLastmod(lastmodMap, "/news"));
   const categorySlugs = await listNewsCategorySlugs();
   const newsRows = await listPublishedNewsForSitemap();
+  const listingLastmod = toSitemapLastmodIst(
+    pickLatestDate(
+      resolveSitemapLastmod(lastmodMap, "/news"),
+      ...newsRows.map((item) => item.updatedAt),
+    ),
+  );
 
   const seen = new Set<string>();
   const categoryStamp = new Map<string, Date>();
