@@ -20,8 +20,12 @@ export async function GET(request: NextRequest) {
   const gate = await enforceAdminApiAccess(request);
   if (!gate.ok) return gate.response;
   const variant = parseVariant(request.nextUrl.searchParams.get("game"));
-  const data = await getFfPageCardsForAdmin(variant);
-  return NextResponse.json({ data: { ...data, variant } });
+  try {
+    const data = await getFfPageCardsForAdmin(variant);
+    return NextResponse.json({ data: { ...data, variant } });
+  } catch {
+    return NextResponse.json({ error: "Could not load page cards." }, { status: 503 });
+  }
 }
 
 export async function POST(request: NextRequest) {

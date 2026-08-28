@@ -1,7 +1,7 @@
 import { getDefaultPageCards } from "@/src/lib/homeCardsDefaults";
 import type { FfHomeCards, PageCardsVariant } from "@/src/lib/homeCardsTypes";
 import { pageCardsVariantToSitemapPath } from "@/src/lib/sitemapLastmod";
-import { prisma, tryPrisma, tryPrismaLong } from "@/src/server/dbSafe";
+import { prisma, tryPrismaLong } from "@/src/server/dbSafe";
 import { bumpSitemapLastmod } from "@/src/server/repositories/sitemapLastmodRepository";
 
 const KEY_BY_VARIANT: Record<PageCardsVariant, string> = {
@@ -140,27 +140,19 @@ export function normalizeFfHomeCards(
         : undefined;
       const leadDefault = typeof def.lead === "string" ? def.lead : "";
       const focusDefault =
-        typeof def.focusControlId === "string" ? def.focusControlId : "";
-      // DPI/SPI slot used to be Sniper — replace stale sniper admin copy once.
-      const isDpiSlot = focusDefault === "ffc-dpi";
-      const rowTitle = typeof row?.title === "string" ? row.title : "";
-      const rowAlreadyDpi = /dpi\s*\/?\s*spi/i.test(rowTitle);
-      const useDefCopy = isDpiSlot && !rowAlreadyDpi;
+        typeof def.focusControlId === "string" ? def.focusControlId.trim() : "";
       return {
         role: def.role,
-        icon: sanitizeString(useDefCopy ? def.icon : row?.icon, def.icon) || def.icon,
-        title: sanitizeString(useDefCopy ? def.title : row?.title, def.title) || def.title,
+        icon: sanitizeString(row?.icon, def.icon) || def.icon,
+        title: sanitizeString(row?.title, def.title) || def.title,
         lead:
-          sanitizeString(useDefCopy ? def.lead : row?.lead, leadDefault) ||
-          leadDefault ||
-          undefined,
-        tips: sanitizeStringList(useDefCopy ? def.tips : row?.tips, def.tips),
+          sanitizeString(row?.lead, leadDefault) || leadDefault || undefined,
+        tips: sanitizeStringList(row?.tips, def.tips),
         buttonLabel:
-          sanitizeString(useDefCopy ? def.buttonLabel : row?.buttonLabel, def.buttonLabel) ||
-          def.buttonLabel,
-        applyRole: row?.applyRole === false || def.applyRole === false ? false : true,
-        focusControlId:
-          sanitizeString(row?.focusControlId, focusDefault) || focusDefault || undefined,
+          sanitizeString(row?.buttonLabel, def.buttonLabel) || def.buttonLabel,
+        // CTA behavior is slot-defined (not wiped by older admin payloads).
+        applyRole: def.applyRole === false ? false : true,
+        focusControlId: focusDefault || undefined,
       };
     }),
   };
@@ -294,9 +286,14 @@ export function isPageCardsVariant(value: unknown): value is PageCardsVariant {
 export async function getFfPageCards(variant: PageCardsVariant): Promise<FfHomeCards> {
   const defaults = getDefaultPageCards(variant);
   const key = KEY_BY_VARIANT[variant];
-  const row = await tryPrisma(async () => prisma.siteSetting.findUnique({ where: { key } }));
-  if (row === null || !row?.value) return defaults;
-  return normalizeFfHomeCards(row.value, defaults);
+  // Long timeout: short tryPrisma was returning defaults after a successful admin save.
+  const result = await tryPrismaLong(async () => {
+    const row = await prisma.siteSetting.findUnique({ where: { key } });
+    return { row };
+  });
+  if (result === null) return defaults;
+  if (!result.row?.value) return defaults;
+  return normalizeFfHomeCards(result.row.value, defaults);
 }
 
 /** @deprecated Prefer getFfPageCards("freefire") */
@@ -310,11 +307,17 @@ export async function getFfPageCardsForAdmin(variant: PageCardsVariant): Promise
 }> {
   const defaults = getDefaultPageCards(variant);
   const key = KEY_BY_VARIANT[variant];
-  const row = await tryPrisma(async () => prisma.siteSetting.findUnique({ where: { key } }));
-  if (row === null || !row?.value) {
+  const result = await tryPrismaLong(async () => {
+    const row = await prisma.siteSetting.findUnique({ where: { key } });
+    return { row };
+  });
+  if (result === null && process.env.DATABASE_URL) {
+    throw new Error("DB_UNAVAILABLE");
+  }
+  if (!result?.row?.value) {
     return { cards: defaults, usingDefault: true };
   }
-  return { cards: normalizeFfHomeCards(row.value, defaults), usingDefault: false };
+  return { cards: normalizeFfHomeCards(result.row.value, defaults), usingDefault: false };
 }
 
 /** @deprecated Prefer getFfPageCardsForAdmin("freefire") */
