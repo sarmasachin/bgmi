@@ -7852,6 +7852,7 @@ html {
   display: grid;
   grid-template-columns: 1fr;
   gap: 12px;
+  align-items: start;
 }
 
 .ff-role-tip-card {
@@ -7865,12 +7866,15 @@ html {
     linear-gradient(160deg, rgba(249, 115, 22, 0.1) 0%, transparent 50%),
     #121820;
   box-sizing: border-box;
+  height: auto;
+  min-height: 0;
 }
 
 .ff-role-tip-head {
   display: flex;
   align-items: center;
   gap: 10px;
+  flex: 0 0 auto;
 }
 
 .ff-role-tip-icon {
@@ -7883,6 +7887,7 @@ html {
   background: rgba(249, 115, 22, 0.16);
   color: #fb923c;
   font-size: 16px;
+  flex: 0 0 auto;
 }
 
 .ff-role-tip-name {
@@ -7896,6 +7901,7 @@ html {
   margin: 0;
   padding: 0 0 0 1.15em;
   list-style: disc;
+  flex: 0 0 auto;
 }
 
 .ff-role-tip-list li {
@@ -7909,20 +7915,26 @@ html {
 }
 
 .ff-role-tip-lead {
-  margin: 0 0 10px;
+  margin: 0;
   font-size: 13px;
   line-height: 1.45;
   color: #94a3b8;
+  flex: 0 0 auto;
 }
 
 .ff-role-tip-btn {
   appearance: none;
-  margin-top: auto;
+  flex: 0 0 auto !important;
+  align-self: stretch;
+  margin-top: 4px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: 8px;
   width: 100%;
+  height: auto !important;
+  min-height: 0 !important;
+  max-height: none;
   padding: 11px 14px;
   border: none;
   border-radius: 12px;
@@ -7932,6 +7944,7 @@ html {
   font-weight: 800;
   cursor: pointer;
   box-sizing: border-box;
+  font-family: inherit;
 }
 
 .ff-role-tip-btn:hover {
@@ -7947,9 +7960,10 @@ html {
   .ff-role-tips-grid {
     grid-template-columns: 1fr 1fr;
     gap: 16px;
+    align-items: start;
   }
 
-  /* Third card (Beginners) sits full-width under Rusher + Sniper */
+  /* Third card (Beginners) sits full-width under the top two */
   .ff-role-tips-grid > .ff-role-tip-card:nth-child(3) {
     grid-column: 1 / -1;
   }
