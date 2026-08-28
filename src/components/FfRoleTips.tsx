@@ -4,15 +4,9 @@ import { usePathname } from "next/navigation";
 import type { CalcInputs } from "@/src/features/ffCalculator/calculator";
 import { FF_SET_ROLE_EVENT } from "@/src/lib/ffPlayModes";
 import { FREE_FIRE_MAX_PATH } from "@/src/lib/freeFirePages";
-import type { FfHomeRoleTips } from "@/src/lib/homeCardsTypes";
+import type { FfHomeRoleTip, FfHomeRoleTips } from "@/src/lib/homeCardsTypes";
 
-type RoleTip = {
-  role: CalcInputs["role"];
-  title: string;
-  icon: string;
-  tips: string[];
-  buttonLabel?: string;
-};
+type RoleTip = FfHomeRoleTip;
 
 const ROLE_TIPS: RoleTip[] = [
   {
@@ -28,14 +22,29 @@ const ROLE_TIPS: RoleTip[] = [
   },
   {
     role: "sniper",
-    title: "Sniper tips",
-    icon: "fa-crosshairs",
+    title: "DPI/SPI + Sensitivity Guide",
+    icon: "fa-bolt",
+    lead: "Higher DPI/SPI makes the screen feel faster. If you raised DPI/SPI, keep sensi a bit lower so your crosshair does not jump past the enemy’s head.",
     tips: [
-      "Keep scope values slightly lower for stable tracking",
-      "Fine-tune 2x / 4x before sniper scope",
-      "Hold angles and adjust Free Look for better peek aim",
+      "No DPI/SPI = higher sensi OK",
+      "Mid/High DPI/SPI = control first",
+      "Match calculator DPI/SPI to your phone",
     ],
-    buttonLabel: "Use Sniper in calculator",
+    buttonLabel: "Get DPI/SPI Tuned Sensi",
+    applyRole: false,
+    focusControlId: "ffc-dpi",
+  },
+  {
+    role: "flanker",
+    title: "Free Fire Sensi for Beginners",
+    icon: "fa-graduation-cap",
+    lead: "New players often copy pro settings and miss shots. Start with a balanced sensi matched to your phone RAM and FPS, then fine-tune in Training Ground.",
+    tips: [
+      "Safe starting values for 2–4 finger play",
+      "Works on low & mid RAM phones",
+      "Learn drag before chasing high sensi",
+    ],
+    buttonLabel: "Calculate Beginner Sensi Now",
   },
 ];
 
@@ -49,26 +58,52 @@ const MAX_ROLE_TIPS: RoleTip[] = [
       "Don’t copy classic Free Fire rusher codes — Max drag feels heavier",
       "Warm up with SMG / shotgun in Training Ground on your Max graphics setting",
     ],
+    buttonLabel: "Use Rusher in Max calculator",
   },
   {
     role: "sniper",
-    title: "Max sniper tips",
-    icon: "fa-crosshairs",
+    title: "DPI/SPI + Sensitivity Guide",
+    icon: "fa-bolt",
+    lead: "Higher DPI/SPI makes aim feel faster on Max too. If you raised DPI/SPI, keep sensi a bit lower so the crosshair does not jump past the head.",
     tips: [
-      "Lower 2x / 4x a touch if scopes shake when Max effects kick in",
-      "Lock Red Dot first, then sniper scope — one change at a time",
-      "If the phone heats mid-match, drop effects before blaming sensi",
+      "No DPI/SPI = higher sensi OK",
+      "Mid/High DPI/SPI = control first",
+      "Match calculator DPI/SPI to your phone",
     ],
+    buttonLabel: "Get DPI/SPI Tuned Sensi",
+    applyRole: false,
+    focusControlId: "ffc-dpi",
+  },
+  {
+    role: "flanker",
+    title: "Free Fire Max Sensi for Beginners",
+    icon: "fa-graduation-cap",
+    lead: "New Max players often reuse classic Free Fire codes and miss. Start balanced for your RAM and FPS, then warm up on Max graphics.",
+    tips: [
+      "Safe starting values for 2–4 finger play",
+      "Works on mid-range and 6GB+ phones",
+      "Learn Max drag before chasing high sensi",
+    ],
+    buttonLabel: "Calculate Beginner Max Sensi Now",
   },
 ];
+
+function defaultButtonLabel(item: RoleTip, isMax: boolean) {
+  if (item.focusControlId === "ffc-dpi") return "Get DPI/SPI Tuned Sensi";
+  const calc = isMax ? "Max calculator" : "calculator";
+  if (item.role === "rusher") return `Use Rusher in ${calc}`;
+  if (item.role === "flanker") {
+    return isMax ? "Calculate Beginner Max Sensi Now" : "Calculate Beginner Sensi Now";
+  }
+  return `Use ${item.role} in ${calc}`;
+}
 
 type Props = {
   homeContent?: FfHomeRoleTips;
 };
 
 /**
- * Role tips — home Free Fire copy; Max page Free Fire Max copy.
- * CTA sets calculator role + scrolls up to tool.
+ * Tip cards under calculator — CTA scrolls to tool; role cards also set Player Role.
  */
 export function FfRoleTips({ homeContent }: Props) {
   const pathname = usePathname() ?? "";
@@ -81,30 +116,29 @@ export function FfRoleTips({ homeContent }: Props) {
     (isMax ? "Best Free Fire Max sensi tips by role" : "Best sensi tips by role");
   const sourceItems = homeContent?.items ?? (isMax ? MAX_ROLE_TIPS : ROLE_TIPS);
   const tips: RoleTip[] = sourceItems.map((item) => ({
-    role: item.role,
-    title: item.title,
-    icon: item.icon,
-    tips: item.tips,
-    buttonLabel:
-      "buttonLabel" in item && typeof item.buttonLabel === "string" && item.buttonLabel
-        ? item.buttonLabel
-        : `Use ${item.role === "rusher" ? "Rusher" : "Sniper"} in ${
-            isMax ? "Max calculator" : "calculator"
-          }`,
+    ...item,
+    buttonLabel: item.buttonLabel?.trim() || defaultButtonLabel(item, isMax),
   }));
 
-  function applyRole(role: CalcInputs["role"]) {
-    window.dispatchEvent(
-      new CustomEvent(FF_SET_ROLE_EVENT, {
-        detail: { role, modeId: role },
-      }),
-    );
+  function onCardCta(card: RoleTip) {
+    if (card.applyRole !== false) {
+      window.dispatchEvent(
+        new CustomEvent(FF_SET_ROLE_EVENT, {
+          detail: { role: card.role as CalcInputs["role"], modeId: card.role },
+        }),
+      );
+    }
     document.getElementById("ff-calculator")?.scrollIntoView({
       behavior: "smooth",
       block: "start",
     });
-    const roleSelect = document.getElementById("ffc-role") as HTMLSelectElement | null;
-    roleSelect?.focus({ preventScroll: true });
+    const focusId =
+      card.focusControlId?.trim() ||
+      (card.applyRole === false ? "" : "ffc-role");
+    if (focusId) {
+      const el = document.getElementById(focusId) as HTMLElement | null;
+      el?.focus({ preventScroll: true });
+    }
   }
 
   return (
@@ -113,14 +147,15 @@ export function FfRoleTips({ homeContent }: Props) {
         {sectionTitle}
       </h2>
       <div className="ff-role-tips-grid">
-        {tips.map((card) => (
-          <article key={card.role} className="ff-role-tip-card">
+        {tips.map((card, index) => (
+          <article key={`${card.role}-${index}`} className="ff-role-tip-card">
             <div className="ff-role-tip-head">
               <span className="ff-role-tip-icon" aria-hidden>
                 <i className={`fa-solid ${card.icon}`} />
               </span>
               <h3 className="ff-role-tip-name">{card.title}</h3>
             </div>
+            {card.lead ? <p className="ff-role-tip-lead">{card.lead}</p> : null}
             <ul className="ff-role-tip-list">
               {card.tips.map((tip) => (
                 <li key={tip}>{tip}</li>
@@ -129,12 +164,9 @@ export function FfRoleTips({ homeContent }: Props) {
             <button
               type="button"
               className="ff-role-tip-btn"
-              onClick={() => applyRole(card.role)}
+              onClick={() => onCardCta(card)}
             >
-              {card.buttonLabel ??
-                `Use ${card.role === "rusher" ? "Rusher" : "Sniper"} in ${
-                  isMax ? "Max calculator" : "calculator"
-                }`}
+              {card.buttonLabel}
               <i className="fa-solid fa-arrow-up" aria-hidden />
             </button>
           </article>

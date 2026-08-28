@@ -101,7 +101,10 @@ export function FfExploreCards({ homeContent }: Props) {
             </ul>
             <Link className="ff-explore-btn" href={card.href}>
               {card.buttonLabel}
-              <i className="fa-solid fa-arrow-right" aria-hidden />
+              <i
+                className={`fa-solid ${index === 0 ? "fa-arrow-up" : "fa-arrow-right"}`}
+                aria-hidden
+              />
             </Link>
           </article>
         ))}

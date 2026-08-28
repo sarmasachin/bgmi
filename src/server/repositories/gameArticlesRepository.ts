@@ -67,13 +67,29 @@ export async function getGameArticleHtml(game: GameArticleGame): Promise<string 
   return parseHtml(row.value);
 }
 
+/**
+ * Admin read: long timeout + distinguish "no row" from DB failure.
+ * Wrapping `{ row }` avoids treating a timeout as "using built-in default".
+ */
+async function getGameArticleHtmlForAdmin(game: GameArticleGame): Promise<string | null> {
+  const result = await tryPrismaLong(async () => {
+    const row = await prisma.siteSetting.findUnique({ where: { key: keyFor(game) } });
+    return { row };
+  });
+  if (result === null && process.env.DATABASE_URL) {
+    throw new Error("DB_UNAVAILABLE");
+  }
+  if (!result?.row?.value) return null;
+  return parseHtml(result.row.value);
+}
+
 export async function getGameArticlesForAdmin() {
   const [bgmi, pubg, freefire, freefireMax, pubgMobileCodes] = await Promise.all([
-    getGameArticleHtml("bgmi"),
-    getGameArticleHtml("pubg"),
-    getGameArticleHtml("freefire"),
-    getGameArticleHtml("freefire-max"),
-    getGameArticleHtml("pubg-mobile-codes"),
+    getGameArticleHtmlForAdmin("bgmi"),
+    getGameArticleHtmlForAdmin("pubg"),
+    getGameArticleHtmlForAdmin("freefire"),
+    getGameArticleHtmlForAdmin("freefire-max"),
+    getGameArticleHtmlForAdmin("pubg-mobile-codes"),
   ]);
   return {
     // Show built-in defaults in the editor while still on default (like Free Fire).

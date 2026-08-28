@@ -48,7 +48,12 @@ export function FfCalculator({ isMax: _isMax = false, trustBar }: Props) {
   useEffect(() => {
     function onSetRole(event: Event) {
       const detail = (event as CustomEvent<{ role?: string }>).detail;
-      if (detail?.role === "rusher" || detail?.role === "sniper") {
+      if (
+        detail?.role === "rusher" ||
+        detail?.role === "sniper" ||
+        detail?.role === "flanker" ||
+        detail?.role === "headshot"
+      ) {
         setRole(detail.role);
       }
     }
@@ -214,10 +219,10 @@ export function FfCalculator({ isMax: _isMax = false, trustBar }: Props) {
             </select>
           </div>
 
-          {/* 5. DPI Usage */}
+          {/* 5. DPI/SPI Usage */}
           <div>
             <label className="ffc-label" htmlFor="ffc-dpi">
-              <i className="fa-solid fa-bolt"></i> DPI Usage
+              <i className="fa-solid fa-bolt"></i> DPI/SPI Usage
             </label>
             <select
               id="ffc-dpi"
@@ -225,9 +230,9 @@ export function FfCalculator({ isMax: _isMax = false, trustBar }: Props) {
               value={dpi}
               onChange={(e) => setDpi(e.target.value as CalcInputs["dpi"])}
             >
-              <option value="nodpi">No DPI (Default)</option>
-              <option value="mid">Mid DPI (400-600)</option>
-              <option value="high">High DPI (600+)</option>
+              <option value="nodpi">No DPI/SPI (Default)</option>
+              <option value="mid">Mid DPI/SPI (400-600)</option>
+              <option value="high">High DPI/SPI (600+)</option>
             </select>
           </div>
 

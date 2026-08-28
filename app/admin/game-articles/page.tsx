@@ -9,6 +9,13 @@ export default async function AdminGameArticlesPage() {
   const access = await requireAdminPageAccess("gameArticles.view");
   if (!access.ok) return <AdminAccessDenied />;
 
-  const initialData = await getGameArticlesForAdmin();
+  let initialData: Awaited<ReturnType<typeof getGameArticlesForAdmin>> | undefined;
+  try {
+    initialData = await getGameArticlesForAdmin();
+  } catch {
+    // Client will refetch via /api/admin/game-articles (long timeout). Avoid painting
+    // built-in defaults as if they were the live custom article.
+    initialData = undefined;
+  }
   return <AdminGameArticlesClient initialData={initialData} />;
 }

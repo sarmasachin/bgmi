@@ -8,18 +8,29 @@ import {
   saveGameArticleHtml,
 } from "@/src/server/repositories/gameArticlesRepository";
 
+function withNoStore(response: NextResponse) {
+  response.headers.set("Cache-Control", "no-store, no-cache, must-revalidate, private");
+  return response;
+}
+
 export async function GET(request: NextRequest) {
   const gate = await enforceAdminApiAccess(request);
-  if (!gate.ok) return gate.response;
-  const data = await getGameArticlesForAdmin();
-  return NextResponse.json({ data });
+  if (!gate.ok) return withNoStore(gate.response);
+  try {
+    const data = await getGameArticlesForAdmin();
+    return withNoStore(NextResponse.json({ data }));
+  } catch {
+    return withNoStore(
+      NextResponse.json({ error: "Could not load articles." }, { status: 503 }),
+    );
+  }
 }
 
 export async function POST(request: NextRequest) {
   const gate = await enforceAdminApiAccess(request);
-  if (!gate.ok) return gate.response;
+  if (!gate.ok) return withNoStore(gate.response);
   const bodyResult = await readAdminJsonBody(request);
-  if (!bodyResult.ok) return bodyResult.response;
+  if (!bodyResult.ok) return withNoStore(bodyResult.response);
 
   const parsed = z
     .object({
@@ -29,7 +40,7 @@ export async function POST(request: NextRequest) {
     .safeParse(bodyResult.data);
 
   if (!parsed.success) {
-    return NextResponse.json({ error: "Invalid payload" }, { status: 400 });
+    return withNoStore(NextResponse.json({ error: "Invalid payload" }, { status: 400 }));
   }
 
   try {
@@ -40,8 +51,10 @@ export async function POST(request: NextRequest) {
       target: parsed.data.game,
       payload: { usingDefault: saved.usingDefault, length: saved.html.length },
     });
-    return NextResponse.json({ ok: true, ...saved });
+    return withNoStore(NextResponse.json({ ok: true, ...saved }));
   } catch {
-    return NextResponse.json({ error: "Could not save article." }, { status: 503 });
+    return withNoStore(
+      NextResponse.json({ error: "Could not save article." }, { status: 503 }),
+    );
   }
 }

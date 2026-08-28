@@ -133,11 +133,17 @@ export type FfHomeFeatureCard = {
 };
 
 export type FfHomeRoleTip = {
-  role: "rusher" | "sniper";
+  role: "rusher" | "sniper" | "flanker" | "headshot";
   title: string;
   icon: string;
+  /** Optional intro under the card title. */
+  lead?: string;
   tips: string[];
   buttonLabel: string;
+  /** When false, CTA only scrolls (and optional focus) — does not change Player Role. */
+  applyRole?: boolean;
+  /** Optional calculator control to focus after scroll (e.g. ffc-dpi). */
+  focusControlId?: string;
 };
 
 export type FfHomeRoleTips = {

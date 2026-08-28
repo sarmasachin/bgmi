@@ -51,6 +51,18 @@ function previewFor(game: Game) {
   return GAME_ARTICLE_GAMES.find((g) => g.id === game)?.previewPath ?? "/";
 }
 
+function draftKey(game: Game) {
+  return `bgmi_admin_game_article_${game}_v1`;
+}
+
+function clearEditorDraft(game: Game) {
+  try {
+    window.localStorage.removeItem(draftKey(game));
+  } catch {
+    // ignore quota / private mode
+  }
+}
+
 export default function AdminGameArticlesClient({ initialData }: Props) {
   const [game, setGame] = useState<Game>("freefire");
   const [htmlByGame, setHtmlByGame] = useState<Record<Game, string>>({
@@ -68,7 +80,7 @@ export default function AdminGameArticlesClient({ initialData }: Props) {
     "pubg-mobile-codes": initialData?.pubgMobileCodesUsingDefault ?? true,
   });
   const [editorNonce, setEditorNonce] = useState(0);
-  const [loading, setLoading] = useState(initialData === undefined);
+  const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [Editor, setEditor] = useState<null | typeof import("@/src/components/admin/RichTextEditor").RichTextEditor>(
     null,
@@ -106,15 +118,15 @@ export default function AdminGameArticlesClient({ initialData }: Props) {
     setEditorNonce((n) => n + 1);
   }
 
-  async function load() {
-    setLoading(true);
+  async function load(opts?: { soft?: boolean }) {
+    if (!opts?.soft) setLoading(true);
     try {
       const res = await fetch("/api/admin/game-articles", {
         cache: "no-store",
         credentials: "include",
       });
       if (!res.ok) {
-        setMessage("Failed to load game articles.");
+        setMessage(await readApiError(res, "Failed to load game articles."));
         return;
       }
       const json = (await res.json()) as { data?: InitialData };
@@ -126,10 +138,11 @@ export default function AdminGameArticlesClient({ initialData }: Props) {
     }
   }
 
+  // Always refetch from API (SSR initialData is only a first paint). Soft-nav / stale RSC
+  // must not leave the editor on pre-save HTML while the public site shows DB content.
   useEffect(() => {
-    if (initialData !== undefined) return;
-    void load();
-  }, [initialData]);
+    void load({ soft: initialData !== undefined });
+  }, []);
 
   function setHtml(value: string) {
     setHtmlByGame((prev) => ({ ...prev, [game]: value }));
@@ -157,6 +170,7 @@ export default function AdminGameArticlesClient({ initialData }: Props) {
         return;
       }
       const json = (await res.json()) as { usingDefault?: boolean; html?: string };
+      clearEditorDraft(game);
       setHtmlByGame((prev) => ({ ...prev, [game]: json.html ?? "" }));
       setDefaultByGame((prev) => ({ ...prev, [game]: Boolean(json.usingDefault) }));
       setMessage(
@@ -164,6 +178,7 @@ export default function AdminGameArticlesClient({ initialData }: Props) {
           ? `${labelFor(game)} article cleared — site will show the built-in default.`
           : `${labelFor(game)} article saved.`,
       );
+      await load({ soft: true });
     } catch {
       setMessage("Network error. Please retry.");
     } finally {
@@ -185,11 +200,9 @@ export default function AdminGameArticlesClient({ initialData }: Props) {
         setMessage(await readApiError(res, "Could not clear article."));
         return;
       }
-      const json = (await res.json()) as { usingDefault?: boolean; html?: string };
-      setHtmlByGame((prev) => ({ ...prev, [game]: json.html ?? "" }));
-      setDefaultByGame((prev) => ({ ...prev, [game]: Boolean(json.usingDefault) }));
-      setEditorNonce((n) => n + 1);
+      clearEditorDraft(game);
       setMessage("Reverted to built-in default article.");
+      await load({ soft: true });
     } catch {
       setMessage("Network error. Please retry.");
     } finally {
@@ -229,7 +242,7 @@ export default function AdminGameArticlesClient({ initialData }: Props) {
       </div>
 
       {loading ? (
-        <EditorBootSkeleton html="" />
+        <EditorBootSkeleton html={html} />
       ) : (
         <form onSubmit={onSave}>
           <p style={{ fontSize: 13, color: usingDefault ? "#fbbf24" : "#5eead4", marginBottom: 10 }}>
@@ -243,7 +256,7 @@ export default function AdminGameArticlesClient({ initialData }: Props) {
               key={`game-article-${game}-${editorNonce}`}
               value={html}
               onChange={setHtml}
-              storageKey={`bgmi_admin_game_article_${game}_v1`}
+              storageKey={draftKey(game)}
             />
           ) : (
             <EditorBootSkeleton html={html} />

@@ -138,12 +138,29 @@ export function normalizeFfHomeCards(
       const row = Array.isArray(merged.roleTips?.items)
         ? (merged.roleTips.items[index] as Record<string, unknown> | undefined)
         : undefined;
+      const leadDefault = typeof def.lead === "string" ? def.lead : "";
+      const focusDefault =
+        typeof def.focusControlId === "string" ? def.focusControlId : "";
+      // DPI/SPI slot used to be Sniper — replace stale sniper admin copy once.
+      const isDpiSlot = focusDefault === "ffc-dpi";
+      const rowTitle = typeof row?.title === "string" ? row.title : "";
+      const rowAlreadyDpi = /dpi\s*\/?\s*spi/i.test(rowTitle);
+      const useDefCopy = isDpiSlot && !rowAlreadyDpi;
       return {
         role: def.role,
-        icon: sanitizeString(row?.icon, def.icon) || def.icon,
-        title: sanitizeString(row?.title, def.title) || def.title,
-        tips: sanitizeStringList(row?.tips, def.tips),
-        buttonLabel: sanitizeString(row?.buttonLabel, def.buttonLabel) || def.buttonLabel,
+        icon: sanitizeString(useDefCopy ? def.icon : row?.icon, def.icon) || def.icon,
+        title: sanitizeString(useDefCopy ? def.title : row?.title, def.title) || def.title,
+        lead:
+          sanitizeString(useDefCopy ? def.lead : row?.lead, leadDefault) ||
+          leadDefault ||
+          undefined,
+        tips: sanitizeStringList(useDefCopy ? def.tips : row?.tips, def.tips),
+        buttonLabel:
+          sanitizeString(useDefCopy ? def.buttonLabel : row?.buttonLabel, def.buttonLabel) ||
+          def.buttonLabel,
+        applyRole: row?.applyRole === false || def.applyRole === false ? false : true,
+        focusControlId:
+          sanitizeString(row?.focusControlId, focusDefault) || focusDefault || undefined,
       };
     }),
   };

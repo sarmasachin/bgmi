@@ -7908,6 +7908,13 @@ html {
   margin-top: 6px;
 }
 
+.ff-role-tip-lead {
+  margin: 0 0 10px;
+  font-size: 13px;
+  line-height: 1.45;
+  color: #94a3b8;
+}
+
 .ff-role-tip-btn {
   appearance: none;
   margin-top: auto;
@@ -7940,6 +7947,11 @@ html {
   .ff-role-tips-grid {
     grid-template-columns: 1fr 1fr;
     gap: 16px;
+  }
+
+  /* Third card (Beginners) sits full-width under Rusher + Sniper */
+  .ff-role-tips-grid > .ff-role-tip-card:nth-child(3) {
+    grid-column: 1 / -1;
   }
 }
 
