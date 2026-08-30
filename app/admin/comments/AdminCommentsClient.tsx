@@ -180,7 +180,17 @@ export default function AdminCommentsClient({ initialItems }: Props) {
                       {item.source === "page"
                         ? item.pageKey === "free-fire-advance-server"
                           ? "FF Advance Server"
-                          : item.pageKey || "Page"
+                          : item.pageKey === "bgmi-lite-apk"
+                            ? "BGMI Lite APK"
+                            : item.pageKey === "bgmi-lite-redeem-code"
+                              ? "BGMI Lite Redeem"
+                              : item.pageKey === "bgmi-lite-stylish-name"
+                                ? "BGMI Lite Stylish Name"
+                                : item.pageKey === "pubg-mobile-lite-apk"
+                                  ? "PUBG Lite APK"
+                                  : item.pageKey === "pubg-mobile-lite-redeem-code"
+                                    ? "PUBG Lite Redeem"
+                                    : item.pageKey || "Page"
                         : "News"}
                     </td>
                     <td>

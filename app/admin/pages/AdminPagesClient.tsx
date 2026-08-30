@@ -692,6 +692,7 @@ export default function AdminPagesClient({ initialRows }: Props) {
             aria-label="Calculator game"
           >
             <option value="bgmi">BGMI</option>
+            <option value="bgmi-lite">BGMI Lite</option>
             <option value="pubg">PUBG Mobile</option>
             <option value="pubg-mobile-codes">PUBG Mobile Code</option>
             <option value="freefire">Free Fire</option>

@@ -86,12 +86,18 @@ model NewsPost {
 
 /** Admin-managed news hubs (URL segment + label). */
 model NewsCategory {
-  id        String   @id @default(cuid())
-  slug      String   @unique
-  label     String
-  sortOrder Int      @default(0)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id             String   @id @default(cuid())
+  slug           String   @unique
+  label          String
+  sortOrder      Int      @default(0)
+  /** Public listing meta title (falls back to “{label} News”). */
+  seoTitle       String?
+  /** Public listing meta description. */
+  seoDescription String?
+  /** Comma-separated keywords for the category listing page. */
+  seoKeywords    String?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
 }
 
 model NewsComment {

@@ -20,6 +20,8 @@ type Props = {
   /** When set, only articles in this category (primary or extra). */
   category?: NewsCategorySlug;
   heading?: string;
+  /** Pagination base path (defaults to `/{category}` or `/news`). */
+  listBasePath?: string;
 };
 
 type NewsCardItem = {
@@ -105,7 +107,7 @@ function buildNewsBlocks(items: NewsCardItem[]) {
   return blocks;
 }
 
-export async function NewsSection({ page = 1, category, heading }: Props) {
+export async function NewsSection({ page = 1, category, heading, listBasePath }: Props) {
   const requestedPage = Math.max(1, page);
   const first = category
     ? await listPublishedNewsByCategory(category, requestedPage, NEWS_PAGE_SIZE)
@@ -119,7 +121,7 @@ export async function NewsSection({ page = 1, category, heading }: Props) {
         ? await listPublishedNewsByCategory(category, currentPage, NEWS_PAGE_SIZE)
         : await listPublishedNews(currentPage, NEWS_PAGE_SIZE);
 
-  const basePath = category ? `/${category}` : "/news";
+  const basePath = listBasePath || (category ? `/${category}` : "/news");
 
   const items: NewsCardItem[] = (result.data ?? []).map((item, index) => {
     const primary = coerceNewsCategory(

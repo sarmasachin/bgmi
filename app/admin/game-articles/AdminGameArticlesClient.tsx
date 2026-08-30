@@ -28,12 +28,16 @@ type Game = GameArticleGame;
 
 type InitialData = {
   bgmiHtml: string;
+  bgmiLiteHtml: string;
   pubgHtml: string;
+  pubgMobileLiteHtml: string;
   freefireHtml: string;
   freefireMaxHtml: string;
   pubgMobileCodesHtml: string;
   bgmiUsingDefault: boolean;
+  bgmiLiteUsingDefault: boolean;
   pubgUsingDefault: boolean;
+  pubgMobileLiteUsingDefault: boolean;
   freefireUsingDefault: boolean;
   freefireMaxUsingDefault: boolean;
   pubgMobileCodesUsingDefault: boolean;
@@ -67,14 +71,18 @@ export default function AdminGameArticlesClient({ initialData }: Props) {
   const [game, setGame] = useState<Game>("freefire");
   const [htmlByGame, setHtmlByGame] = useState<Record<Game, string>>({
     bgmi: initialData?.bgmiHtml ?? "",
+    "bgmi-lite": initialData?.bgmiLiteHtml ?? "",
     pubg: initialData?.pubgHtml ?? "",
+    "pubg-mobile-lite": initialData?.pubgMobileLiteHtml ?? "",
     freefire: initialData?.freefireHtml ?? "",
     "freefire-max": initialData?.freefireMaxHtml ?? "",
     "pubg-mobile-codes": initialData?.pubgMobileCodesHtml ?? "",
   });
   const [defaultByGame, setDefaultByGame] = useState<Record<Game, boolean>>({
     bgmi: initialData?.bgmiUsingDefault ?? true,
+    "bgmi-lite": initialData?.bgmiLiteUsingDefault ?? true,
     pubg: initialData?.pubgUsingDefault ?? true,
+    "pubg-mobile-lite": initialData?.pubgMobileLiteUsingDefault ?? true,
     freefire: initialData?.freefireUsingDefault ?? true,
     "freefire-max": initialData?.freefireMaxUsingDefault ?? true,
     "pubg-mobile-codes": initialData?.pubgMobileCodesUsingDefault ?? true,
@@ -103,14 +111,18 @@ export default function AdminGameArticlesClient({ initialData }: Props) {
   function applyData(data: InitialData) {
     setHtmlByGame({
       bgmi: data.bgmiHtml,
+      "bgmi-lite": data.bgmiLiteHtml,
       pubg: data.pubgHtml,
+      "pubg-mobile-lite": data.pubgMobileLiteHtml,
       freefire: data.freefireHtml,
       "freefire-max": data.freefireMaxHtml,
       "pubg-mobile-codes": data.pubgMobileCodesHtml,
     });
     setDefaultByGame({
       bgmi: data.bgmiUsingDefault,
+      "bgmi-lite": data.bgmiLiteUsingDefault,
       pubg: data.pubgUsingDefault,
+      "pubg-mobile-lite": data.pubgMobileLiteUsingDefault,
       freefire: data.freefireUsingDefault,
       "freefire-max": data.freefireMaxUsingDefault,
       "pubg-mobile-codes": data.pubgMobileCodesUsingDefault,

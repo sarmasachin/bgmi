@@ -1,7 +1,13 @@
 import type { AdminPageRow } from "@/src/server/admin/mapAdminPageRows";
 
 export type TemplateType = "home" | "article" | "landing";
-export type CloneGame = "bgmi" | "pubg" | "freefire" | "freefire-max" | "pubg-mobile-codes";
+export type CloneGame =
+  | "bgmi"
+  | "bgmi-lite"
+  | "pubg"
+  | "freefire"
+  | "freefire-max"
+  | "pubg-mobile-codes";
 export type PageRow = AdminPageRow;
 
 export type PageMeta = {
@@ -19,6 +25,7 @@ export function coerceTemplateType(value: unknown): TemplateType {
 
 export function coerceCloneGame(value: unknown): CloneGame {
   if (
+    value === "bgmi-lite" ||
     value === "pubg" ||
     value === "freefire" ||
     value === "freefire-max" ||
@@ -30,6 +37,7 @@ export function coerceCloneGame(value: unknown): CloneGame {
 }
 
 export function cloneGameLabel(game: CloneGame) {
+  if (game === "bgmi-lite") return "BGMI Lite";
   if (game === "pubg") return "PUBG Mobile";
   if (game === "pubg-mobile-codes") return "PUBG Mobile Code";
   if (game === "freefire") return "Free Fire";
@@ -87,6 +95,7 @@ export function parseContent(content: unknown) {
         game:
           metaObj.game === "pubg" ||
           metaObj.game === "bgmi" ||
+          metaObj.game === "bgmi-lite" ||
           metaObj.game === "freefire" ||
           metaObj.game === "freefire-max" ||
           metaObj.game === "pubg-mobile-codes"

@@ -1,6 +1,10 @@
 "use client";
 
 import { usePathname } from "next/navigation";
+import {
+  isLiteCalculatorPath,
+  pickLitePageContent,
+} from "@/src/lib/gamePagePath";
 import type { FfHomeHowItWorks } from "@/src/lib/homeCardsTypes";
 
 type Step = {
@@ -87,20 +91,83 @@ const BGMI_STEPS: Step[] = [
   },
 ];
 
+const BGMI_LITE_STEPS: Step[] = [
+  {
+    title: "Select Device",
+    icon: "fa-mobile-screen",
+    bullets: [
+      "Open the BGMI Lite calculator",
+      "Pick a budget phone close to yours (Redmi, Realme, Infinix…)",
+      "Confirm RAM matches your device (often 2–4GB)",
+    ],
+  },
+  {
+    title: "Enter Setup",
+    icon: "fa-keyboard",
+    bullets: [
+      "Choose the FPS you hold stable (30 / 40 / 60)",
+      "Set gyroscope to Scope On on entry phones",
+      "Select play style and finger layout",
+    ],
+  },
+  {
+    title: "Generate",
+    icon: "fa-wand-magic-sparkles",
+    bullets: [
+      "Tap Calculate for Camera, ADS, and Gyro",
+      "Copy values into BGMI Lite Settings",
+      "Tune Red Dot / 3x / 6x in Training Ground (±5)",
+    ],
+  },
+  {
+    title: "Stay Stable",
+    icon: "fa-gauge-high",
+    bullets: [
+      "Prefer Smooth graphics for steady FPS",
+      "Avoid copying flagship 90/120 FPS codes",
+      "Retune after Krafton’s final Lite client ships",
+    ],
+  },
+];
+
 type Props = {
   homeContent?: FfHomeHowItWorks;
+  liteContent?: FfHomeHowItWorks;
+  pubgLiteContent?: FfHomeHowItWorks;
 };
 
-export function HowItWorksSection({ homeContent }: Props) {
+export function HowItWorksSection({
+  homeContent,
+  liteContent,
+  pubgLiteContent,
+}: Props) {
   const pathname = usePathname() ?? "";
   const isPubg = pathname === "/pubg" || pathname.startsWith("/pubg/");
-  const isBgmi = pathname === "/bgmi" || pathname.startsWith("/bgmi/");
-  const isHomeFf = !isPubg && !isBgmi;
+  const isLite = isLiteCalculatorPath(pathname);
+  const isBgmi =
+    !isLite && (pathname === "/bgmi" || pathname.startsWith("/bgmi/"));
+  const isHomeFf = !isPubg && !isBgmi && !isLite;
 
-  const steps = isPubg || isBgmi ? BGMI_STEPS : (homeContent?.steps ?? FF_STEPS);
-  const title = isHomeFf ? (homeContent?.title ?? "How It Works") : "How It Works";
-  const subtitle =
-    isPubg || isBgmi
+  const litePack = pickLitePageContent(
+    pathname,
+    homeContent,
+    liteContent,
+    pubgLiteContent,
+  );
+  const steps = isLite
+    ? (litePack?.steps ?? BGMI_LITE_STEPS)
+    : isPubg || isBgmi
+      ? BGMI_STEPS
+      : (homeContent?.steps ?? FF_STEPS);
+  const title = isLite
+    ? (litePack?.title ?? "How It Works")
+    : isHomeFf
+      ? (homeContent?.title ?? "How It Works")
+      : "How It Works";
+  const subtitle = isLite
+    ? (litePack?.subtitle ??
+      "Four steps to Lite-ready Camera, ADS, and Gyroscope settings.")
+    : isPubg || isBgmi
       ? "Get your pro sensitivity in just 4 simple steps."
       : (homeContent?.subtitle ?? "Get your Free Fire pro settings in just 4 simple steps.");
 

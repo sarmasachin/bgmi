@@ -4,7 +4,7 @@ import { FormEvent, useId, useRef, useState } from "react";
 import { UserErrorBanner } from "@/src/components/ui/UserErrorBanner";
 import { messageFromUnknownError, readApiError } from "@/src/lib/userFacingError";
 
-type Game = "bgmi" | "pubg" | "freefire" | "freefire-max";
+type Game = "bgmi" | "bgmi-lite" | "pubg" | "pubg-mobile-lite" | "freefire" | "freefire-max";
 
 type Props = {
   /** Locked to the current calculator page. */
@@ -13,7 +13,9 @@ type Props = {
 
 const GAME_LABEL: Record<Game, string> = {
   bgmi: "BGMI",
+  "bgmi-lite": "BGMI Lite",
   pubg: "PUBG Mobile",
+  "pubg-mobile-lite": "PUBG Mobile Lite",
   freefire: "Free Fire",
   "freefire-max": "Free Fire Max",
 };

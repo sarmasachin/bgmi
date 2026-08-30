@@ -6,6 +6,11 @@ import {
   PUBG_MOBILE_CODES_LABEL,
   PUBG_MOBILE_CODES_PATH,
 } from "@/src/lib/pubgMobileCodes";
+import {
+  ensurePubgMobileLiteNavigation,
+  PUBG_MOBILE_LITE_LABEL,
+  PUBG_MOBILE_LITE_PATH,
+} from "@/src/lib/pubgMobileLite";
 import { prisma, tryPrisma, tryPrismaLong } from "@/src/server/dbSafe";
 import {
   DEFAULT_FF_TRUST_BAR,
@@ -57,7 +62,9 @@ const defaultSettings = {
   navigation: [
     ...FREE_FIRE_NAV.map((item) => ({ label: item.label, href: item.href })),
     { label: "BGMI", href: "/bgmi" },
+    { label: "BGMI Lite", href: "/bgmi-lite" },
     { label: "PUBG Mobile", href: "/pubg" },
+    { label: PUBG_MOBILE_LITE_LABEL, href: PUBG_MOBILE_LITE_PATH },
     { label: PUBG_MOBILE_CODES_LABEL, href: PUBG_MOBILE_CODES_PATH },
   ],
   footerLinks: [
@@ -181,9 +188,11 @@ export const getSettings = cache(async function getSettings() {
       ...defaultSettings.integrations,
       ...(map[SETTINGS_KEYS.integrations] as Record<string, unknown> | undefined),
     },
-    navigation: ensurePubgMobileCodesNavigation(
-      ensureFreeFireNavigation(
-        parseLinkList(map[SETTINGS_KEYS.navigation], defaultSettings.navigation),
+    navigation: ensurePubgMobileLiteNavigation(
+      ensurePubgMobileCodesNavigation(
+        ensureFreeFireNavigation(
+          parseLinkList(map[SETTINGS_KEYS.navigation], defaultSettings.navigation),
+        ),
       ),
     ),
     footerLinks: parseLinkList(map[SETTINGS_KEYS.footerLinks], defaultSettings.footerLinks).filter(

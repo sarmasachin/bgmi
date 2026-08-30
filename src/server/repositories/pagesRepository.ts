@@ -7,7 +7,13 @@ import { newsArticlePath, newsCategoryFromCloneGame } from "@/src/lib/newsCatego
 import { toCanonicalUrl } from "@/src/lib/siteUrl";
 
 type TemplateType = "home" | "article" | "landing";
-type CloneGame = "bgmi" | "pubg" | "freefire" | "freefire-max" | "pubg-mobile-codes";
+type CloneGame =
+  | "bgmi"
+  | "bgmi-lite"
+  | "pubg"
+  | "freefire"
+  | "freefire-max"
+  | "pubg-mobile-codes";
 
 type PageInput = {
   title: string;
@@ -63,6 +69,7 @@ function resolveCanonicalUrl(slug: string, canonicalUrl?: string | null) {
 function coerceCloneGame(value: unknown): CloneGame | undefined {
   return value === "pubg" ||
     value === "bgmi" ||
+    value === "bgmi-lite" ||
     value === "freefire" ||
     value === "freefire-max" ||
     value === "pubg-mobile-codes"
@@ -348,6 +355,7 @@ function expectedGameForNormalizedSlug(normalized: string): CloneGame | undefine
   if (normalized === "free-fire-sensitivity-settings-calculator") return "freefire";
   if (normalized === "free-fire-max-sensitivity-settings-calculator") return "freefire-max";
   if (normalized === "bgmi") return "bgmi";
+  if (normalized === "bgmi-lite") return "bgmi-lite";
   if (normalized === "pubg") return "pubg";
   if (normalized === "pubg-mobile-codes") return "pubg-mobile-codes";
   return undefined;

@@ -10,6 +10,7 @@ import {
   buildCategoryNewsMetadata,
   CategoryNewsListingPage,
 } from "@/src/features/news/CategoryNewsListingPage";
+import { LiteSensCalculator } from "@/src/features/sensCalculator/LiteSensCalculator";
 import { SensCalculator } from "@/src/features/sensCalculator/SensCalculator";
 import { isNewsCategorySlug } from "@/src/lib/newsCategories";
 import { isAdminLoggedIn } from "@/src/server/auth";
@@ -21,7 +22,13 @@ import { toCanonicalUrl } from "@/src/lib/siteUrl";
 import { buildSocialMetadata } from "@/src/lib/socialMeta";
 
 type TemplateType = "home" | "article" | "landing";
-type CloneGame = "bgmi" | "pubg" | "freefire" | "freefire-max" | "pubg-mobile-codes";
+type CloneGame =
+  | "bgmi"
+  | "bgmi-lite"
+  | "pubg"
+  | "freefire"
+  | "freefire-max"
+  | "pubg-mobile-codes";
 
 type Props = {
   params: Promise<{ slug: string }>;
@@ -59,6 +66,8 @@ function extractContentData(content: unknown) {
     const templateType: TemplateType =
       rawType === "article" || rawType === "landing" || rawType === "home" ? rawType : "home";
     const game: CloneGame =
+      meta.game === "bgmi" ||
+      meta.game === "bgmi-lite" ||
       meta.game === "pubg" ||
       meta.game === "freefire" ||
       meta.game === "freefire-max" ||
@@ -239,8 +248,14 @@ export default async function DynamicTemplatePage({ params, searchParams }: Prop
             isMax={calculatorGame === "freefire-max"}
             trustBar={settings.ffTrustBar}
           />
+        ) : calculatorGame === "bgmi-lite" ? (
+          <LiteSensCalculator key="bgmi-lite" phoneModels={phoneModels} />
         ) : (
-          <SensCalculator key={calculatorGame} phoneModels={phoneModels} game={calculatorGame} />
+          <SensCalculator
+            key={calculatorGame}
+            phoneModels={phoneModels}
+            game={calculatorGame === "pubg" ? "pubg" : "bgmi"}
+          />
         )}
         <AdSlot slotKey="home_between_tool_and_article" />
       </main>

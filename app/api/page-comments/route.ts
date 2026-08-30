@@ -1,6 +1,16 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { FREE_FIRE_ADVANCE_SERVER_PATH } from "@/src/lib/ffAdvanceServerPage";
+import { BGMI_LITE_APK_PAGE_KEY } from "@/src/lib/bgmiLiteBetaApkPage";
+import { BGMI_LITE_REDEEM_PAGE_KEY } from "@/src/lib/bgmiLiteRedeemCodes";
+import { BGMI_LITE_STYLISH_PAGE_KEY } from "@/src/lib/bgmiLiteStylishNamePage";
+import { PUBG_MOBILE_LITE_APK_PAGE_KEY } from "@/src/lib/pubgMobileLiteApkPage";
+import { PUBG_MOBILE_LITE_REDEEM_PAGE_KEY } from "@/src/lib/pubgMobileLiteRedeemCodes";
+import { PUBG_MOBILE_LITE_NAME_PAGE_KEY } from "@/src/lib/pubgMobileLiteNamePage";
+import { FREE_FIRE_REDEEM_PAGE_KEY } from "@/src/lib/freeFireRedeemCodes";
+import { FREE_FIRE_MAX_REDEEM_PAGE_KEY } from "@/src/lib/freeFireMaxRedeemCodes";
+import { FREE_FIRE_STYLISH_NAME_PAGE_KEY } from "@/src/lib/freeFireStylishNamePage";
+import { FREE_FIRE_MAX_STYLISH_NAME_PAGE_KEY } from "@/src/lib/freeFireMaxStylishNamePage";
 import { checkRateLimit } from "@/src/server/rateLimit";
 import { getRequestIp } from "@/src/server/requestIp";
 import {
@@ -13,6 +23,16 @@ import { trackEmailForCampaigns } from "@/src/server/repositories/emailSubscribe
 const ALLOWED_PAGE_KEYS = new Set([
   FREE_FIRE_ADVANCE_SERVER_PATH.replace(/^\//, ""),
   "free-fire-advance-server",
+  BGMI_LITE_APK_PAGE_KEY,
+  BGMI_LITE_REDEEM_PAGE_KEY,
+  BGMI_LITE_STYLISH_PAGE_KEY,
+  PUBG_MOBILE_LITE_APK_PAGE_KEY,
+  PUBG_MOBILE_LITE_REDEEM_PAGE_KEY,
+  PUBG_MOBILE_LITE_NAME_PAGE_KEY,
+  FREE_FIRE_REDEEM_PAGE_KEY,
+  FREE_FIRE_MAX_REDEEM_PAGE_KEY,
+  FREE_FIRE_STYLISH_NAME_PAGE_KEY,
+  FREE_FIRE_MAX_STYLISH_NAME_PAGE_KEY,
 ]);
 
 const postSchema = z.object({

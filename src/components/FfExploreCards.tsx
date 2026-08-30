@@ -3,74 +3,89 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { FREE_FIRE_MAX_PATH } from "@/src/lib/freeFirePages";
+import {
+  isHomeFfPath,
+  isLiteCalculatorPath,
+  pickLitePageContent,
+} from "@/src/lib/gamePagePath";
 import type { FfHomeExplore } from "@/src/lib/homeCardsTypes";
 
 type Props = {
   homeContent?: FfHomeExplore;
+  liteContent?: FfHomeExplore;
+  pubgLiteContent?: FfHomeExplore;
 };
 
 /**
- * Explore calculators — home & Max share layout; copy from admin when provided.
+ * Explore cards — Free Fire home / Max / Lite calculators.
  */
-export function FfExploreCards({ homeContent }: Props) {
+export function FfExploreCards({ homeContent, liteContent, pubgLiteContent }: Props) {
   const pathname = usePathname() ?? "";
-  const isHome = pathname === "/" || pathname === "";
+  const isHome = isHomeFfPath(pathname);
   const isMax = pathname === FREE_FIRE_MAX_PATH;
-  if (!isHome && !isMax) return null;
+  const isLite = isLiteCalculatorPath(pathname);
+  if (!isHome && !isMax && !isLite) return null;
 
-  const content: FfHomeExplore =
-    homeContent ??
-    (isMax
-      ? {
-          title: "Switch between Max & Free Fire",
-          freefire: {
-            title: "Free Fire",
-            text: "Lighter classic Free Fire — better when you want max FPS on a budget phone.",
-            points: [
-              "Cooler phone, smoother FPS",
-              "Separate classic sensi tool",
-              "Same account via Firelink",
-            ],
-            buttonLabel: "Open Free Fire calculator",
-            href: "/#ff-calculator",
-          },
-          freefireMax: {
-            title: "Free Fire Max",
-            text: "You’re on the Max tool — built for heavier graphics so aim doesn’t feel sticky or too floaty.",
-            points: [
-              "Tuned for Max feel, not FF codes",
-              "Works best on 6GB+ phones",
-              "Scroll up to recalculate anytime",
-            ],
-            buttonLabel: "Back to Max calculator",
-            href: `${FREE_FIRE_MAX_PATH}#ff-calculator`,
-          },
-        }
-      : {
-          title: "Explore calculators",
-          freefire: {
-            title: "Free Fire",
-            text: "Classic Free Fire sensitivity for all RAM phones — DPI and drag-friendly presets.",
-            points: [
-              "Low & mid-range friendly",
-              "Drag-friendly presets",
-              "Instant calculator on home",
-            ],
-            buttonLabel: "Explore Free Fire",
-            href: "/#ff-calculator",
-          },
-          freefireMax: {
-            title: "Free Fire Max",
-            text: "Max-mode sensitivity for heavier graphics — separate tune for smoother aim on stronger phones.",
-            points: [
-              "Built for FF Max feel",
-              "Better on 6GB+ devices",
-              "Own Max calculator page",
-            ],
-            buttonLabel: "Explore Free Fire Max",
-            href: FREE_FIRE_MAX_PATH,
-          },
-        });
+  const content: FfHomeExplore | undefined = isLite
+    ? pickLitePageContent(pathname, homeContent, liteContent, pubgLiteContent)
+    : homeContent ??
+      (isMax
+        ? {
+            title: "Switch between Max & Free Fire",
+            freefire: {
+              title: "Free Fire",
+              text: "Lighter classic Free Fire — better when you want max FPS on a budget phone.",
+              points: [
+                "Cooler phone, smoother FPS",
+                "Separate classic sensi tool",
+                "Same account via Firelink",
+              ],
+              buttonLabel: "Open Free Fire calculator",
+              href: "/#ff-calculator",
+            },
+            freefireMax: {
+              title: "Free Fire Max",
+              text: "You’re on the Max tool — built for heavier graphics so aim doesn’t feel sticky or too floaty.",
+              points: [
+                "Tuned for Max feel, not FF codes",
+                "Works best on 6GB+ phones",
+                "Scroll up to recalculate anytime",
+              ],
+              buttonLabel: "Back to Max calculator",
+              href: `${FREE_FIRE_MAX_PATH}#ff-calculator`,
+            },
+          }
+        : {
+            title: "Explore calculators",
+            freefire: {
+              title: "Free Fire",
+              text: "Classic Free Fire sensitivity for all RAM phones — DPI and drag-friendly presets.",
+              points: [
+                "Low & mid-range friendly",
+                "Drag-friendly presets",
+                "Instant calculator on home",
+              ],
+              buttonLabel: "Explore Free Fire",
+              href: "/#ff-calculator",
+            },
+            freefireMax: {
+              title: "Free Fire Max",
+              text: "Max-mode sensitivity for heavier graphics — separate tune for smoother aim on stronger phones.",
+              points: [
+                "Built for FF Max feel",
+                "Better on 6GB+ devices",
+                "Own Max calculator page",
+              ],
+              buttonLabel: "Explore Free Fire Max",
+              href: FREE_FIRE_MAX_PATH,
+            },
+          });
+
+  if (!content) return null;
+
+  const icons = isLite
+    ? (["fa-mobile-screen", "fa-download"] as const)
+    : (["fa-fire", "fa-fire-flame-curved"] as const);
 
   return (
     <section className="ff-explore" aria-labelledby="ff-explore-title">
@@ -85,9 +100,7 @@ export function FfExploreCards({ homeContent }: Props) {
           >
             <div className="ff-explore-card-top">
               <span className="ff-explore-icon" aria-hidden>
-                <i
-                  className={`fa-solid ${index === 0 ? "fa-fire" : "fa-fire-flame-curved"}`}
-                />
+                <i className={`fa-solid ${icons[index]}`} />
               </span>
               <h3 className="ff-explore-card-title">{card.title}</h3>
             </div>

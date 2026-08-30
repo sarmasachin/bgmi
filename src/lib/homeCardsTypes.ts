@@ -20,6 +20,18 @@ export const PAGE_CARDS_VARIANTS = [
     hint: "BGMI calculator page SEO + hero",
   },
   {
+    id: "bgmi-lite",
+    label: "BGMI Lite",
+    previewPath: "/bgmi-lite",
+    hint: "BGMI Lite calculator page sections (same pattern as Free Fire home)",
+  },
+  {
+    id: "pubg-mobile-lite",
+    label: "PUBG Mobile Lite",
+    previewPath: "/pubg-mobile-lite",
+    hint: "PUBG Mobile Lite calculator page sections (same Lite layout)",
+  },
+  {
     id: "pubg",
     label: "PUBG",
     previewPath: "/pubg",
@@ -64,11 +76,31 @@ export const MAX_CARD_SECTIONS = [
   { id: "explore", label: "Explore calculators" },
 ] as const;
 
-/** BGMI / PUBG page cards currently drive SEO + H1 only. */
+/** Full BGMI page cards currently drive SEO + H1 only. */
 export const BGMI_CARD_SECTIONS = [
   { id: "seo", label: "SEO" },
   { id: "hero", label: "Hero title" },
 ] as const;
+
+/**
+ * BGMI Lite public page sections (games layout).
+ * Excludes nextUpdate/advanceServer — those cards are not rendered on /bgmi-lite.
+ */
+export const BGMI_LITE_CARD_SECTIONS = [
+  { id: "seo", label: "SEO" },
+  { id: "hero", label: "Hero title" },
+  { id: "patchStrip", label: "Patch strip" },
+  { id: "playModes", label: "Play modes" },
+  { id: "roleTips", label: "Role tips" },
+  { id: "season", label: "Season banner" },
+  { id: "proTips", label: "Pro tips" },
+  { id: "howItWorks", label: "How it works" },
+  { id: "comparison", label: "Comparison tables" },
+  { id: "explore", label: "Explore calculators" },
+] as const;
+
+/** Same sections as BGMI Lite — shared Lite chrome. */
+export const PUBG_MOBILE_LITE_CARD_SECTIONS = BGMI_LITE_CARD_SECTIONS;
 
 export const PUBG_CARD_SECTIONS = [
   { id: "seo", label: "SEO" },
@@ -216,6 +248,18 @@ export type FfHomeComparison = {
   note: string;
   vsRows: FfHomeCompareRow[];
   ramRows: FfHomeRamRow[];
+  /** Optional table headers (defaults: Free Fire / Free Fire Max). */
+  leftColLabel?: string;
+  rightColLabel?: string;
+  /** Optional RAM table column labels (defaults: General, Red Dot, …). */
+  ramColLabels?: {
+    general: string;
+    redDot: string;
+    scope2x: string;
+    scope4x: string;
+    sniper: string;
+    freeLook: string;
+  };
 };
 
 export type FfHomeExploreCard = {

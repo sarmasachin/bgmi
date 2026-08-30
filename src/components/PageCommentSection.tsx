@@ -8,6 +8,8 @@ import type { PublicPageComment } from "@/src/server/repositories/pageCommentsRe
 type Props = {
   pageKey: string;
   initialComments?: PublicPageComment[];
+  /** Optional intro under the Comments heading. */
+  lead?: string;
 };
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -22,7 +24,11 @@ function formatCommentDate(iso: string) {
   });
 }
 
-export function PageCommentSection({ pageKey, initialComments = [] }: Props) {
+export function PageCommentSection({
+  pageKey,
+  initialComments = [],
+  lead = "Ask questions or share Advance Server tips. Comments appear here after admin approval.",
+}: Props) {
   const submittingRef = useRef(false);
   const [comments] = useState<PublicPageComment[]>(initialComments);
   const [name, setName] = useState("");
@@ -97,9 +103,7 @@ export function PageCommentSection({ pageKey, initialComments = [] }: Props) {
         <h2 id="ff-as-comments-title" className="ff-as-comments-title">
           Comments
         </h2>
-        <p className="ff-as-comments-lead">
-          Ask questions or share Advance Server tips. Comments appear here after admin approval.
-        </p>
+        <p className="ff-as-comments-lead">{lead}</p>
 
         <form className="ff-as-comments-form" onSubmit={onSubmit} noValidate>
           <label className="ff-as-comments-field">

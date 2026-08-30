@@ -10,11 +10,26 @@ type Props = {
   initialRows: AdminNewsCategoryRow[];
 };
 
+type FormState = {
+  slug: string;
+  label: string;
+  seoTitle: string;
+  seoDescription: string;
+  seoKeywords: string;
+};
+
+const emptyForm = (): FormState => ({
+  slug: "",
+  label: "",
+  seoTitle: "",
+  seoDescription: "",
+  seoKeywords: "",
+});
+
 export default function AdminNewsCategoriesClient({ initialRows }: Props) {
   const setMessage = useAdminFlash();
   const [rows, setRows] = useState(initialRows);
-  const [slug, setSlug] = useState("");
-  const [label, setLabel] = useState("");
+  const [form, setForm] = useState<FormState>(emptyForm);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
 
@@ -30,14 +45,18 @@ export default function AdminNewsCategoriesClient({ initialRows }: Props) {
 
   function resetForm() {
     setEditingId(null);
-    setSlug("");
-    setLabel("");
+    setForm(emptyForm());
   }
 
   function startEdit(row: AdminNewsCategoryRow) {
     setEditingId(row.id);
-    setSlug(row.slug);
-    setLabel(row.label);
+    setForm({
+      slug: row.slug,
+      label: row.label,
+      seoTitle: row.seoTitle,
+      seoDescription: row.seoDescription,
+      seoKeywords: row.seoKeywords,
+    });
   }
 
   async function onSubmit(event: FormEvent) {
@@ -45,8 +64,11 @@ export default function AdminNewsCategoriesClient({ initialRows }: Props) {
     setBusy(true);
     try {
       const payload = {
-        slug: normalizeCategorySlugInput(slug),
-        label: label.trim(),
+        slug: normalizeCategorySlugInput(form.slug),
+        label: form.label.trim(),
+        seoTitle: form.seoTitle.trim(),
+        seoDescription: form.seoDescription.trim(),
+        seoKeywords: form.seoKeywords.trim(),
       };
       const res = await fetch(
         "/api/admin/news-categories",
@@ -103,27 +125,58 @@ export default function AdminNewsCategoriesClient({ initialRows }: Props) {
         <h1>News Categories</h1>
       </div>
       <p className="admin-dashboard-subtitle">
-        Categories build public URLs like <code>/ff-max/article-slug</code>. Used articles cannot be
-        deleted until posts are moved.
+        Categories build public URLs like <code>/ff-max/article-slug</code>. SEO title / description
+        / keywords apply to the category listing page. Used articles cannot be deleted until posts
+        are moved.
       </p>
 
       <form onSubmit={onSubmit} className="admin-inline-form" style={{ marginBottom: 24 }}>
         <div className="admin-field">
           <input
             name="label"
-            placeholder="Label (e.g. Free Fire)"
-            value={label}
-            onChange={(e) => setLabel(e.target.value)}
+            placeholder="Label (e.g. BGMI Lite)"
+            value={form.label}
+            onChange={(e) => setForm((f) => ({ ...f, label: e.target.value }))}
             required
           />
         </div>
         <div className="admin-field">
           <input
             name="slug"
-            placeholder="slug (e.g. free-fire)"
-            value={slug}
-            onChange={(e) => setSlug(normalizeCategorySlugInput(e.target.value))}
+            placeholder="slug (e.g. bgmi-lite)"
+            value={form.slug}
+            onChange={(e) =>
+              setForm((f) => ({ ...f, slug: normalizeCategorySlugInput(e.target.value) }))
+            }
             required
+          />
+        </div>
+        <div className="admin-field" style={{ gridColumn: "1 / -1" }}>
+          <input
+            name="seoTitle"
+            placeholder="SEO / H1 title (optional)"
+            value={form.seoTitle}
+            onChange={(e) => setForm((f) => ({ ...f, seoTitle: e.target.value }))}
+            maxLength={160}
+          />
+        </div>
+        <div className="admin-field" style={{ gridColumn: "1 / -1" }}>
+          <textarea
+            name="seoDescription"
+            placeholder="SEO description (optional)"
+            value={form.seoDescription}
+            onChange={(e) => setForm((f) => ({ ...f, seoDescription: e.target.value }))}
+            rows={2}
+            maxLength={320}
+          />
+        </div>
+        <div className="admin-field" style={{ gridColumn: "1 / -1" }}>
+          <input
+            name="seoKeywords"
+            placeholder="SEO keywords, comma separated (optional)"
+            value={form.seoKeywords}
+            onChange={(e) => setForm((f) => ({ ...f, seoKeywords: e.target.value }))}
+            maxLength={400}
           />
         </div>
         <button type="submit" className="admin-news-btn admin-news-btn-primary" disabled={busy}>
@@ -147,6 +200,7 @@ export default function AdminNewsCategoriesClient({ initialRows }: Props) {
             <tr>
               <th>Label</th>
               <th>Slug / URL</th>
+              <th>SEO title</th>
               <th>Actions</th>
             </tr>
           </thead>
@@ -154,9 +208,8 @@ export default function AdminNewsCategoriesClient({ initialRows }: Props) {
             {rows.map((row) => (
               <tr key={row.id}>
                 <td>{row.label}</td>
-                <td>
-                  /{row.slug}/…
-                </td>
+                <td>/{row.slug}/…</td>
+                <td>{row.seoTitle || "—"}</td>
                 <td className="admin-news-actions">
                   <div className="admin-news-actions-wrap">
                     <button

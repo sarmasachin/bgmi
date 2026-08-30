@@ -4,23 +4,34 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { FF_MAX_SEASON_EVENT, FF_SEASON_EVENT } from "@/src/lib/ffSeasonEvent";
 import { FREE_FIRE_MAX_PATH } from "@/src/lib/freeFirePages";
+import {
+  isHomeFfPath,
+  isLiteCalculatorPath,
+  pickLitePageContent,
+} from "@/src/lib/gamePagePath";
 import type { FfHomeSeason } from "@/src/lib/homeCardsTypes";
 
 type Props = {
   homeContent?: FfHomeSeason;
+  liteContent?: FfHomeSeason;
+  pubgLiteContent?: FfHomeSeason;
 };
 
 /**
  * Season / event banner.
- * Home = Free Fire copy; Max page = Free Fire Max copy.
+ * Home = Free Fire; Max = Free Fire Max; Lite pages = BGMI Lite / PUBG Mobile Lite.
  */
-export function FfSeasonBanner({ homeContent }: Props) {
+export function FfSeasonBanner({ homeContent, liteContent, pubgLiteContent }: Props) {
   const pathname = usePathname() ?? "";
-  const isHome = pathname === "/" || pathname === "";
+  const isHome = isHomeFfPath(pathname);
   const isMax = pathname === FREE_FIRE_MAX_PATH;
-  if (!isHome && !isMax) return null;
+  const isLite = isLiteCalculatorPath(pathname);
+  if (!isHome && !isMax && !isLite) return null;
 
-  const event = homeContent ?? (isMax ? FF_MAX_SEASON_EVENT : FF_SEASON_EVENT);
+  const event = isLite
+    ? pickLitePageContent(pathname, homeContent, liteContent, pubgLiteContent)
+    : (homeContent ?? (isMax ? FF_MAX_SEASON_EVENT : FF_SEASON_EVENT));
+  if (!event) return null;
 
   return (
     <section className="ff-season" aria-labelledby="ff-season-title">

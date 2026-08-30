@@ -4,9 +4,11 @@ import { FormEvent, useMemo, useState } from "react";
 import { useAdminFlash } from "@/src/components/admin/AdminToast";
 import {
   BGMI_CARD_SECTIONS,
+  BGMI_LITE_CARD_SECTIONS,
   HOME_CARD_SECTIONS,
   MAX_CARD_SECTIONS,
   PAGE_CARDS_VARIANTS,
+  PUBG_MOBILE_LITE_CARD_SECTIONS,
 } from "@/src/lib/homeCardsTypes";
 import type {
   FfHomeCards,
@@ -27,6 +29,8 @@ type Props = {
 
 function sectionsForVariant(variant: PageCardsVariant) {
   if (variant === "freefire-max") return MAX_CARD_SECTIONS;
+  if (variant === "bgmi-lite") return BGMI_LITE_CARD_SECTIONS;
+  if (variant === "pubg-mobile-lite") return PUBG_MOBILE_LITE_CARD_SECTIONS;
   if (variant === "bgmi" || variant === "pubg" || variant === "pubg-mobile-codes") {
     return BGMI_CARD_SECTIONS;
   }

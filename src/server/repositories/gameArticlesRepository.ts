@@ -1,5 +1,6 @@
 import { prisma, tryPrisma, tryPrismaLong } from "@/src/server/dbSafe";
 import { DEFAULT_BGMI_ARTICLE_HTML } from "@/src/lib/bgmiArticleDefault";
+import { DEFAULT_BGMI_LITE_ARTICLE_HTML } from "@/src/lib/bgmiLiteArticleDefault";
 import { freeFireConfig } from "@/src/lib/freeFirePages";
 import {
   GAME_ARTICLE_GAMES,
@@ -7,6 +8,7 @@ import {
 } from "@/src/lib/gameArticleGames";
 import { DEFAULT_PUBG_ARTICLE_HTML } from "@/src/lib/pubgArticleDefault";
 import { DEFAULT_PUBG_MOBILE_CODES_ARTICLE_HTML } from "@/src/lib/pubgMobileCodesArticleDefault";
+import { DEFAULT_PUBG_MOBILE_LITE_ARTICLE_HTML } from "@/src/lib/pubgMobileLiteArticleDefault";
 import { gameContentToSitemapPath } from "@/src/lib/sitemapLastmod";
 import { sanitizeHtml } from "@/src/lib/sanitizeHtml";
 import { bumpSitemapLastmod } from "@/src/server/repositories/sitemapLastmodRepository";
@@ -16,7 +18,9 @@ export { GAME_ARTICLE_GAMES };
 
 const KEYS: Record<GameArticleGame, string> = {
   bgmi: "settings:gameArticle:bgmi",
+  "bgmi-lite": "settings:gameArticle:bgmi-lite",
   pubg: "settings:gameArticle:pubg",
+  "pubg-mobile-lite": "settings:gameArticle:pubg-mobile-lite",
   freefire: "settings:gameArticle:freefire",
   "freefire-max": "settings:gameArticle:freefire-max",
   "pubg-mobile-codes": "settings:gameArticle:pubg-mobile-codes",
@@ -54,7 +58,9 @@ export function builtInDefaultHtml(game: GameArticleGame): string {
   if (game === "freefire-max") return freeFireConfig("freefire-max").defaultArticleHtml;
   if (game === "pubg-mobile-codes") return DEFAULT_PUBG_MOBILE_CODES_ARTICLE_HTML;
   if (game === "bgmi") return DEFAULT_BGMI_ARTICLE_HTML;
+  if (game === "bgmi-lite") return DEFAULT_BGMI_LITE_ARTICLE_HTML;
   if (game === "pubg") return DEFAULT_PUBG_ARTICLE_HTML;
+  if (game === "pubg-mobile-lite") return DEFAULT_PUBG_MOBILE_LITE_ARTICLE_HTML;
   return "";
 }
 
@@ -84,22 +90,29 @@ async function getGameArticleHtmlForAdmin(game: GameArticleGame): Promise<string
 }
 
 export async function getGameArticlesForAdmin() {
-  const [bgmi, pubg, freefire, freefireMax, pubgMobileCodes] = await Promise.all([
-    getGameArticleHtmlForAdmin("bgmi"),
-    getGameArticleHtmlForAdmin("pubg"),
-    getGameArticleHtmlForAdmin("freefire"),
-    getGameArticleHtmlForAdmin("freefire-max"),
-    getGameArticleHtmlForAdmin("pubg-mobile-codes"),
-  ]);
+  const [bgmi, bgmiLite, pubg, pubgMobileLite, freefire, freefireMax, pubgMobileCodes] =
+    await Promise.all([
+      getGameArticleHtmlForAdmin("bgmi"),
+      getGameArticleHtmlForAdmin("bgmi-lite"),
+      getGameArticleHtmlForAdmin("pubg"),
+      getGameArticleHtmlForAdmin("pubg-mobile-lite"),
+      getGameArticleHtmlForAdmin("freefire"),
+      getGameArticleHtmlForAdmin("freefire-max"),
+      getGameArticleHtmlForAdmin("pubg-mobile-codes"),
+    ]);
   return {
     // Show built-in defaults in the editor while still on default (like Free Fire).
     bgmiHtml: bgmi ?? builtInDefaultHtml("bgmi"),
+    bgmiLiteHtml: bgmiLite ?? builtInDefaultHtml("bgmi-lite"),
     pubgHtml: pubg ?? builtInDefaultHtml("pubg"),
+    pubgMobileLiteHtml: pubgMobileLite ?? builtInDefaultHtml("pubg-mobile-lite"),
     freefireHtml: freefire ?? builtInDefaultHtml("freefire"),
     freefireMaxHtml: freefireMax ?? builtInDefaultHtml("freefire-max"),
     pubgMobileCodesHtml: pubgMobileCodes ?? builtInDefaultHtml("pubg-mobile-codes"),
     bgmiUsingDefault: bgmi === null,
+    bgmiLiteUsingDefault: bgmiLite === null,
     pubgUsingDefault: pubg === null,
+    pubgMobileLiteUsingDefault: pubgMobileLite === null,
     freefireUsingDefault: freefire === null,
     freefireMaxUsingDefault: freefireMax === null,
     pubgMobileCodesUsingDefault: pubgMobileCodes === null,

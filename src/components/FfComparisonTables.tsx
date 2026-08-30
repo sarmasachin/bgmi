@@ -3,6 +3,11 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { FREE_FIRE_MAX_PATH } from "@/src/lib/freeFirePages";
+import {
+  isHomeFfPath,
+  isLiteCalculatorPath,
+  pickLitePageContent,
+} from "@/src/lib/gamePagePath";
 import type { FfHomeComparison } from "@/src/lib/homeCardsTypes";
 
 const VS_ROWS: Array<{
@@ -180,34 +185,56 @@ const MAX_RAM_ROWS: Array<{
 ];
 
 /**
- * Free Fire vs FF Max comparison + RAM table.
- * Home keeps classic FF RAM table; Max page uses Max ranges + Max-first compare copy.
+ * Comparison + RAM table.
+ * Home = Free Fire vs Max; Max page = Max-first; Lite pages = BGMI / PUBG Mobile Lite.
  */
-export function FfComparisonTables({ homeContent }: { homeContent?: FfHomeComparison }) {
+export function FfComparisonTables({
+  homeContent,
+  liteContent,
+  pubgLiteContent,
+}: {
+  homeContent?: FfHomeComparison;
+  liteContent?: FfHomeComparison;
+  pubgLiteContent?: FfHomeComparison;
+}) {
   const pathname = usePathname() ?? "";
-  const isHome = pathname === "/" || pathname === "";
+  const isHome = isHomeFfPath(pathname);
   const isMax = pathname === FREE_FIRE_MAX_PATH;
-  if (!isHome && !isMax) return null;
+  const isLite = isLiteCalculatorPath(pathname);
+  if (!isHome && !isMax && !isLite) return null;
 
-  const vsRows = homeContent?.vsRows ?? (isMax ? MAX_VS_ROWS : VS_ROWS);
-  const ramRows = homeContent?.ramRows ?? (isMax ? MAX_RAM_ROWS : RAM_ROWS);
+  const pack = isLite
+    ? pickLitePageContent(pathname, homeContent, liteContent, pubgLiteContent)
+    : homeContent;
+  const vsRows = pack?.vsRows ?? (isMax ? MAX_VS_ROWS : VS_ROWS);
+  const ramRows = pack?.ramRows ?? (isMax ? MAX_RAM_ROWS : RAM_ROWS);
   const title =
-    homeContent?.title ?? (isMax ? "Free Fire Max vs Free Fire" : "Free Fire vs FF Max");
+    pack?.title ?? (isMax ? "Free Fire Max vs Free Fire" : "Free Fire vs FF Max");
   const ramTitle =
-    homeContent?.ramTitle ??
+    pack?.ramTitle ??
     (isMax ? "RAM-wise Free Fire Max sensitivity" : "RAM-wise Free Fire sensitivity");
   const note =
-    homeContent?.note ??
+    pack?.note ??
     (isMax
       ? "Tip: On Max, if FPS dips in fights, keep General a bit higher — then fine-tune in Training Ground."
       : "Tip: Lower RAM → keep sensitivity a bit higher. High-end phones usually need slightly lower values.");
   const ctaBeforeLink =
-    homeContent?.ctaBeforeLink ??
+    pack?.ctaBeforeLink ??
     (isMax ? "Still on classic Free Fire?" : "Playing Max?");
   const ctaLinkLabel =
-    homeContent?.ctaLinkLabel ??
+    pack?.ctaLinkLabel ??
     (isMax ? "Open Free Fire calculator" : "Open Free Fire Max calculator");
-  const ctaHref = homeContent?.ctaHref ?? (isMax ? "/#ff-calculator" : FREE_FIRE_MAX_PATH);
+  const ctaHref = pack?.ctaHref ?? (isMax ? "/#ff-calculator" : FREE_FIRE_MAX_PATH);
+  const leftCol = pack?.leftColLabel ?? "Free Fire";
+  const rightCol = pack?.rightColLabel ?? "Free Fire Max";
+  const ramCols = pack?.ramColLabels ?? {
+    general: "General",
+    redDot: "Red Dot",
+    scope2x: "2X",
+    scope4x: "4X",
+    sniper: "Sniper",
+    freeLook: "Free Look",
+  };
 
   return (
     <section className="ff-compare" aria-labelledby="ff-compare-title">
@@ -223,10 +250,10 @@ export function FfComparisonTables({ homeContent }: { homeContent?: FfHomeCompar
                 <i className="fa-solid fa-list" aria-hidden /> Point
               </th>
               <th scope="col">
-                <i className="fa-solid fa-fire" aria-hidden /> Free Fire
+                <i className="fa-solid fa-mobile-screen" aria-hidden /> {leftCol}
               </th>
               <th scope="col">
-                <i className="fa-solid fa-fire-flame-curved" aria-hidden /> Free Fire Max
+                <i className="fa-solid fa-feather" aria-hidden /> {rightCol}
               </th>
             </tr>
           </thead>
@@ -259,12 +286,12 @@ export function FfComparisonTables({ homeContent }: { homeContent?: FfHomeCompar
               <th scope="col">
                 <i className="fa-solid fa-memory" aria-hidden /> RAM
               </th>
-              <th scope="col">General</th>
-              <th scope="col">Red Dot</th>
-              <th scope="col">2X</th>
-              <th scope="col">4X</th>
-              <th scope="col">Sniper</th>
-              <th scope="col">Free Look</th>
+              <th scope="col">{ramCols.general}</th>
+              <th scope="col">{ramCols.redDot}</th>
+              <th scope="col">{ramCols.scope2x}</th>
+              <th scope="col">{ramCols.scope4x}</th>
+              <th scope="col">{ramCols.sniper}</th>
+              <th scope="col">{ramCols.freeLook}</th>
             </tr>
           </thead>
           <tbody>

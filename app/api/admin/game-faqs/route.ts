@@ -11,7 +11,14 @@ import {
   type GameFaqGame,
 } from "@/src/server/repositories/homeFaqRepository";
 
-const gameSchema = z.enum(["bgmi", "pubg", "freefire", "freefire-max"]);
+const gameSchema = z.enum([
+  "bgmi",
+  "bgmi-lite",
+  "pubg",
+  "pubg-mobile-lite",
+  "freefire",
+  "freefire-max",
+]);
 
 const itemSchema = z.object({
   id: z.string().max(80).optional(),

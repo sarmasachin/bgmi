@@ -5,46 +5,56 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useId, useRef, useState, useTransition } from "react";
 import type { MouseEvent } from "react";
+import { HomeHeaderDesktopNav } from "@/src/components/HomeHeaderDesktopNav";
+import { HomeHeaderSideNav } from "@/src/components/HomeHeaderSideNav";
 import {
   FREE_FIRE_MAX_PATH,
   FREE_FIRE_PATH,
 } from "@/src/lib/freeFirePages";
 import { PUBG_MOBILE_CODES_PATH } from "@/src/lib/pubgMobileCodes";
+import { PUBG_MOBILE_LITE_PATH } from "@/src/lib/pubgMobileLite";
+import { resolveNavForPath } from "@/src/lib/resolveNavForPath";
+import {
+  isSiteNavItemActive,
+  SITE_GAME_NAV,
+  SITE_GAME_NAV_PREFETCH_HREFS,
+} from "@/src/lib/siteGameNav";
 
 type NavLink = { label: string; href: string };
 
 type HomeHeaderProps = {
   /** Top bar / logo row title (admin: Website Settings → Home page titles). */
   siteTitle: string;
-  /** Same list as footer main column & admin “Header & footer column” links. */
+  /** Same list as footer; used to resolve mobile chip (family) menu. */
   navigation: NavLink[];
 };
 
-function isGameHref(href: string) {
-  return (
-    href === "/" ||
-    href === "/bgmi" ||
-    href === "/pubg" ||
-    href === FREE_FIRE_PATH ||
-    href === FREE_FIRE_MAX_PATH
-  );
-}
-
 function normalizePath(path: string | null | undefined) {
   return typeof path === "string" ? path : "";
+}
+
+function isChipActive(href: string, activePath: string) {
+  if (href === "/") return activePath === "/" || activePath === "";
+  return activePath === href || activePath.startsWith(`${href}/`);
 }
 
 export function HomeHeader({ siteTitle, navigation }: HomeHeaderProps) {
   const pathname = normalizePath(usePathname());
   const router = useRouter();
   const [, startTransition] = useTransition();
-  const links = navigation.map((item) => {
+  const normalized = navigation.map((item) => {
     const label = item.label.trim();
     if (/pubg\s*mobile\s*code/i.test(label)) {
       return { ...item, href: PUBG_MOBILE_CODES_PATH };
     }
     if (/pubg/i.test(label) && (item.href === "/" || !item.href.trim())) {
       return { ...item, href: "/pubg" };
+    }
+    if (/^bgmi\s*lite$/i.test(label)) {
+      return { ...item, href: "/bgmi-lite" };
+    }
+    if (/pubg\s*mobile\s*lite/i.test(label)) {
+      return { ...item, href: PUBG_MOBILE_LITE_PATH };
     }
     if (/^bgmi$/i.test(label)) {
       return { ...item, href: "/bgmi" };
@@ -57,55 +67,51 @@ export function HomeHeader({ siteTitle, navigation }: HomeHeaderProps) {
     }
     return item;
   });
+  /** Mobile chip row: path family menu (FF page → FF links, Max → Max, …). */
+  const familyLinks = resolveNavForPath(pathname, normalized);
   const [scrollHidden, setScrollHidden] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
+  const [desktopOpenId, setDesktopOpenId] = useState<string | null>(null);
+  const [sideOpenId, setSideOpenId] = useState<string | null>(null);
   const [pendingPath, setPendingPath] = useState<string | null>(null);
   const lastScrollY = useRef(0);
-  const headerRef = useRef<HTMLElement>(null);
   const sideMenuRef = useRef<HTMLElement>(null);
   const menuId = useId();
   const activePath = pendingPath ?? pathname;
 
-  // Prefetch game routes so switching feels instant.
   useEffect(() => {
-    router.prefetch("/");
-    router.prefetch("/bgmi");
-    router.prefetch("/pubg");
-    router.prefetch(PUBG_MOBILE_CODES_PATH);
-    router.prefetch(FREE_FIRE_PATH);
-    router.prefetch(FREE_FIRE_MAX_PATH);
+    for (const href of SITE_GAME_NAV_PREFETCH_HREFS) {
+      router.prefetch(href);
+    }
   }, [router]);
 
   useEffect(() => {
     setPendingPath(null);
+    setDesktopOpenId(null);
   }, [pathname]);
 
   useEffect(() => {
     lastScrollY.current = window.scrollY;
     const onScroll = () => {
-      if (menuOpen) return;
-      const y = window.scrollY;
+      // Keep header still while a desktop dropdown is open (submenu clickable).
+      if (menuOpen || desktopOpenId) return;
+      const y = window.scrollY
       const delta = y - lastScrollY.current;
       lastScrollY.current = y;
-
       if (y < 48) {
         setScrollHidden(false);
         return;
       }
-      if (delta > 8) {
-        setScrollHidden(true);
-      } else if (delta < -8) {
-        setScrollHidden(false);
-      }
+      if (delta > 8) setScrollHidden(true);
+      else if (delta < -8) setScrollHidden(false);
     };
     window.addEventListener("scroll", onScroll, { passive: true });
     return () => window.removeEventListener("scroll", onScroll);
-  }, [menuOpen]);
+  }, [menuOpen, desktopOpenId]);
 
   useEffect(() => {
     const el = sideMenuRef.current;
     if (!el) return;
-    // Keep closed drawer out of keyboard / AT focus while off-screen.
     el.inert = !menuOpen;
   }, [menuOpen]);
 
@@ -131,21 +137,19 @@ export function HomeHeader({ siteTitle, navigation }: HomeHeaderProps) {
     return () => window.removeEventListener("resize", onResize);
   }, []);
 
+  useEffect(() => {
+    if (!menuOpen) return;
+    const active = SITE_GAME_NAV.find((item) => isSiteNavItemActive(item, pathname));
+    if (active?.children?.length) setSideOpenId(active.id);
+  }, [menuOpen, pathname]);
+
   function closeMenu() {
     setMenuOpen(false);
   }
 
-  function isActiveHref(href: string) {
-    if (href === "/") return activePath === "/" || activePath === "";
-    if (href === "/bgmi" || href === "/pubg" || href === FREE_FIRE_MAX_PATH || href === FREE_FIRE_PATH) {
-      return activePath === href || activePath.startsWith(`${href}/`);
-    }
-    return activePath === href || activePath.startsWith(`${href}/`);
-  }
-
-  function onGameNavClick(event: MouseEvent<HTMLAnchorElement>, href: string) {
+  function onNavClick(event: MouseEvent<HTMLAnchorElement>, href: string) {
     closeMenu();
-    if (!isGameHref(href)) return;
+    setDesktopOpenId(null);
     if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey || event.button !== 0) {
       return;
     }
@@ -164,7 +168,6 @@ export function HomeHeader({ siteTitle, navigation }: HomeHeaderProps) {
     <>
       <div className="home-header-spacer" aria-hidden />
       <header
-        ref={headerRef}
         className={`home-site-header${scrollHidden ? " home-header--scroll-hidden" : ""}${
           menuOpen ? " home-header--menu-open" : ""
         }`}
@@ -201,29 +204,22 @@ export function HomeHeader({ siteTitle, navigation }: HomeHeaderProps) {
               </Link>
             </div>
 
-            <nav className="home-header-desktop-nav" aria-label="Main navigation">
-              {links.map((item) => (
-                <Link
-                  key={`desk-${item.href}-${item.label}`}
-                  href={item.href}
-                  prefetch
-                  className={isActiveHref(item.href) ? "is-active" : undefined}
-                  onClick={(event) => onGameNavClick(event, item.href)}
-                >
-                  {item.label}
-                </Link>
-              ))}
-            </nav>
+            <HomeHeaderDesktopNav
+              pathname={activePath}
+              openId={desktopOpenId}
+              onOpenIdChange={setDesktopOpenId}
+              onNavigate={onNavClick}
+            />
           </div>
 
           <nav className="home-header-nav" aria-label="Games">
-            {links.map((item) => (
+            {familyLinks.map((item) => (
               <Link
-                key={`mob-${item.href}-${item.label}`}
+                key={`chip-${item.href}-${item.label}`}
                 href={item.href}
                 prefetch
-                className={isActiveHref(item.href) ? "is-active" : undefined}
-                onClick={(event) => onGameNavClick(event, item.href)}
+                className={isChipActive(item.href, activePath) ? "is-active" : undefined}
+                onClick={(event) => onNavClick(event, item.href)}
               >
                 {item.label}
               </Link>
@@ -259,24 +255,13 @@ export function HomeHeader({ siteTitle, navigation }: HomeHeaderProps) {
             className="home-side-menu-logo"
           />
         </Link>
-        <nav className="home-side-menu-nav" aria-label="Main navigation">
-          {navigation.length ? (
-            links.map((item) => (
-              <Link
-                key={`${item.href}-${item.label}`}
-                href={item.href}
-                prefetch
-                className={`home-side-menu-link${isActiveHref(item.href) ? " is-active" : ""}`}
-                onClick={(event) => onGameNavClick(event, item.href)}
-                tabIndex={menuOpen ? undefined : -1}
-              >
-                {item.label}
-              </Link>
-            ))
-          ) : (
-            <p className="home-side-menu-empty">No menu items yet</p>
-          )}
-        </nav>
+        <HomeHeaderSideNav
+          pathname={activePath}
+          menuOpen={menuOpen}
+          openId={sideOpenId}
+          onOpenIdChange={setSideOpenId}
+          onNavigate={onNavClick}
+        />
       </aside>
     </>
   );

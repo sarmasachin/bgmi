@@ -6,6 +6,8 @@ type Props = {
   label: string;
   targetIso: string;
   dateText: string;
+  /** Shown when the countdown reaches zero. */
+  liveMessage?: string;
 };
 
 type Parts = { days: number; hours: number; minutes: number; seconds: number };
@@ -29,7 +31,12 @@ function pad(n: number) {
  * Numbers render immediately (no "--" flash). suppressHydrationWarning
  * avoids SSR/client clock second mismatch remount blink.
  */
-export function FfAdvanceServerCountdown({ label, targetIso, dateText }: Props) {
+export function FfAdvanceServerCountdown({
+  label,
+  targetIso,
+  dateText,
+  liveMessage = "Advance Server is open — check the publisher portal",
+}: Props) {
   const targetMs = Date.parse(targetIso);
   const [parts, setParts] = useState<Parts | null>(() =>
     Number.isFinite(targetMs) ? splitRemaining(targetMs - Date.now()) : null,
@@ -68,7 +75,7 @@ export function FfAdvanceServerCountdown({ label, targetIso, dateText }: Props) 
           </span>
         </div>
       ) : (
-        <p className="ff-as-countdown-live">Advance Server is open — check the publisher portal</p>
+        <p className="ff-as-countdown-live">{liveMessage}</p>
       )}
       <p className="ff-as-countdown-date">{dateText}</p>
     </div>

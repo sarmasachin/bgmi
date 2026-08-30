@@ -8,6 +8,41 @@ export const FREE_FIRE_MAX_SLUG = "free-fire-max-sensitivity-settings-calculator
 export const FREE_FIRE_PATH = `/${FREE_FIRE_SLUG}`;
 export const FREE_FIRE_MAX_PATH = `/${FREE_FIRE_MAX_SLUG}`;
 
+export const FREE_FIRE_REDEEM_CODE_PATH = "/free-fire-redeem-code";
+export const FREE_FIRE_STYLISH_NAME_PATH = "/free-fire-stylish-name";
+
+/** Header menu on Free Fire family routes (home calculator + related pages). */
+export const FREE_FIRE_FAMILY_NAV = [
+  { label: "Home", href: "/" },
+  { label: "Redeem Code", href: FREE_FIRE_REDEEM_CODE_PATH },
+  { label: "Advance Server", href: FREE_FIRE_ADVANCE_SERVER_PATH },
+  { label: "FF Names", href: FREE_FIRE_STYLISH_NAME_PATH },
+  { label: "News", href: "/news/free-fire" },
+] as const;
+
+export const FREE_FIRE_FAMILY_PATHS = [
+  "/",
+  FREE_FIRE_PATH,
+  FREE_FIRE_ADVANCE_SERVER_PATH,
+  FREE_FIRE_REDEEM_CODE_PATH,
+  FREE_FIRE_STYLISH_NAME_PATH,
+] as const;
+
+export function isFreeFireFamilyPath(pathname: string): boolean {
+  const raw = typeof pathname === "string" ? pathname.trim() : "";
+  const p = raw.replace(/\/+$/, "") || "/";
+  if (p === "/news/free-fire" || p.startsWith("/news/free-fire/")) return true;
+  if (p === "/free-fire" || p.startsWith("/free-fire/")) {
+    // Max calculator + Max family live under free-fire-max-* — exclude those.
+    if (p === FREE_FIRE_MAX_PATH || p.startsWith(`${FREE_FIRE_MAX_PATH}/`)) return false;
+    if (p.startsWith("/free-fire-max")) return false;
+    return true;
+  }
+  return FREE_FIRE_FAMILY_PATHS.some(
+    (base) => p === base || p.startsWith(`${base}/`),
+  );
+}
+
 /** Free Fire calculator lives on home (`/`); dedicated slug page still works. */
 export const FREE_FIRE_NAV = [
   { label: "Home", href: "/" },

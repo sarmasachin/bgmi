@@ -1,6 +1,8 @@
 import { FaqAccordion } from "@/src/components/FaqAccordion";
 import { DEFAULT_BGMI_ARTICLE_HTML } from "@/src/lib/bgmiArticleDefault";
+import { DEFAULT_BGMI_LITE_ARTICLE_HTML } from "@/src/lib/bgmiLiteArticleDefault";
 import { DEFAULT_PUBG_ARTICLE_HTML } from "@/src/lib/pubgArticleDefault";
+import { DEFAULT_PUBG_MOBILE_LITE_ARTICLE_HTML } from "@/src/lib/pubgMobileLiteArticleDefault";
 
 type HomeFaqItem = {
   id: string;
@@ -8,16 +10,21 @@ type HomeFaqItem = {
   answer: string;
 };
 
+type ArticleGame = "bgmi" | "bgmi-lite" | "pubg" | "pubg-mobile-lite";
+
 type Props = {
   wrapperClassName?: string;
   faqItems: HomeFaqItem[];
-  game?: "bgmi" | "pubg";
+  game?: ArticleGame;
   /** Custom CMS HTML. Empty / missing → built-in default guide. */
   articleHtml?: string | null;
 };
 
-function defaultHtmlForGame(game: "bgmi" | "pubg"): string {
-  return game === "pubg" ? DEFAULT_PUBG_ARTICLE_HTML : DEFAULT_BGMI_ARTICLE_HTML;
+function defaultHtmlForGame(game: ArticleGame): string {
+  if (game === "pubg") return DEFAULT_PUBG_ARTICLE_HTML;
+  if (game === "pubg-mobile-lite") return DEFAULT_PUBG_MOBILE_LITE_ARTICLE_HTML;
+  if (game === "bgmi-lite") return DEFAULT_BGMI_LITE_ARTICLE_HTML;
+  return DEFAULT_BGMI_ARTICLE_HTML;
 }
 
 function isMeaningfulArticleHtml(html: string): boolean {

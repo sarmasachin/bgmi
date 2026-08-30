@@ -38,7 +38,7 @@ export async function POST(request: NextRequest) {
     .object({
       action: z.enum(["save", "reset"]).default("save"),
       game: z
-        .enum(["freefire", "freefire-max", "bgmi", "pubg", "pubg-mobile-codes"])
+        .enum(["freefire", "freefire-max", "bgmi", "bgmi-lite", "pubg", "pubg-mobile-codes", "pubg-mobile-lite"])
         .default("freefire"),
       cards: z.unknown().optional(),
     })

@@ -1,0 +1,154 @@
+.lite-calc {
+  width: 100%;
+  max-width: 1180px;
+  margin-left: auto;
+  margin-right: auto;
+  box-sizing: border-box;
+  padding: 0 16px 8px;
+  display: grid;
+  gap: 1rem;
+  justify-items: stretch;
+}
+
+.lite-calc__banner {
+  margin: 0;
+  padding: 0.85rem 1.1rem;
+  border-radius: 12px;
+  border: 1px solid color-mix(in srgb, var(--accent, #c9a227) 35%, transparent);
+  background: color-mix(in srgb, var(--accent, #c9a227) 10%, transparent);
+  color: inherit;
+  font-size: 0.875rem;
+  line-height: 1.45;
+}
+
+.lite-calc__banner strong {
+  font-weight: 650;
+}
+
+.lite-calc .main-wrapper {
+  width: 100%;
+  max-width: none;
+  margin: 0 auto;
+  gap: 1.15rem;
+  align-items: stretch;
+}
+
+.lite-calc .calc-card {
+  flex: 1 1 0;
+  min-width: 0;
+  padding: 1.5rem;
+}
+
+.lite-calc .result-card {
+  flex: 1.15 1 0;
+  min-width: 0;
+  padding: 1.35rem 1.15rem;
+}
+
+.lite-calc .grid-half {
+  gap: 0.75rem;
+}
+
+.lite-calc .form-group {
+  margin-bottom: 0.85rem;
+}
+
+.lite-calc .btn-group {
+  margin-top: 0.35rem;
+  gap: 0.75rem;
+}
+
+.lite-calc .result-card .tabs {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.5rem 0.65rem;
+  width: 100%;
+}
+
+.lite-calc .tab-box {
+  min-width: 0;
+}
+
+.lite-calc .tab-title {
+  font-size: 0.72rem;
+  letter-spacing: 0.04em;
+}
+
+.lite-calc .tab-title.gyro {
+  color: color-mix(in srgb, #3d8bfd 80%, white);
+}
+
+.lite-calc .res-item {
+  gap: 0.35rem;
+  font-size: 0.78rem;
+}
+
+.lite-calc .res-item span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  min-width: 0;
+}
+
+.lite-calc .res-item b {
+  flex-shrink: 0;
+}
+
+.lite-calc__hint {
+  margin: 0.85rem 0 0;
+  font-size: 0.8rem;
+  opacity: 0.78;
+  line-height: 1.4;
+}
+
+.lite-calc__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-top: 0.85rem;
+}
+
+.lite-calc__copy {
+  appearance: none;
+  width: 100%;
+  border: 1px solid color-mix(in srgb, currentColor 22%, transparent);
+  background: color-mix(in srgb, currentColor 6%, transparent);
+  color: inherit;
+  border-radius: 8px;
+  padding: 0.55rem 0.85rem;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  cursor: pointer;
+  text-align: center;
+}
+
+.lite-calc__copy:hover {
+  background: color-mix(in srgb, currentColor 12%, transparent);
+}
+
+.lite-calc__copy:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+@media (max-width: 900px) {
+  .lite-calc {
+    padding: 0 12px 4px;
+    gap: 0.85rem;
+  }
+
+  .lite-calc .main-wrapper {
+    gap: 1rem;
+  }
+
+  .lite-calc .calc-card,
+  .lite-calc .result-card {
+    flex: 1 1 auto;
+    padding: 1.15rem;
+  }
+
+  .lite-calc .result-card .tabs {
+    grid-template-columns: 1fr;
+    gap: 0.75rem;
+  }
+}

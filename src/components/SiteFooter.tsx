@@ -4,6 +4,10 @@ import { FooterShareLinks } from "@/src/components/FooterShareLinks";
 import { ensureFreeFireNavigation } from "@/src/lib/freeFirePages";
 import { ensurePubgMobileCodesNavigation, PUBG_MOBILE_CODES_PATH } from "@/src/lib/pubgMobileCodes";
 import {
+  ensurePubgMobileLiteNavigation,
+  PUBG_MOBILE_LITE_PATH,
+} from "@/src/lib/pubgMobileLite";
+import {
   getSettings,
   isShareRailEnabled,
   type SiteSettings,
@@ -21,24 +25,32 @@ export async function SiteFooter({ settings: settingsProp }: SiteFooterProps = {
   const copyrightLine = (settings.footerCopyright || "").trim() || FALLBACK_COPYRIGHT;
   const { brandTitle, tagline } = settings.footerBranding;
   const showShareLinks = isShareRailEnabled(settings.integrations);
-  const exploreLinks = ensurePubgMobileCodesNavigation(
-    ensureFreeFireNavigation(
-      settings.navigation.map((item) => {
-        const label = item.label.trim();
-        if (/pubg\s*mobile\s*code/i.test(label)) {
-          return { ...item, href: PUBG_MOBILE_CODES_PATH };
-        }
-        if (/pubg/i.test(label) && (item.href === "/" || !item.href.trim())) {
-          return { ...item, href: "/pubg" };
-        }
-        if (/^bgmi$/i.test(label)) {
-          return { ...item, href: "/bgmi" };
-        }
-        if (/free\s*fire/i.test(label) && !/max/i.test(label)) {
-          return { ...item, href: "/" };
-        }
-        return item;
-      }),
+  const exploreLinks = ensurePubgMobileLiteNavigation(
+    ensurePubgMobileCodesNavigation(
+      ensureFreeFireNavigation(
+        settings.navigation.map((item) => {
+          const label = item.label.trim();
+          if (/pubg\s*mobile\s*code/i.test(label)) {
+            return { ...item, href: PUBG_MOBILE_CODES_PATH };
+          }
+          if (/pubg\s*mobile\s*lite/i.test(label)) {
+            return { ...item, href: PUBG_MOBILE_LITE_PATH };
+          }
+          if (/pubg/i.test(label) && (item.href === "/" || !item.href.trim())) {
+            return { ...item, href: "/pubg" };
+          }
+          if (/^bgmi\s*lite$/i.test(label)) {
+            return { ...item, href: "/bgmi-lite" };
+          }
+          if (/^bgmi$/i.test(label)) {
+            return { ...item, href: "/bgmi" };
+          }
+          if (/free\s*fire/i.test(label) && !/max/i.test(label)) {
+            return { ...item, href: "/" };
+          }
+          return item;
+        }),
+      ),
     ),
   );
 

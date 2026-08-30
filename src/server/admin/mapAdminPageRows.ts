@@ -1,5 +1,11 @@
 type TemplateType = "home" | "article" | "landing";
-export type CloneGame = "bgmi" | "pubg" | "freefire" | "freefire-max" | "pubg-mobile-codes";
+export type CloneGame =
+  | "bgmi"
+  | "bgmi-lite"
+  | "pubg"
+  | "freefire"
+  | "freefire-max"
+  | "pubg-mobile-codes";
 
 export type AdminPageRow = {
   id: string;
@@ -36,6 +42,7 @@ function coerceTemplateType(value: unknown): TemplateType {
 
 function coerceCloneGame(value: unknown): CloneGame {
   if (
+    value === "bgmi-lite" ||
     value === "pubg" ||
     value === "freefire" ||
     value === "freefire-max" ||
@@ -74,6 +81,7 @@ function parseContent(content: unknown) {
         game:
           metaObj.game === "pubg" ||
           metaObj.game === "bgmi" ||
+          metaObj.game === "bgmi-lite" ||
           metaObj.game === "freefire" ||
           metaObj.game === "freefire-max" ||
           metaObj.game === "pubg-mobile-codes"

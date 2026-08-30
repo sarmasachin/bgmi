@@ -210,6 +210,26 @@ export function AdminPageCardsFormBottom({
             multiline
             onChange={(note) => onPatch((p) => ({ ...p, comparison: { ...p.comparison, note } }))}
           />
+          <Field
+            label="Left column header"
+            value={cards.comparison.leftColLabel ?? ""}
+            onChange={(leftColLabel) =>
+              onPatch((p) => ({
+                ...p,
+                comparison: { ...p.comparison, leftColLabel: leftColLabel || undefined },
+              }))
+            }
+          />
+          <Field
+            label="Right column header"
+            value={cards.comparison.rightColLabel ?? ""}
+            onChange={(rightColLabel) =>
+              onPatch((p) => ({
+                ...p,
+                comparison: { ...p.comparison, rightColLabel: rightColLabel || undefined },
+              }))
+            }
+          />
           {cards.comparison.vsRows.map((row, index) => (
             <div
               key={`vs-${index}`}
@@ -221,8 +241,14 @@ export function AdminPageCardsFormBottom({
               {(
                 [
                   ["point", "Point"],
-                  ["freefire", "Free Fire"],
-                  ["freefireMax", "Free Fire Max"],
+                  [
+                    "freefire",
+                    cards.comparison.leftColLabel?.trim() || "Left column",
+                  ],
+                  [
+                    "freefireMax",
+                    cards.comparison.rightColLabel?.trim() || "Right column",
+                  ],
                 ] as const
               ).map(([field, label]) => (
                 <Field
@@ -295,7 +321,9 @@ export function AdminPageCardsFormBottom({
               style={{ borderTop: "1px solid #1e293b", paddingTop: 12, marginTop: 8 }}
             >
               <div style={{ fontSize: 13, color: "#67e8f9", marginBottom: 8 }}>
-                Card: {cardKey === "freefire" ? "Free Fire" : "Free Fire Max"}
+                Card:{" "}
+                {cards.explore[cardKey].title.trim() ||
+                  (cardKey === "freefire" ? "Left card" : "Right card")}
               </div>
               <Field
                 label="Title"

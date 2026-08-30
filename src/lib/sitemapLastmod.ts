@@ -14,6 +14,10 @@ export function pageCardsVariantToSitemapPath(variant: string): string | null {
       return "/free-fire-max-sensitivity-settings-calculator";
     case "bgmi":
       return "/bgmi";
+    case "bgmi-lite":
+      return "/bgmi-lite";
+    case "pubg-mobile-lite":
+      return "/pubg-mobile-lite";
     case "pubg":
       return "/pubg";
     case "pubg-mobile-codes":
@@ -56,6 +60,17 @@ export const SITEMAP_PATH_CONTENT_KEYS: Record<string, string[]> = {
     "settings:gameArticle:bgmi",
     "settings:homeFaq",
   ],
+  "/bgmi-lite": [
+    "settings:homeCards:bgmi-lite",
+    "settings:gameFaq:bgmi-lite",
+    "settings:gameArticle:bgmi-lite",
+  ],
+  "/pubg-mobile-lite": [
+    "settings:homeCards:pubg-mobile-lite",
+    "settings:gameFaq:pubg-mobile-lite",
+    "settings:gameArticle:pubg-mobile-lite",
+  ],
+  "/pubg-mobile-lite-apk": [],
   "/pubg": [
     "settings:homeCards:pubg",
     "settings:gameArticle:pubg",
@@ -71,6 +86,15 @@ export const SITEMAP_PATH_CONTENT_KEYS: Record<string, string[]> = {
     "settings:gameFaq:freefire-max",
   ],
   "/free-fire-advance-server": ["settings:advanceServerPage"],
+  "/bgmi-lite-redeem-code": ["settings:bgmiLiteRedeemCodes"],
+  "/bgmi-lite-stylish-name": ["settings:bgmiLiteStylishName"],
+  "/bgmi-lite-apk": [],
+  "/pubg-mobile-lite-redeem-code": ["settings:pubgMobileLiteRedeemCodes"],
+  "/pubg-mobile-lite-name": ["settings:pubgMobileLiteName"],
+  "/free-fire-redeem-code": ["settings:freeFireRedeemCodes"],
+  "/free-fire-stylish-name": ["settings:freeFireStylishName"],
+  "/free-fire-max-redeem-code": ["settings:freeFireMaxRedeemCodes"],
+  "/free-fire-max-stylish-name": ["settings:freeFireMaxStylishName"],
   "/news": ["settings:newsListingSeo"],
   "/contact": ["settings:contactSeo"],
 };
@@ -78,7 +102,19 @@ export const SITEMAP_PATH_CONTENT_KEYS: Record<string, string[]> = {
 export const SITEMAP_STATIC_PATHS = [
   "/",
   "/bgmi",
+  "/bgmi-lite",
+  "/bgmi-lite-apk",
+  "/bgmi-lite-redeem-code",
+  "/bgmi-lite-stylish-name",
   "/pubg",
+  "/pubg-mobile-lite",
+  "/pubg-mobile-lite-apk",
+  "/pubg-mobile-lite-redeem-code",
+  "/pubg-mobile-lite-name",
+  "/free-fire-redeem-code",
+  "/free-fire-stylish-name",
+  "/free-fire-max-redeem-code",
+  "/free-fire-max-stylish-name",
   "/pubg-mobile-codes",
   "/free-fire-max-sensitivity-settings-calculator",
   "/free-fire-advance-server",

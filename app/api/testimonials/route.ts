@@ -21,7 +21,7 @@ const postSchema = z.object({
   ),
   rating: z.number().int().min(1).max(5),
   message: z.string().trim().min(2).max(300),
-  game: z.enum(["bgmi", "pubg", "freefire", "freefire-max"]),
+  game: z.enum(["bgmi", "bgmi-lite", "pubg", "pubg-mobile-lite", "freefire", "freefire-max"]),
   phoneModel: z.string().trim().max(80).optional().nullable(),
   showName: z.boolean().default(true),
 });
@@ -38,7 +38,9 @@ export async function GET(request: NextRequest) {
   let game: TestimonialGame | undefined;
   if (
     gameParam === "bgmi" ||
+    gameParam === "bgmi-lite" ||
     gameParam === "pubg" ||
+    gameParam === "pubg-mobile-lite" ||
     gameParam === "freefire" ||
     gameParam === "freefire-max"
   ) {

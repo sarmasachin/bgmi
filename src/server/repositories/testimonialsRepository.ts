@@ -4,7 +4,13 @@ import { prisma, tryPrisma, tryPrismaLong } from "@/src/server/dbSafe";
 /** Hard cap for publicly shown / approved testimonials (FIFO on approve). */
 export const MAX_APPROVED_TESTIMONIALS = 20;
 
-export type TestimonialGame = "bgmi" | "pubg" | "freefire" | "freefire-max";
+export type TestimonialGame =
+  | "bgmi"
+  | "bgmi-lite"
+  | "pubg"
+  | "pubg-mobile-lite"
+  | "freefire"
+  | "freefire-max";
 export type TestimonialStatus = "pending" | "approved" | "rejected";
 
 export type TestimonialRecord = {
@@ -119,7 +125,9 @@ function fingerprint(input: {
 function isGame(value: string): value is TestimonialGame {
   return (
     value === "bgmi" ||
+    value === "bgmi-lite" ||
     value === "pubg" ||
+    value === "pubg-mobile-lite" ||
     value === "freefire" ||
     value === "freefire-max"
   );

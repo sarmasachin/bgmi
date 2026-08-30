@@ -2,6 +2,11 @@
 
 import { usePathname } from "next/navigation";
 import { FREE_FIRE_MAX_PATH } from "@/src/lib/freeFirePages";
+import {
+  isHomeFfPath,
+  isLiteCalculatorPath,
+  pickLitePageContent,
+} from "@/src/lib/gamePagePath";
 import type { FfHomeProTips } from "@/src/lib/homeCardsTypes";
 
 type ProTip = {
@@ -67,32 +72,37 @@ const MAX_PRO_TIPS: ProTip[] = [
 
 type Props = {
   homeContent?: FfHomeProTips;
+  liteContent?: FfHomeProTips;
+  pubgLiteContent?: FfHomeProTips;
 };
 
-/**
- * Pro tips — home Free Fire copy; Max page Free Fire Max copy.
- */
-export function FfProTips({ homeContent }: Props) {
+/** Pro tips — Free Fire home / Max / Lite calculators. */
+export function FfProTips({ homeContent, liteContent, pubgLiteContent }: Props) {
   const pathname = usePathname() ?? "";
-  const isHome = pathname === "/" || pathname === "";
+  const isHome = isHomeFfPath(pathname);
   const isMax = pathname === FREE_FIRE_MAX_PATH;
-  if (!isHome && !isMax) return null;
+  const isLite = isLiteCalculatorPath(pathname);
+  if (!isHome && !isMax && !isLite) return null;
 
+  const pack = isLite
+    ? pickLitePageContent(pathname, homeContent, liteContent, pubgLiteContent)
+    : homeContent;
   const title =
-    homeContent?.title ??
+    pack?.title ??
     (isMax ? "Pro tips for Free Fire Max aim" : "Pro tips for better aim");
   const lead =
-    homeContent?.lead ??
+    pack?.lead ??
     (isMax
       ? "Practical Max habits — graphics, heat, and sensi that actually stick in ranked."
       : "Practice-first habits that help any sensi stick — no team logos, just usable advice.");
   const ctaLabel =
-    homeContent?.ctaLabel ??
+    pack?.ctaLabel ??
     (isMax ? "Apply Max sensi in calculator" : "Apply sensi in calculator");
-  const tips = homeContent?.items ?? (isMax ? MAX_PRO_TIPS : PRO_TIPS);
+  const tips = pack?.items ?? (isMax ? MAX_PRO_TIPS : PRO_TIPS);
 
   function goToCalculator() {
-    document.getElementById("ff-calculator")?.scrollIntoView({
+    const id = isLite ? "bgmi-lite-calculator" : "ff-calculator";
+    document.getElementById(id)?.scrollIntoView({
       behavior: "smooth",
       block: "start",
     });

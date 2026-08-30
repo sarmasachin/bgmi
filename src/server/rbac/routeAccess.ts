@@ -36,6 +36,54 @@ export const ADMIN_NAV_ACCESS: ReadonlyArray<{
     icon: "advanceServer",
     anyOf: ["advanceServer.view"],
   },
+  {
+    label: "BGMI Lite Redeem",
+    href: "/admin/bgmi-lite-redeem",
+    icon: "bgmiLiteRedeem",
+    anyOf: ["bgmiLiteRedeem.view"],
+  },
+  {
+    label: "PUBG Lite Redeem",
+    href: "/admin/pubg-mobile-lite-redeem",
+    icon: "pubgMobileLiteRedeem",
+    anyOf: ["pubgMobileLiteRedeem.view"],
+  },
+  {
+    label: "FF Redeem",
+    href: "/admin/free-fire-redeem",
+    icon: "freeFireRedeem",
+    anyOf: ["freeFireRedeem.view"],
+  },
+  {
+    label: "FF Max Redeem",
+    href: "/admin/free-fire-max-redeem",
+    icon: "freeFireMaxRedeem",
+    anyOf: ["freeFireMaxRedeem.view"],
+  },
+  {
+    label: "BGMI Lite Stylish Name",
+    href: "/admin/bgmi-lite-stylish",
+    icon: "bgmiLiteStylish",
+    anyOf: ["bgmiLiteStylish.view"],
+  },
+  {
+    label: "PUBG Lite Name",
+    href: "/admin/pubg-mobile-lite-name",
+    icon: "pubgMobileLiteName",
+    anyOf: ["pubgMobileLiteName.view"],
+  },
+  {
+    label: "FF Names",
+    href: "/admin/free-fire-stylish",
+    icon: "freeFireStylish",
+    anyOf: ["freeFireStylish.view"],
+  },
+  {
+    label: "FF Max Names",
+    href: "/admin/free-fire-max-stylish",
+    icon: "freeFireMaxStylish",
+    anyOf: ["freeFireMaxStylish.view"],
+  },
   { label: "Game FAQs", href: "/admin/game-faqs", icon: "gameFaqs", anyOf: ["gameFaqs.view"] },
   { label: "Legal Pages", href: "/admin/legal-pages", icon: "legal", anyOf: ["legal.view"] },
   { label: "Comments", href: "/admin/comments", icon: "comments", anyOf: ["comments.view"] },
@@ -159,6 +207,46 @@ export function resolveAdminApiPermission(
   if (path.startsWith("/api/admin/advance-server")) {
     if (isRead) return { type: "permission", permission: "advanceServer.view" };
     return { type: "permission", permission: "advanceServer.edit" };
+  }
+
+  if (path.startsWith("/api/admin/bgmi-lite-redeem")) {
+    if (isRead) return { type: "permission", permission: "bgmiLiteRedeem.view" };
+    return { type: "permission", permission: "bgmiLiteRedeem.edit" };
+  }
+
+  if (path.startsWith("/api/admin/pubg-mobile-lite-redeem")) {
+    if (isRead) return { type: "permission", permission: "pubgMobileLiteRedeem.view" };
+    return { type: "permission", permission: "pubgMobileLiteRedeem.edit" };
+  }
+
+  if (path.startsWith("/api/admin/free-fire-max-redeem")) {
+    if (isRead) return { type: "permission", permission: "freeFireMaxRedeem.view" };
+    return { type: "permission", permission: "freeFireMaxRedeem.edit" };
+  }
+
+  if (path.startsWith("/api/admin/free-fire-redeem")) {
+    if (isRead) return { type: "permission", permission: "freeFireRedeem.view" };
+    return { type: "permission", permission: "freeFireRedeem.edit" };
+  }
+
+  if (path.startsWith("/api/admin/bgmi-lite-stylish")) {
+    if (isRead) return { type: "permission", permission: "bgmiLiteStylish.view" };
+    return { type: "permission", permission: "bgmiLiteStylish.edit" };
+  }
+
+  if (path.startsWith("/api/admin/pubg-mobile-lite-name")) {
+    if (isRead) return { type: "permission", permission: "pubgMobileLiteName.view" };
+    return { type: "permission", permission: "pubgMobileLiteName.edit" };
+  }
+
+  if (path.startsWith("/api/admin/free-fire-max-stylish")) {
+    if (isRead) return { type: "permission", permission: "freeFireMaxStylish.view" };
+    return { type: "permission", permission: "freeFireMaxStylish.edit" };
+  }
+
+  if (path.startsWith("/api/admin/free-fire-stylish")) {
+    if (isRead) return { type: "permission", permission: "freeFireStylish.view" };
+    return { type: "permission", permission: "freeFireStylish.edit" };
   }
 
   if (path.startsWith("/api/admin/game-faqs") || path === "/api/admin/faq") {

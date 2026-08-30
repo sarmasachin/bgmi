@@ -8,8 +8,10 @@ const KEY_BY_VARIANT: Record<PageCardsVariant, string> = {
   freefire: "settings:homeCards:freefire",
   "freefire-max": "settings:homeCards:freefire-max",
   bgmi: "settings:homeCards:bgmi",
+  "bgmi-lite": "settings:homeCards:bgmi-lite",
   pubg: "settings:homeCards:pubg",
   "pubg-mobile-codes": "settings:homeCards:pubg-mobile-codes",
+  "pubg-mobile-lite": "settings:homeCards:pubg-mobile-lite",
 };
 
 function isPlainObject(value: unknown): value is Record<string, unknown> {
@@ -226,6 +228,46 @@ export function normalizeFfHomeCards(
       sanitizeString(merged.comparison?.ramTitle, defaults.comparison.ramTitle) ||
       defaults.comparison.ramTitle,
     note: sanitizeString(merged.comparison?.note, defaults.comparison.note) || defaults.comparison.note,
+    leftColLabel:
+      sanitizeString(merged.comparison?.leftColLabel, defaults.comparison.leftColLabel ?? "") ||
+      defaults.comparison.leftColLabel,
+    rightColLabel:
+      sanitizeString(merged.comparison?.rightColLabel, defaults.comparison.rightColLabel ?? "") ||
+      defaults.comparison.rightColLabel,
+    ramColLabels: defaults.comparison.ramColLabels
+      ? {
+          general:
+            sanitizeString(
+              merged.comparison?.ramColLabels?.general,
+              defaults.comparison.ramColLabels.general,
+            ) || defaults.comparison.ramColLabels.general,
+          redDot:
+            sanitizeString(
+              merged.comparison?.ramColLabels?.redDot,
+              defaults.comparison.ramColLabels.redDot,
+            ) || defaults.comparison.ramColLabels.redDot,
+          scope2x:
+            sanitizeString(
+              merged.comparison?.ramColLabels?.scope2x,
+              defaults.comparison.ramColLabels.scope2x,
+            ) || defaults.comparison.ramColLabels.scope2x,
+          scope4x:
+            sanitizeString(
+              merged.comparison?.ramColLabels?.scope4x,
+              defaults.comparison.ramColLabels.scope4x,
+            ) || defaults.comparison.ramColLabels.scope4x,
+          sniper:
+            sanitizeString(
+              merged.comparison?.ramColLabels?.sniper,
+              defaults.comparison.ramColLabels.sniper,
+            ) || defaults.comparison.ramColLabels.sniper,
+          freeLook:
+            sanitizeString(
+              merged.comparison?.ramColLabels?.freeLook,
+              defaults.comparison.ramColLabels.freeLook,
+            ) || defaults.comparison.ramColLabels.freeLook,
+        }
+      : merged.comparison?.ramColLabels ?? defaults.comparison.ramColLabels,
     vsRows: defaults.comparison.vsRows.map((def, index) => {
       const row = vsRaw[index] as Record<string, unknown> | undefined;
       return {
@@ -278,8 +320,10 @@ export function isPageCardsVariant(value: unknown): value is PageCardsVariant {
     value === "freefire" ||
     value === "freefire-max" ||
     value === "bgmi" ||
+    value === "bgmi-lite" ||
     value === "pubg" ||
-    value === "pubg-mobile-codes"
+    value === "pubg-mobile-codes" ||
+    value === "pubg-mobile-lite"
   );
 }
 

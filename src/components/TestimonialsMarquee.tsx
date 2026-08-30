@@ -11,7 +11,9 @@ type Props = {
 
 const GAME_LABEL: Record<TestimonialGame, string> = {
   bgmi: "BGMI",
+  "bgmi-lite": "BGMI Lite",
   pubg: "PUBG Mobile",
+  "pubg-mobile-lite": "PUBG Mobile Lite",
   freefire: "Free Fire",
   "freefire-max": "Free Fire Max",
 };

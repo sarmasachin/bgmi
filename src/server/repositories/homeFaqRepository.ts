@@ -5,11 +5,19 @@ import { bumpSitemapLastmod } from "@/src/server/repositories/sitemapLastmodRepo
 
 export type HomeFaqItem = { id: string; question: string; answer: string };
 
-export type GameFaqGame = "bgmi" | "pubg" | "freefire" | "freefire-max";
+export type GameFaqGame =
+  | "bgmi"
+  | "bgmi-lite"
+  | "pubg"
+  | "pubg-mobile-lite"
+  | "freefire"
+  | "freefire-max";
 
 export const GAME_FAQ_GAMES: Array<{ id: GameFaqGame; label: string }> = [
   { id: "bgmi", label: "BGMI" },
+  { id: "bgmi-lite", label: "BGMI Lite" },
   { id: "pubg", label: "PUBG Mobile" },
+  { id: "pubg-mobile-lite", label: "PUBG Mobile Lite" },
   { id: "freefire", label: "Free Fire" },
   { id: "freefire-max", label: "Free Fire Max" },
 ];
@@ -17,7 +25,9 @@ export const GAME_FAQ_GAMES: Array<{ id: GameFaqGame; label: string }> = [
 /** BGMI keeps legacy key so existing admin saves keep working. */
 const KEYS: Record<GameFaqGame, string> = {
   bgmi: "settings:homeFaq",
+  "bgmi-lite": "settings:gameFaq:bgmi-lite",
   pubg: "settings:gameFaq:pubg",
+  "pubg-mobile-lite": "settings:gameFaq:pubg-mobile-lite",
   freefire: "settings:gameFaq:freefire",
   "freefire-max": "settings:gameFaq:freefire-max",
 };
@@ -43,6 +53,27 @@ export const DEFAULT_BGMI_FAQ: HomeFaqItem[] = [
   },
 ];
 
+export const DEFAULT_BGMI_LITE_FAQ: HomeFaqItem[] = [
+  {
+    id: "bgmi-lite-faq-1",
+    question: "Is BGMI Lite the same as full BGMI for sensitivity?",
+    answer:
+      "Not exactly. Lite targets lower-end phones that often run 30–60 FPS. Use this BGMI Lite calculator instead of copying a flagship 90/120 FPS BGMI code.",
+  },
+  {
+    id: "bgmi-lite-faq-2",
+    question: "What gyroscope mode should I use on a 2GB phone?",
+    answer:
+      "Start with Scope On. Always On can cause camera drift while looting or running when FPS dips. Switch to Always On only after Scope On feels stable.",
+  },
+  {
+    id: "bgmi-lite-faq-3",
+    question: "Are these values final for the live BGMI Lite client?",
+    answer:
+      "They are researched starting points based on Lite-family and low-end sensitivity guides. After Krafton ships Lite, re-check slider names and fine-tune ±5 in Training Ground.",
+  },
+];
+
 export const DEFAULT_PUBG_FAQ: HomeFaqItem[] = [
   {
     id: "pubg-faq-1",
@@ -61,6 +92,27 @@ export const DEFAULT_PUBG_FAQ: HomeFaqItem[] = [
     question: "What is the difference between Gyroscope and Gyroscope ADS?",
     answer:
       "Normal gyroscope sensitivity works when you tilt the phone to look around or track enemies without firing. Gyroscope ADS sensitivity is active only while you hold the fire button and shoot — it mainly helps control vertical gun recoil and deliver a no-recoil spray.",
+  },
+];
+
+export const DEFAULT_PUBG_MOBILE_LITE_FAQ: HomeFaqItem[] = [
+  {
+    id: "pubg-mobile-lite-faq-1",
+    question: "Is PUBG Mobile Lite the same as full PUBG Mobile for sensitivity?",
+    answer:
+      "Not exactly. Lite targets lower-end phones that often run 30–60 FPS. Use this PUBG Mobile Lite calculator instead of copying a flagship 90/120 FPS PUBG Mobile code.",
+  },
+  {
+    id: "pubg-mobile-lite-faq-2",
+    question: "What gyroscope mode should I use on a 2GB phone?",
+    answer:
+      "Start with Scope On. Always On can cause camera drift while looting or running when FPS dips. Switch to Always On only after Scope On feels stable.",
+  },
+  {
+    id: "pubg-mobile-lite-faq-3",
+    question: "Are these values final for the live PUBG Mobile Lite client?",
+    answer:
+      "They are researched starting points based on Lite-family and low-end sensitivity guides. After the live Lite client ships or updates, re-check slider names and fine-tune ±5 in Training Ground.",
   },
 ];
 
@@ -99,8 +151,10 @@ export const DEFAULT_HOME_FAQ = DEFAULT_BGMI_FAQ;
 
 function defaultsFor(game: GameFaqGame): HomeFaqItem[] {
   if (game === "pubg") return DEFAULT_PUBG_FAQ;
+  if (game === "pubg-mobile-lite") return DEFAULT_PUBG_MOBILE_LITE_FAQ;
   if (game === "freefire") return DEFAULT_FREEFIRE_FAQ;
   if (game === "freefire-max") return DEFAULT_FREEFIRE_MAX_FAQ;
+  if (game === "bgmi-lite") return DEFAULT_BGMI_LITE_FAQ;
   return DEFAULT_BGMI_FAQ;
 }
 

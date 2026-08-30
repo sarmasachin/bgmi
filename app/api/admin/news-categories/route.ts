@@ -13,12 +13,18 @@ import {
 const createSchema = z.object({
   slug: z.string().min(1).max(64),
   label: z.string().min(1).max(80),
+  seoTitle: z.string().max(160).optional(),
+  seoDescription: z.string().max(320).optional(),
+  seoKeywords: z.string().max(400).optional(),
 });
 
 const updateSchema = z.object({
   id: z.string().min(1),
   label: z.string().min(1).max(80),
   slug: z.string().min(1).max(64).optional(),
+  seoTitle: z.string().max(160).optional(),
+  seoDescription: z.string().max(320).optional(),
+  seoKeywords: z.string().max(400).optional(),
 });
 
 function mapError(error: unknown) {

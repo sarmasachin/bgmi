@@ -21,7 +21,9 @@ type ConfirmAction = {
 
 const GAME_LABEL: Record<AdminTestimonialItem["game"], string> = {
   bgmi: "BGMI",
+  "bgmi-lite": "BGMI Lite",
   pubg: "PUBG Mobile",
+  "pubg-mobile-lite": "PUBG Mobile Lite",
   freefire: "Free Fire",
   "freefire-max": "Free Fire Max",
 };
@@ -86,7 +88,9 @@ export default function AdminTestimonialsClient({
       const next: AdminTestimonialItem[] = (json.data ?? []).map((item) => {
         const gameRaw = String(item.game ?? "bgmi");
         const game: AdminTestimonialItem["game"] =
+          gameRaw === "bgmi-lite" ||
           gameRaw === "pubg" ||
+          gameRaw === "pubg-mobile-lite" ||
           gameRaw === "freefire" ||
           gameRaw === "freefire-max"
             ? gameRaw

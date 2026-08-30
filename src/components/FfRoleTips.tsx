@@ -4,7 +4,16 @@ import { usePathname } from "next/navigation";
 import type { CalcInputs } from "@/src/features/ffCalculator/calculator";
 import { FF_SET_ROLE_EVENT } from "@/src/lib/ffPlayModes";
 import { FREE_FIRE_MAX_PATH } from "@/src/lib/freeFirePages";
+import {
+  isHomeFfPath,
+  isLiteCalculatorPath,
+  pickLitePageContent,
+} from "@/src/lib/gamePagePath";
 import type { FfHomeRoleTip, FfHomeRoleTips } from "@/src/lib/homeCardsTypes";
+import {
+  LITE_SET_PLAY_STYLE_EVENT,
+  litePlayerRoleFromChipRole,
+} from "@/src/lib/litePlayModes";
 
 type RoleTip = FfHomeRoleTip;
 
@@ -100,27 +109,47 @@ function defaultButtonLabel(item: RoleTip, isMax: boolean) {
 
 type Props = {
   homeContent?: FfHomeRoleTips;
+  liteContent?: FfHomeRoleTips;
+  pubgLiteContent?: FfHomeRoleTips;
 };
 
-/**
- * Tip cards under calculator — CTA scrolls to tool; role cards also set Player Role.
- */
-export function FfRoleTips({ homeContent }: Props) {
+/** Tip cards under calculator — Free Fire / Max / Lite calculators. */
+export function FfRoleTips({ homeContent, liteContent, pubgLiteContent }: Props) {
   const pathname = usePathname() ?? "";
-  const isHome = pathname === "/" || pathname === "";
+  const isHome = isHomeFfPath(pathname);
   const isMax = pathname === FREE_FIRE_MAX_PATH;
-  if (!isHome && !isMax) return null;
+  const isLite = isLiteCalculatorPath(pathname);
+  if (!isHome && !isMax && !isLite) return null;
 
+  const pack = isLite
+    ? pickLitePageContent(pathname, homeContent, liteContent, pubgLiteContent)
+    : homeContent;
   const sectionTitle =
-    homeContent?.title ??
+    pack?.title ??
     (isMax ? "Best Free Fire Max sensi tips by role" : "Best sensi tips by role");
-  const sourceItems = homeContent?.items ?? (isMax ? MAX_ROLE_TIPS : ROLE_TIPS);
+  const sourceItems = pack?.items ?? (isMax ? MAX_ROLE_TIPS : ROLE_TIPS);
   const tips: RoleTip[] = sourceItems.map((item) => ({
     ...item,
     buttonLabel: item.buttonLabel?.trim() || defaultButtonLabel(item, isMax),
   }));
 
   function onCardCta(card: RoleTip) {
+    if (isLite) {
+      if (card.applyRole !== false) {
+        window.dispatchEvent(
+          new CustomEvent(LITE_SET_PLAY_STYLE_EVENT, {
+            detail: { playerRole: litePlayerRoleFromChipRole(card.role) },
+          }),
+        );
+      }
+      document.getElementById("bgmi-lite-calculator")?.scrollIntoView({
+        behavior: "smooth",
+        block: "start",
+      });
+      document.getElementById("lite-play-style")?.focus({ preventScroll: true });
+      return;
+    }
+
     if (card.applyRole !== false) {
       window.dispatchEvent(
         new CustomEvent(FF_SET_ROLE_EVENT, {
