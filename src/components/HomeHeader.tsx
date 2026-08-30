@@ -76,6 +76,7 @@ export function HomeHeader({ siteTitle, navigation }: HomeHeaderProps) {
   const [pendingPath, setPendingPath] = useState<string | null>(null);
   const lastScrollY = useRef(0);
   const sideMenuRef = useRef<HTMLElement>(null);
+  const menuBtnRef = useRef<HTMLButtonElement>(null);
   const menuId = useId();
   const activePath = pendingPath ?? pathname;
 
@@ -113,12 +114,19 @@ export function HomeHeader({ siteTitle, navigation }: HomeHeaderProps) {
     const el = sideMenuRef.current;
     if (!el) return;
     el.inert = !menuOpen;
+    // Closing: don't leave focus inside an aria-hidden / inert drawer.
+    if (!menuOpen) {
+      const active = document.activeElement;
+      if (active instanceof HTMLElement && el.contains(active)) {
+        active.blur();
+      }
+    }
   }, [menuOpen]);
 
   useEffect(() => {
     if (!menuOpen) return;
     const onKey = (event: KeyboardEvent) => {
-      if (event.key === "Escape") setMenuOpen(false);
+      if (event.key === "Escape") closeMenu();
     };
     document.addEventListener("keydown", onKey);
     const prevOverflow = document.body.style.overflow;
@@ -131,11 +139,14 @@ export function HomeHeader({ siteTitle, navigation }: HomeHeaderProps) {
 
   useEffect(() => {
     const onResize = () => {
-      if (window.innerWidth >= 851) setMenuOpen(false);
+      if (window.innerWidth >= 851 && menuOpen) {
+        releaseSideMenuFocus();
+        setMenuOpen(false);
+      }
     };
     window.addEventListener("resize", onResize);
     return () => window.removeEventListener("resize", onResize);
-  }, []);
+  }, [menuOpen]);
 
   useEffect(() => {
     if (!menuOpen) return;
@@ -143,8 +154,19 @@ export function HomeHeader({ siteTitle, navigation }: HomeHeaderProps) {
     if (active?.children?.length) setSideOpenId(active.id);
   }, [menuOpen, pathname]);
 
+  function releaseSideMenuFocus() {
+    const side = sideMenuRef.current;
+    const active = document.activeElement;
+    if (side && active instanceof HTMLElement && side.contains(active)) {
+      active.blur();
+    }
+  }
+
   function closeMenu() {
+    releaseSideMenuFocus();
     setMenuOpen(false);
+    // Return focus to the hamburger so aria-hidden is not applied over a focused descendant.
+    queueMicrotask(() => menuBtnRef.current?.focus({ preventScroll: true }));
   }
 
   function onNavClick(event: MouseEvent<HTMLAnchorElement>, href: string) {
@@ -176,12 +198,19 @@ export function HomeHeader({ siteTitle, navigation }: HomeHeaderProps) {
           <div className="home-header-top-row">
             <div className="home-header-left">
               <button
+                ref={menuBtnRef}
                 type="button"
                 className={`home-header-menu-btn${menuOpen ? " is-open" : ""}`}
                 aria-label={menuOpen ? "Close menu" : "Open menu"}
                 aria-expanded={menuOpen}
                 aria-controls={menuId}
-                onClick={() => setMenuOpen((open) => !open)}
+                onClick={() => {
+                  if (menuOpen) {
+                    closeMenu();
+                    return;
+                  }
+                  setMenuOpen(true);
+                }}
               >
                 <span className="home-header-menu-line" />
                 <span className="home-header-menu-line" />
@@ -238,7 +267,6 @@ export function HomeHeader({ siteTitle, navigation }: HomeHeaderProps) {
         ref={sideMenuRef}
         id={menuId}
         className={`home-side-menu${menuOpen ? " is-open" : ""}`}
-        aria-hidden={!menuOpen}
         aria-label="Site menu"
       >
         <Link

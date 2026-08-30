@@ -42,10 +42,12 @@ export default function AdminFreeFireRedeemClient({
   const [page, setPage] = useState(initialData.page);
   const [usingDefault, setUsingDefault] = useState(initialData.usingDefault);
   const [openIds, setOpenIds] = useState<Set<RedeemAdminSectionId>>(
-    () => new Set(["seo", "copy", "article", "codes"]),
+    () => new Set(["codes", "faq"]),
   );
   const [saving, setSaving] = useState(false);
   const setMessage = useAdminFlash();
+
+  const liveCount = page.codes.filter((c) => c.status === "live").length;
 
   function toggle(id: RedeemAdminSectionId) {
     setOpenIds((prev) => {
@@ -129,9 +131,16 @@ export default function AdminFreeFireRedeemClient({
 
   return (
     <ClientErrorBoundary label={boundaryLabel}>
-      <section className="admin-section">
+      <section className="admin-section admin-redeem-page">
         <div className="admin-comments-head">
-          <h1>{heading}</h1>
+          <div>
+            <h1>{heading}</h1>
+            <p className="admin-redeem-page-sub">
+              {usingDefault
+                ? "Built-in defaults (not in DB yet). Save to publish your list."
+                : `Saved DB content for ${savedPathLabel}.`}
+            </p>
+          </div>
           <a
             className="admin-news-btn admin-news-btn-edit"
             href={previewPath}
@@ -142,31 +151,38 @@ export default function AdminFreeFireRedeemClient({
           </a>
         </div>
 
-        <p style={{ color: "#94a3b8", marginBottom: 16 }}>
-          {usingDefault
-            ? "Using built-in defaults (not saved in DB yet). Public page shows “No new codes today” until you Save."
-            : `Showing saved DB content for ${savedPathLabel}. Each Save marks “updated today” (IST) on the public page.`}
-        </p>
+        <div className="admin-redeem-summary">
+          <span>{page.codes.length} codes</span>
+          <span className="is-live">{liveCount} live</span>
+          <span>{page.codes.length - liveCount} expired</span>
+          <span>{page.faqs.length} FAQs</span>
+        </div>
 
-        <form onSubmit={onSave}>
+        <form onSubmit={onSave} className="admin-redeem-form">
           <AdminFreeFireRedeemForm
             page={page}
             openIds={openIds}
             onToggle={toggle}
             onPatch={patchPage}
           />
-          <div style={{ display: "flex", gap: 10, flexWrap: "wrap", marginTop: 16 }}>
-            <button type="submit" className="admin-news-btn" disabled={saving}>
-              {saving ? "Saving…" : "Save page"}
-            </button>
-            <button
-              type="button"
-              className="admin-news-btn admin-news-btn-edit"
-              onClick={onReset}
-              disabled={saving}
-            >
-              Reset to defaults
-            </button>
+
+          <div className="admin-redeem-sticky-bar">
+            <div className="admin-redeem-sticky-meta">
+              {usingDefault ? "Unsaved defaults" : "Ready to publish changes"}
+            </div>
+            <div className="admin-redeem-sticky-actions">
+              <button
+                type="button"
+                className="admin-news-btn admin-news-btn-edit"
+                onClick={onReset}
+                disabled={saving}
+              >
+                Reset
+              </button>
+              <button type="submit" className="admin-news-btn" disabled={saving}>
+                {saving ? "Saving…" : "Save page"}
+              </button>
+            </div>
           </div>
         </form>
       </section>

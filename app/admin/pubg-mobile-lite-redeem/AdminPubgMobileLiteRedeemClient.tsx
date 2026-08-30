@@ -2,11 +2,12 @@
 
 import { FormEvent, useState } from "react";
 import { useAdminFlash } from "@/src/components/admin/AdminToast";
+import { ClientErrorBoundary } from "@/src/components/ClientErrorBoundary";
 import {
   PUBG_MOBILE_LITE_REDEEM_CODE_PATH,
   type PubgMobileLiteRedeemCodePageContent,
 } from "@/src/lib/pubgMobileLiteRedeemCodes";
-import { readApiError } from "@/src/lib/userFacingError";
+import { messageFromUnknownError, readApiError } from "@/src/lib/userFacingError";
 import {
   AdminPubgMobileLiteRedeemForm,
   type RedeemAdminSectionId,
@@ -23,10 +24,12 @@ export default function AdminPubgMobileLiteRedeemClient({ initialData }: Props) 
   const [page, setPage] = useState(initialData.page);
   const [usingDefault, setUsingDefault] = useState(initialData.usingDefault);
   const [openIds, setOpenIds] = useState<Set<RedeemAdminSectionId>>(
-    () => new Set(["seo", "copy", "article", "codes"]),
+    () => new Set(["codes", "faq"]),
   );
   const [saving, setSaving] = useState(false);
   const setMessage = useAdminFlash();
+
+  const liveCount = page.codes.filter((c) => c.status === "live").length;
 
   function toggle(id: RedeemAdminSectionId) {
     setOpenIds((prev) => {
@@ -41,6 +44,20 @@ export default function AdminPubgMobileLiteRedeemClient({ initialData }: Props) 
     updater: (prev: PubgMobileLiteRedeemCodePageContent) => PubgMobileLiteRedeemCodePageContent,
   ) {
     setPage((prev) => updater(prev));
+  }
+
+  async function parseSaveResponse(res: Response): Promise<{
+    page?: PubgMobileLiteRedeemCodePageContent;
+    usingDefault?: boolean;
+  }> {
+    try {
+      return (await res.json()) as {
+        page?: PubgMobileLiteRedeemCodePageContent;
+        usingDefault?: boolean;
+      };
+    } catch {
+      throw new Error("Invalid server response. Please retry.");
+    }
   }
 
   async function onSave(event: FormEvent) {
@@ -58,15 +75,12 @@ export default function AdminPubgMobileLiteRedeemClient({ initialData }: Props) 
         setMessage(await readApiError(res, "Could not save redeem codes page."));
         return;
       }
-      const json = (await res.json()) as {
-        page?: PubgMobileLiteRedeemCodePageContent;
-        usingDefault?: boolean;
-      };
+      const json = await parseSaveResponse(res);
       if (json.page) setPage(json.page);
       setUsingDefault(Boolean(json.usingDefault));
       setMessage("PUBG Mobile Lite redeem codes page saved.");
-    } catch {
-      setMessage("Network error. Please retry.");
+    } catch (err) {
+      setMessage(messageFromUnknownError(err, "Network error. Please retry."));
     } finally {
       setSaving(false);
     }
@@ -86,61 +100,74 @@ export default function AdminPubgMobileLiteRedeemClient({ initialData }: Props) 
         setMessage(await readApiError(res, "Could not reset redeem codes page."));
         return;
       }
-      const json = (await res.json()) as {
-        page?: PubgMobileLiteRedeemCodePageContent;
-        usingDefault?: boolean;
-      };
+      const json = await parseSaveResponse(res);
       if (json.page) setPage(json.page);
       setUsingDefault(Boolean(json.usingDefault));
       setMessage("Reverted to built-in redeem code defaults.");
-    } catch {
-      setMessage("Network error. Please retry.");
+    } catch (err) {
+      setMessage(messageFromUnknownError(err, "Network error. Please retry."));
     } finally {
       setSaving(false);
     }
   }
 
   return (
-    <section className="admin-section">
-      <div className="admin-comments-head">
-        <h1>PUBG Mobile Lite Redeem Codes</h1>
-        <a
-          className="admin-news-btn admin-news-btn-edit"
-          href={PUBG_MOBILE_LITE_REDEEM_CODE_PATH}
-          target="_blank"
-          rel="noreferrer"
-        >
-          Preview page
-        </a>
-      </div>
-
-      <p style={{ color: "#94a3b8", marginBottom: 16 }}>
-        {usingDefault
-          ? "Using built-in defaults (not saved in DB yet). Public page shows “No new codes today” until you Save."
-          : "Showing saved DB content for /pubg-mobile-lite-redeem-code. Each Save marks “updated today” (IST) on the public page."}
-      </p>
-
-      <form onSubmit={onSave}>
-        <AdminPubgMobileLiteRedeemForm
-          page={page}
-          openIds={openIds}
-          onToggle={toggle}
-          onPatch={patchPage}
-        />
-        <div style={{ display: "flex", gap: 10, flexWrap: "wrap", marginTop: 16 }}>
-          <button type="submit" className="admin-news-btn" disabled={saving}>
-            {saving ? "Saving…" : "Save page"}
-          </button>
-          <button
-            type="button"
+    <ClientErrorBoundary label="PUBG Mobile Lite Redeem admin">
+      <section className="admin-section admin-redeem-page">
+        <div className="admin-comments-head">
+          <div>
+            <h1>PUBG Mobile Lite Redeem Codes</h1>
+            <p className="admin-redeem-page-sub">
+              {usingDefault
+                ? "Built-in defaults (not in DB yet). Save to publish your list."
+                : "Saved DB content for /pubg-mobile-lite-redeem-code."}
+            </p>
+          </div>
+          <a
             className="admin-news-btn admin-news-btn-edit"
-            onClick={onReset}
-            disabled={saving}
+            href={PUBG_MOBILE_LITE_REDEEM_CODE_PATH}
+            target="_blank"
+            rel="noreferrer"
           >
-            Reset to defaults
-          </button>
+            Preview page
+          </a>
         </div>
-      </form>
-    </section>
+
+        <div className="admin-redeem-summary">
+          <span>{page.codes.length} codes</span>
+          <span className="is-live">{liveCount} live</span>
+          <span>{page.codes.length - liveCount} expired</span>
+          <span>{page.faqs.length} FAQs</span>
+        </div>
+
+        <form onSubmit={onSave} className="admin-redeem-form">
+          <AdminPubgMobileLiteRedeemForm
+            page={page}
+            openIds={openIds}
+            onToggle={toggle}
+            onPatch={patchPage}
+          />
+
+          <div className="admin-redeem-sticky-bar">
+            <div className="admin-redeem-sticky-meta">
+              {usingDefault ? "Unsaved defaults" : "Ready to publish changes"}
+            </div>
+            <div className="admin-redeem-sticky-actions">
+              <button
+                type="button"
+                className="admin-news-btn admin-news-btn-edit"
+                onClick={onReset}
+                disabled={saving}
+              >
+                Reset
+              </button>
+              <button type="submit" className="admin-news-btn" disabled={saving}>
+                {saving ? "Saving…" : "Save page"}
+              </button>
+            </div>
+          </div>
+        </form>
+      </section>
+    </ClientErrorBoundary>
   );
 }

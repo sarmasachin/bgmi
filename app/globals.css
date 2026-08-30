@@ -11078,3 +11078,295 @@ html {
     min-width: 420px;
   }
 }
+
+/* —— Free Fire / Max redeem admin (table + editor modal) —— */
+.admin-redeem-page-sub {
+  margin: 6px 0 0;
+  color: #94a3b8;
+  font-size: 13px;
+  line-height: 1.45;
+}
+
+.admin-redeem-summary {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 0 0 16px;
+}
+
+.admin-redeem-summary > span {
+  display: inline-flex;
+  align-items: center;
+  padding: 5px 10px;
+  border-radius: 999px;
+  border: 1px solid #334155;
+  background: #0f172a;
+  color: #cbd5e1;
+  font-size: 12px;
+  font-weight: 650;
+}
+
+.admin-redeem-summary > span.is-live {
+  border-color: rgba(62, 201, 171, 0.45);
+  color: #7ee7d0;
+}
+
+.admin-redeem-form {
+  padding-bottom: 88px;
+}
+
+.admin-redeem-sticky-bar {
+  position: sticky;
+  bottom: 12px;
+  z-index: 40;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-top: 18px;
+  padding: 12px 14px;
+  border: 1px solid #334155;
+  border-radius: 12px;
+  background: rgba(15, 23, 42, 0.94);
+  backdrop-filter: blur(8px);
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.35);
+}
+
+.admin-redeem-sticky-meta {
+  color: #94a3b8;
+  font-size: 13px;
+}
+
+.admin-redeem-sticky-actions {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.admin-redeem-section {
+  margin-bottom: 14px;
+  border: 1px solid #334155;
+  border-radius: 12px;
+  overflow: hidden;
+  background: #020617;
+}
+
+.admin-redeem-section-head {
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 14px;
+  border: 0;
+  background: #0f172a;
+  color: #e2e8f0;
+  cursor: pointer;
+  font-weight: 700;
+}
+
+.admin-redeem-section-title {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.admin-redeem-section-badge {
+  font-style: normal;
+  font-weight: 650;
+  font-size: 11px;
+  padding: 3px 8px;
+  border-radius: 999px;
+  border: 1px solid #334155;
+  background: #020617;
+  color: #94a3b8;
+}
+
+.admin-redeem-section-body {
+  padding: 14px;
+}
+
+.admin-redeem-manager {
+  display: grid;
+  gap: 12px;
+}
+
+.admin-redeem-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.admin-redeem-stats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.admin-redeem-stat {
+  font-size: 12px;
+  font-weight: 650;
+  color: #94a3b8;
+  padding: 4px 8px;
+  border-radius: 8px;
+  background: #0b1220;
+  border: 1px solid #1e293b;
+}
+
+.admin-redeem-stat.is-live {
+  color: #7ee7d0;
+}
+
+.admin-redeem-stat.is-expired {
+  color: #fda4af;
+}
+
+.admin-redeem-filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+}
+
+.admin-redeem-filter {
+  border: 1px solid #334155;
+  background: #0f172a;
+  color: #cbd5e1;
+  border-radius: 999px;
+  padding: 6px 12px;
+  font-size: 12px;
+  font-weight: 650;
+  cursor: pointer;
+}
+
+.admin-redeem-filter.is-active {
+  border-color: rgba(62, 201, 171, 0.55);
+  background: rgba(62, 201, 171, 0.12);
+  color: #7ee7d0;
+}
+
+.admin-redeem-search {
+  flex: 1 1 180px;
+  min-width: 160px;
+  padding: 8px 12px;
+  border-radius: 8px;
+  border: 1px solid #334155;
+  background: #0f172a;
+  color: #e2e8f0;
+  font-size: 13px;
+}
+
+.admin-redeem-hint {
+  margin: 0;
+  font-size: 12px;
+  color: #94a3b8;
+  line-height: 1.45;
+}
+
+.admin-redeem-table-wrap {
+  background: #0b1220;
+}
+
+.admin-redeem-table th {
+  color: #94a3b8;
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  white-space: nowrap;
+}
+
+.admin-redeem-table td {
+  vertical-align: middle;
+  color: #e2e8f0;
+}
+
+.admin-redeem-title {
+  font-weight: 700;
+  color: #f1f5f9;
+}
+
+.admin-redeem-code {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 12px;
+  padding: 3px 6px;
+  border-radius: 6px;
+  background: #020617;
+  border: 1px solid #334155;
+  color: #a5f3fc;
+}
+
+.admin-redeem-pill {
+  display: inline-flex;
+  align-items: center;
+  padding: 3px 8px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+}
+
+.admin-redeem-pill.is-live {
+  background: rgba(62, 201, 171, 0.15);
+  color: #7ee7d0;
+}
+
+.admin-redeem-pill.is-expired {
+  background: rgba(244, 63, 94, 0.15);
+  color: #fda4af;
+}
+
+.admin-redeem-schedule {
+  color: #94a3b8;
+  font-size: 12px;
+  max-width: 240px;
+}
+
+.admin-redeem-empty {
+  text-align: center !important;
+  color: #94a3b8 !important;
+  padding: 28px 12px !important;
+}
+
+.admin-redeem-row-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.admin-redeem-row-actions .admin-news-btn {
+  padding: 6px 10px;
+  font-size: 12px;
+}
+
+.admin-redeem-field {
+  display: grid;
+  gap: 6px;
+  margin-bottom: 12px;
+}
+
+.admin-redeem-field > span {
+  font-size: 12px;
+  color: #94a3b8;
+}
+
+.admin-redeem-input,
+.admin-redeem-field input,
+.admin-redeem-field textarea,
+.admin-redeem-field select {
+  width: 100%;
+  padding: 10px 12px;
+  border-radius: 8px;
+  border: 1px solid #334155;
+  background: #0f172a;
+  color: #e2e8f0;
+}
+
+.admin-redeem-editor-modal {
+  width: min(560px, 100%);
+  max-height: min(86vh, 720px);
+  overflow: auto;
+}

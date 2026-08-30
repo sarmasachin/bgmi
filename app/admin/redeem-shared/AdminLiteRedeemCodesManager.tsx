@@ -2,13 +2,6 @@
 
 import { useMemo, useState } from "react";
 import { AdminDialogModal } from "@/src/components/admin/AdminDialogModal";
-import type { FreeFireRedeemCodeItem } from "@/src/lib/freeFireRedeemCodes";
-import {
-  FREE_FIRE_REDEEM_SERVERS,
-  coerceFreeFireRedeemServer,
-  freeFireRedeemServerBadge,
-  type FreeFireRedeemServerId,
-} from "@/src/lib/freeFireRedeemServers";
 
 const fieldStyle = {
   width: "100%",
@@ -19,13 +12,23 @@ const fieldStyle = {
   color: "#e2e8f0",
 } as const;
 
-export function emptyFreeFireRedeemCode(): FreeFireRedeemCodeItem {
+/** Lite redeem codes (BGMI Lite / PUBG Mobile Lite) — no server field. */
+export type AdminLiteRedeemCodeItem = {
+  id: string;
+  title: string;
+  code: string;
+  status: "live" | "expired";
+  releasedLabel?: string;
+  expiresLabel?: string;
+  expiredOnLabel?: string;
+};
+
+export function emptyLiteRedeemCode(): AdminLiteRedeemCodeItem {
   return {
     id: `new-${Date.now()}`,
     title: "",
     code: "",
     status: "live",
-    server: "global",
     releasedLabel: "Released: ",
     expiresLabel: "Expires: ",
   };
@@ -34,12 +37,12 @@ export function emptyFreeFireRedeemCode(): FreeFireRedeemCodeItem {
 type FilterTab = "all" | "live" | "expired";
 
 type EditorState =
-  | { mode: "create"; draft: FreeFireRedeemCodeItem }
-  | { mode: "edit"; index: number; draft: FreeFireRedeemCodeItem };
+  | { mode: "create"; draft: AdminLiteRedeemCodeItem }
+  | { mode: "edit"; index: number; draft: AdminLiteRedeemCodeItem };
 
 type Props = {
-  codes: FreeFireRedeemCodeItem[];
-  onChangeCodes: (codes: FreeFireRedeemCodeItem[]) => void;
+  codes: AdminLiteRedeemCodeItem[];
+  onChangeCodes: (codes: AdminLiteRedeemCodeItem[]) => void;
 };
 
 function Field({
@@ -59,14 +62,14 @@ function Field({
   );
 }
 
-function scheduleLabel(item: FreeFireRedeemCodeItem): string {
+function scheduleLabel(item: AdminLiteRedeemCodeItem): string {
   if (item.status === "expired") return item.expiredOnLabel?.trim() || "—";
   const bits = [item.releasedLabel, item.expiresLabel].map((s) => s?.trim()).filter(Boolean);
   return bits.length ? bits.join(" · ") : "—";
 }
 
-/** Compact redeem-code table + accessible modal editor (FF / FF Max admin). */
-export function AdminFreeFireRedeemCodesSection({ codes, onChangeCodes }: Props) {
+/** Compact lite redeem-code table + accessible modal editor. */
+export function AdminLiteRedeemCodesManager({ codes, onChangeCodes }: Props) {
   const [filter, setFilter] = useState<FilterTab>("all");
   const [query, setQuery] = useState("");
   const [editor, setEditor] = useState<EditorState | null>(null);
@@ -83,17 +86,13 @@ export function AdminFreeFireRedeemCodesSection({ codes, onChangeCodes }: Props)
         if (filter === "expired" && item.status !== "expired") return false;
         if (!q) return true;
         return (
-          item.title.toLowerCase().includes(q) ||
-          item.code.toLowerCase().includes(q) ||
-          freeFireRedeemServerBadge(coerceFreeFireRedeemServer(item.server))
-            .toLowerCase()
-            .includes(q)
+          item.title.toLowerCase().includes(q) || item.code.toLowerCase().includes(q)
         );
       });
   }, [codes, filter, query]);
 
   function openCreate() {
-    setEditor({ mode: "create", draft: emptyFreeFireRedeemCode() });
+    setEditor({ mode: "create", draft: emptyLiteRedeemCode() });
   }
 
   function openEdit(index: number) {
@@ -112,7 +111,6 @@ export function AdminFreeFireRedeemCodesSection({ codes, onChangeCodes }: Props)
       ...editor.draft,
       title: editor.draft.title.trim() || "Untitled code",
       code: editor.draft.code.trim() || "CODE-HERE",
-      server: coerceFreeFireRedeemServer(editor.draft.server),
     };
     if (editor.mode === "create") onChangeCodes([...codes, draft]);
     else onChangeCodes(codes.map((c, i) => (i === editor.index ? draft : c)));
@@ -135,7 +133,7 @@ export function AdminFreeFireRedeemCodesSection({ codes, onChangeCodes }: Props)
     onChangeCodes(copy);
   }
 
-  function patchDraft(patch: Partial<FreeFireRedeemCodeItem>) {
+  function patchDraft(patch: Partial<AdminLiteRedeemCodeItem>) {
     setEditor((prev) => (prev ? { ...prev, draft: { ...prev.draft, ...patch } } : prev));
   }
 
@@ -176,13 +174,13 @@ export function AdminFreeFireRedeemCodesSection({ codes, onChangeCodes }: Props)
           onKeyDown={(e) => {
             if (e.key === "Enter") e.preventDefault();
           }}
-          placeholder="Search title, code, server…"
+          placeholder="Search title or code…"
           aria-label="Search redeem codes"
         />
       </div>
 
       <p className="admin-redeem-hint">
-        Compact list view — edit opens a panel. Global codes also show on every regional tab.
+        Compact list view — edit opens a panel. Save page publishes to the live site.
       </p>
 
       <div className="admin-table-wrap admin-redeem-table-wrap">
@@ -193,7 +191,6 @@ export function AdminFreeFireRedeemCodesSection({ codes, onChangeCodes }: Props)
               <th>Title</th>
               <th>Code</th>
               <th>Status</th>
-              <th>Server</th>
               <th>Schedule</th>
               <th style={{ width: 210 }}>Actions</th>
             </tr>
@@ -201,7 +198,7 @@ export function AdminFreeFireRedeemCodesSection({ codes, onChangeCodes }: Props)
           <tbody>
             {rows.length === 0 ? (
               <tr>
-                <td colSpan={7} className="admin-redeem-empty">
+                <td colSpan={6} className="admin-redeem-empty">
                   {codes.length === 0
                     ? "No codes yet. Click Add code to create one."
                     : "No codes match this filter."}
@@ -226,7 +223,6 @@ export function AdminFreeFireRedeemCodesSection({ codes, onChangeCodes }: Props)
                       {item.status === "live" ? "LIVE" : "EXPIRED"}
                     </span>
                   </td>
-                  <td>{freeFireRedeemServerBadge(coerceFreeFireRedeemServer(item.server))}</td>
                   <td className="admin-redeem-schedule">{scheduleLabel(item)}</td>
                   <td>
                     <div className="admin-redeem-row-actions">
@@ -297,22 +293,6 @@ export function AdminFreeFireRedeemCodesSection({ codes, onChangeCodes }: Props)
             value={editor.draft.code}
             onChange={(code) => patchDraft({ code })}
           />
-          <label className="admin-redeem-field">
-            <span>Server / region</span>
-            <select
-              value={coerceFreeFireRedeemServer(editor.draft.server)}
-              onChange={(e) =>
-                patchDraft({ server: e.target.value as FreeFireRedeemServerId })
-              }
-              style={fieldStyle}
-            >
-              {FREE_FIRE_REDEEM_SERVERS.map((s) => (
-                <option key={s.id} value={s.id}>
-                  {s.label}
-                </option>
-              ))}
-            </select>
-          </label>
           <label className="admin-redeem-field">
             <span>Status</span>
             <select

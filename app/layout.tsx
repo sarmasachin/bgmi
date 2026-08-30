@@ -123,7 +123,7 @@ export default async function RootLayout({
   const adsense = parseAdsenseSnippet(snippets.adsenseScript);
 
   return (
-    <html lang="en" className={geistSans.variable}>
+    <html lang="en" className={geistSans.variable} data-scroll-behavior="smooth">
       <head>
         {/* AdSense soon after open; GA a bit later — never on first click (INP). */}
         <link rel="dns-prefetch" href="https://www.googletagmanager.com" />
@@ -138,7 +138,15 @@ export default async function RootLayout({
           crossOrigin="anonymous"
         />
         {FA_CSS.map((href) => (
-          <link key={href} rel="stylesheet" href={href} media="print" data-fa-css="" />
+          <link
+            key={href}
+            rel="stylesheet"
+            href={href}
+            media="print"
+            data-fa-css=""
+            // Inline script flips media to "all" after load — ignore that for hydration.
+            suppressHydrationWarning
+          />
         ))}
         <script
           dangerouslySetInnerHTML={{

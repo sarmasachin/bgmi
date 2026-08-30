@@ -9,7 +9,7 @@ import {
   DEFAULT_PUBG_MOBILE_LITE_REDEEM_UI,
   type PubgMobileLiteRedeemUiLabels,
 } from "@/src/lib/pubgMobileLiteRedeemUiDefaults";
-import { prisma, tryPrisma, tryPrismaLong } from "@/src/server/dbSafe";
+import { prisma, tryPrismaLong } from "@/src/server/dbSafe";
 
 const KEY = "settings:pubgMobileLiteRedeemCodes";
 
@@ -103,13 +103,13 @@ export function normalizePubgMobileLiteRedeemPage(
   const defaults = DEFAULT_PUBG_MOBILE_LITE_REDEEM_PAGE;
   if (!isPlainObject(raw)) return clonePubgMobileLiteRedeemPage(defaults);
 
-  const codesRaw = Array.isArray(raw.codes) ? raw.codes : defaults.codes;
-  const codes = codesRaw
+  const hasCodesField = Array.isArray(raw.codes);
+  const codes = (hasCodesField ? raw.codes : defaults.codes)
     .map((row, index) => normalizeCode(row, index))
     .filter((row): row is PubgMobileLiteRedeemCodeItem => Boolean(row));
 
-  const faqsRaw = Array.isArray(raw.faqs) ? raw.faqs : defaults.faqs;
-  const faqs = faqsRaw
+  const hasFaqsField = Array.isArray(raw.faqs);
+  const faqs = (hasFaqsField ? raw.faqs : defaults.faqs)
     .map((row, index) => normalizeFaq(row, index))
     .filter((row): row is PubgMobileLiteRedeemFaqItem => Boolean(row));
 
@@ -130,13 +130,15 @@ export function normalizePubgMobileLiteRedeemPage(
     commentsLead:
       sanitizeString(raw.commentsLead, defaults.commentsLead) || defaults.commentsLead,
     ui: normalizeUi(raw.ui),
-    faqs: faqs.length ? faqs : defaults.faqs.map((f) => ({ ...f })),
-    codes: codes.length ? codes : defaults.codes.map((c) => ({ ...c })),
+    faqs: hasFaqsField ? faqs : defaults.faqs.map((f) => ({ ...f })),
+    codes: hasCodesField ? codes : defaults.codes.map((c) => ({ ...c })),
   };
 }
 
 export async function getPubgMobileLiteRedeemPage(): Promise<PubgMobileLiteRedeemCodePageContent> {
-  const row = await tryPrisma(async () => prisma.siteSetting.findUnique({ where: { key: KEY } }));
+  const row = await tryPrismaLong(async () =>
+    prisma.siteSetting.findUnique({ where: { key: KEY } }),
+  );
   if (row === null || !row?.value) {
     return clonePubgMobileLiteRedeemPage();
   }
@@ -157,7 +159,9 @@ export async function getPubgMobileLiteRedeemPageForAdmin(): Promise<{
   page: PubgMobileLiteRedeemCodePageContent;
   usingDefault: boolean;
 }> {
-  const row = await tryPrisma(async () => prisma.siteSetting.findUnique({ where: { key: KEY } }));
+  const row = await tryPrismaLong(async () =>
+    prisma.siteSetting.findUnique({ where: { key: KEY } }),
+  );
   if (row === null || !row?.value) {
     return { page: clonePubgMobileLiteRedeemPage(), usingDefault: true };
   }
