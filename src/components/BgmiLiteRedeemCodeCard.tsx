@@ -3,6 +3,7 @@
 import { useState } from "react";
 import type { BgmiLiteRedeemCodeItem } from "@/src/lib/bgmiLiteRedeemCodes";
 import type { BgmiLiteRedeemUiLabels } from "@/src/lib/bgmiLiteRedeemUiDefaults";
+import { RedeemScheduleMeta } from "@/src/components/RedeemScheduleMeta";
 
 type Props = {
   item: BgmiLiteRedeemCodeItem;
@@ -47,11 +48,13 @@ export function BgmiLiteRedeemCodeCard({ item, ui }: Props) {
     >
       <div className="lite-redeem-card-head">
         <h3 className="lite-redeem-card-title">{item.title}</h3>
-        <span
-          className={`lite-redeem-badge${isLive ? " lite-redeem-badge--live" : " lite-redeem-badge--expired"}`}
-        >
-          {isLive ? ui.liveBadge : ui.expiredBadge}
-        </span>
+        <div className="lite-redeem-badge-row">
+          <span
+            className={`lite-redeem-badge${isLive ? " lite-redeem-badge--live" : " lite-redeem-badge--expired"}`}
+          >
+            {isLive ? ui.liveBadge : ui.expiredBadge}
+          </span>
+        </div>
       </div>
 
       <div className={`lite-redeem-code-row${isLive ? "" : " lite-redeem-code-row--expired"}`}>
@@ -93,19 +96,13 @@ export function BgmiLiteRedeemCodeCard({ item, ui }: Props) {
       <div className="lite-redeem-card-meta">
         {isLive ? (
           <>
-            <span className="lite-redeem-meta-item">
-              <i className="fa-solid fa-clock" aria-hidden />
-              {item.releasedLabel}
-            </span>
-            <span className="lite-redeem-meta-item">
-              <i className="fa-solid fa-hourglass-half" aria-hidden />
-              {item.expiresLabel}
-            </span>
+            <RedeemScheduleMeta icon="fa-clock" label={item.releasedLabel} />
+            <RedeemScheduleMeta icon="fa-hourglass-half" label={item.expiresLabel} />
           </>
         ) : (
           <>
             <span className="lite-redeem-meta-item">{ui.expiredStatusLabel}</span>
-            <span className="lite-redeem-meta-item">{item.expiredOnLabel}</span>
+            <RedeemScheduleMeta icon="fa-calendar-xmark" label={item.expiredOnLabel} />
           </>
         )}
       </div>

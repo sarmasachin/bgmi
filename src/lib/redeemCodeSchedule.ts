@@ -128,27 +128,29 @@ export function defaultExpiredRedeemSchedule(): Pick<
 /** Sync ISO ↔ formatted labels before save / after normalize. */
 export function finalizeRedeemScheduleDraft<T extends RedeemScheduleDraft>(draft: T): T {
   if (draft.status === "live") {
-    const hasReleasedIso = isValidRedeemScheduleIso(draft.releasedAt);
-    const hasExpiresIso = isValidRedeemScheduleIso(draft.expiresAt);
+    const releasedAtRaw = draft.releasedAt;
+    const expiresAtRaw = draft.expiresAt;
+    const hasReleasedIso = isValidRedeemScheduleIso(releasedAtRaw);
+    const hasExpiresIso = isValidRedeemScheduleIso(expiresAtRaw);
     const hasLegacyLabels =
       Boolean(draft.releasedLabel?.trim()) || Boolean(draft.expiresLabel?.trim());
 
     if (hasReleasedIso && hasExpiresIso) {
       return {
         ...draft,
-        releasedLabel: formatRedeemReleasedLabel(draft.releasedAt),
-        expiresLabel: formatRedeemExpiresLabel(draft.expiresAt),
+        releasedLabel: formatRedeemReleasedLabel(releasedAtRaw),
+        expiresLabel: formatRedeemExpiresLabel(expiresAtRaw),
         expiredOnAt: undefined,
         expiredOnLabel: undefined,
       };
     }
 
     if (hasReleasedIso) {
-      const expiresAt = hasExpiresIso ? draft.expiresAt! : defaultExpiresIso(draft.releasedAt);
+      const expiresAt = hasExpiresIso ? expiresAtRaw : defaultExpiresIso(releasedAtRaw);
       return {
         ...draft,
         expiresAt,
-        releasedLabel: formatRedeemReleasedLabel(draft.releasedAt),
+        releasedLabel: formatRedeemReleasedLabel(releasedAtRaw),
         expiresLabel: formatRedeemExpiresLabel(expiresAt),
         expiredOnAt: undefined,
         expiredOnLabel: undefined,
@@ -161,7 +163,7 @@ export function finalizeRedeemScheduleDraft<T extends RedeemScheduleDraft>(draft
         ...draft,
         releasedAt,
         releasedLabel: formatRedeemReleasedLabel(releasedAt),
-        expiresLabel: formatRedeemExpiresLabel(draft.expiresAt),
+        expiresLabel: formatRedeemExpiresLabel(expiresAtRaw),
         expiredOnAt: undefined,
         expiredOnLabel: undefined,
       };
@@ -219,6 +221,18 @@ export function finalizeRedeemScheduleDraft<T extends RedeemScheduleDraft>(draft
     releasedLabel: undefined,
     expiresLabel: undefined,
   };
+}
+
+export function compactRedeemScheduleLabel(label: string | undefined): string {
+  if (!label?.trim()) return "—";
+  const trimmed = label
+    .trim()
+    .replace(/^Released:\s*/i, "")
+    .replace(/^Expires:\s*/i, "")
+    .replace(/^Expired on:\s*/i, "")
+    .replace(/\s+IST$/i, "")
+    .trim();
+  return trimmed || "—";
 }
 
 /** Attach schedule ISO + labels when reading from DB JSON. */

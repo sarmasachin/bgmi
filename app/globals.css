@@ -9839,17 +9839,17 @@ html {
 }
 
 .lite-redeem-card-head {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  flex-wrap: wrap;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  grid-template-areas: "title badges";
   gap: 10px 14px;
+  align-items: start;
   margin-bottom: 14px;
 }
 
 .lite-redeem-card-title {
+  grid-area: title;
   margin: 0;
-  flex: 1 1 140px;
   min-width: 0;
   font-size: 1.08rem;
   font-weight: 750;
@@ -9889,12 +9889,14 @@ html {
 }
 
 .lite-redeem-badge-row {
+  grid-area: badges;
   flex: 0 0 auto;
   display: inline-flex;
   align-items: center;
   gap: 6px;
   flex-wrap: wrap;
   justify-content: flex-end;
+  justify-self: end;
 }
 
 .lite-redeem-badge--server {
@@ -10073,8 +10075,17 @@ html {
 .lite-redeem-meta-item i {
   font-size: 0.78rem;
   width: 1em;
+  flex: 0 0 auto;
   text-align: center;
   color: #94a3b8;
+}
+
+.lite-redeem-meta-short {
+  display: none;
+}
+
+.lite-redeem-meta-full {
+  min-width: 0;
 }
 
 .lite-redeem-card:not(.lite-redeem-card--expired)
@@ -10132,27 +10143,113 @@ html {
 
 @media (max-width: 560px) {
   .lite-redeem-inner {
-    width: min(100%, calc(100% - 24px));
-    padding: 20px 0 16px;
+    width: min(100%, calc(100% - 20px));
+    padding: 16px 0 12px;
+  }
+
+  .lite-redeem-h2 {
+    margin-bottom: 12px;
+    font-size: 1.08rem;
+    line-height: 1.35;
+  }
+
+  .lite-redeem-freshness {
+    margin-bottom: 12px;
+  }
+
+  .lite-redeem-freshness--ok {
+    display: flex;
+    width: 100%;
+    padding: 7px 10px;
+    font-size: 0.8rem;
+    line-height: 1.35;
+    border-radius: 10px;
+  }
+
+  .ff-redeem-server-tab {
+    padding: 8px 14px;
+    font-size: 0.82rem;
+  }
+
+  .lite-redeem-stack {
+    gap: 12px;
   }
 
   .lite-redeem-card {
-    padding: 16px 14px 14px;
+    padding: 14px 12px 12px;
+    border-radius: 14px;
+  }
+
+  .lite-redeem-card-head {
+    grid-template-columns: 1fr;
+    grid-template-areas:
+      "badges"
+      "title";
+    gap: 8px;
+    margin-bottom: 10px;
+  }
+
+  .lite-redeem-badge-row {
+    justify-self: start;
+    justify-content: flex-start;
+  }
+
+  .lite-redeem-card-title {
+    font-size: 0.98rem;
+    line-height: 1.4;
   }
 
   .lite-redeem-code-row {
     flex-direction: column;
     align-items: stretch;
+    gap: 12px;
+    padding: 14px 12px;
+    text-align: center;
+  }
+
+  .lite-redeem-code {
+    font-size: 1.05rem;
+    letter-spacing: 0.03em;
+    line-height: 1.4;
+    width: 100%;
+    overflow-wrap: anywhere;
   }
 
   .lite-redeem-copy {
     width: 100%;
+    min-height: 48px;
     justify-content: center;
+    font-size: 0.92rem;
+    border-radius: 12px;
   }
 
   .lite-redeem-card-meta {
-    flex-direction: column;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px 10px;
+    margin-top: 12px;
+    align-items: start;
+  }
+
+  .lite-redeem-meta-item {
+    font-size: 0.76rem;
+    line-height: 1.35;
+    gap: 6px;
     align-items: flex-start;
+  }
+
+  .lite-redeem-meta-full {
+    display: none;
+  }
+
+  .lite-redeem-meta-short {
+    display: inline;
+  }
+}
+
+@media (max-width: 380px) {
+  .lite-redeem-card-meta {
+    grid-template-columns: 1fr;
   }
 }
 

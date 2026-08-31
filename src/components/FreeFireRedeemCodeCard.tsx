@@ -8,6 +8,7 @@ import {
   freeFireRedeemServerBadge,
   type FreeFireRedeemServerConfig,
 } from "@/src/lib/freeFireRedeemServers";
+import { RedeemScheduleMeta } from "@/src/components/RedeemScheduleMeta";
 
 type Props = {
   item: FreeFireRedeemCodeItem;
@@ -111,19 +112,13 @@ export function FreeFireRedeemCodeCard({ item, ui, servers }: Props) {
       <div className="lite-redeem-card-meta">
         {isLive ? (
           <>
-            <span className="lite-redeem-meta-item">
-              <i className="fa-solid fa-clock" aria-hidden />
-              {item.releasedLabel}
-            </span>
-            <span className="lite-redeem-meta-item">
-              <i className="fa-solid fa-hourglass-half" aria-hidden />
-              {item.expiresLabel}
-            </span>
+            <RedeemScheduleMeta icon="fa-clock" label={item.releasedLabel} />
+            <RedeemScheduleMeta icon="fa-hourglass-half" label={item.expiresLabel} />
           </>
         ) : (
           <>
             <span className="lite-redeem-meta-item">{ui.expiredStatusLabel}</span>
-            <span className="lite-redeem-meta-item">{item.expiredOnLabel}</span>
+            <RedeemScheduleMeta icon="fa-calendar-xmark" label={item.expiredOnLabel} />
           </>
         )}
       </div>
