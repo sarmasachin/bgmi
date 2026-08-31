@@ -7,9 +7,12 @@ import { PageCommentSection } from "@/src/components/PageCommentSection";
 import { SiteFooter } from "@/src/components/SiteFooter";
 import {
   formatRedeemUpdatedLabelIst,
-  wasRedeemUpdatedTodayIst,
+  resolveRedeemFreshnessAt,
 } from "@/src/lib/bgmiLiteRedeemFreshness";
-import { isRedeemCodePubliclyLive } from "@/src/lib/redeemCodeSchedule";
+import {
+  applyAutoExpireRedeemCode,
+  isRedeemCodePubliclyLive,
+} from "@/src/lib/redeemCodeSchedule";
 import {
   cloneFreeFireRedeemPage,
   FREE_FIRE_REDEEM_CODE_PATH,
@@ -104,12 +107,17 @@ export async function FreeFireRedeemCodeLandingPage(
   const homeUrl = toCanonicalUrl("/");
   const parentUrl = toCanonicalUrl(parentHref);
   const crumbCurrent = ui.breadcrumbName.trim() || "Redeem Code";
-  const live = page.codes.filter((c) => isRedeemCodePubliclyLive(c));
-  const updatedToday = wasRedeemUpdatedTodayIst(updatedAt);
-  const updatedLabel =
-    updatedAt && updatedToday
-      ? formatRedeemUpdatedLabelIst(updatedAt, ui.updatedLabelPrefix)
-      : null;
+  const live = page.codes
+    .map((c) => applyAutoExpireRedeemCode(c))
+    .filter((c) => isRedeemCodePubliclyLive(c));
+  const freshnessAt = resolveRedeemFreshnessAt(
+    updatedAt,
+    live.map((c) => c.releasedAt),
+  );
+  const updatedToday = Boolean(freshnessAt);
+  const updatedLabel = freshnessAt
+    ? formatRedeemUpdatedLabelIst(freshnessAt, ui.updatedLabelPrefix)
+    : null;
   const faqItems = page.faqs.map((item) => ({
     id: item.id,
     question: item.question,
