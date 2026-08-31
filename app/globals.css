@@ -11389,6 +11389,44 @@ html {
   line-height: 1.4;
 }
 
+.admin-redeem-schedule-section {
+  display: grid;
+  gap: 8px;
+  margin-top: 4px;
+  padding: 12px;
+  border-radius: 10px;
+  border: 1px solid #334155;
+  background: #0b1220;
+}
+
+.admin-redeem-schedule-heading {
+  display: grid;
+  gap: 4px;
+  margin-bottom: 4px;
+}
+
+.admin-redeem-schedule-heading strong {
+  font-size: 13px;
+  color: #e2e8f0;
+}
+
+.admin-redeem-schedule-heading span {
+  font-size: 12px;
+  color: #94a3b8;
+  line-height: 1.4;
+}
+
+.admin-redeem-schedule-banner {
+  margin: 0;
+  padding: 8px 10px;
+  border-radius: 8px;
+  border: 1px solid rgba(56, 189, 248, 0.35);
+  background: rgba(14, 165, 233, 0.12);
+  color: #7dd3fc;
+  font-size: 12px;
+  line-height: 1.4;
+}
+
 @media (max-width: 640px) {
   .admin-redeem-schedule-grid {
     grid-template-columns: 1fr;
@@ -11441,6 +11479,11 @@ html {
 .admin-redeem-pill.is-live {
   background: rgba(62, 201, 171, 0.15);
   color: #7ee7d0;
+}
+
+.admin-redeem-pill.is-scheduled {
+  background: rgba(56, 189, 248, 0.15);
+  color: #7dd3fc;
 }
 
 .admin-redeem-pill.is-expired {

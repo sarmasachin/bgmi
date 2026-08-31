@@ -8,6 +8,10 @@ import {
   defaultExpiredRedeemSchedule,
   defaultLiveRedeemSchedule,
   finalizeRedeemScheduleDraft,
+  formatRedeemExpiredOnLabel,
+  hydrateRedeemScheduleForEdit,
+  isRedeemCodeScheduled,
+  isValidRedeemScheduleIso,
 } from "@/src/lib/redeemCodeSchedule";
 import {
   coerceFreeFireRedeemServer,
@@ -71,6 +75,16 @@ function scheduleLabel(item: FreeFireRedeemCodeItem): string {
   return bits.length ? bits.join(" · ") : "—";
 }
 
+function statusPill(item: FreeFireRedeemCodeItem): { className: string; label: string } {
+  if (item.status === "expired") {
+    return { className: "admin-redeem-pill is-expired", label: "EXPIRED" };
+  }
+  if (isRedeemCodeScheduled(item)) {
+    return { className: "admin-redeem-pill is-scheduled", label: "SCHEDULED" };
+  }
+  return { className: "admin-redeem-pill is-live", label: "LIVE" };
+}
+
 /** Compact redeem-code table + accessible modal editor (FF / FF Max admin). */
 export function AdminFreeFireRedeemCodesSection({ codes, servers, onChangeCodes }: Props) {
   const [filter, setFilter] = useState<FilterTab>("all");
@@ -106,7 +120,7 @@ export function AdminFreeFireRedeemCodesSection({ codes, servers, onChangeCodes 
   function openEdit(index: number) {
     const item = codes[index];
     if (!item) return;
-    setEditor({ mode: "edit", index, draft: { ...item } });
+    setEditor({ mode: "edit", index, draft: hydrateRedeemScheduleForEdit({ ...item }) });
   }
 
   function closeEditor() {
@@ -189,7 +203,8 @@ export function AdminFreeFireRedeemCodesSection({ codes, servers, onChangeCodes 
       </div>
 
       <p className="admin-redeem-hint">
-        Compact list view — edit opens a panel. Global codes also show on every regional tab.
+        Compact list view — Edit opens Schedule (Go-live + Expires). Future Go-live = SCHEDULED until
+        that time; Expires auto-archives after that time. Save page to publish.
       </p>
 
       <div className="admin-table-wrap admin-redeem-table-wrap">
@@ -225,13 +240,10 @@ export function AdminFreeFireRedeemCodesSection({ codes, servers, onChangeCodes 
                     <code className="admin-redeem-code">{item.code || "—"}</code>
                   </td>
                   <td>
-                    <span
-                      className={`admin-redeem-pill${
-                        item.status === "live" ? " is-live" : " is-expired"
-                      }`}
-                    >
-                      {item.status === "live" ? "LIVE" : "EXPIRED"}
-                    </span>
+                    {(() => {
+                      const pill = statusPill(item);
+                      return <span className={pill.className}>{pill.label}</span>;
+                    })()}
                   </td>
                   <td>{freeFireRedeemServerBadge(coerceFreeFireRedeemServer(item.server, serverList))}</td>
                   <td className="admin-redeem-schedule">{scheduleLabel(item)}</td>
@@ -324,11 +336,22 @@ export function AdminFreeFireRedeemCodesSection({ codes, servers, onChangeCodes 
               value={editor.draft.status}
               onChange={(e) => {
                 const status = e.target.value === "expired" ? "expired" : "live";
-                patchDraft(
-                  status === "expired"
-                    ? { status, ...defaultExpiredRedeemSchedule() }
-                    : { status, ...defaultLiveRedeemSchedule() },
-                );
+                if (status === "expired") {
+                  const expiredOnAt = isValidRedeemScheduleIso(editor.draft.expiresAt)
+                    ? editor.draft.expiresAt!
+                    : defaultExpiredRedeemSchedule().expiredOnAt!;
+                  patchDraft({
+                    status,
+                    expiredOnAt,
+                    expiredOnLabel: formatRedeemExpiredOnLabel(expiredOnAt),
+                    releasedAt: undefined,
+                    expiresAt: undefined,
+                    releasedLabel: undefined,
+                    expiresLabel: undefined,
+                  });
+                  return;
+                }
+                patchDraft(hydrateRedeemScheduleForEdit({ ...editor.draft, status: "live" }));
               }}
               style={fieldStyle}
             >

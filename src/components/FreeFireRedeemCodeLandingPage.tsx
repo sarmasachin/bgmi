@@ -9,6 +9,7 @@ import {
   formatRedeemUpdatedLabelIst,
   wasRedeemUpdatedTodayIst,
 } from "@/src/lib/bgmiLiteRedeemFreshness";
+import { isRedeemCodePubliclyLive } from "@/src/lib/redeemCodeSchedule";
 import {
   cloneFreeFireRedeemPage,
   FREE_FIRE_REDEEM_CODE_PATH,
@@ -103,7 +104,7 @@ export async function FreeFireRedeemCodeLandingPage(
   const homeUrl = toCanonicalUrl("/");
   const parentUrl = toCanonicalUrl(parentHref);
   const crumbCurrent = ui.breadcrumbName.trim() || "Redeem Code";
-  const live = page.codes.filter((c) => c.status === "live");
+  const live = page.codes.filter((c) => isRedeemCodePubliclyLive(c));
   const updatedToday = wasRedeemUpdatedTodayIst(updatedAt);
   const updatedLabel =
     updatedAt && updatedToday

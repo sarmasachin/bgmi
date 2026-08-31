@@ -4,6 +4,7 @@ import {
   formatRedeemExpiredOnLabel,
   formatRedeemExpiresLabel,
   formatRedeemReleasedLabel,
+  isRedeemCodeScheduled,
   joinRedeemScheduleIso,
   splitRedeemScheduleIso,
   type RedeemScheduleDraft,
@@ -69,11 +70,26 @@ function DateTimePair({
 
 /** Live / expired redeem-code date pickers with auto-formatted public labels. */
 export function AdminRedeemCodeScheduleFields({ draft, onPatch }: Props) {
+  const scheduled =
+    draft.status === "live" ? isRedeemCodeScheduled(draft as RedeemScheduleDraft & { status: "live" | "expired" }) : false;
+
   if (draft.status === "live") {
     return (
-      <>
+      <div className="admin-redeem-schedule-section">
+        <div className="admin-redeem-schedule-heading">
+          <strong>Schedule</strong>
+          <span>
+            Set when the code goes live and when it expires (IST). A future Go-live time keeps it
+            scheduled until then.
+          </span>
+        </div>
+        {scheduled ? (
+          <p className="admin-redeem-schedule-banner" role="status">
+            Scheduled — hidden on the public page until Go-live time.
+          </p>
+        ) : null}
         <DateTimePair
-          label="Released"
+          label="Go live (Released)"
           iso={draft.releasedAt}
           onIsoChange={(releasedAt) =>
             onPatch({
@@ -82,7 +98,9 @@ export function AdminRedeemCodeScheduleFields({ draft, onPatch }: Props) {
             })
           }
         />
-        <p className="admin-redeem-schedule-preview">{draft.releasedLabel || "Pick release date & time"}</p>
+        <p className="admin-redeem-schedule-preview">
+          {draft.releasedLabel || "Pick go-live date & time"}
+        </p>
 
         <DateTimePair
           label="Expires"
@@ -94,13 +112,19 @@ export function AdminRedeemCodeScheduleFields({ draft, onPatch }: Props) {
             })
           }
         />
-        <p className="admin-redeem-schedule-preview">{draft.expiresLabel || "Pick expiry date & time"}</p>
-      </>
+        <p className="admin-redeem-schedule-preview">
+          {draft.expiresLabel || "Pick expiry date & time"}
+        </p>
+      </div>
     );
   }
 
   return (
-    <>
+    <div className="admin-redeem-schedule-section">
+      <div className="admin-redeem-schedule-heading">
+        <strong>Schedule</strong>
+        <span>When this code was marked expired (IST).</span>
+      </div>
       <DateTimePair
         label="Expired on"
         iso={draft.expiredOnAt}
@@ -111,7 +135,9 @@ export function AdminRedeemCodeScheduleFields({ draft, onPatch }: Props) {
           })
         }
       />
-      <p className="admin-redeem-schedule-preview">{draft.expiredOnLabel || "Pick expired date & time"}</p>
-    </>
+      <p className="admin-redeem-schedule-preview">
+        {draft.expiredOnLabel || "Pick expired date & time"}
+      </p>
+    </div>
   );
 }

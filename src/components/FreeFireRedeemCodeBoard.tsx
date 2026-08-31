@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState, type ReactNode } from "react";
+import { useEffect, useMemo, useState, type ReactNode } from "react";
 import { FreeFireRedeemCodeCard } from "@/src/components/FreeFireRedeemCodeCard";
 import type { FreeFireRedeemCodeItem } from "@/src/lib/freeFireRedeemCodes";
 import {
@@ -10,11 +10,28 @@ import {
   type FreeFireRedeemServerConfig,
   type FreeFireRedeemServerTabId,
 } from "@/src/lib/freeFireRedeemServers";
+import {
+  applyAutoExpireRedeemCode,
+  isRedeemCodePubliclyLive,
+  isValidRedeemScheduleIso,
+} from "@/src/lib/redeemCodeSchedule";
 
 const INITIAL_VISIBLE = 5;
 const LOAD_STEP = 5;
 
 type CardUi = Parameters<typeof FreeFireRedeemCodeCard>[0]["ui"];
+
+/** Strip a trailing " – Region" from CMS heading, then append the active tab label. */
+function sectionHeadingForTab(
+  sectionHeading: string,
+  tab: FreeFireRedeemServerTabId,
+  tabs: Array<{ id: string; label: string }>,
+): string {
+  const raw = sectionHeading.trim() || "Active redeem codes";
+  const base = raw.replace(/\s*[–—-]\s+[^–—-]+$/u, "").trim() || raw;
+  const tabLabel = tabs.find((t) => t.id === tab)?.label?.trim() || "All";
+  return `${base} – ${tabLabel}`;
+}
 
 type Props = {
   codes: FreeFireRedeemCodeItem[];
@@ -92,19 +109,49 @@ export function FreeFireRedeemCodeBoard({
   freshness,
 }: Props) {
   const [tab, setTab] = useState<FreeFireRedeemServerTabId>("all");
+  const [nowMs, setNowMs] = useState(() => Date.now());
 
   const serverList = servers;
   const tabs = buildFreeFireRedeemServerTabs(serverList);
 
+  const effectiveCodes = useMemo(
+    () => codes.map((c) => applyAutoExpireRedeemCode(c, nowMs)),
+    [codes, nowMs],
+  );
+
+  useEffect(() => {
+    const wakeTimes = effectiveCodes
+      .filter((c) => c.status === "live")
+      .flatMap((c) => {
+        const times: number[] = [];
+        if (isValidRedeemScheduleIso(c.releasedAt)) {
+          const t = Date.parse(c.releasedAt);
+          if (Number.isFinite(t) && t > Date.now()) times.push(t);
+        }
+        if (isValidRedeemScheduleIso(c.expiresAt)) {
+          const t = Date.parse(c.expiresAt);
+          if (Number.isFinite(t) && t > Date.now()) times.push(t);
+        }
+        return times;
+      })
+      .sort((a, b) => a - b);
+    const next = wakeTimes[0];
+    if (next == null) return;
+    const delay = Math.min(Math.max(next - Date.now() + 300, 300), 2_147_483_647);
+    const id = window.setTimeout(() => setNowMs(Date.now()), delay);
+    return () => window.clearTimeout(id);
+  }, [effectiveCodes]);
+
   const filtered = useMemo(
     () =>
-      codes.filter((c) =>
+      effectiveCodes.filter((c) =>
         codeMatchesFreeFireServerTab(coerceFreeFireRedeemServer(c.server, serverList), tab, serverList),
       ),
-    [codes, tab, serverList],
+    [effectiveCodes, tab, serverList],
   );
-  const live = filtered.filter((c) => c.status === "live");
+  const live = filtered.filter((c) => isRedeemCodePubliclyLive(c, nowMs));
   const expired = filtered.filter((c) => c.status === "expired");
+  const heading = sectionHeadingForTab(sectionHeading, tab, tabs);
 
   return (
     <>
@@ -126,11 +173,11 @@ export function FreeFireRedeemCodeBoard({
         })}
       </div>
 
-      <h2 className="lite-redeem-h2">{sectionHeading}</h2>
+      <h2 className="lite-redeem-h2">{heading}</h2>
       {freshness}
 
       <CodeList
-        key={`live-${tab}`}
+        key={`live-${tab}-${live.map((c) => c.id).join(",")}`}
         items={live}
         emptyMessage={emptyLive}
         loadMoreLabel={loadMoreLive}
@@ -145,7 +192,7 @@ export function FreeFireRedeemCodeBoard({
             {archiveHeading}
           </h2>
           <CodeList
-            key={`expired-${tab}`}
+            key={`expired-${tab}-${expired.map((c) => c.id).join(",")}`}
             items={expired}
             emptyMessage={emptyExpired}
             loadMoreLabel={loadMoreExpired}
