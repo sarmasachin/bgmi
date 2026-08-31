@@ -1,13 +1,19 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { AdminRedeemCodeScheduleFields } from "@/app/admin/redeem-shared/AdminRedeemCodeScheduleFields";
 import { AdminDialogModal } from "@/src/components/admin/AdminDialogModal";
 import type { FreeFireRedeemCodeItem } from "@/src/lib/freeFireRedeemCodes";
 import {
-  FREE_FIRE_REDEEM_SERVERS,
+  defaultExpiredRedeemSchedule,
+  defaultLiveRedeemSchedule,
+  finalizeRedeemScheduleDraft,
+} from "@/src/lib/redeemCodeSchedule";
+import {
   coerceFreeFireRedeemServer,
+  ensureGlobalRedeemServer,
   freeFireRedeemServerBadge,
-  type FreeFireRedeemServerId,
+  type FreeFireRedeemServerConfig,
 } from "@/src/lib/freeFireRedeemServers";
 
 const fieldStyle = {
@@ -26,8 +32,7 @@ export function emptyFreeFireRedeemCode(): FreeFireRedeemCodeItem {
     code: "",
     status: "live",
     server: "global",
-    releasedLabel: "Released: ",
-    expiresLabel: "Expires: ",
+    ...defaultLiveRedeemSchedule(),
   };
 }
 
@@ -39,6 +44,7 @@ type EditorState =
 
 type Props = {
   codes: FreeFireRedeemCodeItem[];
+  servers: FreeFireRedeemServerConfig[];
   onChangeCodes: (codes: FreeFireRedeemCodeItem[]) => void;
 };
 
@@ -66,10 +72,11 @@ function scheduleLabel(item: FreeFireRedeemCodeItem): string {
 }
 
 /** Compact redeem-code table + accessible modal editor (FF / FF Max admin). */
-export function AdminFreeFireRedeemCodesSection({ codes, onChangeCodes }: Props) {
+export function AdminFreeFireRedeemCodesSection({ codes, servers, onChangeCodes }: Props) {
   const [filter, setFilter] = useState<FilterTab>("all");
   const [query, setQuery] = useState("");
   const [editor, setEditor] = useState<EditorState | null>(null);
+  const serverList = ensureGlobalRedeemServer(servers);
 
   const liveCount = codes.filter((c) => c.status === "live").length;
   const expiredCount = codes.length - liveCount;
@@ -85,7 +92,7 @@ export function AdminFreeFireRedeemCodesSection({ codes, onChangeCodes }: Props)
         return (
           item.title.toLowerCase().includes(q) ||
           item.code.toLowerCase().includes(q) ||
-          freeFireRedeemServerBadge(coerceFreeFireRedeemServer(item.server))
+          freeFireRedeemServerBadge(coerceFreeFireRedeemServer(item.server, serverList))
             .toLowerCase()
             .includes(q)
         );
@@ -108,12 +115,12 @@ export function AdminFreeFireRedeemCodesSection({ codes, onChangeCodes }: Props)
 
   function applyEditor() {
     if (!editor) return;
-    const draft = {
+    const draft = finalizeRedeemScheduleDraft({
       ...editor.draft,
       title: editor.draft.title.trim() || "Untitled code",
       code: editor.draft.code.trim() || "CODE-HERE",
-      server: coerceFreeFireRedeemServer(editor.draft.server),
-    };
+      server: coerceFreeFireRedeemServer(editor.draft.server, serverList),
+    });
     if (editor.mode === "create") onChangeCodes([...codes, draft]);
     else onChangeCodes(codes.map((c, i) => (i === editor.index ? draft : c)));
     setEditor(null);
@@ -226,7 +233,7 @@ export function AdminFreeFireRedeemCodesSection({ codes, onChangeCodes }: Props)
                       {item.status === "live" ? "LIVE" : "EXPIRED"}
                     </span>
                   </td>
-                  <td>{freeFireRedeemServerBadge(coerceFreeFireRedeemServer(item.server))}</td>
+                  <td>{freeFireRedeemServerBadge(coerceFreeFireRedeemServer(item.server, serverList))}</td>
                   <td className="admin-redeem-schedule">{scheduleLabel(item)}</td>
                   <td>
                     <div className="admin-redeem-row-actions">
@@ -300,13 +307,11 @@ export function AdminFreeFireRedeemCodesSection({ codes, onChangeCodes }: Props)
           <label className="admin-redeem-field">
             <span>Server / region</span>
             <select
-              value={coerceFreeFireRedeemServer(editor.draft.server)}
-              onChange={(e) =>
-                patchDraft({ server: e.target.value as FreeFireRedeemServerId })
-              }
+              value={coerceFreeFireRedeemServer(editor.draft.server, serverList)}
+              onChange={(e) => patchDraft({ server: e.target.value })}
               style={fieldStyle}
             >
-              {FREE_FIRE_REDEEM_SERVERS.map((s) => (
+              {serverList.map((s) => (
                 <option key={s.id} value={s.id}>
                   {s.label}
                 </option>
@@ -317,37 +322,21 @@ export function AdminFreeFireRedeemCodesSection({ codes, onChangeCodes }: Props)
             <span>Status</span>
             <select
               value={editor.draft.status}
-              onChange={(e) =>
-                patchDraft({
-                  status: e.target.value === "expired" ? "expired" : "live",
-                })
-              }
+              onChange={(e) => {
+                const status = e.target.value === "expired" ? "expired" : "live";
+                patchDraft(
+                  status === "expired"
+                    ? { status, ...defaultExpiredRedeemSchedule() }
+                    : { status, ...defaultLiveRedeemSchedule() },
+                );
+              }}
               style={fieldStyle}
             >
               <option value="live">LIVE</option>
               <option value="expired">EXPIRED</option>
             </select>
           </label>
-          {editor.draft.status === "live" ? (
-            <>
-              <Field
-                label="Released label"
-                value={editor.draft.releasedLabel ?? ""}
-                onChange={(releasedLabel) => patchDraft({ releasedLabel })}
-              />
-              <Field
-                label="Expires label"
-                value={editor.draft.expiresLabel ?? ""}
-                onChange={(expiresLabel) => patchDraft({ expiresLabel })}
-              />
-            </>
-          ) : (
-            <Field
-              label="Expired on label"
-              value={editor.draft.expiredOnLabel ?? ""}
-              onChange={(expiredOnLabel) => patchDraft({ expiredOnLabel })}
-            />
-          )}
+          <AdminRedeemCodeScheduleFields draft={editor.draft} onPatch={patchDraft} />
         </AdminDialogModal>
       ) : null}
     </div>

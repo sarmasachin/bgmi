@@ -6,10 +6,12 @@ import type { FreeFireRedeemUiLabels } from "@/src/lib/freeFireRedeemUiDefaults"
 import {
   coerceFreeFireRedeemServer,
   freeFireRedeemServerBadge,
+  type FreeFireRedeemServerConfig,
 } from "@/src/lib/freeFireRedeemServers";
 
 type Props = {
   item: FreeFireRedeemCodeItem;
+  servers: FreeFireRedeemServerConfig[];
   ui: Pick<
     FreeFireRedeemUiLabels,
     | "liveBadge"
@@ -33,11 +35,11 @@ async function copyText(value: string): Promise<void> {
   throw new Error("Clipboard unavailable");
 }
 
-export function FreeFireRedeemCodeCard({ item, ui }: Props) {
+export function FreeFireRedeemCodeCard({ item, ui, servers }: Props) {
   const [copied, setCopied] = useState(false);
   const [copyError, setCopyError] = useState(false);
   const isLive = item.status === "live";
-  const serverBadge = freeFireRedeemServerBadge(coerceFreeFireRedeemServer(item.server));
+  const serverBadge = freeFireRedeemServerBadge(coerceFreeFireRedeemServer(item.server, servers), servers);
 
   async function onCopy() {
     if (!isLive) return;

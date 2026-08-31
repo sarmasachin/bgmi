@@ -9,7 +9,12 @@ import {
   DEFAULT_FREE_FIRE_REDEEM_UI,
   type FreeFireRedeemUiLabels,
 } from "@/src/lib/freeFireRedeemUiDefaults";
-import { coerceFreeFireRedeemServer } from "@/src/lib/freeFireRedeemServers";
+import {
+  coerceFreeFireRedeemServer,
+  normalizeRedeemServersList,
+  type FreeFireRedeemServerConfig,
+} from "@/src/lib/freeFireRedeemServers";
+import { attachRedeemScheduleFromRaw } from "@/src/lib/redeemCodeSchedule";
 import { prisma, tryPrismaLong } from "@/src/server/dbSafe";
 
 const KEY = "settings:freeFireRedeemCodes";
@@ -40,7 +45,11 @@ function slugId(title: string, code: string, index: number): string {
   return base || `code-${index + 1}`;
 }
 
-function normalizeCode(raw: unknown, index: number): FreeFireRedeemCodeItem | null {
+function normalizeCode(
+  raw: unknown,
+  index: number,
+  servers: FreeFireRedeemServerConfig[],
+): FreeFireRedeemCodeItem | null {
   if (!isPlainObject(raw)) return null;
   const title = sanitizeString(raw.title);
   const code = sanitizeString(raw.code);
@@ -53,14 +62,9 @@ function normalizeCode(raw: unknown, index: number): FreeFireRedeemCodeItem | nu
     title,
     code,
     status,
-    server: coerceFreeFireRedeemServer(raw.server),
+    server: coerceFreeFireRedeemServer(raw.server, servers),
   };
-  const releasedLabel = sanitizeString(raw.releasedLabel);
-  const expiresLabel = sanitizeString(raw.expiresLabel);
-  const expiredOnLabel = sanitizeString(raw.expiredOnLabel);
-  if (releasedLabel) item.releasedLabel = releasedLabel;
-  if (expiresLabel) item.expiresLabel = expiresLabel;
-  if (expiredOnLabel) item.expiredOnLabel = expiredOnLabel;
+  attachRedeemScheduleFromRaw(item, raw, sanitizeString);
   return item;
 }
 
@@ -108,9 +112,12 @@ export function normalizeFreeFireRedeemPage(raw: unknown): FreeFireRedeemCodePag
   const defaults = DEFAULT_FREE_FIRE_REDEEM_PAGE;
   if (!isPlainObject(raw)) return cloneFreeFireRedeemPage(defaults);
 
+  const hasServersField = Array.isArray(raw.servers);
+  const servers = normalizeRedeemServersList(hasServersField ? raw.servers : defaults.servers);
+
   const hasCodesField = Array.isArray(raw.codes);
   const codes = (hasCodesField ? raw.codes : defaults.codes)
-    .map((row, index) => normalizeCode(row, index))
+    .map((row, index) => normalizeCode(row, index, servers))
     .filter((row): row is FreeFireRedeemCodeItem => Boolean(row));
 
   const hasFaqsField = Array.isArray(raw.faqs);
@@ -135,6 +142,7 @@ export function normalizeFreeFireRedeemPage(raw: unknown): FreeFireRedeemCodePag
     commentsLead:
       sanitizeString(raw.commentsLead, defaults.commentsLead) || defaults.commentsLead,
     ui: normalizeUi(raw.ui),
+    servers: hasServersField ? servers : defaults.servers.map((s) => ({ ...s })),
     faqs: hasFaqsField ? faqs : defaults.faqs.map((f) => ({ ...f })),
     // Allow saving an empty list — do not revive built-in dummy codes.
     codes: hasCodesField ? codes : defaults.codes.map((c) => ({ ...c })),

@@ -59,6 +59,7 @@ export const DEFAULT_FREE_FIRE_MAX_REDEEM_PAGE: FreeFireRedeemCodePageContent = 
     emptyLiveIdle: "No live Free Fire Max codes listed yet.",
     emptyExpired: "No expired Free Fire Max codes in the archive yet.",
   },
+  servers: [{ id: "global", label: "Global", badge: "Global" }],
   codes: [
     ...DEFAULT_FREE_FIRE_MAX_REDEEM_CODES.map((c) => ({ ...c })),
     ...DEFAULT_FREE_FIRE_MAX_REDEEM_EXPIRED_CODES.map((c) => ({ ...c })),

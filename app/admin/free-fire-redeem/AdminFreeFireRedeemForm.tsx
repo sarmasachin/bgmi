@@ -9,6 +9,11 @@ import {
 } from "@/src/lib/commaSeparatedKeywordsInput";
 import { AdminFreeFireRedeemCodesSection } from "./AdminFreeFireRedeemCodesSection";
 import { AdminFreeFireRedeemFaqsSection } from "./AdminFreeFireRedeemFaqsSection";
+import { AdminFreeFireRedeemServersSection } from "@/app/admin/redeem-shared/AdminFreeFireRedeemServersSection";
+import {
+  ensureGlobalRedeemServer,
+  type FreeFireRedeemServerConfig,
+} from "@/src/lib/freeFireRedeemServers";
 import {
   AdminFreeFireRedeemUiFields,
   patchRedeemPageUi,
@@ -19,7 +24,7 @@ const RichTextEditor = dynamic(
   { ssr: false },
 );
 
-type SectionId = "codes" | "faq" | "seo" | "copy" | "article" | "ui";
+type SectionId = "servers" | "codes" | "faq" | "seo" | "copy" | "article" | "ui";
 
 type Props = {
   page: FreeFireRedeemCodePageContent;
@@ -96,9 +101,30 @@ function Section({
 
 export function AdminFreeFireRedeemForm({ page, openIds, onToggle, onPatch }: Props) {
   const liveCount = page.codes.filter((c) => c.status === "live").length;
+  const servers = ensureGlobalRedeemServer(page.servers);
+
+  function changeServers(nextServers: FreeFireRedeemServerConfig[]) {
+    const normalized = ensureGlobalRedeemServer(nextServers);
+    const allowed = new Set(normalized.map((s) => s.id));
+    onPatch((p) => ({
+      ...p,
+      servers: normalized,
+      codes: p.codes.map((c) => (allowed.has(c.server) ? c : { ...c, server: "global" })),
+    }));
+  }
 
   return (
     <>
+      <Section
+        id="servers"
+        title="Servers / regions"
+        badge={`${servers.length} tabs`}
+        open={openIds.has("servers")}
+        onToggle={onToggle}
+      >
+        <AdminFreeFireRedeemServersSection servers={servers} onChangeServers={changeServers} />
+      </Section>
+
       <Section
         id="codes"
         title="Redeem codes"
@@ -108,6 +134,7 @@ export function AdminFreeFireRedeemForm({ page, openIds, onToggle, onPatch }: Pr
       >
         <AdminFreeFireRedeemCodesSection
           codes={page.codes}
+          servers={servers}
           onChangeCodes={(codes) => onPatch((p) => ({ ...p, codes }))}
         />
       </Section>

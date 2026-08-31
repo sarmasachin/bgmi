@@ -42,7 +42,7 @@ export default function AdminFreeFireRedeemClient({
   const [page, setPage] = useState(initialData.page);
   const [usingDefault, setUsingDefault] = useState(initialData.usingDefault);
   const [openIds, setOpenIds] = useState<Set<RedeemAdminSectionId>>(
-    () => new Set(["codes", "faq"]),
+    () => new Set(["servers", "codes", "faq"]),
   );
   const [saving, setSaving] = useState(false);
   const setMessage = useAdminFlash();

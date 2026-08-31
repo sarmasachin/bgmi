@@ -10,12 +10,12 @@ import {
   DEFAULT_FREE_FIRE_REDEEM_UI,
   type FreeFireRedeemUiLabels,
 } from "@/src/lib/freeFireRedeemUiDefaults";
-import type { FreeFireRedeemServerId } from "@/src/lib/freeFireRedeemServers";
+import type { FreeFireRedeemServerConfig } from "@/src/lib/freeFireRedeemServers";
 
 export const FREE_FIRE_REDEEM_PAGE_KEY = "free-fire-redeem-code";
 
 export { FREE_FIRE_REDEEM_CODE_PATH };
-export type { FreeFireRedeemUiLabels, FreeFireRedeemServerId };
+export type { FreeFireRedeemUiLabels, FreeFireRedeemServerConfig };
 
 export type FreeFireRedeemCodeItem = {
   id: string;
@@ -23,7 +23,11 @@ export type FreeFireRedeemCodeItem = {
   code: string;
   status: "live" | "expired";
   /** Which Free Fire region/server this code works on. */
-  server: FreeFireRedeemServerId;
+  server: string;
+  /** IST ISO (+05:30) — source of truth for admin date pickers. */
+  releasedAt?: string;
+  expiresAt?: string;
+  expiredOnAt?: string;
   releasedLabel?: string;
   expiresLabel?: string;
   expiredOnLabel?: string;
@@ -49,6 +53,8 @@ export type FreeFireRedeemCodePageContent = {
   faqs: FreeFireRedeemFaqItem[];
   commentsLead: string;
   ui: FreeFireRedeemUiLabels;
+  /** Public region tabs — editable in admin. */
+  servers: FreeFireRedeemServerConfig[];
   codes: FreeFireRedeemCodeItem[];
 };
 
@@ -80,6 +86,7 @@ export const DEFAULT_FREE_FIRE_REDEEM_PAGE: FreeFireRedeemCodePageContent = {
   commentsLead:
     "Share which codes worked for you, ask redeem questions, or tip others. Comments appear after admin approval — never post passwords or OTPs.",
   ui: cloneFreeFireRedeemUi(),
+  servers: [{ id: "global", label: "Global", badge: "Global" }],
   codes: [
     ...DEFAULT_FREE_FIRE_REDEEM_CODES.map((c) => ({ ...c })),
     ...DEFAULT_FREE_FIRE_REDEEM_EXPIRED_CODES.map((c) => ({ ...c })),
@@ -94,6 +101,7 @@ export function cloneFreeFireRedeemPage(
     seoKeywords: [...page.seoKeywords],
     faqs: page.faqs.map((f) => ({ ...f })),
     ui: cloneFreeFireRedeemUi(page.ui ?? DEFAULT_FREE_FIRE_REDEEM_UI),
+    servers: page.servers.map((s) => ({ ...s })),
     codes: page.codes.map((c) => ({ ...c })),
   };
 }

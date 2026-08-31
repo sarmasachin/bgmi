@@ -4,9 +4,10 @@ import { useMemo, useState, type ReactNode } from "react";
 import { FreeFireRedeemCodeCard } from "@/src/components/FreeFireRedeemCodeCard";
 import type { FreeFireRedeemCodeItem } from "@/src/lib/freeFireRedeemCodes";
 import {
-  FREE_FIRE_REDEEM_SERVER_TABS,
+  buildFreeFireRedeemServerTabs,
   codeMatchesFreeFireServerTab,
   coerceFreeFireRedeemServer,
+  type FreeFireRedeemServerConfig,
   type FreeFireRedeemServerTabId,
 } from "@/src/lib/freeFireRedeemServers";
 
@@ -17,6 +18,7 @@ type CardUi = Parameters<typeof FreeFireRedeemCodeCard>[0]["ui"];
 
 type Props = {
   codes: FreeFireRedeemCodeItem[];
+  servers: FreeFireRedeemServerConfig[];
   sectionHeading: string;
   archiveHeading: string;
   emptyLive: string;
@@ -32,11 +34,13 @@ function CodeList({
   emptyMessage,
   loadMoreLabel,
   ui,
+  servers,
 }: {
   items: FreeFireRedeemCodeItem[];
   emptyMessage: string;
   loadMoreLabel: string;
   ui: CardUi;
+  servers: FreeFireRedeemServerConfig[];
 }) {
   const [visible, setVisible] = useState(INITIAL_VISIBLE);
 
@@ -52,7 +56,7 @@ function CodeList({
       <div className="lite-redeem-stack" role="list">
         {shown.map((item) => (
           <div key={item.id} role="listitem">
-            <FreeFireRedeemCodeCard item={item} ui={ui} />
+            <FreeFireRedeemCodeCard item={item} ui={ui} servers={servers} />
           </div>
         ))}
       </div>
@@ -77,6 +81,7 @@ function CodeList({
 /** Client board: server tabs + filtered live/expired Free Fire redeem cards. */
 export function FreeFireRedeemCodeBoard({
   codes,
+  servers,
   sectionHeading,
   archiveHeading,
   emptyLive,
@@ -88,12 +93,15 @@ export function FreeFireRedeemCodeBoard({
 }: Props) {
   const [tab, setTab] = useState<FreeFireRedeemServerTabId>("all");
 
+  const serverList = servers;
+  const tabs = buildFreeFireRedeemServerTabs(serverList);
+
   const filtered = useMemo(
     () =>
       codes.filter((c) =>
-        codeMatchesFreeFireServerTab(coerceFreeFireRedeemServer(c.server), tab),
+        codeMatchesFreeFireServerTab(coerceFreeFireRedeemServer(c.server, serverList), tab, serverList),
       ),
-    [codes, tab],
+    [codes, tab, serverList],
   );
   const live = filtered.filter((c) => c.status === "live");
   const expired = filtered.filter((c) => c.status === "expired");
@@ -101,7 +109,7 @@ export function FreeFireRedeemCodeBoard({
   return (
     <>
       <div className="ff-redeem-server-tabs" role="tablist" aria-label="Free Fire server">
-        {FREE_FIRE_REDEEM_SERVER_TABS.map((item) => {
+        {tabs.map((item) => {
           const active = tab === item.id;
           return (
             <button
@@ -127,6 +135,7 @@ export function FreeFireRedeemCodeBoard({
         emptyMessage={emptyLive}
         loadMoreLabel={loadMoreLive}
         ui={ui}
+        servers={serverList}
       />
 
       {expired.length ? (
@@ -141,6 +150,7 @@ export function FreeFireRedeemCodeBoard({
             emptyMessage={emptyExpired}
             loadMoreLabel={loadMoreExpired}
             ui={ui}
+            servers={serverList}
           />
         </>
       ) : null}

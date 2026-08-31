@@ -185,6 +185,7 @@ export async function FreeFireRedeemCodeLandingPage(
           <ClientErrorBoundary label="Redeem codes">
             <FreeFireRedeemCodeBoard
               codes={page.codes}
+              servers={page.servers}
               sectionHeading={page.sectionHeading}
               archiveHeading={page.archiveHeading}
               emptyLive={emptyLive}
