@@ -26,6 +26,7 @@ export function getDefaultFfMaxCards(): FfHomeCards {
     hero: {
       title: "Free Fire Max Sensitivity Settings Calculator",
     },
+    calcBanner: home.calcBanner,
     patchStrip: {
       code: FF_MAX_SITE_PATCH.code,
       label: FF_MAX_SITE_PATCH.label,

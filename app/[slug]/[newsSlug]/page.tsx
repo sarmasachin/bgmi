@@ -41,11 +41,9 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     (item as { primaryCategory?: string | null }).primaryCategory,
     known,
   );
-  if (primary !== category) {
-    return {
-      title: item.title,
-      robots: { index: false, follow: false },
-    };
+  const canonicalPath = newsArticlePath(primary, item.slug);
+  if (`/${category}/${newsSlug}` !== canonicalPath) {
+    permanentRedirect(canonicalPath);
   }
   return buildNewsDetailMetadata(item);
 }
@@ -62,8 +60,9 @@ export default async function CategoryNewsArticlePage({ params }: Props) {
     (item as { primaryCategory?: string | null }).primaryCategory,
     known,
   );
-  if (primary !== category) {
-    permanentRedirect(newsArticlePath(primary, item.slug));
+  const canonicalPath = newsArticlePath(primary, item.slug);
+  if (`/${category}/${newsSlug}` !== canonicalPath) {
+    permanentRedirect(canonicalPath);
   }
 
   return <NewsDetailView item={item} />;

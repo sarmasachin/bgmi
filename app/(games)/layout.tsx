@@ -198,7 +198,12 @@ export default async function GamesLayout({ children }: { children: React.ReactN
         </ClientErrorBoundary>
         {adPlaces.home.home_above_calculator ? <AdSlot slotKey="home_above_calculator" /> : null}
         <ClientErrorBoundary label="Calculator">
-          <SensCalculatorHost phoneModels={phoneModels} ffTrustBar={settings.ffTrustBar} />
+          <SensCalculatorHost
+            phoneModels={phoneModels}
+            ffTrustBar={settings.ffTrustBar}
+            bgmiLiteBanner={bgmiLiteCards.calcBanner}
+            pubgLiteBanner={pubgMobileLiteCards.calcBanner}
+          />
         </ClientErrorBoundary>
         {adPlaces.home.home_between_tool_and_article ? (
           <AdSlot slotKey="home_between_tool_and_article" />

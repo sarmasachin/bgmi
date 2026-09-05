@@ -14,6 +14,7 @@ import {
   applyAutoExpireRedeemCode,
   isRedeemCodePubliclyLive,
   isValidRedeemScheduleIso,
+  sortExpiredRedeemCodesNewestFirst,
 } from "@/src/lib/redeemCodeSchedule";
 
 const INITIAL_VISIBLE = 5;
@@ -150,7 +151,9 @@ export function FreeFireRedeemCodeBoard({
     [effectiveCodes, tab, serverList],
   );
   const live = filtered.filter((c) => isRedeemCodePubliclyLive(c, nowMs));
-  const expired = filtered.filter((c) => c.status === "expired");
+  const expired = sortExpiredRedeemCodesNewestFirst(
+    filtered.filter((c) => c.status === "expired"),
+  );
   const heading = sectionHeadingForTab(sectionHeading, tab, tabs);
 
   return (

@@ -10,6 +10,9 @@ import {
   requireAdminPageAccess,
 } from "@/src/server/rbac/requireAdminPage";
 
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
 function formatDateTime(value?: Date | string | null) {
   if (!value) return "-";
   const date = value instanceof Date ? value : new Date(value);

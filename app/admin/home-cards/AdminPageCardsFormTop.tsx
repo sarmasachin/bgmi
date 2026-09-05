@@ -65,6 +65,37 @@ export function AdminPageCardsFormTop({
         </AccordionSection>
       ) : null}
 
+      {show("calcBanner") ? (
+        <AccordionSection
+          id="calcBanner"
+          label={labelOf("calcBanner", "Calculator intro")}
+          open={openIds.has("calcBanner")}
+          onToggle={() => onToggle("calcBanner")}
+        >
+          <Field
+            label="Bold title"
+            value={cards.calcBanner?.strong ?? ""}
+            onChange={(strong) =>
+              onPatch((p) => ({
+                ...p,
+                calcBanner: { strong, rest: p.calcBanner?.rest ?? "" },
+              }))
+            }
+          />
+          <Field
+            label="Body text"
+            value={cards.calcBanner?.rest ?? ""}
+            multiline
+            onChange={(rest) =>
+              onPatch((p) => ({
+                ...p,
+                calcBanner: { strong: p.calcBanner?.strong ?? "", rest },
+              }))
+            }
+          />
+        </AccordionSection>
+      ) : null}
+
       {show("patchStrip") ? (
         <AccordionSection
           id="patchStrip"

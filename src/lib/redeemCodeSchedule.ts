@@ -98,6 +98,23 @@ export function isValidRedeemScheduleIso(iso: string | undefined): iso is string
   return Boolean(iso?.trim() && Number.isFinite(Date.parse(iso)));
 }
 
+function redeemScheduleMs(iso: string | undefined): number {
+  if (!isValidRedeemScheduleIso(iso)) return 0;
+  const ms = Date.parse(iso);
+  return Number.isFinite(ms) ? ms : 0;
+}
+
+/** Public archive: most recently expired code first. */
+export function sortExpiredRedeemCodesNewestFirst<T extends RedeemScheduleDraft>(items: T[]): T[] {
+  return [...items].sort((a, b) => {
+    const bMs =
+      redeemScheduleMs(b.expiredOnAt) || redeemScheduleMs(b.expiresAt) || redeemScheduleMs(b.releasedAt);
+    const aMs =
+      redeemScheduleMs(a.expiredOnAt) || redeemScheduleMs(a.expiresAt) || redeemScheduleMs(a.releasedAt);
+    return bMs - aMs;
+  });
+}
+
 /** Fresh live-code schedule defaults for admin “Add code”. */
 export function defaultLiveRedeemSchedule(): Pick<
   RedeemScheduleDraft,

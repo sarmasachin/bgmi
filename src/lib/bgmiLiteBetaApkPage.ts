@@ -3,6 +3,12 @@ import {
   BGMI_LITE_APK_ARTICLE_HTML,
   BGMI_LITE_APK_FAQS,
 } from "@/src/lib/bgmiLiteBetaApkArticle";
+import {
+  BGMI_LITE_BETA_FACTS,
+  BGMI_LITE_BETA_PREREGISTER,
+  type BgmiLiteBetaFactsBlock,
+  type BgmiLiteBetaPreRegisterBlock,
+} from "@/src/lib/bgmiLiteBetaApkSections";
 
 export const BGMI_LITE_APK_PAGE_KEY = "bgmi-lite-apk";
 
@@ -44,10 +50,26 @@ export type BgmiLiteBetaApkPageContent = {
   heroImage: string;
   heroImageAlt: string;
   cards: BgmiLiteBetaApkCard[];
+  preRegister: BgmiLiteBetaPreRegisterBlock;
+  facts: BgmiLiteBetaFactsBlock;
   articleHtml: string;
   faqs: Array<{ id: string; question: string; answer: string }>;
+  faqTitle: string;
   commentsLead: string;
 };
+
+export const BGMI_LITE_APK_PAGE_SECTIONS = [
+  { id: "seo", label: "SEO" },
+  { id: "hero", label: "Hero" },
+  { id: "countdown", label: "Countdown" },
+  { id: "cards", label: "Content cards" },
+  { id: "preRegister", label: "Pre-register" },
+  { id: "facts", label: "Facts table" },
+  { id: "article", label: "Article" },
+  { id: "faqs", label: "FAQs" },
+] as const;
+
+export type BgmiLiteApkPageSectionId = (typeof BGMI_LITE_APK_PAGE_SECTIONS)[number]["id"];
 
 /**
  * Fan-made BGMI Lite APK / pre-launch info page.
@@ -171,8 +193,17 @@ export const DEFAULT_BGMI_LITE_APK_PAGE: BgmiLiteBetaApkPageContent = {
       ctaHref: "/bgmi-lite",
     },
   ],
+  preRegister: {
+    ...BGMI_LITE_BETA_PREREGISTER,
+    steps: [...BGMI_LITE_BETA_PREREGISTER.steps],
+  },
+  facts: {
+    ...BGMI_LITE_BETA_FACTS,
+    rows: BGMI_LITE_BETA_FACTS.rows.map((row) => ({ ...row })),
+  },
   articleHtml: BGMI_LITE_APK_ARTICLE_HTML,
   faqs: BGMI_LITE_APK_FAQS.map((item) => ({ ...item })),
+  faqTitle: "BGMI Lite APK FAQ",
   commentsLead:
     "Ask questions or share BGMI Lite launch tips. Comments appear here after admin approval.",
 };

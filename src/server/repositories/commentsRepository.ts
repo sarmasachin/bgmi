@@ -18,7 +18,7 @@ export type CreateCommentInput = {
 };
 
 export async function listComments() {
-  const dbData = await tryPrisma(async () =>
+  const dbData = await tryPrismaLong(async () =>
     prisma.newsComment.findMany({
       orderBy: { createdAt: "desc" },
     }),
@@ -65,7 +65,7 @@ export async function createComment(input: CreateCommentInput) {
   const message = input.message.trim().slice(0, 1000);
   if (!newsId || !name || message.length < 2) return null;
 
-  const dbData = await tryPrisma(async () =>
+  const dbData = await tryPrismaLong(async () =>
     prisma.newsComment.create({
       data: {
         newsId,

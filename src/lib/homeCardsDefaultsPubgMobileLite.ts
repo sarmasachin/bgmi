@@ -32,6 +32,10 @@ export function getDefaultPubgMobileLiteCards(): FfHomeCards {
     ],
   };
   cards.hero = { title: "PUBG Mobile Lite Sensitivity Calculator" };
+  cards.calcBanner = {
+    strong: "PUBG Mobile Lite calculator",
+    rest: " — tuned for entry phones (~2GB RAM, 30–60 FPS). Values follow Lite-family / low-end research. Apply in Settings → Sensitivity, then fine-tune in Training Ground.",
+  };
   cards.explore = {
     title: "More PUBG tools",
     freefire: {

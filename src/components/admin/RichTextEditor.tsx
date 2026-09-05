@@ -20,17 +20,29 @@ const DEFAULT_STORAGE_KEY = "bgmi_admin_news_editor_draft_v1";
 const TABLE_PICKER_ROWS = 8;
 const TABLE_PICKER_COLS = 10;
 
-/** Remove paste-only text/background colors that break on the dark editor. */
+/** Paste colors + foreign fonts (Word/Georgia) that override the site typeface. */
 const PASTE_STYLE_DROP =
-  /^(?:color|background(?:-color|-image|-position|-size|-repeat|-attachment|-clip|-origin)?|-webkit-text-fill-color|-webkit-text-stroke(?:-color)?|caret-color|text-decoration-color)$/i;
+  /^(?:color|background(?:-color|-image|-position|-size|-repeat|-attachment|-clip|-origin)?|-webkit-text-fill-color|-webkit-text-stroke(?:-color)?|caret-color|text-decoration-color|font(?:-family|-size|-stretch|-variant|-kerning|-feature-settings)?)$/i;
+
+function unwrapFontTags(doc: Document) {
+  doc.querySelectorAll("font").forEach((element) => {
+    const parent = element.parentNode;
+    if (!parent) return;
+    while (element.firstChild) parent.insertBefore(element.firstChild, element);
+    parent.removeChild(element);
+  });
+}
 
 function stripPastedAppearanceStyles(raw: string) {
   if (typeof window === "undefined") return raw;
 
   const doc = new DOMParser().parseFromString(raw, "text/html");
+  unwrapFontTags(doc);
   doc.querySelectorAll("*").forEach((element) => {
     if (element.hasAttribute("color")) element.removeAttribute("color");
     if (element.hasAttribute("bgcolor")) element.removeAttribute("bgcolor");
+    if (element.hasAttribute("face")) element.removeAttribute("face");
+    if (element.hasAttribute("size")) element.removeAttribute("size");
 
     const style = element.getAttribute("style");
     if (!style) return;
@@ -41,7 +53,10 @@ function stripPastedAppearanceStyles(raw: string) {
       .filter(Boolean)
       .filter((part) => {
         const prop = part.split(":")[0]?.trim() ?? "";
-        return prop && !PASTE_STYLE_DROP.test(prop);
+        if (!prop) return false;
+        if (/^font-weight$/i.test(prop) || /^font-style$/i.test(prop)) return true;
+        if (/font/i.test(prop)) return false;
+        return !PASTE_STYLE_DROP.test(prop);
       });
 
     if (kept.length === 0) element.removeAttribute("style");
@@ -2505,7 +2520,7 @@ export function RichTextEditor({
     const html = event.clipboardData.getData("text/html")?.trim() ?? "";
     if (!html) return;
 
-    // Strip black/white paste colors so text & tables stay readable on dark editor.
+    // Strip paste colors and Word/Georgia fonts so body stays the site typeface.
     event.preventDefault();
     const cleaned = sanitizeHtml(stripPastedAppearanceStyles(html)).trim();
     const plain = event.clipboardData.getData("text/plain") ?? "";

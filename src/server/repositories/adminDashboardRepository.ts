@@ -1,7 +1,8 @@
 import { readFile, stat } from "node:fs/promises";
 import path from "node:path";
-import { prisma, tryPrisma } from "@/src/server/dbSafe";
+import { prisma, tryPrismaLong } from "@/src/server/dbSafe";
 import { mockStore } from "@/src/server/mockStore";
+import { countPendingComments } from "@/src/server/repositories/countPendingComments";
 
 export type DashboardItem = {
   id: string;
@@ -307,9 +308,9 @@ function countAuditIssues(auditLogs: Array<{ action: string; payload: unknown }>
 }
 
 export async function getAdminDashboardData(): Promise<DashboardData> {
-  const dbData = await tryPrisma(async () => {
+  const pendingCommentsPromise = countPendingComments();
+  const dbData = await tryPrismaLong(async () => {
     const [
-      pendingComments,
       pendingApprovals,
       draftNews,
       newsEdits,
@@ -326,7 +327,6 @@ export async function getAdminDashboardData(): Promise<DashboardData> {
       clickedGroups,
       viewedGroups,
     ] = await Promise.all([
-      prisma.newsComment.count({ where: { status: "pending" } }),
       prisma.adminUser.count({ where: { isActive: false } }),
       prisma.newsPost.findMany({
         where: { status: "draft" },
@@ -429,7 +429,6 @@ export async function getAdminDashboardData(): Promise<DashboardData> {
       .slice(0, 8);
 
     return {
-      pendingComments,
       pendingApprovals,
       failedUploads: auditIssues.failedUploads,
       draftNews,
@@ -455,7 +454,8 @@ export async function getAdminDashboardData(): Promise<DashboardData> {
     };
   });
 
-  if (dbData) return dbData;
+  const pendingComments = await pendingCommentsPromise;
+  if (dbData) return { ...dbData, pendingComments };
 
   const draftNews = mockStore.news
     .filter((item) => item.status === "draft")
@@ -473,7 +473,7 @@ export async function getAdminDashboardData(): Promise<DashboardData> {
   ];
 
   return {
-    pendingComments: mockStore.comments.filter((item) => item.status === "pending").length,
+    pendingComments,
     pendingApprovals: mockStore.users.filter((item) => item.active === false).length,
     failedUploads: 0,
     draftNews,

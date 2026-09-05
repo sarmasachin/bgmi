@@ -78,10 +78,10 @@ export function newsCategoryLabel(
   return found?.label ?? slug;
 }
 
-/** One article = one public path from primary category. */
+/** One article = one public path from primary category. Always lowercase. */
 export function newsArticlePath(primaryCategory: string | null | undefined, slug: string): string {
   const cat = coerceNewsCategory(primaryCategory);
-  const safeSlug = slug.trim().replace(/^\/+|\/+$/g, "");
+  const safeSlug = slug.trim().replace(/^\/+|\/+$/g, "").toLowerCase();
   return safeSlug ? `/${cat}/${safeSlug}` : `/${cat}`;
 }
 

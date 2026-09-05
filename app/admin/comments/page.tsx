@@ -5,6 +5,9 @@ import { requireAdminPageAccess } from "@/src/server/rbac/requireAdminPage";
 import { AdminAccessDenied } from "@/src/components/admin/AdminAccessDenied";
 import AdminCommentsClient from "./AdminCommentsClient";
 
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
 function toIso(value: unknown) {
   if (value instanceof Date) return value.toISOString();
   if (typeof value === "string") return value;

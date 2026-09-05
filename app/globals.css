@@ -1280,6 +1280,18 @@ button {
   margin-bottom: 20px;
 }
 
+/* CMS paste often ships Georgia/Times — keep public articles on the site font. */
+.article,
+.article *:not(code):not(pre):not(kbd) {
+  font-family: inherit !important;
+}
+
+.article code,
+.article pre,
+.article kbd {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace !important;
+}
+
 /* Article links: global `a { color: inherit }` otherwise keeps them black like body text */
 .article a,
 .article a:link,
@@ -5699,6 +5711,11 @@ footer,
   color: #dbeafe;
   outline: none;
   line-height: 1.65;
+  font-family: inherit;
+}
+
+.rich-editor-content *:not(code):not(pre):not(kbd) {
+  font-family: inherit !important;
 }
 
 .rich-editor-content b,
@@ -9908,25 +9925,20 @@ html {
 
 .ff-redeem-server-tabs {
   display: flex;
-  flex-wrap: nowrap;
+  flex-wrap: wrap;
   justify-content: flex-start;
   align-items: center;
   gap: 8px;
   margin: 0 0 18px;
-  overflow-x: auto;
-  overflow-y: hidden;
-  -webkit-overflow-scrolling: touch;
-  scrollbar-width: thin;
-  overscroll-behavior-x: contain;
+  overflow: visible;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
 }
 
 .ff-redeem-server-tabs::-webkit-scrollbar {
-  height: 4px;
-}
-
-.ff-redeem-server-tabs::-webkit-scrollbar-thumb {
-  background: #cbd5e1;
-  border-radius: 999px;
+  display: none;
+  width: 0;
+  height: 0;
 }
 
 .ff-redeem-server-tab {
@@ -10164,6 +10176,14 @@ html {
     font-size: 0.8rem;
     line-height: 1.35;
     border-radius: 10px;
+  }
+
+  .ff-redeem-server-tabs {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    overflow-y: hidden;
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior-x: contain;
   }
 
   .ff-redeem-server-tab {

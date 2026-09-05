@@ -50,10 +50,13 @@ const initialForm: FormState = {
 type Props = {
   phoneModels?: string[];
   brand?: LiteCalcBrand;
+  banner?: { strong?: string; rest?: string };
 };
 
-export function LiteSensCalculator({ phoneModels, brand = "bgmi-lite" }: Props) {
+export function LiteSensCalculator({ phoneModels, brand = "bgmi-lite", banner }: Props) {
   const copy = liteBrandCopy(brand);
+  const bannerStrong = banner?.strong?.trim() || copy.bannerStrong;
+  const bannerRest = banner?.rest?.trim() || copy.bannerRest;
   const models = phoneModels?.length
     ? phoneModels
     : [...LITE_DEFAULT_PHONE_MODELS];
@@ -119,8 +122,8 @@ export function LiteSensCalculator({ phoneModels, brand = "bgmi-lite" }: Props) 
   return (
     <div id={copy.id} className="lite-calc">
       <p className="lite-calc__banner" role="note">
-        <strong>{copy.bannerStrong}</strong>
-        {copy.bannerRest}
+        <strong>{bannerStrong}</strong>
+        {bannerRest}
       </p>
 
       <div className="main-wrapper">

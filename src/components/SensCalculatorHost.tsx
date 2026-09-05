@@ -6,13 +6,21 @@ import "@/src/features/ffCalculator/ffCalculator.css";
 import { LiteSensCalculator } from "@/src/features/sensCalculator/LiteSensCalculator";
 import { SensCalculator } from "@/src/features/sensCalculator/SensCalculator";
 import type { FfTrustBarItem } from "@/src/lib/ffTrustBar";
+import type { FfHomeCalcBanner } from "@/src/lib/homeCardsTypes";
 
 type Props = {
   phoneModels: string[];
   ffTrustBar?: FfTrustBarItem[];
+  bgmiLiteBanner?: FfHomeCalcBanner;
+  pubgLiteBanner?: FfHomeCalcBanner;
 };
 
-export function SensCalculatorHost({ phoneModels, ffTrustBar }: Props) {
+export function SensCalculatorHost({
+  phoneModels,
+  ffTrustBar,
+  bgmiLiteBanner,
+  pubgLiteBanner,
+}: Props) {
   const pathname = usePathname() ?? "";
 
   if (pathname === "/" || pathname === "") {
@@ -24,7 +32,14 @@ export function SensCalculatorHost({ phoneModels, ffTrustBar }: Props) {
   }
 
   if (pathname === "/bgmi-lite" || pathname.startsWith("/bgmi-lite/")) {
-    return <LiteSensCalculator key="bgmi-lite" phoneModels={phoneModels} brand="bgmi-lite" />;
+    return (
+      <LiteSensCalculator
+        key="bgmi-lite"
+        phoneModels={phoneModels}
+        brand="bgmi-lite"
+        banner={bgmiLiteBanner}
+      />
+    );
   }
 
   if (pathname === "/pubg-mobile-lite" || pathname.startsWith("/pubg-mobile-lite/")) {
@@ -33,6 +48,7 @@ export function SensCalculatorHost({ phoneModels, ffTrustBar }: Props) {
         key="pubg-mobile-lite"
         phoneModels={phoneModels}
         brand="pubg-mobile-lite"
+        banner={pubgLiteBanner}
       />
     );
   }

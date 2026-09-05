@@ -50,24 +50,38 @@ function readExtraCategories(
   return normalizeExtraCategories(primary, item.extraCategories);
 }
 
+function isOwnPublicHost(hostname: string) {
+  const host = hostname.replace(/^www\./i, "").toLowerCase();
+  return (
+    host === "sensitivitysettings.com" ||
+    host === "localhost" ||
+    host === "127.0.0.1" ||
+    host === ""
+  );
+}
+
 export function resolveNewsCanonicalUrl(
   slug: string,
   canonicalUrl?: string | null,
   primaryCategory?: string | null,
 ) {
-  const safeSlug = slug.trim().replace(/^\/+|\/+$/g, "");
+  const safeSlug = slug.trim().replace(/^\/+|\/+$/g, "").toLowerCase();
   if (!safeSlug) return toCanonicalUrl("/news");
   const primaryPath = newsArticlePath(primaryCategory, safeSlug);
   const trimmed = canonicalUrl?.trim();
   if (trimmed) {
     try {
-      const path = new URL(trimmed, "https://sensitivitysettings.com").pathname.replace(/\/+$/, "") || "/";
+      const parsed = new URL(trimmed, "https://sensitivitysettings.com");
+      const path = (parsed.pathname.replace(/\/+$/, "") || "/").toLowerCase();
+      const last = path.split("/").filter(Boolean).pop() ?? "";
       const legacyPath = `/news/${safeSlug}`;
-      // Ignore auto-saved legacy /news/slug canonicals after category URLs.
-      if (path === legacyPath) return toCanonicalUrl(primaryPath);
+      // Drop auto-saved mixed-case / legacy /news/slug canonicals — one lowercase URL only.
+      if (isOwnPublicHost(parsed.hostname) && (path === legacyPath || last === safeSlug)) {
+        return toCanonicalUrl(primaryPath);
+      }
       return toCanonicalUrl(trimmed);
     } catch {
-      return toCanonicalUrl(trimmed);
+      return toCanonicalUrl(primaryPath);
     }
   }
   return toCanonicalUrl(primaryPath);
@@ -97,8 +111,8 @@ export async function newsSlugExists(slug: string, excludeId?: string) {
   const dbData = await tryPrisma(async () => {
     const found = await prisma.newsPost.findFirst({
       where: excludeId
-        ? { slug: normalized, id: { not: excludeId } }
-        : { slug: normalized },
+        ? { slug: { equals: normalized, mode: "insensitive" }, id: { not: excludeId } }
+        : { slug: { equals: normalized, mode: "insensitive" } },
       select: { id: true },
     });
     return Boolean(found);
@@ -326,13 +340,18 @@ export async function getNewsById(id: string) {
 }
 
 export const getPublishedNewsBySlug = cache(async function getPublishedNewsBySlug(slug: string) {
-  const dbResult = await tryPrisma(async () =>
+  const normalized = normalizeNewsSlug(slug);
+  const dbResult = await tryPrismaLong(async () =>
     prisma.newsPost.findFirst({
-      where: { slug, status: "published" },
+      where: { slug: { equals: normalized, mode: "insensitive" }, status: "published" },
     }),
   );
   if (dbResult) return dbResult;
-  return mockStore.news.find((item) => item.slug === slug && item.status === "published") ?? null;
+  return (
+    mockStore.news.find(
+      (item) => normalizeNewsSlug(item.slug) === normalized && item.status === "published",
+    ) ?? null
+  );
 });
 
 export async function createNews(input: NewsInput) {

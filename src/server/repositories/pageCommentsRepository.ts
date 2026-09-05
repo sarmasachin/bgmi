@@ -79,7 +79,7 @@ export async function listApprovedPageComments(pageKey: string): Promise<PublicP
 
 /** Admin: all page comments (includes email). */
 export async function listAllPageComments() {
-  const dbData = await tryPrisma(async () => {
+  const dbData = await tryPrismaLong(async () => {
     const pc = pageCommentDb();
     if (!pc) return null;
     return pc.findMany({
@@ -104,7 +104,7 @@ export async function createPageComment(input: CreatePageCommentInput) {
   const message = input.message.trim().slice(0, 1000);
   if (!pageKey || !name || message.length < 2) return null;
 
-  const dbData = await tryPrisma(async () => {
+  const dbData = await tryPrismaLong(async () => {
     const pc = pageCommentDb();
     if (!pc) return null;
     return pc.create({

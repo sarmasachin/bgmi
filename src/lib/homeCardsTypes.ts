@@ -89,6 +89,7 @@ export const BGMI_CARD_SECTIONS = [
 export const BGMI_LITE_CARD_SECTIONS = [
   { id: "seo", label: "SEO" },
   { id: "hero", label: "Hero title" },
+  { id: "calcBanner", label: "Calculator intro" },
   { id: "patchStrip", label: "Patch strip" },
   { id: "playModes", label: "Play modes" },
   { id: "roleTips", label: "Role tips" },
@@ -107,13 +108,19 @@ export const PUBG_CARD_SECTIONS = [
   { id: "hero", label: "Hero title" },
 ] as const;
 
-export type HomeCardSectionId = (typeof HOME_CARD_SECTIONS)[number]["id"];
+export type HomeCardSectionId = (typeof HOME_CARD_SECTIONS)[number]["id"] | "calcBanner";
 export type MaxCardSectionId = (typeof MAX_CARD_SECTIONS)[number]["id"];
 export type BgmiCardSectionId = (typeof BGMI_CARD_SECTIONS)[number]["id"];
 export type PubgCardSectionId = (typeof PUBG_CARD_SECTIONS)[number]["id"];
 
 export type FfHomeHero = {
   title: string;
+};
+
+/** Yellow note above the Lite calculator (BGMI Lite / PUBG Mobile Lite). */
+export type FfHomeCalcBanner = {
+  strong: string;
+  rest: string;
 };
 
 export type FfHomeSeo = {
@@ -280,6 +287,7 @@ export type FfHomeExplore = {
 export type FfHomeCards = {
   seo: FfHomeSeo;
   hero: FfHomeHero;
+  calcBanner: FfHomeCalcBanner;
   patchStrip: FfHomePatchStrip;
   playModes: FfHomePlayModes;
   nextUpdate: FfHomeFeatureCard;

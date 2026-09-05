@@ -7,6 +7,8 @@ const fallbackTitle = "Free Fire & FF Max Sensitivity Settings Calculator";
 const fallbackDescription =
   "Free Fire & FF Max sensitivity settings calculator. Get updated sensitivity, DPI settings, and control layout for all RAM devices (2GB–8GB).";
 const canonical = toCanonicalUrl("/");
+const HOME_OG_IMAGE = "/og-home-freefire.png";
+const HOME_OG_ALT = "Free Fire Sensitivity Calculator — FF Sensi";
 
 export async function generateMetadata(): Promise<Metadata> {
   const cards = await getFfHomeCards();
@@ -36,8 +38,8 @@ export async function generateMetadata(): Promise<Metadata> {
       title,
       description,
       url: canonical,
-      image: "/icon.png?v=3",
-      imageAlt: "Sensitivity Settings calculator",
+      image: HOME_OG_IMAGE,
+      imageAlt: HOME_OG_ALT,
     }),
   };
 }

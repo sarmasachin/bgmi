@@ -114,7 +114,7 @@ export async function SiteFooter({ settings: settingsProp }: SiteFooterProps = {
             <p className="site-footer-col-title">Explore</p>
             <ul className="site-footer-links">
               {exploreLinks.map((item) => (
-                <li key={`${item.href}-${item.label}`}>
+                <li key={item.href}>
                   <Link href={item.href} className="site-footer-link">
                     {item.label}
                   </Link>
@@ -127,7 +127,7 @@ export async function SiteFooter({ settings: settingsProp }: SiteFooterProps = {
             <p className="site-footer-col-title">Resources</p>
             <ul className="site-footer-links">
               {resourcesColumnLinks.map((page) => (
-                <li key={`${page.href}-${page.label}`}>
+                <li key={page.href}>
                   <Link href={page.href} className="site-footer-link">
                     {page.label}
                   </Link>
@@ -150,7 +150,7 @@ export async function SiteFooter({ settings: settingsProp }: SiteFooterProps = {
           <p className="site-footer-copyright">{copyrightLine}</p>
           <div className="site-footer-bottom-links">
             {bottomLinks.map((page) => (
-              <Link key={`bottom-${page.href}-${page.label}`} href={page.href} className="site-footer-bottom-link">
+              <Link key={page.href} href={page.href} className="site-footer-bottom-link">
                 {page.label}
               </Link>
             ))}

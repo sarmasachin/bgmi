@@ -13,6 +13,7 @@ import {
   formatRedeemUpdatedLabelIst,
   wasRedeemUpdatedTodayIst,
 } from "@/src/lib/bgmiLiteRedeemFreshness";
+import { sortExpiredRedeemCodesNewestFirst } from "@/src/lib/redeemCodeSchedule";
 import { breadcrumbListSchema, faqSchema, webPageSchema } from "@/src/lib/schema";
 import { toCanonicalUrl } from "@/src/lib/siteUrl";
 import {
@@ -36,7 +37,9 @@ export async function BgmiLiteRedeemCodeLandingPage() {
   const liteCalcUrl = toCanonicalUrl("/bgmi-lite");
   const crumbCurrent = ui.breadcrumbName.trim() || "BGMI Lite Redeem Code";
   const live = page.codes.filter((c) => c.status === "live");
-  const expired = page.codes.filter((c) => c.status === "expired");
+  const expired = sortExpiredRedeemCodesNewestFirst(
+    page.codes.filter((c) => c.status === "expired"),
+  );
   const updatedToday = wasRedeemUpdatedTodayIst(updatedAt);
   const updatedLabel =
     updatedAt && updatedToday

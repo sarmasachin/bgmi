@@ -22,6 +22,10 @@ export function getDefaultFfHomeCards(): FfHomeCards {
     hero: {
       title: "Free Fire & FF Max Sensitivity Settings Calculator",
     },
+    calcBanner: {
+      strong: "",
+      rest: "",
+    },
     patchStrip: {
       code: FF_SITE_PATCH.code,
       label: FF_SITE_PATCH.label,

@@ -9,18 +9,14 @@ import { SiteFooter } from "@/src/components/SiteFooter";
 import {
   BGMI_LITE_APK_PAGE_KEY,
   BGMI_LITE_APK_PATH,
-  DEFAULT_BGMI_LITE_APK_PAGE,
 } from "@/src/lib/bgmiLiteBetaApkPage";
-import {
-  BGMI_LITE_BETA_FACTS,
-  BGMI_LITE_BETA_PREREGISTER,
-} from "@/src/lib/bgmiLiteBetaApkSections";
 import {
   breadcrumbListSchema,
   faqSchema,
   webPageSchema,
 } from "@/src/lib/schema";
 import { toCanonicalUrl } from "@/src/lib/siteUrl";
+import { getBgmiLiteApkPage } from "@/src/server/repositories/bgmiLiteApkPageRepository";
 import { listApprovedPageComments } from "@/src/server/repositories/pageCommentsRepository";
 import { getSettings } from "@/src/server/repositories/settingsRepository";
 
@@ -31,11 +27,11 @@ import { getSettings } from "@/src/server/repositories/settingsRepository";
  * Then comments.
  */
 export async function BgmiLiteBetaApkLandingPage() {
-  const [settings, pageComments] = await Promise.all([
+  const [settings, pageComments, page] = await Promise.all([
     getSettings(),
     listApprovedPageComments(BGMI_LITE_APK_PAGE_KEY),
+    getBgmiLiteApkPage(),
   ]);
-  const page = DEFAULT_BGMI_LITE_APK_PAGE;
   const canonical = toCanonicalUrl(BGMI_LITE_APK_PATH);
   const homeUrl = toCanonicalUrl("/");
   const liteCalcUrl = toCanonicalUrl("/bgmi-lite");
@@ -84,8 +80,8 @@ export async function BgmiLiteBetaApkLandingPage() {
         <p className="ff-as-article-sub">{page.subtitleEn}</p>
 
         <ul className="ff-as-pills" aria-label="BGMI Lite details">
-          {page.pills.map((pill) => (
-            <li key={pill.label} className="ff-as-pill">
+          {page.pills.map((pill, index) => (
+            <li key={`pill-${index}`} className="ff-as-pill">
               {pill.label}
             </li>
           ))}
@@ -128,8 +124,8 @@ export async function BgmiLiteBetaApkLandingPage() {
               </h2>
               <p className="ff-as-card-summary">{card.summary}</p>
               <ul className="ff-as-card-points">
-                {card.points.map((point) => (
-                  <li key={point}>
+                {card.points.map((point, pointIndex) => (
+                  <li key={`${card.id}-p-${pointIndex}`}>
                     <i className="fa-solid fa-check" aria-hidden />
                     <span>{point}</span>
                   </li>
@@ -148,8 +144,8 @@ export async function BgmiLiteBetaApkLandingPage() {
         </div>
 
         <BgmiLiteBetaApkInfoBlocks
-          preRegister={BGMI_LITE_BETA_PREREGISTER}
-          facts={BGMI_LITE_BETA_FACTS}
+          preRegister={page.preRegister}
+          facts={page.facts}
         />
       </main>
 
@@ -164,7 +160,7 @@ export async function BgmiLiteBetaApkLandingPage() {
             dangerouslySetInnerHTML={{ __html: page.articleHtml }}
           />
           {faqItems.length ? (
-            <FaqAccordion items={faqItems} title="BGMI Lite APK FAQ" />
+            <FaqAccordion items={faqItems} title={page.faqTitle} />
           ) : null}
         </div>
       </div>

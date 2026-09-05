@@ -107,7 +107,7 @@ export default function AdminNewsClient({
   });
 
   function normalizeSlugInput(next: string) {
-    return next.replace(/\s+/g, "-");
+    return next.replace(/\s+/g, "-").replace(/-+/g, "-").toLowerCase();
   }
 
   function splitMetaKeywords(raw: string) {

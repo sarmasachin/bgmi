@@ -63,6 +63,12 @@ export function normalizeFfHomeCards(
   if (/no\s*recoil/i.test(merged.hero.title)) {
     merged.hero.title = defaults.hero.title;
   }
+  merged.calcBanner = {
+    strong:
+      sanitizeString(merged.calcBanner?.strong, defaults.calcBanner.strong) ||
+      defaults.calcBanner.strong,
+    rest: sanitizeString(merged.calcBanner?.rest, defaults.calcBanner.rest) || defaults.calcBanner.rest,
+  };
 
   const seoDescription =
     sanitizeString(merged.seo?.description, defaults.seo.description) || defaults.seo.description;

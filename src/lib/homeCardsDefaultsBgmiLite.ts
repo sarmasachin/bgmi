@@ -24,6 +24,10 @@ export function getDefaultBgmiLiteCards(): FfHomeCards {
     hero: {
       title: "BGMI Lite Sensitivity Calculator",
     },
+    calcBanner: {
+      strong: "BGMI Lite calculator",
+      rest: " — tuned for entry phones (~2GB RAM, 30–60 FPS). Values follow Lite-family / low-end research until Krafton publishes final Lite specs. Apply in Settings → Sensitivity, then fine-tune in Training Ground.",
+    },
     patchStrip: {
       code: "bgmi-lite-prereg",
       label: "BGMI Lite",

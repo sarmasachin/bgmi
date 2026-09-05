@@ -43,6 +43,12 @@ export const ADMIN_NAV_ACCESS: ReadonlyArray<{
     anyOf: ["bgmiLiteRedeem.view"],
   },
   {
+    label: "BGMI Lite APK",
+    href: "/admin/bgmi-lite-apk",
+    icon: "bgmiLiteApk",
+    anyOf: ["bgmiLiteApk.view"],
+  },
+  {
     label: "PUBG Lite Redeem",
     href: "/admin/pubg-mobile-lite-redeem",
     icon: "pubgMobileLiteRedeem",
@@ -212,6 +218,11 @@ export function resolveAdminApiPermission(
   if (path.startsWith("/api/admin/bgmi-lite-redeem")) {
     if (isRead) return { type: "permission", permission: "bgmiLiteRedeem.view" };
     return { type: "permission", permission: "bgmiLiteRedeem.edit" };
+  }
+
+  if (path.startsWith("/api/admin/bgmi-lite-apk")) {
+    if (isRead) return { type: "permission", permission: "bgmiLiteApk.view" };
+    return { type: "permission", permission: "bgmiLiteApk.edit" };
   }
 
   if (path.startsWith("/api/admin/pubg-mobile-lite-redeem")) {

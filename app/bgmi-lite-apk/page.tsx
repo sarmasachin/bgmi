@@ -1,8 +1,6 @@
 import { BgmiLiteBetaApkLandingPage } from "@/src/components/BgmiLiteBetaApkLandingPage";
-import {
-  BGMI_LITE_APK_PATH,
-  DEFAULT_BGMI_LITE_APK_PAGE,
-} from "@/src/lib/bgmiLiteBetaApkPage";
+import { BGMI_LITE_APK_PATH } from "@/src/lib/bgmiLiteBetaApkPage";
+import { getBgmiLiteApkPage } from "@/src/server/repositories/bgmiLiteApkPageRepository";
 import { buildSocialMetadata } from "@/src/lib/socialMeta";
 import { toCanonicalUrl } from "@/src/lib/siteUrl";
 import type { Metadata } from "next";
@@ -10,7 +8,7 @@ import type { Metadata } from "next";
 export const dynamic = "force-dynamic";
 
 export async function generateMetadata(): Promise<Metadata> {
-  const page = DEFAULT_BGMI_LITE_APK_PAGE;
+  const page = await getBgmiLiteApkPage();
   const canonical = toCanonicalUrl(page.path || BGMI_LITE_APK_PATH);
 
   return {
