@@ -16,8 +16,10 @@ import {
 } from "@/src/lib/pubgMobileLite";
 import {
   BGMI_APK_PATH,
+  BGMI_FAMILY_NAV,
   BGMI_REDEEM_CODE_PATH,
   PUBG_APK_PATH,
+  PUBG_FAMILY_NAV,
   PUBG_REDEEM_CODE_PATH,
 } from "@/src/lib/resolveNavForPath";
 
@@ -62,11 +64,7 @@ export const SITE_GAME_NAV: readonly SiteNavItem[] = [
     id: "pubg",
     label: "PUBG Mobile",
     href: "/pubg",
-    children: [
-      { label: "Home", href: "/pubg" },
-      { label: "PUBG APK", href: PUBG_APK_PATH },
-      { label: "Redeem Code", href: PUBG_REDEEM_CODE_PATH },
-    ],
+    children: PUBG_FAMILY_NAV.map((row) => ({ label: row.label, href: row.href })),
   },
   {
     id: "pubg-lite",
@@ -78,11 +76,7 @@ export const SITE_GAME_NAV: readonly SiteNavItem[] = [
     id: "bgmi",
     label: "BGMI",
     href: "/bgmi",
-    children: [
-      { label: "Home", href: "/bgmi" },
-      { label: "BGMI APK", href: BGMI_APK_PATH },
-      { label: "Redeem Code", href: BGMI_REDEEM_CODE_PATH },
-    ],
+    children: BGMI_FAMILY_NAV.map((row) => ({ label: row.label, href: row.href })),
   },
   {
     id: "bgmi-lite",

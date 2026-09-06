@@ -55,6 +55,48 @@ function isBgmiLiteFamilyPath(p: string): boolean {
   );
 }
 
+/** Header chips on /bgmi (and APK / redeem) — same items as the BGMI hamburger submenu. */
+export const BGMI_FAMILY_NAV: NavLink[] = [
+  { label: "Home", href: "/bgmi" },
+  { label: "BGMI APK", href: BGMI_APK_PATH },
+  { label: "Redeem Code", href: BGMI_REDEEM_CODE_PATH },
+];
+
+/** Header chips on /pubg (and APK / redeem / codes) — same items as the PUBG hamburger submenu. */
+export const PUBG_FAMILY_NAV: NavLink[] = [
+  { label: "Home", href: "/pubg" },
+  { label: "PUBG APK", href: PUBG_APK_PATH },
+  { label: "Redeem Code", href: PUBG_REDEEM_CODE_PATH },
+  { label: "PUBG Mobile Code", href: PUBG_MOBILE_CODES_PATH },
+];
+
+function pathIsOrUnder(pathname: string, base: string): boolean {
+  return pathname === base || pathname.startsWith(`${base}/`);
+}
+
+export function isBgmiFamilyPath(pathname: string): boolean {
+  const raw = typeof pathname === "string" ? pathname.trim() : "";
+  const p = raw.replace(/\/+$/, "") || "/";
+  if (isBgmiLiteFamilyPath(p)) return false;
+  return (
+    pathIsOrUnder(p, "/bgmi") ||
+    pathIsOrUnder(p, BGMI_APK_PATH) ||
+    pathIsOrUnder(p, BGMI_REDEEM_CODE_PATH)
+  );
+}
+
+export function isPubgFamilyPath(pathname: string): boolean {
+  const raw = typeof pathname === "string" ? pathname.trim() : "";
+  const p = raw.replace(/\/+$/, "") || "/";
+  if (isPubgMobileLiteFamilyPath(p)) return false;
+  return (
+    pathIsOrUnder(p, "/pubg") ||
+    pathIsOrUnder(p, PUBG_APK_PATH) ||
+    pathIsOrUnder(p, PUBG_REDEEM_CODE_PATH) ||
+    pathIsOrUnder(p, PUBG_MOBILE_CODES_PATH)
+  );
+}
+
 /** Header menu when the user is on /bgmi-lite (and related Lite pages). */
 export const BGMI_LITE_NAV: NavLink[] = [
   { label: "Home", href: "/bgmi-lite" },
@@ -206,6 +248,12 @@ export function resolveNavForPath(pathname: string, navigation: NavLink[]): NavL
   }
   if (isFreeFireFamilyPath(p)) {
     return [...FREE_FIRE_FAMILY_NAV];
+  }
+  if (isBgmiFamilyPath(p)) {
+    return BGMI_FAMILY_NAV;
+  }
+  if (isPubgFamilyPath(p)) {
+    return PUBG_FAMILY_NAV;
   }
 
   if (!navigation.length) return navigation;
