@@ -29,3 +29,32 @@ export function mapAdminTestimonials(items: TestimonialRecord[]): AdminTestimoni
     approvedAt: item.approvedAt ? item.approvedAt.toISOString() : "",
   }));
 }
+
+export function parseAdminTestimonialJson(item: Record<string, unknown>): AdminTestimonialItem {
+  const gameRaw = String(item.game ?? "bgmi");
+  const game: AdminTestimonialItem["game"] =
+    gameRaw === "bgmi-lite" ||
+    gameRaw === "pubg" ||
+    gameRaw === "pubg-mobile-lite" ||
+    gameRaw === "freefire" ||
+    gameRaw === "freefire-max"
+      ? gameRaw
+      : "bgmi";
+  const statusRaw = String(item.status ?? "pending");
+  const status: AdminTestimonialItem["status"] =
+    statusRaw === "approved" || statusRaw === "rejected" ? statusRaw : "pending";
+
+  return {
+    id: String(item.id ?? ""),
+    name: String(item.name ?? "Anonymous"),
+    email: item.email ? String(item.email) : "",
+    rating: Number(item.rating ?? 0),
+    message: String(item.message ?? ""),
+    game,
+    phoneModel: item.phoneModel ? String(item.phoneModel) : "",
+    showName: Boolean(item.showName ?? true),
+    status,
+    createdAt: item.createdAt ? String(item.createdAt) : "",
+    approvedAt: item.approvedAt ? String(item.approvedAt) : "",
+  };
+}

@@ -8,6 +8,7 @@ import {
   listAdminTestimonials,
   MAX_APPROVED_TESTIMONIALS,
   setTestimonialStatus,
+  updateTestimonialMessage,
   type TestimonialStatus,
 } from "@/src/server/repositories/testimonialsRepository";
 
@@ -122,4 +123,50 @@ export async function DELETE(request: NextRequest) {
     approvedCount: approvedCount ?? 0,
     maxApproved: MAX_APPROVED_TESTIMONIALS,
   });
+}
+
+/** Admin: edit review text only (status / FIFO unchanged). */
+export async function POST(request: NextRequest) {
+  const gate = await enforceAdminApiAccess(request);
+  if (!gate.ok) return gate.response;
+  let body: unknown;
+  try {
+    body = await request.json();
+  } catch {
+    return NextResponse.json({ error: "Invalid JSON" }, { status: 400 });
+  }
+
+  const parsed = z
+    .object({
+      id: z.string().min(1),
+      message: z.string().trim().min(2).max(300),
+    })
+    .safeParse(body);
+
+  if (!parsed.success) {
+    return NextResponse.json({ error: "Invalid edit payload" }, { status: 400 });
+  }
+
+  const result = await updateTestimonialMessage(parsed.data.id, parsed.data.message);
+  if (!result.ok) {
+    if (result.error === "invalid") {
+      return NextResponse.json({ error: "Review must be 2–300 characters." }, { status: 400 });
+    }
+    if (result.error === "unavailable") {
+      return NextResponse.json(
+        { error: "Database busy or unavailable. Please retry in a moment." },
+        { status: 503 },
+      );
+    }
+    return NextResponse.json({ error: "Not found" }, { status: 404 });
+  }
+
+  await addAuditLog({
+    actor: "admin",
+    action: "testimonial.edit",
+    target: parsed.data.id,
+    payload: { name: result.item.name, game: result.item.game },
+  });
+
+  return NextResponse.json({ ok: true, data: result.item });
 }

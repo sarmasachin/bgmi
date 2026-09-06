@@ -1,114 +1,23 @@
 import { randomUUID } from "crypto";
 import { prisma, tryPrisma, tryPrismaLong } from "@/src/server/dbSafe";
+import { mockTestimonials, trimApprovedOverflowMock } from "@/src/server/repositories/testimonialsDummy";
+import {
+  MAX_APPROVED_TESTIMONIALS,
+  type CreateTestimonialInput,
+  type PublicTestimonial,
+  type TestimonialGame,
+  type TestimonialRecord,
+  type TestimonialStatus,
+} from "@/src/server/repositories/testimonialsTypes";
 
-/** Hard cap for publicly shown / approved testimonials (FIFO on approve). */
-export const MAX_APPROVED_TESTIMONIALS = 20;
-
-export type TestimonialGame =
-  | "bgmi"
-  | "bgmi-lite"
-  | "pubg"
-  | "pubg-mobile-lite"
-  | "freefire"
-  | "freefire-max";
-export type TestimonialStatus = "pending" | "approved" | "rejected";
-
-export type TestimonialRecord = {
-  id: string;
-  name: string;
-  email: string | null;
-  rating: number;
-  message: string;
-  game: TestimonialGame;
-  phoneModel: string | null;
-  showName: boolean;
-  status: TestimonialStatus;
-  createdAt: Date;
-  approvedAt: Date | null;
+export {
+  MAX_APPROVED_TESTIMONIALS,
+  type CreateTestimonialInput,
+  type PublicTestimonial,
+  type TestimonialGame,
+  type TestimonialRecord,
+  type TestimonialStatus,
 };
-
-export type CreateTestimonialInput = {
-  name: string;
-  email?: string | null;
-  rating: number;
-  message: string;
-  game: TestimonialGame;
-  phoneModel?: string | null;
-  showName: boolean;
-};
-
-/** Public-safe shape (never exposes rejected/pending). */
-export type PublicTestimonial = {
-  id: string;
-  name: string;
-  rating: number;
-  message: string;
-  game: TestimonialGame;
-  phoneModel: string | null;
-  createdAt: string;
-};
-
-type MockRow = TestimonialRecord;
-
-function buildDummyMockTestimonials(): MockRow[] {
-  // Local layout checks when Postgres is unavailable / empty.
-  if (process.env.NODE_ENV === "production") return [];
-  if (process.env.DISABLE_DUMMY_TESTIMONIALS === "1") return [];
-  const now = new Date();
-  const count = Math.min(5, Math.max(1, Number(process.env.DUMMY_TESTIMONIAL_COUNT || "2") || 2));
-  const pool: Omit<MockRow, "id" | "createdAt" | "approvedAt" | "status" | "game">[] = [
-    {
-      name: "Pranjal Thakur",
-      email: "pranjal.dummy@example.com",
-      rating: 5,
-      message: "Best Calculator 💯 working",
-      phoneModel: "Poco X6",
-      showName: true,
-    },
-    {
-      name: "akrambarodi404@gmail.com",
-      email: "akrambarodi404@gmail.com",
-      rating: 5,
-      message: "اريد حساسية خارقة فقط احمر وسريع ومكتملة فقط احر",
-      phoneModel: null,
-      showName: true,
-    },
-    {
-      name: "Rahul Sharma",
-      email: "rahul.dummy@example.com",
-      rating: 5,
-      message: "Sensi presets work well on my Redmi phone. Thanks!",
-      phoneModel: "Redmi Note 13",
-      showName: true,
-    },
-    {
-      name: "Ayesha Khan",
-      email: "ayesha.dummy@example.com",
-      rating: 4,
-      message: "Easy to use Free Fire calculator. Drag feel is good.",
-      phoneModel: "iPhone 13",
-      showName: true,
-    },
-    {
-      name: "Vikram",
-      email: "vikram.dummy@example.com",
-      rating: 5,
-      message: "Finally proper settings for 90 FPS. Working well.",
-      phoneModel: "IQOO Neo 9",
-      showName: true,
-    },
-  ];
-  return pool.slice(0, count).map((item, index) => ({
-    ...item,
-    id: `dummy-ff-${index + 1}`,
-    game: "freefire" as TestimonialGame,
-    status: "approved" as TestimonialStatus,
-    createdAt: now,
-    approvedAt: now,
-  }));
-}
-
-const mockTestimonials: MockRow[] = buildDummyMockTestimonials();
 
 /** Coalesce concurrent identical submits in the same process (double-click race). */
 const inflightCreates = new Map<string, Promise<TestimonialRecord | null>>();
@@ -199,25 +108,6 @@ async function trimApprovedOverflowDb() {
   return toDelete.length;
 }
 
-function trimApprovedOverflowMock() {
-  const approved = mockTestimonials
-    .filter((row) => row.status === "approved")
-    .sort((a, b) => {
-      const aTime = (a.approvedAt ?? a.createdAt).getTime();
-      const bTime = (b.approvedAt ?? b.createdAt).getTime();
-      return aTime - bTime;
-    });
-  if (approved.length <= MAX_APPROVED_TESTIMONIALS) return 0;
-  const excess = approved.length - MAX_APPROVED_TESTIMONIALS;
-  const removeIds = new Set(approved.slice(0, excess).map((row) => row.id));
-  for (let i = mockTestimonials.length - 1; i >= 0; i--) {
-    if (removeIds.has(mockTestimonials[i].id)) {
-      mockTestimonials.splice(i, 1);
-    }
-  }
-  return excess;
-}
-
 export async function createTestimonial(
   input: CreateTestimonialInput,
 ): Promise<TestimonialRecord | null> {
@@ -287,7 +177,7 @@ export async function createTestimonial(
     if (mockDup) return { ...mockDup };
 
     const now = new Date();
-    const row: MockRow = {
+    const row: TestimonialRecord = {
       id: randomUUID(),
       ...data,
       phoneModel: data.phoneModel,
@@ -442,4 +332,37 @@ export async function deleteTestimonial(id: string): Promise<boolean> {
   if (index === -1) return false;
   mockTestimonials.splice(index, 1);
   return true;
+}
+
+/** Edit review text only — never changes status or triggers FIFO trim. */
+export async function updateTestimonialMessage(
+  id: string,
+  message: string,
+): Promise<
+  | { ok: true; item: TestimonialRecord }
+  | { ok: false; error: "not_found" | "unavailable" | "invalid" }
+> {
+  const next = message.trim().slice(0, 300);
+  if (next.length < 2) return { ok: false, error: "invalid" };
+
+  const dbResult = await tryPrismaLong(async () => {
+    const existing = await prisma.testimonial.findUnique({ where: { id } });
+    if (!existing) return { kind: "missing" as const };
+    const updated = await prisma.testimonial.update({
+      where: { id },
+      data: { message: next },
+    });
+    const mapped = mapRow(updated);
+    if (!mapped) return { kind: "missing" as const };
+    return { kind: "ok" as const, item: mapped };
+  });
+
+  if (dbResult?.kind === "ok") return { ok: true, item: dbResult.item };
+  if (dbResult?.kind === "missing") return { ok: false, error: "not_found" };
+  if (process.env.NODE_ENV === "production") return { ok: false, error: "unavailable" };
+
+  const item = mockTestimonials.find((row) => row.id === id);
+  if (!item) return { ok: false, error: "not_found" };
+  item.message = next;
+  return { ok: true, item: { ...item } };
 }

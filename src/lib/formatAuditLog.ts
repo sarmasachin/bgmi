@@ -30,6 +30,7 @@ function statusWord(status: string): string {
 
 const ACTION_LABELS: Record<string, string> = {
   "testimonial.moderate": "Updated a testimonial",
+  "testimonial.edit": "Edited a testimonial review",
   "testimonial.delete": "Deleted a testimonial",
   "comment.moderate": "Updated a comment",
   "comment.delete": "Deleted a comment",
