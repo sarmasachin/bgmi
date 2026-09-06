@@ -23,7 +23,7 @@ export default function AdminBgmiLiteStylishClient({ initialData }: Props) {
   const [page, setPage] = useState(initialData.page);
   const [usingDefault, setUsingDefault] = useState(initialData.usingDefault);
   const [openIds, setOpenIds] = useState<Set<StylishAdminSectionId>>(
-    () => new Set(["seo", "copy", "article", "faq"]),
+    () => new Set(),
   );
   const [saving, setSaving] = useState(false);
   const setMessage = useAdminFlash();

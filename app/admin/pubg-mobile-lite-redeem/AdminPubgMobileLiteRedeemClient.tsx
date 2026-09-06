@@ -24,7 +24,7 @@ export default function AdminPubgMobileLiteRedeemClient({ initialData }: Props) 
   const [page, setPage] = useState(initialData.page);
   const [usingDefault, setUsingDefault] = useState(initialData.usingDefault);
   const [openIds, setOpenIds] = useState<Set<RedeemAdminSectionId>>(
-    () => new Set(["codes", "faq"]),
+    () => new Set(),
   );
   const [saving, setSaving] = useState(false);
   const setMessage = useAdminFlash();

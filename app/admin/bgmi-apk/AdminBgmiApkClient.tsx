@@ -20,7 +20,7 @@ export default function AdminBgmiApkClient({ initialData }: { initialData: Initi
   const [page, setPage] = useState(initialData.page);
   const [usingDefault, setUsingDefault] = useState(initialData.usingDefault);
   const [openIds, setOpenIds] = useState<Set<BgmiApkPageSectionId>>(
-    () => new Set(["seo", "hero", "heroButtons", "countdown"]),
+    () => new Set(),
   );
   const [saving, setSaving] = useState(false);
   const setMessage = useAdminFlash();

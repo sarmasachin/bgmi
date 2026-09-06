@@ -44,7 +44,7 @@ export default function AdminFreeFireStylishClient({
   const [page, setPage] = useState(initialData.page);
   const [usingDefault, setUsingDefault] = useState(initialData.usingDefault);
   const [openIds, setOpenIds] = useState<Set<NameAdminSectionId>>(
-    () => new Set(["seo", "copy", "ideas", "article", "faq"]),
+    () => new Set(),
   );
   const [saving, setSaving] = useState(false);
   const setMessage = useAdminFlash();

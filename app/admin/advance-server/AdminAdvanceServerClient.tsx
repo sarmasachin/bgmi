@@ -23,7 +23,7 @@ export default function AdminAdvanceServerClient({ initialData }: Props) {
   const [page, setPage] = useState(initialData.page);
   const [usingDefault, setUsingDefault] = useState(initialData.usingDefault);
   const [openIds, setOpenIds] = useState<Set<AdvanceServerPageSectionId>>(
-    () => new Set(["seo", "hero"]),
+    () => new Set(),
   );
   const [saving, setSaving] = useState(false);
   const setMessage = useAdminFlash();

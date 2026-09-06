@@ -40,7 +40,7 @@ function sectionsForVariant(variant: PageCardsVariant) {
 export default function AdminHomeCardsClient({ initialByVariant }: Props) {
   const [variant, setVariant] = useState<PageCardsVariant>("freefire");
   const [byVariant, setByVariant] = useState(initialByVariant);
-  const [openIds, setOpenIds] = useState<Set<HomeCardSectionId>>(() => new Set(["hero"]));
+  const [openIds, setOpenIds] = useState<Set<HomeCardSectionId>>(() => new Set());
   const [saving, setSaving] = useState(false);
   const setMessage = useAdminFlash();
 
@@ -73,7 +73,7 @@ export default function AdminHomeCardsClient({ initialByVariant }: Props) {
   function switchVariant(next: PageCardsVariant) {
     if (next === variant) return;
     setVariant(next);
-    setOpenIds(new Set(["hero"]));
+    setOpenIds(new Set());
   }
 
   async function onSave(event: FormEvent) {
