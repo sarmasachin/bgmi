@@ -1,11 +1,17 @@
 import { runNotificationCampaign } from "@/src/server/services/campaignService";
 import { normalizePushClickUrl } from "@/src/lib/pushClickUrl";
 
-export type PublishPushSource = "news" | "page";
+export type PublishPushSource =
+  | "news"
+  | "page"
+  | "redeem"
+  | "advanceServer"
+  | "stylishNames"
+  | "liteApk";
 
 /**
- * Optional push after publish. Only runs when admin checked "Send push notification".
- * Failures are logged and returned as warning — publish itself already succeeded.
+ * Optional push after a content event (publish / meaningful CMS save).
+ * Failures are logged and returned as warning — the save itself already succeeded.
  */
 export async function maybeSendPublishPush(input: {
   sendPush: boolean;

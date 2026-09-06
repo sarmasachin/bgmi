@@ -11,6 +11,10 @@ import {
 const schema = z.object({
   newsOnPublish: z.boolean().optional(),
   pagesOnPublish: z.boolean().optional(),
+  redeemOnSave: z.boolean().optional(),
+  advanceServerOnSave: z.boolean().optional(),
+  stylishNamesOnSave: z.boolean().optional(),
+  liteApkOnSave: z.boolean().optional(),
 });
 
 export async function GET(request: NextRequest) {

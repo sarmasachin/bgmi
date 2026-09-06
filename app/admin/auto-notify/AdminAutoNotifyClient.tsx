@@ -1,18 +1,42 @@
 "use client";
 
 import { FormEvent, useState } from "react";
+import {
+  DEFAULT_AUTO_NOTIFY_SETTINGS,
+  type AutoNotifySettings,
+} from "@/src/lib/autoNotifySettings";
 import { readApiError } from "@/src/lib/userFacingError";
-
-export type AutoNotifySettings = {
-  newsOnPublish: boolean;
-  pagesOnPublish: boolean;
-};
 
 export type EmailCampaignQuota = {
   dailySendLimit: number;
   sentToday: number;
   remainingToday: number;
 };
+
+const TOGGLES: Array<{ key: keyof AutoNotifySettings; label: string; hint: string }> = [
+  { key: "newsOnPublish", label: "News publish", hint: "When you publish a news article." },
+  { key: "pagesOnPublish", label: "Pages publish", hint: "When a CMS page is saved as published." },
+  {
+    key: "redeemOnSave",
+    label: "Redeem codes",
+    hint: "When live codes change on FF, FF Max, BGMI Lite, or PUBG Lite. SEO-only saves do not notify.",
+  },
+  {
+    key: "advanceServerOnSave",
+    label: "Advance Server",
+    hint: "When countdown, APK button, or official URL changes.",
+  },
+  {
+    key: "stylishNamesOnSave",
+    label: "Stylish names",
+    hint: "When name ideas change (FF / FF Max chips, or Lite name-page copy).",
+  },
+  {
+    key: "liteApkOnSave",
+    label: "Lite APK countdown",
+    hint: "When BGMI Lite APK launch/countdown details change. PUBG Lite APK has no admin save yet.",
+  },
+];
 
 export default function AdminAutoNotifyClient({
   initialSettings,
@@ -21,8 +45,10 @@ export default function AdminAutoNotifyClient({
   initialSettings: AutoNotifySettings;
   initialEmailQuota: EmailCampaignQuota;
 }) {
-  const [newsOnPublish, setNewsOnPublish] = useState(initialSettings.newsOnPublish);
-  const [pagesOnPublish, setPagesOnPublish] = useState(initialSettings.pagesOnPublish);
+  const [settings, setSettings] = useState<AutoNotifySettings>({
+    ...DEFAULT_AUTO_NOTIFY_SETTINGS,
+    ...initialSettings,
+  });
   const [dailySendLimit, setDailySendLimit] = useState(initialEmailQuota.dailySendLimit);
   const [sentToday, setSentToday] = useState(initialEmailQuota.sentToday);
   const [remainingToday, setRemainingToday] = useState(initialEmailQuota.remainingToday);
@@ -47,8 +73,7 @@ export default function AdminAutoNotifyClient({
         setMessage(json.error || (await readApiError(res, "Save failed.")));
         return;
       }
-      setNewsOnPublish(json.data.newsOnPublish);
-      setPagesOnPublish(json.data.pagesOnPublish);
+      setSettings({ ...DEFAULT_AUTO_NOTIFY_SETTINGS, ...json.data });
       setMessage("Auto Notify settings saved.");
     } catch {
       setMessage("Network error. Please retry.");
@@ -94,57 +119,39 @@ export default function AdminAutoNotifyClient({
       </div>
 
       <div className="admin-notifications-card">
-        <h2>Publish push notifications</h2>
+        <h2>Auto push notifications</h2>
         <p style={{ margin: "0 0 16px", opacity: 0.8, fontSize: 13 }}>
-          When enabled, publishing News/Pages sends a push automatically. Manual campaigns stay under{" "}
-          <strong>Notifications</strong>.
+          Default is off. Enable only what should ping subscribers. Manual campaigns stay under{" "}
+          <strong>Notifications</strong>. Reset-to-defaults never sends a push.
         </p>
 
-        <label
-          style={{
-            display: "flex",
-            alignItems: "center",
-            gap: 10,
-            marginBottom: 14,
-            fontSize: 15,
-            cursor: busy ? "default" : "pointer",
-          }}
-        >
-          <input
-            type="checkbox"
-            checked={newsOnPublish}
-            disabled={busy}
-            onChange={(e) => {
-              const next = { newsOnPublish: e.target.checked, pagesOnPublish };
-              setNewsOnPublish(next.newsOnPublish);
-              void savePush(next);
+        {TOGGLES.map((item) => (
+          <label
+            key={item.key}
+            style={{
+              display: "grid",
+              gap: 4,
+              marginBottom: 14,
+              fontSize: 15,
+              cursor: busy ? "default" : "pointer",
             }}
-          />
-          Auto push on News publish
-        </label>
-
-        <label
-          style={{
-            display: "flex",
-            alignItems: "center",
-            gap: 10,
-            marginBottom: 8,
-            fontSize: 15,
-            cursor: busy ? "default" : "pointer",
-          }}
-        >
-          <input
-            type="checkbox"
-            checked={pagesOnPublish}
-            disabled={busy}
-            onChange={(e) => {
-              const next = { newsOnPublish, pagesOnPublish: e.target.checked };
-              setPagesOnPublish(next.pagesOnPublish);
-              void savePush(next);
-            }}
-          />
-          Auto push on Pages publish
-        </label>
+          >
+            <span style={{ display: "flex", alignItems: "center", gap: 10 }}>
+              <input
+                type="checkbox"
+                checked={settings[item.key]}
+                disabled={busy}
+                onChange={(e) => {
+                  const next = { ...settings, [item.key]: e.target.checked };
+                  setSettings(next);
+                  void savePush(next);
+                }}
+              />
+              Auto push: {item.label}
+            </span>
+            <span style={{ fontSize: 12, opacity: 0.75, paddingLeft: 28 }}>{item.hint}</span>
+          </label>
+        ))}
       </div>
 
       <div className="admin-notifications-card">

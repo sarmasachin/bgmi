@@ -1,0 +1,52 @@
+import { BgmiApkLandingPage } from "@/src/components/BgmiApkLandingPage";
+import { BGMI_APK_PATH } from "@/src/lib/bgmiApkPage";
+import { getBgmiApkPage } from "@/src/server/repositories/bgmiApkPageRepository";
+import { buildSocialMetadata } from "@/src/lib/socialMeta";
+import { toCanonicalUrl } from "@/src/lib/siteUrl";
+import type { Metadata } from "next";
+
+export const dynamic = "force-dynamic";
+
+export async function generateMetadata(): Promise<Metadata> {
+  try {
+    const page = await getBgmiApkPage();
+    const canonical = toCanonicalUrl(page.path || BGMI_APK_PATH);
+
+    return {
+      title: page.seoTitle,
+      description: page.seoDescription,
+      keywords: [...page.seoKeywords],
+      robots: {
+        index: true,
+        follow: true,
+        googleBot: {
+          index: true,
+          follow: true,
+          "max-image-preview": "large",
+          "max-snippet": -1,
+          "max-video-preview": -1,
+        },
+      },
+      alternates: { canonical },
+      category: "games",
+      ...buildSocialMetadata({
+        title: page.seoTitle,
+        description: page.seoDescription,
+        url: canonical,
+        image: page.heroImage || "/icon.png?v=3",
+        imageAlt: page.heroImageAlt || "Sensitivity Settings — BGMI APK guide",
+      }),
+    };
+  } catch {
+    const canonical = toCanonicalUrl(BGMI_APK_PATH);
+    return {
+      title: "BGMI APK",
+      description: "BGMI APK and Play Store guide.",
+      alternates: { canonical },
+    };
+  }
+}
+
+export default function BgmiApkPage() {
+  return <BgmiApkLandingPage />;
+}

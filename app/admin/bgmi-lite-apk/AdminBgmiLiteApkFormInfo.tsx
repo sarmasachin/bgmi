@@ -66,7 +66,7 @@ export function AdminBgmiLiteApkFormInfo({ page, openIds, onToggle, onPatch }: P
         />
         {page.facts.rows.map((row, index) => (
           <div
-            key={`${row.label}-${index}`}
+            key={`fact-row-${index}`}
             style={{
               display: "grid",
               gridTemplateColumns: "minmax(0, 0.9fr) minmax(0, 1.4fr) auto",

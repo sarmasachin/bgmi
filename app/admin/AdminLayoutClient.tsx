@@ -18,6 +18,10 @@ type SidebarIconName =
   | "advanceServer"
   | "bgmiLiteRedeem"
   | "bgmiLiteApk"
+  | "bgmiApk"
+  | "pubgApk"
+  | "bgmiRedeem"
+  | "pubgRedeem"
   | "pubgMobileLiteRedeem"
   | "freeFireRedeem"
   | "freeFireMaxRedeem"
@@ -81,8 +85,12 @@ function SidebarIcon({ name }: { name: SidebarIconName }) {
     case "advanceServer":
       return <svg {...shared}><rect x="2" y="3" width="20" height="8" rx="1" /><path d="M6 11v3M18 11v3" /><path d="M4 14h16v4a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2v-4Z" /><path d="M9 18h6" /></svg>;
     case "bgmiLiteRedeem":
+    case "bgmiRedeem":
+    case "pubgRedeem":
       return <svg {...shared}><rect x="3" y="5" width="18" height="14" rx="2" /><path d="M7 10h6M7 14h10" /><path d="M16 9l2 2-2 2" /></svg>;
     case "bgmiLiteApk":
+    case "bgmiApk":
+    case "pubgApk":
       return <svg {...shared}><rect x="4" y="4" width="16" height="16" rx="2" /><path d="M8 12h8M12 8v8" /></svg>;
     case "pubgMobileLiteRedeem":
     case "freeFireRedeem":

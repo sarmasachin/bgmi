@@ -1,34 +1,20 @@
 import { prisma, tryPrisma } from "@/src/server/dbSafe";
+import {
+  DEFAULT_AUTO_NOTIFY_SETTINGS,
+  parseAutoNotifySettings,
+  type AutoNotifySettings,
+} from "@/src/lib/autoNotifySettings";
 
 const KEY = "settings:autoNotify";
 
-export type AutoNotifySettings = {
-  /** Send push when a news post is published. */
-  newsOnPublish: boolean;
-  /** Send push when a page/clone is published. */
-  pagesOnPublish: boolean;
-};
-
-const DEFAULTS: AutoNotifySettings = {
-  newsOnPublish: false,
-  pagesOnPublish: false,
-};
-
-function parse(raw: unknown): AutoNotifySettings {
-  if (!raw || typeof raw !== "object") return { ...DEFAULTS };
-  const o = raw as Record<string, unknown>;
-  return {
-    newsOnPublish: o.newsOnPublish === true,
-    pagesOnPublish: o.pagesOnPublish === true,
-  };
-}
+export type { AutoNotifySettings };
 
 export async function getAutoNotifySettings(): Promise<AutoNotifySettings> {
   const row = await tryPrisma(async () =>
     prisma.siteSetting.findUnique({ where: { key: KEY } }),
   );
-  if (!row) return { ...DEFAULTS };
-  return parse(row.value);
+  if (!row) return { ...DEFAULT_AUTO_NOTIFY_SETTINGS };
+  return parseAutoNotifySettings(row.value);
 }
 
 export async function saveAutoNotifySettings(
@@ -40,6 +26,18 @@ export async function saveAutoNotifySettings(
       typeof input.newsOnPublish === "boolean" ? input.newsOnPublish : current.newsOnPublish,
     pagesOnPublish:
       typeof input.pagesOnPublish === "boolean" ? input.pagesOnPublish : current.pagesOnPublish,
+    redeemOnSave:
+      typeof input.redeemOnSave === "boolean" ? input.redeemOnSave : current.redeemOnSave,
+    advanceServerOnSave:
+      typeof input.advanceServerOnSave === "boolean"
+        ? input.advanceServerOnSave
+        : current.advanceServerOnSave,
+    stylishNamesOnSave:
+      typeof input.stylishNamesOnSave === "boolean"
+        ? input.stylishNamesOnSave
+        : current.stylishNamesOnSave,
+    liteApkOnSave:
+      typeof input.liteApkOnSave === "boolean" ? input.liteApkOnSave : current.liteApkOnSave,
   };
 
   await prisma.siteSetting.upsert({

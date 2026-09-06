@@ -12,7 +12,14 @@ export default async function AdminAutoNotifyPage() {
   const access = await requireAdminPageAccess("notifications.view");
   if (!access.ok) return <AdminAccessDenied />;
 
-  let initialSettings = { newsOnPublish: false, pagesOnPublish: false };
+  let initialSettings = {
+    newsOnPublish: false,
+    pagesOnPublish: false,
+    redeemOnSave: false,
+    advanceServerOnSave: false,
+    stylishNamesOnSave: false,
+    liteApkOnSave: false,
+  };
   let initialEmailQuota = { dailySendLimit: 950, sentToday: 0, remainingToday: 950 };
   try {
     initialSettings = await getAutoNotifySettings();

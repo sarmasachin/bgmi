@@ -28,6 +28,15 @@ export type NavLink = { label: string; href: string };
 
 export type NavGameContext = "freefire" | "pubg" | "default";
 
+/** Full BGMI APK info page (Lite-style layout, no countdown). */
+export const BGMI_APK_PATH = "/bgmi-apk";
+/** Full PUBG Mobile APK info page (same layout as BGMI APK). */
+export const PUBG_APK_PATH = "/pubg-apk";
+/** BGMI (not Lite) redeem codes. */
+export const BGMI_REDEEM_CODE_PATH = "/bgmi-redeem-code";
+/** Full PUBG Mobile (not Lite) redeem codes. */
+export const PUBG_REDEEM_CODE_PATH = "/pubg-redeem-code";
+
 /** Planned Lite-family routes (menu + pages). */
 export const BGMI_LITE_APK_PATH = "/bgmi-lite-apk";
 export const BGMI_LITE_REDEEM_CODE_PATH = "/bgmi-lite-redeem-code";
@@ -66,9 +75,17 @@ export function detectNavGameContext(pathname: string): NavGameContext {
   if (
     p === "/bgmi" ||
     p.startsWith("/bgmi/") ||
+    p === BGMI_APK_PATH ||
+    p.startsWith(`${BGMI_APK_PATH}/`) ||
+    p === BGMI_REDEEM_CODE_PATH ||
+    p.startsWith(`${BGMI_REDEEM_CODE_PATH}/`) ||
     isBgmiLiteFamilyPath(p) ||
     p === "/pubg" ||
     p.startsWith("/pubg/") ||
+    p === PUBG_APK_PATH ||
+    p.startsWith(`${PUBG_APK_PATH}/`) ||
+    p === PUBG_REDEEM_CODE_PATH ||
+    p.startsWith(`${PUBG_REDEEM_CODE_PATH}/`) ||
     isPubgMobileLiteFamilyPath(p) ||
     p === PUBG_MOBILE_CODES_PATH ||
     p.startsWith(`${PUBG_MOBILE_CODES_PATH}/`)
@@ -114,6 +131,10 @@ function linkFamily(link: NavLink): "freefire" | "pubg" | "other" {
   if (
     href === "/bgmi" ||
     href.startsWith("/bgmi/") ||
+    href === BGMI_APK_PATH ||
+    href.startsWith(`${BGMI_APK_PATH}/`) ||
+    href === BGMI_REDEEM_CODE_PATH ||
+    href.startsWith(`${BGMI_REDEEM_CODE_PATH}/`) ||
     href === "/bgmi-lite" ||
     href.startsWith("/bgmi-lite/") ||
     href === BGMI_LITE_APK_PATH ||
@@ -124,6 +145,10 @@ function linkFamily(link: NavLink): "freefire" | "pubg" | "other" {
     href.startsWith("/news/") ||
     href === "/pubg" ||
     href.startsWith("/pubg/") ||
+    href === PUBG_APK_PATH ||
+    href.startsWith(`${PUBG_APK_PATH}/`) ||
+    href === PUBG_REDEEM_CODE_PATH ||
+    href.startsWith(`${PUBG_REDEEM_CODE_PATH}/`) ||
     href === PUBG_MOBILE_LITE_PATH ||
     href.startsWith(`${PUBG_MOBILE_LITE_PATH}/`) ||
     href === PUBG_MOBILE_LITE_APK_PATH ||

@@ -3,11 +3,13 @@ import { z } from "zod";
 import { addAuditLog } from "@/src/server/repositories/auditRepository";
 import { readAdminJsonBody } from "@/src/server/admin/adminApiHelpers";
 import { enforceAdminApiAccess } from "@/src/server/rbac/enforceAdminApiAccess";
+import { BGMI_LITE_APK_PATH } from "@/src/lib/bgmiLiteBetaApkPage";
 import {
   clearBgmiLiteApkPage,
   getBgmiLiteApkPageForAdmin,
   saveBgmiLiteApkPage,
 } from "@/src/server/repositories/bgmiLiteApkPageRepository";
+import { autoNotifyLiteApkSave } from "@/src/server/services/autoNotifyOnCmsSave";
 
 export async function GET(request: NextRequest) {
   const gate = await enforceAdminApiAccess(request);
@@ -53,6 +55,14 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Missing page payload" }, { status: 400 });
     }
 
+    let beforePage: unknown = null;
+    let compared = false;
+    try {
+      beforePage = (await getBgmiLiteApkPageForAdmin()).page;
+      compared = true;
+    } catch {
+      /* still save */
+    }
     const result = await saveBgmiLiteApkPage(parsed.data.page);
     await addAuditLog({
       actor: "admin",
@@ -60,7 +70,19 @@ export async function POST(request: NextRequest) {
       target: "bgmi-lite-apk",
       payload: { usingDefault: false },
     });
-    return NextResponse.json({ ok: true, ...result });
+    const push = await autoNotifyLiteApkSave({
+      beforePage,
+      afterPage: result.page,
+      title: result.page.heroTitle || result.page.seoTitle,
+      urlPath: result.page.path || BGMI_LITE_APK_PATH,
+      compared,
+    });
+    return NextResponse.json({
+      ok: true,
+      ...result,
+      pushSent: push.pushSent,
+      ...(push.warning ? { warning: push.warning } : {}),
+    });
   } catch {
     return NextResponse.json({ error: "Could not save BGMI Lite APK page." }, { status: 503 });
   }

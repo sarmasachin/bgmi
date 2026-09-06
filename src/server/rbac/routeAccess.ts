@@ -49,6 +49,30 @@ export const ADMIN_NAV_ACCESS: ReadonlyArray<{
     anyOf: ["bgmiLiteApk.view"],
   },
   {
+    label: "BGMI APK",
+    href: "/admin/bgmi-apk",
+    icon: "bgmiApk",
+    anyOf: ["bgmiApk.view"],
+  },
+  {
+    label: "PUBG APK",
+    href: "/admin/pubg-apk",
+    icon: "pubgApk",
+    anyOf: ["pubgApk.view"],
+  },
+  {
+    label: "BGMI Redeem",
+    href: "/admin/bgmi-redeem",
+    icon: "bgmiRedeem",
+    anyOf: ["bgmiRedeem.view"],
+  },
+  {
+    label: "PUBG Redeem",
+    href: "/admin/pubg-redeem",
+    icon: "pubgRedeem",
+    anyOf: ["pubgRedeem.view"],
+  },
+  {
     label: "PUBG Lite Redeem",
     href: "/admin/pubg-mobile-lite-redeem",
     icon: "pubgMobileLiteRedeem",
@@ -223,6 +247,26 @@ export function resolveAdminApiPermission(
   if (path.startsWith("/api/admin/bgmi-lite-apk")) {
     if (isRead) return { type: "permission", permission: "bgmiLiteApk.view" };
     return { type: "permission", permission: "bgmiLiteApk.edit" };
+  }
+
+  if (path.startsWith("/api/admin/bgmi-apk")) {
+    if (isRead) return { type: "permission", permission: "bgmiApk.view" };
+    return { type: "permission", permission: "bgmiApk.edit" };
+  }
+
+  if (path.startsWith("/api/admin/pubg-apk")) {
+    if (isRead) return { type: "permission", permission: "pubgApk.view" };
+    return { type: "permission", permission: "pubgApk.edit" };
+  }
+
+  if (path.startsWith("/api/admin/bgmi-redeem")) {
+    if (isRead) return { type: "permission", permission: "bgmiRedeem.view" };
+    return { type: "permission", permission: "bgmiRedeem.edit" };
+  }
+
+  if (path.startsWith("/api/admin/pubg-redeem")) {
+    if (isRead) return { type: "permission", permission: "pubgRedeem.view" };
+    return { type: "permission", permission: "pubgRedeem.edit" };
   }
 
   if (path.startsWith("/api/admin/pubg-mobile-lite-redeem")) {

@@ -36,7 +36,14 @@ export function AdminField({
           style={{ ...controlStyle, resize: "vertical" }}
         />
       ) : (
-        <input value={value} onChange={(e) => onChange(e.target.value)} style={controlStyle} />
+        <input
+          value={value}
+          onChange={(e) => onChange(e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key === "Enter") e.preventDefault();
+          }}
+          style={controlStyle}
+        />
       )}
     </label>
   );

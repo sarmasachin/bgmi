@@ -2,12 +2,14 @@ import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { readAdminJsonBody } from "@/src/server/admin/adminApiHelpers";
 import { addAuditLog } from "@/src/server/repositories/auditRepository";
+import { BGMI_LITE_REDEEM_CODE_PATH } from "@/src/lib/bgmiLiteRedeemCodes";
 import {
   clearBgmiLiteRedeemPage,
   getBgmiLiteRedeemPageForAdmin,
   saveBgmiLiteRedeemPage,
 } from "@/src/server/repositories/bgmiLiteRedeemCodesRepository";
 import { enforceAdminApiAccess } from "@/src/server/rbac/enforceAdminApiAccess";
+import { autoNotifyRedeemSave } from "@/src/server/services/autoNotifyOnCmsSave";
 
 export async function GET(request: NextRequest) {
   const gate = await enforceAdminApiAccess(request);
@@ -49,6 +51,14 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Missing page payload" }, { status: 400 });
     }
 
+    let beforeCodes: unknown = [];
+    let compared = false;
+    try {
+      beforeCodes = (await getBgmiLiteRedeemPageForAdmin()).page.codes;
+      compared = true;
+    } catch {
+      /* still save */
+    }
     const result = await saveBgmiLiteRedeemPage(parsed.data.page);
     await addAuditLog({
       actor: "admin",
@@ -56,7 +66,19 @@ export async function POST(request: NextRequest) {
       target: "bgmi-lite-redeem-code",
       payload: { usingDefault: false },
     });
-    return NextResponse.json({ ok: true, ...result });
+    const push = await autoNotifyRedeemSave({
+      beforeCodes,
+      afterCodes: result.page.codes,
+      title: result.page.title,
+      urlPath: result.page.path || BGMI_LITE_REDEEM_CODE_PATH,
+      compared,
+    });
+    return NextResponse.json({
+      ok: true,
+      ...result,
+      pushSent: push.pushSent,
+      ...(push.warning ? { warning: push.warning } : {}),
+    });
   } catch {
     return NextResponse.json({ error: "Could not save BGMI Lite redeem codes page." }, { status: 503 });
   }

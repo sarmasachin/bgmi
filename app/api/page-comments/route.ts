@@ -1,7 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { FREE_FIRE_ADVANCE_SERVER_PATH } from "@/src/lib/ffAdvanceServerPage";
+import { BGMI_APK_PAGE_KEY } from "@/src/lib/bgmiApkPage";
+import { PUBG_APK_PAGE_KEY } from "@/src/lib/pubgApkPage";
 import { BGMI_LITE_APK_PAGE_KEY } from "@/src/lib/bgmiLiteBetaApkPage";
+import { BGMI_REDEEM_PAGE_KEY } from "@/src/lib/bgmiRedeemCodes";
+import { PUBG_REDEEM_PAGE_KEY } from "@/src/lib/pubgRedeemCodes";
 import { BGMI_LITE_REDEEM_PAGE_KEY } from "@/src/lib/bgmiLiteRedeemCodes";
 import { BGMI_LITE_STYLISH_PAGE_KEY } from "@/src/lib/bgmiLiteStylishNamePage";
 import { PUBG_MOBILE_LITE_APK_PAGE_KEY } from "@/src/lib/pubgMobileLiteApkPage";
@@ -23,7 +27,11 @@ import { trackEmailForCampaigns } from "@/src/server/repositories/emailSubscribe
 const ALLOWED_PAGE_KEYS = new Set([
   FREE_FIRE_ADVANCE_SERVER_PATH.replace(/^\//, ""),
   "free-fire-advance-server",
+  BGMI_APK_PAGE_KEY,
+  PUBG_APK_PAGE_KEY,
   BGMI_LITE_APK_PAGE_KEY,
+  BGMI_REDEEM_PAGE_KEY,
+  PUBG_REDEEM_PAGE_KEY,
   BGMI_LITE_REDEEM_PAGE_KEY,
   BGMI_LITE_STYLISH_PAGE_KEY,
   PUBG_MOBILE_LITE_APK_PAGE_KEY,

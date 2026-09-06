@@ -14,6 +14,12 @@ import {
   PUBG_MOBILE_LITE_NAV,
   PUBG_MOBILE_LITE_PATH,
 } from "@/src/lib/pubgMobileLite";
+import {
+  BGMI_APK_PATH,
+  BGMI_REDEEM_CODE_PATH,
+  PUBG_APK_PATH,
+  PUBG_REDEEM_CODE_PATH,
+} from "@/src/lib/resolveNavForPath";
 
 export type SiteNavChild = { label: string; href: string };
 
@@ -21,7 +27,7 @@ export type SiteNavItem = {
   id: string;
   label: string;
   href: string;
-  /** Optional submenu — BGMI / PUBG Mobile stay empty for now. */
+  /** Optional submenu. */
   children?: readonly SiteNavChild[];
 };
 
@@ -52,14 +58,32 @@ export const SITE_GAME_NAV: readonly SiteNavItem[] = [
     href: FREE_FIRE_MAX_PATH,
     children: FREE_FIRE_MAX_FAMILY_NAV.map((row) => ({ label: row.label, href: row.href })),
   },
-  { id: "pubg", label: "PUBG Mobile", href: "/pubg" },
+  {
+    id: "pubg",
+    label: "PUBG Mobile",
+    href: "/pubg",
+    children: [
+      { label: "Home", href: "/pubg" },
+      { label: "PUBG APK", href: PUBG_APK_PATH },
+      { label: "Redeem Code", href: PUBG_REDEEM_CODE_PATH },
+    ],
+  },
   {
     id: "pubg-lite",
     label: "PUBG Mobile Lite",
     href: PUBG_MOBILE_LITE_PATH,
     children: PUBG_MOBILE_LITE_NAV.map((row) => ({ label: row.label, href: row.href })),
   },
-  { id: "bgmi", label: "BGMI", href: "/bgmi" },
+  {
+    id: "bgmi",
+    label: "BGMI",
+    href: "/bgmi",
+    children: [
+      { label: "Home", href: "/bgmi" },
+      { label: "BGMI APK", href: BGMI_APK_PATH },
+      { label: "Redeem Code", href: BGMI_REDEEM_CODE_PATH },
+    ],
+  },
   {
     id: "bgmi-lite",
     label: "BGMI Lite",
@@ -111,12 +135,24 @@ export function isSiteNavItemActive(item: SiteNavItem, pathname: string): boolea
     return (
       p === "/pubg" ||
       p.startsWith("/pubg/") ||
+      p === PUBG_APK_PATH ||
+      p.startsWith(`${PUBG_APK_PATH}/`) ||
+      p === PUBG_REDEEM_CODE_PATH ||
+      p.startsWith(`${PUBG_REDEEM_CODE_PATH}/`) ||
       p === "/pubg-mobile-codes" ||
       p.startsWith("/pubg-mobile-codes/")
     );
   }
   if (item.id === "bgmi") {
-    return (p === "/bgmi" || p.startsWith("/bgmi/")) && !isBgmiLiteFamilyPath(p);
+    return (
+      (p === "/bgmi" ||
+        p.startsWith("/bgmi/") ||
+        p === BGMI_APK_PATH ||
+        p.startsWith(`${BGMI_APK_PATH}/`) ||
+        p === BGMI_REDEEM_CODE_PATH ||
+        p.startsWith(`${BGMI_REDEEM_CODE_PATH}/`)) &&
+      !isBgmiLiteFamilyPath(p)
+    );
   }
   return pathMatches(p, item.href);
 }

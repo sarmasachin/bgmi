@@ -8674,6 +8674,11 @@ html {
   margin: 0 0 16px;
 }
 
+.ff-as-article-head .ff-as-hero-btns {
+  margin-top: 0;
+  margin-bottom: 8px;
+}
+
 .ff-as-article-head .ff-as-countdown {
   margin: 0 auto 18px;
   text-align: center;
@@ -8985,6 +8990,32 @@ html {
 .ff-as-apk-btn:focus-visible {
   outline: 2px solid #86efac;
   outline-offset: 3px;
+}
+
+.ff-as-hero-btns {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  justify-content: center;
+  margin: 18px auto 0;
+  width: 100%;
+  max-width: 720px;
+}
+
+.ff-as-hero-btns .ff-as-apk-btn {
+  flex: 1 1 220px;
+  width: auto;
+  margin: 0;
+}
+
+.ff-as-apk-btn--alt {
+  background: #38bdf8;
+  color: #082f49;
+  box-shadow: 0 10px 28px rgba(56, 189, 248, 0.35);
+}
+
+.ff-as-apk-btn--alt:focus-visible {
+  outline-color: #7dd3fc;
 }
 
 .ff-as-pills {

@@ -14,11 +14,15 @@ import type { SitemapUrlEntry } from "@/src/server/sitemap/sitemapXml";
 /** Redirects / admin / API — never list these (Google: canonical 200 URLs only). */
 const RESERVED_TOP_SEGMENTS = new Set([
   "bgmi",
+  "bgmi-apk",
+  "bgmi-redeem-code",
   "bgmi-lite",
   "bgmi-lite-apk",
   "bgmi-lite-redeem-code",
   "bgmi-lite-stylish-name",
   "pubg",
+  "pubg-apk",
+  "pubg-redeem-code",
   "pubg-mobile-lite",
   "pubg-mobile-lite-apk",
   "pubg-mobile-lite-redeem-code",
@@ -73,6 +77,8 @@ export async function buildPageSitemapEntries(): Promise<SitemapUrlEntry[]> {
   const staticEntries: SitemapUrlEntry[] = [
     row(baseUrl, "/", lastmod("/")),
     row(baseUrl, "/bgmi", lastmod("/bgmi")),
+    row(baseUrl, "/bgmi-apk", lastmod("/bgmi-apk")),
+    row(baseUrl, "/bgmi-redeem-code", lastmod("/bgmi-redeem-code")),
     row(baseUrl, "/bgmi-lite", lastmod("/bgmi-lite")),
     row(baseUrl, "/bgmi-lite-apk", lastmod("/bgmi-lite-apk")),
     row(baseUrl, "/bgmi-lite-redeem-code", lastmod("/bgmi-lite-redeem-code")),
@@ -86,6 +92,8 @@ export async function buildPageSitemapEntries(): Promise<SitemapUrlEntry[]> {
     row(baseUrl, "/free-fire-max-redeem-code", lastmod("/free-fire-max-redeem-code")),
     row(baseUrl, "/free-fire-max-stylish-name", lastmod("/free-fire-max-stylish-name")),
     row(baseUrl, "/pubg", lastmod("/pubg")),
+    row(baseUrl, "/pubg-apk", lastmod("/pubg-apk")),
+    row(baseUrl, "/pubg-redeem-code", lastmod("/pubg-redeem-code")),
     row(baseUrl, "/pubg-mobile-codes", lastmod("/pubg-mobile-codes")),
     row(baseUrl, "/free-fire-max-sensitivity-settings-calculator", lastmod("/free-fire-max-sensitivity-settings-calculator")),
     row(baseUrl, "/free-fire-advance-server", lastmod("/free-fire-advance-server")),

@@ -3,11 +3,13 @@ import { z } from "zod";
 import { addAuditLog } from "@/src/server/repositories/auditRepository";
 import { readAdminJsonBody } from "@/src/server/admin/adminApiHelpers";
 import { enforceAdminApiAccess } from "@/src/server/rbac/enforceAdminApiAccess";
+import { FREE_FIRE_ADVANCE_SERVER_PATH } from "@/src/lib/ffAdvanceServerPage";
 import {
   clearAdvanceServerPage,
   getAdvanceServerPageForAdmin,
   saveAdvanceServerPage,
 } from "@/src/server/repositories/advanceServerPageRepository";
+import { autoNotifyAdvanceServerSave } from "@/src/server/services/autoNotifyOnCmsSave";
 
 export async function GET(request: NextRequest) {
   const gate = await enforceAdminApiAccess(request);
@@ -49,6 +51,14 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Missing page payload" }, { status: 400 });
     }
 
+    let beforePage: unknown = null;
+    let compared = false;
+    try {
+      beforePage = (await getAdvanceServerPageForAdmin()).page;
+      compared = true;
+    } catch {
+      /* still save */
+    }
     const result = await saveAdvanceServerPage(parsed.data.page);
     await addAuditLog({
       actor: "admin",
@@ -56,7 +66,19 @@ export async function POST(request: NextRequest) {
       target: "free-fire-advance-server",
       payload: { usingDefault: false },
     });
-    return NextResponse.json({ ok: true, ...result });
+    const push = await autoNotifyAdvanceServerSave({
+      beforePage,
+      afterPage: result.page,
+      title: result.page.heroTitle || result.page.title,
+      urlPath: result.page.path || FREE_FIRE_ADVANCE_SERVER_PATH,
+      compared,
+    });
+    return NextResponse.json({
+      ok: true,
+      ...result,
+      pushSent: push.pushSent,
+      ...(push.warning ? { warning: push.warning } : {}),
+    });
   } catch {
     return NextResponse.json({ error: "Could not save Advance Server page." }, { status: 503 });
   }
