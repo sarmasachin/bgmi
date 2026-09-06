@@ -11,11 +11,25 @@ import {
 } from "@/src/server/repositories/advanceServerPageRepository";
 import { autoNotifyAdvanceServerSave } from "@/src/server/services/autoNotifyOnCmsSave";
 
+function dbErrorResponse(action: "load" | "save" | "reset") {
+  const error =
+    action === "load"
+      ? "Could not load Advance Server page."
+      : action === "reset"
+        ? "Could not reset Advance Server page."
+        : "Could not save Advance Server page.";
+  return NextResponse.json({ ok: false, error }, { status: 503 });
+}
+
 export async function GET(request: NextRequest) {
   const gate = await enforceAdminApiAccess(request);
   if (!gate.ok) return gate.response;
-  const data = await getAdvanceServerPageForAdmin();
-  return NextResponse.json({ data });
+  try {
+    const data = await getAdvanceServerPageForAdmin();
+    return NextResponse.json({ data });
+  } catch {
+    return dbErrorResponse("load");
+  }
 }
 
 export async function POST(request: NextRequest) {
@@ -32,7 +46,7 @@ export async function POST(request: NextRequest) {
     .safeParse(bodyResult.data);
 
   if (!parsed.success) {
-    return NextResponse.json({ error: "Invalid payload" }, { status: 400 });
+    return NextResponse.json({ ok: false, error: "Invalid payload" }, { status: 400 });
   }
 
   try {
@@ -48,7 +62,7 @@ export async function POST(request: NextRequest) {
     }
 
     if (parsed.data.page === undefined) {
-      return NextResponse.json({ error: "Missing page payload" }, { status: 400 });
+      return NextResponse.json({ ok: false, error: "Missing page payload" }, { status: 400 });
     }
 
     let beforePage: unknown = null;
@@ -80,6 +94,6 @@ export async function POST(request: NextRequest) {
       ...(push.warning ? { warning: push.warning } : {}),
     });
   } catch {
-    return NextResponse.json({ error: "Could not save Advance Server page." }, { status: 503 });
+    return dbErrorResponse(parsed.data.action === "reset" ? "reset" : "save");
   }
 }

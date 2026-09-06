@@ -1,7 +1,7 @@
 "use client";
 
-import { FormEvent, useState } from "react";
-import { useAdminFlash } from "@/src/components/admin/AdminToast";
+import { FormEvent, useEffect, useState } from "react";
+import { useAdminToast } from "@/src/components/admin/AdminToast";
 import { FREE_FIRE_ADVANCE_SERVER_PATH } from "@/src/lib/ffAdvanceServerPage";
 import type {
   AdvanceServerPageSectionId,
@@ -17,16 +17,24 @@ type InitialData = {
 
 type Props = {
   initialData: InitialData;
+  loadError?: boolean;
 };
 
-export default function AdminAdvanceServerClient({ initialData }: Props) {
+export default function AdminAdvanceServerClient({ initialData, loadError = false }: Props) {
   const [page, setPage] = useState(initialData.page);
   const [usingDefault, setUsingDefault] = useState(initialData.usingDefault);
   const [openIds, setOpenIds] = useState<Set<AdvanceServerPageSectionId>>(
     () => new Set(),
   );
   const [saving, setSaving] = useState(false);
-  const setMessage = useAdminFlash();
+  const toast = useAdminToast();
+  const blocked = loadError || saving;
+
+  useEffect(() => {
+    if (loadError) {
+      toast.error("Could not load saved Advance Server page. Save is disabled — refresh and try again.");
+    }
+  }, [loadError, toast]);
 
   function toggle(id: AdvanceServerPageSectionId) {
     setOpenIds((prev) => {
@@ -43,7 +51,7 @@ export default function AdminAdvanceServerClient({ initialData }: Props) {
 
   async function onSave(event: FormEvent) {
     event.preventDefault();
-    if (saving) return;
+    if (blocked) return;
     setSaving(true);
     try {
       const res = await fetch("/api/admin/advance-server", {
@@ -53,24 +61,35 @@ export default function AdminAdvanceServerClient({ initialData }: Props) {
         body: JSON.stringify({ action: "save", page }),
       });
       if (!res.ok) {
-        setMessage(await readApiError(res, "Could not save Advance Server page."));
+        toast.error(await readApiError(res, "Could not save Advance Server page."));
         return;
       }
       const json = (await res.json()) as {
+        ok?: boolean;
         page?: FfAdvanceServerPageContent;
         usingDefault?: boolean;
+        warning?: string;
       };
-      if (json.page) setPage(json.page);
+      if (!json.ok || !json.page) {
+        toast.error("Could not save Advance Server page.");
+        return;
+      }
+      setPage(json.page);
       setUsingDefault(Boolean(json.usingDefault));
-      setMessage("Advance Server page saved.");
+      if (json.warning) {
+        toast.warning(`Advance Server page saved. Push: ${json.warning}`);
+      } else {
+        toast.success("Advance Server page saved.");
+      }
     } catch {
-      setMessage("Network error. Please retry.");
+      toast.error("Network error. Please retry.");
     } finally {
       setSaving(false);
     }
   }
 
   async function onReset() {
+    if (blocked) return;
     if (!window.confirm("Reset Advance Server page to built-in defaults?")) return;
     setSaving(true);
     try {
@@ -81,18 +100,23 @@ export default function AdminAdvanceServerClient({ initialData }: Props) {
         body: JSON.stringify({ action: "reset" }),
       });
       if (!res.ok) {
-        setMessage(await readApiError(res, "Could not reset Advance Server page."));
+        toast.error(await readApiError(res, "Could not reset Advance Server page."));
         return;
       }
       const json = (await res.json()) as {
+        ok?: boolean;
         page?: FfAdvanceServerPageContent;
         usingDefault?: boolean;
       };
-      if (json.page) setPage(json.page);
+      if (!json.ok || !json.page) {
+        toast.error("Could not reset Advance Server page.");
+        return;
+      }
+      setPage(json.page);
       setUsingDefault(Boolean(json.usingDefault));
-      setMessage("Reverted to built-in Advance Server defaults.");
+      toast.success("Reverted to built-in Advance Server defaults.");
     } catch {
-      setMessage("Network error. Please retry.");
+      toast.error("Network error. Please retry.");
     } finally {
       setSaving(false);
     }
@@ -111,6 +135,13 @@ export default function AdminAdvanceServerClient({ initialData }: Props) {
           Preview page
         </a>
       </div>
+
+      {loadError ? (
+        <p role="alert" style={{ color: "#fecaca", marginBottom: 16 }}>
+          Could not load saved Advance Server content from the database. Save is disabled so live
+          copy is not overwritten. Refresh this page and try again.
+        </p>
+      ) : null}
 
       <form onSubmit={onSave}>
         <AdminAdvanceServerForm
@@ -133,13 +164,13 @@ export default function AdminAdvanceServerClient({ initialData }: Props) {
             zIndex: 2,
           }}
         >
-          <button type="submit" className="admin-news-btn admin-news-btn-primary" disabled={saving}>
+          <button type="submit" className="admin-news-btn admin-news-btn-primary" disabled={blocked}>
             {saving ? "Saving…" : "Save all"}
           </button>
           <button
             type="button"
             className="admin-news-btn admin-news-btn-edit"
-            disabled={saving || usingDefault}
+            disabled={blocked || usingDefault}
             onClick={() => void onReset()}
           >
             Reset to defaults
