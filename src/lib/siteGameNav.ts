@@ -17,6 +17,7 @@ import {
 import {
   BGMI_APK_PATH,
   BGMI_FAMILY_NAV,
+  BGMI_LITE_NAV,
   BGMI_REDEEM_CODE_PATH,
   PUBG_APK_PATH,
   PUBG_FAMILY_NAV,
@@ -36,14 +37,6 @@ export type SiteNavItem = {
 const BGMI_LITE_APK_PATH = "/bgmi-lite-apk";
 const BGMI_LITE_REDEEM_CODE_PATH = "/bgmi-lite-redeem-code";
 const BGMI_LITE_STYLISH_NAME_PATH = "/bgmi-lite-stylish-name";
-
-const BGMI_LITE_CHILDREN: readonly SiteNavChild[] = [
-  { label: "Home", href: "/bgmi-lite" },
-  { label: "BGMI Lite APK", href: BGMI_LITE_APK_PATH },
-  { label: "Redeem Code", href: BGMI_LITE_REDEEM_CODE_PATH },
-  { label: "BGMI Lite Stylish Name", href: BGMI_LITE_STYLISH_NAME_PATH },
-  { label: "News", href: "/news" },
-];
 
 /** Fixed top nav for every page (not filtered by current game). */
 export const SITE_GAME_NAV: readonly SiteNavItem[] = [
@@ -82,7 +75,7 @@ export const SITE_GAME_NAV: readonly SiteNavItem[] = [
     id: "bgmi-lite",
     label: "BGMI Lite",
     href: "/bgmi-lite",
-    children: [...BGMI_LITE_CHILDREN],
+    children: [...BGMI_LITE_NAV],
   },
 ];
 
@@ -103,6 +96,8 @@ function isBgmiLiteFamilyPath(pathname: string): boolean {
   return (
     p === "/bgmi-lite" ||
     p.startsWith("/bgmi-lite/") ||
+    p === "/news/bgmi-lite" ||
+    p.startsWith("/news/bgmi-lite/") ||
     p === BGMI_LITE_APK_PATH ||
     p.startsWith(`${BGMI_LITE_APK_PATH}/`) ||
     p === BGMI_LITE_REDEEM_CODE_PATH ||
@@ -134,7 +129,9 @@ export function isSiteNavItemActive(item: SiteNavItem, pathname: string): boolea
       p === PUBG_REDEEM_CODE_PATH ||
       p.startsWith(`${PUBG_REDEEM_CODE_PATH}/`) ||
       p === "/pubg-mobile-codes" ||
-      p.startsWith("/pubg-mobile-codes/")
+      p.startsWith("/pubg-mobile-codes/") ||
+      p === "/news/pubg" ||
+      p.startsWith("/news/pubg/")
     );
   }
   if (item.id === "bgmi") {
@@ -144,7 +141,9 @@ export function isSiteNavItemActive(item: SiteNavItem, pathname: string): boolea
         p === BGMI_APK_PATH ||
         p.startsWith(`${BGMI_APK_PATH}/`) ||
         p === BGMI_REDEEM_CODE_PATH ||
-        p.startsWith(`${BGMI_REDEEM_CODE_PATH}/`)) &&
+        p.startsWith(`${BGMI_REDEEM_CODE_PATH}/`) ||
+        p === "/news/bgmi" ||
+        p.startsWith("/news/bgmi/")) &&
       !isBgmiLiteFamilyPath(p)
     );
   }

@@ -75,12 +75,12 @@ export function FfNewsHub({
       : "Latest BGMI Lite news"
     : isMax
       ? "Latest Free Fire Max news"
-      : "Latest Free Fire News";
+      : "Latest News";
   const lead = isLite
     ? `Latest ${shown} Lite ${shown === 1 ? "story" : "stories"} — swipe sideways to browse`
     : isMax
       ? `Updates & guides for Max players — latest ${shown} ${shown === 1 ? "post" : "posts"}`
-      : `Latest ${shown} ${shown === 1 ? "story" : "stories"} — swipe sideways to browse`;
+      : `Latest ${shown} ${shown === 1 ? "story" : "stories"} from all games — swipe sideways to browse`;
 
   const viewAllHref =
     liteBrand === "pubg-mobile-lite"

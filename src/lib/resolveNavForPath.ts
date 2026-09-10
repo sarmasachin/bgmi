@@ -15,6 +15,7 @@ import {
   isFreeFireFamilyPath,
 } from "@/src/lib/freeFirePages";
 import { PUBG_MOBILE_CODES_PATH } from "@/src/lib/pubgMobileCodes";
+import { newsCategoryListingPath } from "@/src/lib/newsCategories";
 import {
   isPubgMobileLiteFamilyPath,
   PUBG_MOBILE_LITE_APK_PATH,
@@ -50,6 +51,7 @@ const BGMI_LITE_FAMILY_PATHS = [
 ] as const;
 
 function isBgmiLiteFamilyPath(p: string): boolean {
+  if (p === "/news/bgmi-lite" || p.startsWith("/news/bgmi-lite/")) return true;
   return BGMI_LITE_FAMILY_PATHS.some(
     (base) => p === base || p.startsWith(`${base}/`),
   );
@@ -60,6 +62,7 @@ export const BGMI_FAMILY_NAV: NavLink[] = [
   { label: "Home", href: "/bgmi" },
   { label: "BGMI APK", href: BGMI_APK_PATH },
   { label: "Redeem Code", href: BGMI_REDEEM_CODE_PATH },
+  { label: "News", href: newsCategoryListingPath("bgmi") },
 ];
 
 /** Header chips on /pubg (and APK / redeem / codes) — same items as the PUBG hamburger submenu. */
@@ -68,6 +71,7 @@ export const PUBG_FAMILY_NAV: NavLink[] = [
   { label: "PUBG APK", href: PUBG_APK_PATH },
   { label: "Redeem Code", href: PUBG_REDEEM_CODE_PATH },
   { label: "PUBG Mobile Code", href: PUBG_MOBILE_CODES_PATH },
+  { label: "News", href: newsCategoryListingPath("pubg") },
 ];
 
 function pathIsOrUnder(pathname: string, base: string): boolean {
@@ -79,6 +83,8 @@ export function isBgmiFamilyPath(pathname: string): boolean {
   const p = raw.replace(/\/+$/, "") || "/";
   if (isBgmiLiteFamilyPath(p)) return false;
   return (
+    p === "/news/bgmi" ||
+    p.startsWith("/news/bgmi/") ||
     pathIsOrUnder(p, "/bgmi") ||
     pathIsOrUnder(p, BGMI_APK_PATH) ||
     pathIsOrUnder(p, BGMI_REDEEM_CODE_PATH)
@@ -90,6 +96,8 @@ export function isPubgFamilyPath(pathname: string): boolean {
   const p = raw.replace(/\/+$/, "") || "/";
   if (isPubgMobileLiteFamilyPath(p)) return false;
   return (
+    p === "/news/pubg" ||
+    p.startsWith("/news/pubg/") ||
     pathIsOrUnder(p, "/pubg") ||
     pathIsOrUnder(p, PUBG_APK_PATH) ||
     pathIsOrUnder(p, PUBG_REDEEM_CODE_PATH) ||
@@ -103,7 +111,7 @@ export const BGMI_LITE_NAV: NavLink[] = [
   { label: "BGMI Lite APK", href: BGMI_LITE_APK_PATH },
   { label: "Redeem Code", href: BGMI_LITE_REDEEM_CODE_PATH },
   { label: "BGMI Lite Stylish Name", href: BGMI_LITE_STYLISH_NAME_PATH },
-  { label: "News", href: "/news" },
+  { label: "News", href: newsCategoryListingPath("bgmi-lite") },
 ];
 
 /**

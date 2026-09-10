@@ -8,6 +8,7 @@ export const DEFAULT_NEWS_CATEGORIES: readonly NewsCategoryDef[] = [
   { slug: "free-fire", label: "Free Fire" },
   { slug: "bgmi", label: "BGMI" },
   { slug: "bgmi-lite", label: "BGMI Lite" },
+  { slug: "pubg", label: "PUBG Mobile" },
   { slug: "pubg-mobile-lite", label: "PUBG Mobile Lite" },
 ] as const;
 
@@ -110,6 +111,7 @@ export function newsCategoryFromCloneGame(game?: string | null): string {
   if (game === "freefire-max") return "ff-max";
   if (game === "bgmi-lite") return BGMI_LITE_NEWS_CATEGORY;
   if (game === "pubg-mobile-lite") return PUBG_MOBILE_LITE_NEWS_CATEGORY;
+  if (game === "pubg") return "pubg";
   if (game === "bgmi") return "bgmi";
   return DEFAULT_NEWS_CATEGORY;
 }
@@ -125,6 +127,7 @@ export function newsCategoryListingTitle(
   if (slug === "ff-max") return "Free Fire Max News";
   if (slug === "free-fire") return "Free Fire News";
   if (slug === "bgmi") return "BGMI News";
+  if (slug === "pubg") return "PUBG Mobile News";
   if (slug === BGMI_LITE_NEWS_CATEGORY) return "BGMI Lite News";
   if (slug === PUBG_MOBILE_LITE_NEWS_CATEGORY) return "PUBG Mobile Lite News";
   return `${label} News`;
@@ -146,6 +149,9 @@ export function newsCategoryListingDescription(
   }
   if (slug === "bgmi") {
     return "Latest BGMI news, updates, redeem codes, and guides.";
+  }
+  if (slug === "pubg") {
+    return "Latest PUBG Mobile news, updates, redeem codes, and guides.";
   }
   if (slug === BGMI_LITE_NEWS_CATEGORY) {
     return "Latest BGMI Lite news, updates, and guides for Lite players.";

@@ -90,6 +90,7 @@ function checkStaticWiring() {
   const cats = read("src/lib/newsCategories.ts");
   assert(cats.includes('slug: "ff-max"'), "missing ff-max category");
   assert(cats.includes('slug: "free-fire"'), "missing free-fire category");
+  assert(cats.includes('slug: "pubg"'), "missing pubg category");
   assert(cats.includes("newsArticlePath"), "missing newsArticlePath");
   assert(cats.includes("normalizeExtraCategories"), "missing normalizeExtraCategories");
 

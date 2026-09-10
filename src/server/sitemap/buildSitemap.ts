@@ -1,4 +1,4 @@
-import { newsArticlePath } from "@/src/lib/newsCategories";
+import { newsArticlePath, newsCategoryListingPath } from "@/src/lib/newsCategories";
 import { getSiteUrl, toCanonicalUrl } from "@/src/lib/siteUrl";
 import { legalSlugToSitemapPath, pickLatestDate, toSitemapLastmodIst } from "@/src/lib/sitemapLastmod";
 import { listPublishedLegalForSitemap } from "@/src/server/repositories/legalPagesRepository";
@@ -146,10 +146,11 @@ export async function buildNewsSitemapEntries(): Promise<SitemapUrlEntry[]> {
   seen.add(`${baseUrl}/news`);
 
   for (const cat of categorySlugs) {
-    const loc = `${baseUrl}/${cat}`;
+    const path = newsCategoryListingPath(cat);
+    const loc = `${baseUrl}${path}`;
     if (seen.has(loc)) continue;
     seen.add(loc);
-    hubs.push(row(baseUrl, `/${cat}`, toSitemapLastmodIst(categoryStamp.get(cat))));
+    hubs.push(row(baseUrl, path, toSitemapLastmodIst(categoryStamp.get(cat))));
   }
 
   return [...hubs, ...articles];
