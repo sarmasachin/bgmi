@@ -220,7 +220,7 @@ console.log("\n== 5) Client board wiring (static) ==");
   const board = fs.readFileSync(resolve("src/components/FreeFireRedeemCodeBoard.tsx"), "utf8");
   ok("board imports applyAutoExpireRedeemCode", board.includes("applyAutoExpireRedeemCode"));
   ok("board maps effectiveCodes", board.includes("effectiveCodes"));
-  ok("board schedules expiry timeout", board.includes("setTimeout") && board.includes("nextExpiry"));
+  ok("board schedules expiry timeout", board.includes("setTimeout") && board.includes("wakeTimes"));
   ok("board filters live/expired from effectiveCodes", /effectiveCodes\.filter/.test(board) || board.includes("filtered.filter"));
 }
 
@@ -236,16 +236,21 @@ for (const path of ["/free-fire-redeem-code", "/free-fire-max-redeem-code"]) {
   }
 }
 
-console.log("\n== 7) Scope gaps (documented) ==");
+console.log("\n== 7) BGMI / PUBG / Lite now have date schedule ISO ==");
 {
-  const liteHasIso =
-    (await import("node:fs")).readFileSync(resolve("src/lib/bgmiLiteRedeemCodes.ts"), "utf8").includes("expiresAt");
-  ok("BGMI Lite has no expiresAt (out of FF date-picker scope)", !liteHasIso);
-  const pubgLite = (await import("node:fs")).readFileSync(
-    resolve("src/lib/pubgMobileLiteRedeemCodes.ts"),
-    "utf8",
-  );
-  ok("PUBG Lite has no expiresAt (out of scope)", !pubgLite.includes("expiresAt"));
+  const fs = await import("node:fs");
+  const liteMgr = fs.readFileSync(resolve("app/admin/redeem-shared/AdminLiteRedeemCodesManager.tsx"), "utf8");
+  ok("Lite manager has date schedule fields", liteMgr.includes("AdminRedeemCodeScheduleFields"));
+  for (const [name, file] of [
+    ["BGMI Lite", "src/lib/bgmiLiteRedeemCodes.ts"],
+    ["PUBG Lite", "src/lib/pubgMobileLiteRedeemCodes.ts"],
+    ["BGMI", "src/lib/bgmiRedeemCodes.ts"],
+    ["PUBG", "src/lib/pubgRedeemCodes.ts"],
+  ]) {
+    const src = fs.readFileSync(resolve(file), "utf8");
+    ok(`${name} type has expiresAt`, src.includes("expiresAt"));
+    ok(`${name} type has releasedAt`, src.includes("releasedAt"));
+  }
 }
 
 console.log("\n== Summary ==");
@@ -254,5 +259,5 @@ if (failures.length) {
   for (const f of failures) console.log(" -", f);
   process.exit(1);
 }
-console.log("ALL CHECKS PASSED — auto-expire is end-to-end for FF + FF Max");
+console.log("ALL CHECKS PASSED — auto-expire is end-to-end for FF + BGMI/PUBG/Lite");
 process.exit(0);

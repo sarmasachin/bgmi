@@ -9,6 +9,7 @@ import {
   DEFAULT_PUBG_REDEEM_UI,
   type PubgRedeemUiLabels,
 } from "@/src/lib/pubgRedeemUiDefaults";
+import { attachRedeemScheduleFromRaw } from "@/src/lib/redeemCodeSchedule";
 import { prisma, tryPrismaLong } from "@/src/server/dbSafe";
 
 const KEY = "settings:pubgRedeemCodes";
@@ -48,12 +49,7 @@ function normalizeCode(raw: unknown, index: number): PubgRedeemCodeItem | null {
   const status: "live" | "expired" = statusRaw === "expired" ? "expired" : "live";
   const id = sanitizeString(raw.id) || slugId(title, code, index);
   const item: PubgRedeemCodeItem = { id, title, code, status };
-  const releasedLabel = sanitizeString(raw.releasedLabel);
-  const expiresLabel = sanitizeString(raw.expiresLabel);
-  const expiredOnLabel = sanitizeString(raw.expiredOnLabel);
-  if (releasedLabel) item.releasedLabel = releasedLabel;
-  if (expiresLabel) item.expiresLabel = expiresLabel;
-  if (expiredOnLabel) item.expiredOnLabel = expiredOnLabel;
+  attachRedeemScheduleFromRaw(item, raw, sanitizeString);
   return item;
 }
 

@@ -93,9 +93,9 @@ console.log("\n== A) Schedule helpers ==");
 console.log("\n== B) hydrateRedeemScheduleForEdit (update modal) ==");
 {
   const bare = hydrateRedeemScheduleForEdit({ status: "live" });
-  ok("bare live gets releasedAt ISO", isValidRedeemScheduleIso(bare.releasedAt));
-  ok("bare live gets expiresAt ISO", isValidRedeemScheduleIso(bare.expiresAt));
-  ok("bare live gets labels", Boolean(bare.releasedLabel && bare.expiresLabel));
+  ok("bare live has no auto releasedAt", !isValidRedeemScheduleIso(bare.releasedAt));
+  ok("bare live has no auto expiresAt", !isValidRedeemScheduleIso(bare.expiresAt));
+  ok("bare live has no auto labels", !bare.releasedLabel && !bare.expiresLabel);
 
   const keep = hydrateRedeemScheduleForEdit({
     status: "live",
@@ -111,7 +111,7 @@ console.log("\n== B) hydrateRedeemScheduleForEdit (update modal) ==");
   );
 
   const expBare = hydrateRedeemScheduleForEdit({ status: "expired" });
-  ok("bare expired gets expiredOnAt", isValidRedeemScheduleIso(expBare.expiredOnAt));
+  ok("bare expired has no auto expiredOnAt", !isValidRedeemScheduleIso(expBare.expiredOnAt));
 
   const expKeep = hydrateRedeemScheduleForEdit({
     status: "expired",
@@ -149,6 +149,17 @@ console.log("\n== C) finalize + attach (save/read) ==");
   );
   ok("attach future stays live", attached.status === "live");
   ok("attach sets releasedAt", attached.releasedAt === futureGoLive);
+
+  const finalizedEmpty = finalizeRedeemScheduleDraft({ status: "live", title: "n", code: "n" });
+  ok("finalize without dates stays empty", !finalizedEmpty.releasedAt && !finalizedEmpty.expiresAt);
+  ok("finalize without dates has no public labels", !finalizedEmpty.releasedLabel && !finalizedEmpty.expiresLabel);
+
+  const finalizedPrefix = finalizeRedeemScheduleDraft({
+    status: "live",
+    releasedLabel: "Released: ",
+    expiresLabel: "Expires:",
+  });
+  ok("prefix-only labels stripped", !finalizedPrefix.releasedLabel && !finalizedPrefix.expiresLabel);
 }
 
 console.log("\n== D) FF + FF Max normalize (repo) ==");
@@ -256,6 +267,7 @@ console.log("\n== F) Line limits ==");
     "src/lib/redeemCodeSchedule.ts",
     "app/admin/free-fire-redeem/AdminFreeFireRedeemCodesSection.tsx",
     "app/admin/redeem-shared/AdminRedeemCodeScheduleFields.tsx",
+    "app/admin/redeem-shared/AdminLiteRedeemCodesManager.tsx",
     "src/components/FreeFireRedeemCodeBoard.tsx",
   ]) {
     const n = read(f).split(/\r?\n/).length;
@@ -267,8 +279,16 @@ console.log("\n== G) HTTP smoke ==");
 for (const path of [
   "/free-fire-redeem-code",
   "/free-fire-max-redeem-code",
+  "/bgmi-redeem-code",
+  "/pubg-redeem-code",
+  "/bgmi-lite-redeem-code",
+  "/pubg-mobile-lite-redeem-code",
   "/admin/free-fire-redeem",
   "/admin/free-fire-max-redeem",
+  "/admin/bgmi-redeem",
+  "/admin/pubg-redeem",
+  "/admin/bgmi-lite-redeem",
+  "/admin/pubg-mobile-lite-redeem",
 ]) {
   try {
     const res = await fetch(`${BASE}${path}`, { redirect: "manual" });
@@ -282,13 +302,44 @@ for (const path of [
   }
 }
 
-console.log("\n== H) Known out-of-scope (evidence) ==");
+console.log("\n== H) BGMI / PUBG / Lite schedule wiring ==");
 {
   const liteMgr = read("app/admin/redeem-shared/AdminLiteRedeemCodesManager.tsx");
-  ok(
-    "Lite admin still text labels (not FF date schedule) — documented scope",
-    liteMgr.includes("Released label") && !liteMgr.includes("AdminRedeemCodeScheduleFields"),
-  );
+  ok("Lite Add/Edit modal uses date schedule fields", liteMgr.includes("AdminRedeemCodeScheduleFields"));
+  ok("Lite edit hydrates ISO for date pickers", liteMgr.includes("hydrateRedeemScheduleForEdit"));
+  ok("Lite apply finalizes schedule ISO", liteMgr.includes("finalizeRedeemScheduleDraft"));
+  ok("Lite admin shows SCHEDULED pill", liteMgr.includes("SCHEDULED") && liteMgr.includes("is-scheduled"));
+  ok("Lite no longer uses plain Released label text fields", !liteMgr.includes("Released label"));
+
+  for (const [name, file] of [
+    ["BGMI", "src/server/repositories/bgmiRedeemCodesRepository.ts"],
+    ["PUBG", "src/server/repositories/pubgRedeemCodesRepository.ts"],
+    ["BGMI Lite", "src/server/repositories/bgmiLiteRedeemCodesRepository.ts"],
+    ["PUBG Lite", "src/server/repositories/pubgMobileLiteRedeemCodesRepository.ts"],
+  ]) {
+    const src = read(file);
+    ok(`${name} repo attaches schedule ISO`, src.includes("attachRedeemScheduleFromRaw"));
+  }
+
+  for (const [name, file] of [
+    ["BGMI", "src/components/BgmiRedeemCodeLandingPage.tsx"],
+    ["PUBG", "src/components/PubgRedeemCodeLandingPage.tsx"],
+    ["BGMI Lite", "src/components/BgmiLiteRedeemCodeLandingPage.tsx"],
+    ["PUBG Lite", "src/components/PubgMobileLiteRedeemCodeLandingPage.tsx"],
+  ]) {
+    const src = read(file);
+    ok(`${name} public uses isRedeemCodePubliclyLive`, src.includes("isRedeemCodePubliclyLive"));
+    ok(`${name} public auto-expires`, src.includes("applyAutoExpireRedeemCode"));
+  }
+
+  for (const [name, file] of [
+    ["BGMI admin", "app/admin/bgmi-redeem/AdminBgmiRedeemForm.tsx"],
+    ["PUBG admin", "app/admin/pubg-redeem/AdminPubgRedeemForm.tsx"],
+    ["BGMI Lite admin", "app/admin/bgmi-lite-redeem/AdminBgmiLiteRedeemForm.tsx"],
+    ["PUBG Lite admin", "app/admin/pubg-mobile-lite-redeem/AdminPubgMobileLiteRedeemForm.tsx"],
+  ]) {
+    ok(`${name} mounts shared date-picker manager`, read(file).includes("AdminLiteRedeemCodesManager"));
+  }
 }
 
 console.log("\n== Summary ==");
@@ -297,5 +348,5 @@ if (failures.length) {
   for (const f of failures) console.log(" -", f);
   process.exit(1);
 }
-console.log("ALL CHECKS PASSED — full schedule fix for FF + FF Max (edit + go-live + expire)");
+console.log("ALL CHECKS PASSED — schedule fix for FF + BGMI/PUBG/Lite (edit + go-live + expire)");
 process.exit(0);

@@ -2,6 +2,14 @@
 
 import { useMemo, useState } from "react";
 import { AdminDialogModal } from "@/src/components/admin/AdminDialogModal";
+import { AdminRedeemCodeScheduleFields } from "@/app/admin/redeem-shared/AdminRedeemCodeScheduleFields";
+import {
+  finalizeRedeemScheduleDraft,
+  formatRedeemExpiredOnLabel,
+  hydrateRedeemScheduleForEdit,
+  isRedeemCodeScheduled,
+  isValidRedeemScheduleIso,
+} from "@/src/lib/redeemCodeSchedule";
 
 const fieldStyle = {
   width: "100%",
@@ -12,12 +20,15 @@ const fieldStyle = {
   color: "#e2e8f0",
 } as const;
 
-/** Lite redeem codes (BGMI Lite / PUBG Mobile Lite) — no server field. */
+/** Lite redeem codes (BGMI / PUBG / Lite) — no server field. */
 export type AdminLiteRedeemCodeItem = {
   id: string;
   title: string;
   code: string;
   status: "live" | "expired";
+  releasedAt?: string;
+  expiresAt?: string;
+  expiredOnAt?: string;
   releasedLabel?: string;
   expiresLabel?: string;
   expiredOnLabel?: string;
@@ -29,8 +40,6 @@ export function emptyLiteRedeemCode(): AdminLiteRedeemCodeItem {
     title: "",
     code: "",
     status: "live",
-    releasedLabel: "Released: ",
-    expiresLabel: "Expires: ",
   };
 }
 
@@ -68,7 +77,17 @@ function scheduleLabel(item: AdminLiteRedeemCodeItem): string {
   return bits.length ? bits.join(" · ") : "—";
 }
 
-/** Compact lite redeem-code table + accessible modal editor. */
+function statusPill(item: AdminLiteRedeemCodeItem): { className: string; label: string } {
+  if (item.status === "expired") {
+    return { className: "admin-redeem-pill is-expired", label: "EXPIRED" };
+  }
+  if (isRedeemCodeScheduled(item)) {
+    return { className: "admin-redeem-pill is-scheduled", label: "SCHEDULED" };
+  }
+  return { className: "admin-redeem-pill is-live", label: "LIVE" };
+}
+
+/** Compact lite redeem-code table + date/time schedule editor. */
 export function AdminLiteRedeemCodesManager({ codes, onChangeCodes }: Props) {
   const [filter, setFilter] = useState<FilterTab>("all");
   const [query, setQuery] = useState("");
@@ -85,9 +104,7 @@ export function AdminLiteRedeemCodesManager({ codes, onChangeCodes }: Props) {
         if (filter === "live" && item.status !== "live") return false;
         if (filter === "expired" && item.status !== "expired") return false;
         if (!q) return true;
-        return (
-          item.title.toLowerCase().includes(q) || item.code.toLowerCase().includes(q)
-        );
+        return item.title.toLowerCase().includes(q) || item.code.toLowerCase().includes(q);
       });
   }, [codes, filter, query]);
 
@@ -98,7 +115,7 @@ export function AdminLiteRedeemCodesManager({ codes, onChangeCodes }: Props) {
   function openEdit(index: number) {
     const item = codes[index];
     if (!item) return;
-    setEditor({ mode: "edit", index, draft: { ...item } });
+    setEditor({ mode: "edit", index, draft: hydrateRedeemScheduleForEdit({ ...item }) });
   }
 
   function closeEditor() {
@@ -107,11 +124,11 @@ export function AdminLiteRedeemCodesManager({ codes, onChangeCodes }: Props) {
 
   function applyEditor() {
     if (!editor) return;
-    const draft = {
+    const draft = finalizeRedeemScheduleDraft({
       ...editor.draft,
       title: editor.draft.title.trim() || "Untitled code",
       code: editor.draft.code.trim() || "CODE-HERE",
-    };
+    });
     if (editor.mode === "create") onChangeCodes([...codes, draft]);
     else onChangeCodes(codes.map((c, i) => (i === editor.index ? draft : c)));
     setEditor(null);
@@ -180,7 +197,8 @@ export function AdminLiteRedeemCodesManager({ codes, onChangeCodes }: Props) {
       </div>
 
       <p className="admin-redeem-hint">
-        Compact list view — edit opens a panel. Save page publishes to the live site.
+        Compact list view — Edit opens Schedule (Go-live + Expires). Future Go-live = SCHEDULED until
+        that time; Expires auto-archives after that time. Save page to publish.
       </p>
 
       <div className="admin-table-wrap admin-redeem-table-wrap">
@@ -215,13 +233,10 @@ export function AdminLiteRedeemCodesManager({ codes, onChangeCodes }: Props) {
                     <code className="admin-redeem-code">{item.code || "—"}</code>
                   </td>
                   <td>
-                    <span
-                      className={`admin-redeem-pill${
-                        item.status === "live" ? " is-live" : " is-expired"
-                      }`}
-                    >
-                      {item.status === "live" ? "LIVE" : "EXPIRED"}
-                    </span>
+                    {(() => {
+                      const pill = statusPill(item);
+                      return <span className={pill.className}>{pill.label}</span>;
+                    })()}
                   </td>
                   <td className="admin-redeem-schedule">{scheduleLabel(item)}</td>
                   <td>
@@ -297,37 +312,34 @@ export function AdminLiteRedeemCodesManager({ codes, onChangeCodes }: Props) {
             <span>Status</span>
             <select
               value={editor.draft.status}
-              onChange={(e) =>
-                patchDraft({
-                  status: e.target.value === "expired" ? "expired" : "live",
-                })
-              }
+              onChange={(e) => {
+                const status = e.target.value === "expired" ? "expired" : "live";
+                if (status === "expired") {
+                  const expiredOnAt = isValidRedeemScheduleIso(editor.draft.expiresAt)
+                    ? editor.draft.expiresAt
+                    : undefined;
+                  patchDraft({
+                    status,
+                    expiredOnAt,
+                    expiredOnLabel: expiredOnAt
+                      ? formatRedeemExpiredOnLabel(expiredOnAt)
+                      : undefined,
+                    releasedAt: undefined,
+                    expiresAt: undefined,
+                    releasedLabel: undefined,
+                    expiresLabel: undefined,
+                  });
+                  return;
+                }
+                patchDraft(hydrateRedeemScheduleForEdit({ ...editor.draft, status: "live" }));
+              }}
               style={fieldStyle}
             >
               <option value="live">LIVE</option>
               <option value="expired">EXPIRED</option>
             </select>
           </label>
-          {editor.draft.status === "live" ? (
-            <>
-              <Field
-                label="Released label"
-                value={editor.draft.releasedLabel ?? ""}
-                onChange={(releasedLabel) => patchDraft({ releasedLabel })}
-              />
-              <Field
-                label="Expires label"
-                value={editor.draft.expiresLabel ?? ""}
-                onChange={(expiresLabel) => patchDraft({ expiresLabel })}
-              />
-            </>
-          ) : (
-            <Field
-              label="Expired on label"
-              value={editor.draft.expiredOnLabel ?? ""}
-              onChange={(expiredOnLabel) => patchDraft({ expiredOnLabel })}
-            />
-          )}
+          <AdminRedeemCodeScheduleFields draft={editor.draft} onPatch={patchDraft} />
         </AdminDialogModal>
       ) : null}
     </div>

@@ -21,6 +21,9 @@ export type BgmiLiteRedeemCodeItem = {
   title: string;
   code: string;
   status: "live" | "expired";
+  releasedAt?: string;
+  expiresAt?: string;
+  expiredOnAt?: string;
   releasedLabel?: string;
   expiresLabel?: string;
   expiredOnLabel?: string;

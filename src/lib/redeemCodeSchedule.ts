@@ -191,21 +191,17 @@ export function isRedeemCodePubliclyLive(
 }
 
 /**
- * Ensure edit modal has date/time picker values (ISO), even for legacy label-only rows.
+ * Edit modal: keep existing ISO dates. Do not invent dates the admin never set.
  */
 export function hydrateRedeemScheduleForEdit<T extends RedeemCodeWithStatus>(item: T): T {
   if (item.status === "expired") {
-    if (isValidRedeemScheduleIso(item.expiredOnAt)) {
-      return {
-        ...item,
-        expiredOnLabel: formatRedeemExpiredOnLabel(item.expiredOnAt),
-      };
-    }
-    const expiredOnAt = defaultReleasedIso();
+    const expiredOnAt = isValidRedeemScheduleIso(item.expiredOnAt) ? item.expiredOnAt : undefined;
     return {
       ...item,
       expiredOnAt,
-      expiredOnLabel: item.expiredOnLabel?.trim() || formatRedeemExpiredOnLabel(expiredOnAt),
+      expiredOnLabel: expiredOnAt
+        ? formatRedeemExpiredOnLabel(expiredOnAt)
+        : item.expiredOnLabel,
       releasedAt: undefined,
       expiresAt: undefined,
       releasedLabel: undefined,
@@ -213,83 +209,43 @@ export function hydrateRedeemScheduleForEdit<T extends RedeemCodeWithStatus>(ite
     };
   }
 
-  const defaults = defaultLiveRedeemSchedule();
-  const releasedAt = isValidRedeemScheduleIso(item.releasedAt)
-    ? item.releasedAt
-    : defaults.releasedAt!;
-  const expiresAt = isValidRedeemScheduleIso(item.expiresAt)
-    ? item.expiresAt
-    : defaults.expiresAt!;
+  const releasedAt = isValidRedeemScheduleIso(item.releasedAt) ? item.releasedAt : undefined;
+  const expiresAt = isValidRedeemScheduleIso(item.expiresAt) ? item.expiresAt : undefined;
   return {
     ...item,
     releasedAt,
     expiresAt,
-    releasedLabel: formatRedeemReleasedLabel(releasedAt),
-    expiresLabel: formatRedeemExpiresLabel(expiresAt),
+    releasedLabel: releasedAt ? formatRedeemReleasedLabel(releasedAt) : item.releasedLabel,
+    expiresLabel: expiresAt ? formatRedeemExpiresLabel(expiresAt) : item.expiresLabel,
     expiredOnAt: undefined,
     expiredOnLabel: undefined,
   };
 }
 
-/** Sync ISO ↔ formatted labels before save / after normalize. */
+/** Sync ISO ↔ formatted labels before save. Unset dates stay empty (no public text). */
 export function finalizeRedeemScheduleDraft<T extends RedeemScheduleDraft>(draft: T): T {
   let next: T;
 
   if (draft.status === "live") {
-    const releasedAtRaw = draft.releasedAt;
-    const expiresAtRaw = draft.expiresAt;
-    const hasReleasedIso = isValidRedeemScheduleIso(releasedAtRaw);
-    const hasExpiresIso = isValidRedeemScheduleIso(expiresAtRaw);
-    const hasLegacyLabels =
-      Boolean(draft.releasedLabel?.trim()) || Boolean(draft.expiresLabel?.trim());
-
-    if (hasReleasedIso && hasExpiresIso) {
-      next = {
-        ...draft,
-        releasedLabel: formatRedeemReleasedLabel(releasedAtRaw),
-        expiresLabel: formatRedeemExpiresLabel(expiresAtRaw),
-        expiredOnAt: undefined,
-        expiredOnLabel: undefined,
-      };
-    } else if (hasReleasedIso) {
-      const expiresAt = hasExpiresIso ? expiresAtRaw : defaultExpiresIso(releasedAtRaw);
-      next = {
-        ...draft,
-        expiresAt,
-        releasedLabel: formatRedeemReleasedLabel(releasedAtRaw),
-        expiresLabel: formatRedeemExpiresLabel(expiresAt),
-        expiredOnAt: undefined,
-        expiredOnLabel: undefined,
-      };
-    } else if (hasExpiresIso) {
-      const releasedAt = defaultReleasedIso();
-      next = {
-        ...draft,
-        releasedAt,
-        releasedLabel: formatRedeemReleasedLabel(releasedAt),
-        expiresLabel: formatRedeemExpiresLabel(expiresAtRaw),
-        expiredOnAt: undefined,
-        expiredOnLabel: undefined,
-      };
-    } else if (hasLegacyLabels) {
-      next = {
-        ...draft,
-        expiredOnAt: undefined,
-        expiredOnLabel: undefined,
-      };
-    } else {
-      const releasedAt = defaultReleasedIso();
-      const expiresAt = defaultExpiresIso(releasedAt);
-      next = {
-        ...draft,
-        releasedAt,
-        expiresAt,
-        releasedLabel: formatRedeemReleasedLabel(releasedAt),
-        expiresLabel: formatRedeemExpiresLabel(expiresAt),
-        expiredOnAt: undefined,
-        expiredOnLabel: undefined,
-      };
-    }
+    const releasedAt = isValidRedeemScheduleIso(draft.releasedAt) ? draft.releasedAt : undefined;
+    const expiresAt = isValidRedeemScheduleIso(draft.expiresAt) ? draft.expiresAt : undefined;
+    next = {
+      ...draft,
+      releasedAt,
+      expiresAt,
+      releasedLabel: releasedAt
+        ? formatRedeemReleasedLabel(releasedAt)
+        : isMeaningfulScheduleLabel(draft.releasedLabel)
+          ? draft.releasedLabel
+          : undefined,
+      expiresLabel: expiresAt
+        ? formatRedeemExpiresLabel(expiresAt)
+        : isMeaningfulScheduleLabel(draft.expiresLabel)
+          ? draft.expiresLabel
+          : undefined,
+      expiredOnAt: undefined,
+      expiredOnLabel: undefined,
+    };
   } else if (isValidRedeemScheduleIso(draft.expiredOnAt)) {
     next = {
       ...draft,
@@ -299,20 +255,13 @@ export function finalizeRedeemScheduleDraft<T extends RedeemScheduleDraft>(draft
       releasedLabel: undefined,
       expiresLabel: undefined,
     };
-  } else if (draft.expiredOnLabel?.trim()) {
-    next = {
-      ...draft,
-      releasedAt: undefined,
-      expiresAt: undefined,
-      releasedLabel: undefined,
-      expiresLabel: undefined,
-    };
   } else {
-    const expiredOnAt = defaultReleasedIso();
     next = {
       ...draft,
-      expiredOnAt,
-      expiredOnLabel: formatRedeemExpiredOnLabel(expiredOnAt),
+      expiredOnAt: undefined,
+      expiredOnLabel: isMeaningfulScheduleLabel(draft.expiredOnLabel)
+        ? draft.expiredOnLabel
+        : undefined,
       releasedAt: undefined,
       expiresAt: undefined,
       releasedLabel: undefined,
@@ -335,6 +284,11 @@ export function compactRedeemScheduleLabel(label: string | undefined): string {
   return trimmed || "—";
 }
 
+/** False for empty / prefix-only labels like "Released:". */
+export function isMeaningfulScheduleLabel(label: string | undefined): boolean {
+  return compactRedeemScheduleLabel(label) !== "—";
+}
+
 /** Attach schedule ISO + labels when reading from DB JSON. */
 export function attachRedeemScheduleFromRaw(
   item: RedeemScheduleDraft & { status?: "live" | "expired" },
@@ -351,21 +305,21 @@ export function attachRedeemScheduleFromRaw(
   if (isValidRedeemScheduleIso(releasedAt)) {
     item.releasedAt = releasedAt;
     item.releasedLabel = formatRedeemReleasedLabel(releasedAt);
-  } else if (releasedLabel) {
+  } else if (isMeaningfulScheduleLabel(releasedLabel)) {
     item.releasedLabel = releasedLabel;
   }
 
   if (isValidRedeemScheduleIso(expiresAt)) {
     item.expiresAt = expiresAt;
     item.expiresLabel = formatRedeemExpiresLabel(expiresAt);
-  } else if (expiresLabel) {
+  } else if (isMeaningfulScheduleLabel(expiresLabel)) {
     item.expiresLabel = expiresLabel;
   }
 
   if (isValidRedeemScheduleIso(expiredOnAt)) {
     item.expiredOnAt = expiredOnAt;
     item.expiredOnLabel = formatRedeemExpiredOnLabel(expiredOnAt);
-  } else if (expiredOnLabel) {
+  } else if (isMeaningfulScheduleLabel(expiredOnLabel)) {
     item.expiredOnLabel = expiredOnLabel;
   }
 

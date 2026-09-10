@@ -9,6 +9,7 @@ import {
   DEFAULT_PUBG_MOBILE_LITE_REDEEM_UI,
   type PubgMobileLiteRedeemUiLabels,
 } from "@/src/lib/pubgMobileLiteRedeemUiDefaults";
+import { attachRedeemScheduleFromRaw } from "@/src/lib/redeemCodeSchedule";
 import { prisma, tryPrismaLong } from "@/src/server/dbSafe";
 
 const KEY = "settings:pubgMobileLiteRedeemCodes";
@@ -48,12 +49,7 @@ function normalizeCode(raw: unknown, index: number): PubgMobileLiteRedeemCodeIte
   const status: "live" | "expired" = statusRaw === "expired" ? "expired" : "live";
   const id = sanitizeString(raw.id) || slugId(title, code, index);
   const item: PubgMobileLiteRedeemCodeItem = { id, title, code, status };
-  const releasedLabel = sanitizeString(raw.releasedLabel);
-  const expiresLabel = sanitizeString(raw.expiresLabel);
-  const expiredOnLabel = sanitizeString(raw.expiredOnLabel);
-  if (releasedLabel) item.releasedLabel = releasedLabel;
-  if (expiresLabel) item.expiresLabel = expiresLabel;
-  if (expiredOnLabel) item.expiredOnLabel = expiredOnLabel;
+  attachRedeemScheduleFromRaw(item, raw, sanitizeString);
   return item;
 }
 

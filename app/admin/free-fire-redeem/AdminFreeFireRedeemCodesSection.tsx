@@ -5,8 +5,6 @@ import { AdminRedeemCodeScheduleFields } from "@/app/admin/redeem-shared/AdminRe
 import { AdminDialogModal } from "@/src/components/admin/AdminDialogModal";
 import type { FreeFireRedeemCodeItem } from "@/src/lib/freeFireRedeemCodes";
 import {
-  defaultExpiredRedeemSchedule,
-  defaultLiveRedeemSchedule,
   finalizeRedeemScheduleDraft,
   formatRedeemExpiredOnLabel,
   hydrateRedeemScheduleForEdit,
@@ -36,7 +34,6 @@ export function emptyFreeFireRedeemCode(): FreeFireRedeemCodeItem {
     code: "",
     status: "live",
     server: "global",
-    ...defaultLiveRedeemSchedule(),
   };
 }
 
@@ -338,12 +335,14 @@ export function AdminFreeFireRedeemCodesSection({ codes, servers, onChangeCodes 
                 const status = e.target.value === "expired" ? "expired" : "live";
                 if (status === "expired") {
                   const expiredOnAt = isValidRedeemScheduleIso(editor.draft.expiresAt)
-                    ? editor.draft.expiresAt!
-                    : defaultExpiredRedeemSchedule().expiredOnAt!;
+                    ? editor.draft.expiresAt
+                    : undefined;
                   patchDraft({
                     status,
                     expiredOnAt,
-                    expiredOnLabel: formatRedeemExpiredOnLabel(expiredOnAt),
+                    expiredOnLabel: expiredOnAt
+                      ? formatRedeemExpiredOnLabel(expiredOnAt)
+                      : undefined,
                     releasedAt: undefined,
                     expiresAt: undefined,
                     releasedLabel: undefined,

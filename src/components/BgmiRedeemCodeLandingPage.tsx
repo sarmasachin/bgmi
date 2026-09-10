@@ -7,7 +7,7 @@ import { PageCommentSection } from "@/src/components/PageCommentSection";
 import { SiteFooter } from "@/src/components/SiteFooter";
 import {
   formatRedeemUpdatedLabelIst,
-  wasRedeemUpdatedTodayIst,
+  resolveRedeemFreshnessAt,
 } from "@/src/lib/bgmiLiteRedeemFreshness";
 import {
   BGMI_REDEEM_CODE_PATH,
@@ -15,7 +15,11 @@ import {
   cloneBgmiRedeemPage,
   type BgmiRedeemCodePageContent,
 } from "@/src/lib/bgmiRedeemCodes";
-import { sortExpiredRedeemCodesNewestFirst } from "@/src/lib/redeemCodeSchedule";
+import {
+  applyAutoExpireRedeemCode,
+  isRedeemCodePubliclyLive,
+  sortExpiredRedeemCodesNewestFirst,
+} from "@/src/lib/redeemCodeSchedule";
 import { breadcrumbListSchema, faqSchema, webPageSchema } from "@/src/lib/schema";
 import { toCanonicalUrl } from "@/src/lib/siteUrl";
 import {
@@ -66,15 +70,19 @@ export async function BgmiRedeemCodeLandingPage() {
   const homeUrl = toCanonicalUrl("/");
   const bgmiUrl = toCanonicalUrl("/bgmi");
   const crumbCurrent = ui.breadcrumbName.trim() || "BGMI Redeem Code";
-  const live = page.codes.filter((c) => c.status === "live");
+  const dated = page.codes.map((c) => applyAutoExpireRedeemCode(c));
+  const live = dated.filter((c) => isRedeemCodePubliclyLive(c));
   const expired = sortExpiredRedeemCodesNewestFirst(
-    page.codes.filter((c) => c.status === "expired"),
+    dated.filter((c) => c.status === "expired"),
   );
-  const updatedToday = wasRedeemUpdatedTodayIst(updatedAt);
-  const updatedLabel =
-    updatedAt && updatedToday
-      ? formatRedeemUpdatedLabelIst(updatedAt, ui.updatedLabelPrefix)
-      : null;
+  const freshnessAt = resolveRedeemFreshnessAt(
+    updatedAt,
+    live.map((c) => c.releasedAt),
+  );
+  const updatedToday = Boolean(freshnessAt);
+  const updatedLabel = freshnessAt
+    ? formatRedeemUpdatedLabelIst(freshnessAt, ui.updatedLabelPrefix)
+    : null;
   const faqItems = page.faqs.map((item) => ({
     id: item.id,
     question: item.question,

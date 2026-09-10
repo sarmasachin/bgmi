@@ -36,6 +36,10 @@ function DateTimePair({
   const { date, time } = splitRedeemScheduleIso(iso);
 
   function update(nextDate: string, nextTime: string) {
+    if (!nextDate.trim()) {
+      onIsoChange("");
+      return;
+    }
     const joined = joinRedeemScheduleIso(nextDate, nextTime);
     if (!joined) return;
     onIsoChange(joined);
@@ -79,8 +83,8 @@ export function AdminRedeemCodeScheduleFields({ draft, onPatch }: Props) {
         <div className="admin-redeem-schedule-heading">
           <strong>Schedule</strong>
           <span>
-            Set when the code goes live and when it expires (IST). A future Go-live time keeps it
-            scheduled until then.
+            Set dates only if you want them on the public page. Leave empty to hide Released / Expires
+            text.
           </span>
         </div>
         {scheduled ? (
@@ -92,28 +96,30 @@ export function AdminRedeemCodeScheduleFields({ draft, onPatch }: Props) {
           label="Go live (Released)"
           iso={draft.releasedAt}
           onIsoChange={(releasedAt) =>
-            onPatch({
-              releasedAt,
-              releasedLabel: formatRedeemReleasedLabel(releasedAt),
-            })
+            onPatch(
+              releasedAt
+                ? { releasedAt, releasedLabel: formatRedeemReleasedLabel(releasedAt) }
+                : { releasedAt: undefined, releasedLabel: undefined },
+            )
           }
         />
         <p className="admin-redeem-schedule-preview">
-          {draft.releasedLabel || "Pick go-live date & time"}
+          {draft.releasedLabel || "Optional — empty hides Released text"}
         </p>
 
         <DateTimePair
           label="Expires"
           iso={draft.expiresAt}
           onIsoChange={(expiresAt) =>
-            onPatch({
-              expiresAt,
-              expiresLabel: formatRedeemExpiresLabel(expiresAt),
-            })
+            onPatch(
+              expiresAt
+                ? { expiresAt, expiresLabel: formatRedeemExpiresLabel(expiresAt) }
+                : { expiresAt: undefined, expiresLabel: undefined },
+            )
           }
         />
         <p className="admin-redeem-schedule-preview">
-          {draft.expiresLabel || "Pick expiry date & time"}
+          {draft.expiresLabel || "Optional — empty hides Expires text"}
         </p>
       </div>
     );
@@ -129,14 +135,15 @@ export function AdminRedeemCodeScheduleFields({ draft, onPatch }: Props) {
         label="Expired on"
         iso={draft.expiredOnAt}
         onIsoChange={(expiredOnAt) =>
-          onPatch({
-            expiredOnAt,
-            expiredOnLabel: formatRedeemExpiredOnLabel(expiredOnAt),
-          })
+          onPatch(
+            expiredOnAt
+              ? { expiredOnAt, expiredOnLabel: formatRedeemExpiredOnLabel(expiredOnAt) }
+              : { expiredOnAt: undefined, expiredOnLabel: undefined },
+          )
         }
       />
       <p className="admin-redeem-schedule-preview">
-        {draft.expiredOnLabel || "Pick expired date & time"}
+        {draft.expiredOnLabel || "Optional — empty hides Expired on text"}
       </p>
     </div>
   );

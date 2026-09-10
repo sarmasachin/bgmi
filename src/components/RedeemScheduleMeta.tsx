@@ -1,6 +1,6 @@
 "use client";
 
-import { compactRedeemScheduleLabel } from "@/src/lib/redeemCodeSchedule";
+import { compactRedeemScheduleLabel, isMeaningfulScheduleLabel } from "@/src/lib/redeemCodeSchedule";
 
 type Props = {
   icon: string;
@@ -9,7 +9,7 @@ type Props = {
 
 /** Full schedule label on desktop; compact text on mobile (see globals.css). */
 export function RedeemScheduleMeta({ icon, label }: Props) {
-  if (!label?.trim()) return null;
+  if (!isMeaningfulScheduleLabel(label)) return null;
   const trimmed = label.trim();
   const compact = compactRedeemScheduleLabel(label);
   return (
