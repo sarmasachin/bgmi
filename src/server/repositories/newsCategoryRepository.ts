@@ -1,5 +1,6 @@
 import { cache } from "react";
 import { prisma, tryPrisma, tryPrismaLong } from "@/src/server/dbSafe";
+import { findCategoryPublicSlugConflict } from "@/src/server/publicUrlConflicts";
 import {
   BGMI_LITE_NEWS_CATEGORY,
   DEFAULT_NEWS_CATEGORIES,
@@ -118,8 +119,8 @@ export async function createNewsCategory(input: {
   if (!label) throw new Error("INVALID_LABEL");
 
   const db = await tryPrismaLong(async () => {
-    const exists = await prisma.newsCategory.findUnique({ where: { slug } });
-    if (exists) throw new Error("SLUG_EXISTS");
+    const conflict = await findCategoryPublicSlugConflict(slug);
+    if (conflict) throw new Error(conflict);
     const max = await prisma.newsCategory.aggregate({ _max: { sortOrder: true } });
     const sortOrder = (max._max.sortOrder ?? -1) + 1;
     return prisma.newsCategory.create({
@@ -159,8 +160,8 @@ export async function updateNewsCategory(input: {
         throw new Error("INVALID_SLUG");
       }
       if (normalized !== existing.slug) {
-        const clash = await prisma.newsCategory.findUnique({ where: { slug: normalized } });
-        if (clash) throw new Error("SLUG_EXISTS");
+        const clash = await findCategoryPublicSlugConflict(normalized, input.id);
+        if (clash) throw new Error(clash);
         await prisma.newsPost.updateMany({
           where: { primaryCategory: existing.slug },
           data: { primaryCategory: normalized },

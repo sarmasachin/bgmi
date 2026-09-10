@@ -1,9 +1,11 @@
 import { cache } from "react";
 import { mockStore } from "@/src/server/mockStore";
 import { prisma, tryPrisma, tryPrismaLong } from "@/src/server/dbSafe";
+import { findPagePublicSlugConflict } from "@/src/server/publicUrlConflicts";
 import type { Prisma } from "@prisma/client";
 import { sanitizeHtml } from "@/src/lib/sanitizeHtml";
 import { newsArticlePath, newsCategoryFromCloneGame } from "@/src/lib/newsCategories";
+import { isReservedPublicSlug } from "@/src/lib/reservedPublicSlugs";
 import { toCanonicalUrl } from "@/src/lib/siteUrl";
 
 type TemplateType = "home" | "article" | "landing";
@@ -507,12 +509,9 @@ export async function createPage(input: PageInput) {
   }
 
   const dbData = await tryPrismaLong(async () => {
-    const existing = await prisma.pageTemplate.findFirst({
-      where: { slug: { in: pageSlugVariants(slug) } },
-      select: { id: true },
-    });
-    if (existing) {
-      throw new Error("SLUG_EXISTS");
+    const conflict = await findPagePublicSlugConflict(slug);
+    if (conflict) {
+      throw new Error(conflict);
     }
     if (await pageTitleExists(input.title)) {
       throw new Error("TITLE_EXISTS");
@@ -595,6 +594,9 @@ export async function createPage(input: PageInput) {
   });
 
   const slugExists = mockStore.pages.some((item) => pageSlugVariants(slug).includes(item.slug));
+  if (isReservedPublicSlug(slug)) {
+    throw new Error("URL_TAKEN_SITE");
+  }
   if (slugExists) {
     throw new Error("SLUG_EXISTS");
   }
@@ -647,14 +649,8 @@ export async function updatePage(id: string, payload: Partial<PageInput>) {
     if (!current) return { kind: "not_found" as const };
 
     if (nextPayload.slug && nextPayload.slug !== current.slug) {
-      const duplicate = await prisma.pageTemplate.findFirst({
-        where: {
-          slug: { in: pageSlugVariants(nextPayload.slug) },
-          id: { not: id },
-        },
-        select: { id: true },
-      });
-      if (duplicate) throw new Error("SLUG_EXISTS");
+      const conflict = await findPagePublicSlugConflict(nextPayload.slug, id);
+      if (conflict) throw new Error(conflict);
     }
     if (nextPayload.title !== undefined && (await pageTitleExists(nextPayload.title, id))) {
       throw new Error("TITLE_EXISTS");
@@ -759,6 +755,9 @@ export async function updatePage(id: string, payload: Partial<PageInput>) {
   const page = mockStore.pages.find((item) => item.id === id);
   if (!page) return null;
   if (nextPayload.slug && nextPayload.slug !== page.slug) {
+    if (isReservedPublicSlug(nextPayload.slug)) {
+      throw new Error("URL_TAKEN_SITE");
+    }
     const duplicate = mockStore.pages.find(
       (item) => pageSlugVariants(nextPayload.slug!).includes(item.slug) && item.id !== id,
     );

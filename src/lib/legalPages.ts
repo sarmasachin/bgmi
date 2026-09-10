@@ -270,38 +270,5 @@ export function legalPublicPath(slug: string) {
 }
 
 /** Slugs that must not be used for custom legal pages (app routes). */
-export const RESERVED_APP_SLUGS = new Set([
-  "admin",
-  "api",
-  "contact",
-  "news",
-  "bgmi",
-  "bgmi-apk",
-  "bgmi-redeem-code",
-  "bgmi-lite",
-  "bgmi-lite-apk",
-  "bgmi-lite-redeem-code",
-  "bgmi-lite-stylish-name",
-  "pubg",
-  "pubg-apk",
-  "pubg-redeem-code",
-  "pubg-mobile-lite",
-  "pubg-mobile-lite-apk",
-  "pubg-mobile-lite-redeem-code",
-  "pubg-mobile-lite-name",
-  "free-fire-redeem-code",
-  "free-fire-stylish-name",
-  "free-fire-max-redeem-code",
-  "free-fire-max-stylish-name",
-  "privacy",
-  "terms",
-  "disclaimer",
-  "legal",
-  "sitemap",
-  "robots",
-  "manifest",
-  "favicon",
-  "free-fire-sensitivity-settings-calculator",
-  "free-fire-max-sensitivity-settings-calculator",
-]);
+export { RESERVED_PUBLIC_SLUGS as RESERVED_APP_SLUGS } from "@/src/lib/reservedPublicSlugs";
 

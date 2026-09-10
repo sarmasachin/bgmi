@@ -9,41 +9,8 @@ import {
   getSitemapLastmodMap,
   resolveSitemapLastmod,
 } from "@/src/server/repositories/sitemapLastmodRepository";
+import { RESERVED_PUBLIC_SLUGS } from "@/src/lib/reservedPublicSlugs";
 import type { SitemapUrlEntry } from "@/src/server/sitemap/sitemapXml";
-
-/** Redirects / admin / API — never list these (Google: canonical 200 URLs only). */
-const RESERVED_TOP_SEGMENTS = new Set([
-  "bgmi",
-  "bgmi-apk",
-  "bgmi-redeem-code",
-  "bgmi-lite",
-  "bgmi-lite-apk",
-  "bgmi-lite-redeem-code",
-  "bgmi-lite-stylish-name",
-  "pubg",
-  "pubg-apk",
-  "pubg-redeem-code",
-  "pubg-mobile-lite",
-  "pubg-mobile-lite-apk",
-  "pubg-mobile-lite-redeem-code",
-  "pubg-mobile-lite-name",
-  "free-fire-redeem-code",
-  "free-fire-stylish-name",
-  "free-fire-max-redeem-code",
-  "free-fire-max-stylish-name",
-  "news",
-  "admin",
-  "api",
-  "privacy",
-  "terms",
-  "contact",
-  "disclaimer",
-  "legal",
-  "pubg-mobile-codes",
-  "free-fire-sensitivity-settings-calculator",
-  "free-fire-max-sensitivity-settings-calculator",
-  "free-fire-advance-server",
-]);
 
 function toPathFromCmsSlug(slug: string, reserved: Set<string>): string | null {
   const cleaned = slug.trim().replace(/^\/+|\/+$/g, "");
@@ -72,7 +39,7 @@ export async function buildPageSitemapEntries(): Promise<SitemapUrlEntry[]> {
   const lastmodMap = await getSitemapLastmodMap();
   const lastmod = (path: string) => toSitemapLastmodIst(resolveSitemapLastmod(lastmodMap, path));
   const categorySlugs = await listNewsCategorySlugs();
-  const reserved = new Set([...RESERVED_TOP_SEGMENTS, ...categorySlugs]);
+  const reserved = new Set([...RESERVED_PUBLIC_SLUGS, ...categorySlugs]);
 
   const staticEntries: SitemapUrlEntry[] = [
     row(baseUrl, "/", lastmod("/")),

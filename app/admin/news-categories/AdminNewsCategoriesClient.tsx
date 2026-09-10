@@ -4,7 +4,8 @@ import { FormEvent, useState } from "react";
 import type { AdminNewsCategoryRow } from "@/src/server/admin/mapAdminNewsCategoryRows";
 import { useAdminFlash } from "@/src/components/admin/AdminToast";
 import { readApiError } from "@/src/lib/userFacingError";
-import { normalizeCategorySlugInput } from "@/src/lib/newsCategories";
+import { formatCategorySlugDraft, normalizeCategorySlugInput } from "@/src/lib/newsCategories";
+import { useAdminDuplicateCheck } from "@/src/hooks/useAdminDuplicateCheck";
 
 type Props = {
   initialRows: AdminNewsCategoryRow[];
@@ -32,6 +33,15 @@ export default function AdminNewsCategoriesClient({ initialRows }: Props) {
   const [form, setForm] = useState<FormState>(emptyForm);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+  const slugReady = Boolean(normalizeCategorySlugInput(form.slug)) && !form.slug.endsWith("-");
+  const duplicateSlugExists = useAdminDuplicateCheck({
+    endpoint: "/api/admin/news-categories",
+    field: "slug",
+    value: normalizeCategorySlugInput(form.slug),
+    excludeId: editingId,
+    minLength: 1,
+    enabled: slugReady,
+  });
 
   async function reload() {
     const res = await fetch("/api/admin/news-categories");
@@ -61,10 +71,19 @@ export default function AdminNewsCategoriesClient({ initialRows }: Props) {
 
   async function onSubmit(event: FormEvent) {
     event.preventDefault();
+    const safeSlug = normalizeCategorySlugInput(form.slug);
+    if (!safeSlug) {
+      setMessage("Slug is required.");
+      return;
+    }
+    if (duplicateSlugExists) {
+      setMessage("This URL already exists. Choose another slug.");
+      return;
+    }
     setBusy(true);
     try {
       const payload = {
-        slug: normalizeCategorySlugInput(form.slug),
+        slug: safeSlug,
         label: form.label.trim(),
         seoTitle: form.seoTitle.trim(),
         seoDescription: form.seoDescription.trim(),
@@ -144,12 +163,16 @@ export default function AdminNewsCategoriesClient({ initialRows }: Props) {
           <input
             name="slug"
             placeholder="slug (e.g. bgmi-lite)"
+            className={duplicateSlugExists ? "is-invalid" : undefined}
             value={form.slug}
             onChange={(e) =>
-              setForm((f) => ({ ...f, slug: normalizeCategorySlugInput(e.target.value) }))
+              setForm((f) => ({ ...f, slug: formatCategorySlugDraft(e.target.value) }))
             }
             required
           />
+          {duplicateSlugExists ? (
+            <p className="admin-field-error">This URL already exists. Choose another slug.</p>
+          ) : null}
         </div>
         <div className="admin-field" style={{ gridColumn: "1 / -1" }}>
           <input

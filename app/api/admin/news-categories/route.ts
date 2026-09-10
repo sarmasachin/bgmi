@@ -9,6 +9,7 @@ import {
   listNewsCategories,
   updateNewsCategory,
 } from "@/src/server/repositories/newsCategoryRepository";
+import { isCategoryPublicSlugTaken } from "@/src/server/publicUrlConflicts";
 
 const createSchema = z.object({
   slug: z.string().min(1).max(64),
@@ -30,7 +31,22 @@ const updateSchema = z.object({
 function mapError(error: unknown) {
   if (error instanceof Error) {
     if (error.message === "SLUG_EXISTS") {
-      return NextResponse.json({ error: "Category slug already exists." }, { status: 409 });
+      return NextResponse.json(
+        { error: "This URL is already used by a news category. Choose another slug." },
+        { status: 409 },
+      );
+    }
+    if (error.message === "URL_TAKEN_SITE") {
+      return NextResponse.json(
+        { error: "This URL already exists on the website. Choose another slug." },
+        { status: 409 },
+      );
+    }
+    if (error.message === "URL_TAKEN_PAGE") {
+      return NextResponse.json(
+        { error: "This URL is already used by a page. Choose another slug." },
+        { status: 409 },
+      );
     }
     if (error.message === "INVALID_SLUG") {
       return NextResponse.json(
@@ -51,6 +67,12 @@ function mapError(error: unknown) {
 export async function GET(request: NextRequest) {
   const gate = await enforceAdminApiAccess(request);
   if (!gate.ok) return gate.response;
+  const slug = request.nextUrl.searchParams.get("slug");
+  const excludeId = request.nextUrl.searchParams.get("excludeId") ?? undefined;
+  if (slug) {
+    const exists = await isCategoryPublicSlugTaken(slug, excludeId);
+    return NextResponse.json({ exists });
+  }
   const data = await listNewsCategories();
   return NextResponse.json({ data });
 }

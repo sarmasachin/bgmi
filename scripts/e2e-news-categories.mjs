@@ -106,6 +106,7 @@ function checkStaticWiring() {
   assert(catAdmin.includes("Add Category"), "categories UI missing add");
   assert(catAdmin.includes("Update Category"), "categories UI missing update");
   assert(catAdmin.includes("Delete"), "categories UI missing delete");
+  assert(catAdmin.includes("formatCategorySlugDraft"), "category slug input must keep trailing hyphen");
 
   const catApi = read("app/api/admin/news-categories/route.ts");
   assert(catApi.includes("createNewsCategory"), "categories API missing create");

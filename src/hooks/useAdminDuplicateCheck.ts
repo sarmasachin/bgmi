@@ -8,7 +8,7 @@ type Field = "title" | "slug";
  * Debounced duplicate check against admin list APIs that return `{ exists: boolean }`.
  */
 export function useAdminDuplicateCheck(options: {
-  endpoint: "/api/admin/pages" | "/api/admin/news";
+  endpoint: "/api/admin/pages" | "/api/admin/news" | "/api/admin/news-categories";
   field: Field;
   value: string;
   excludeId?: string | null;

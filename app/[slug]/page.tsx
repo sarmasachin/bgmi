@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { notFound } from "next/navigation";
+import { notFound, permanentRedirect } from "next/navigation";
 import { AdSlot } from "@/src/components/AdSlot";
 import { HomeHeader } from "@/src/components/HomeHeader";
 import { PubgMobileCodesPanel } from "@/src/components/PubgMobileCodesPanel";
@@ -12,7 +12,7 @@ import {
 } from "@/src/features/news/CategoryNewsListingPage";
 import { LiteSensCalculator } from "@/src/features/sensCalculator/LiteSensCalculator";
 import { SensCalculator } from "@/src/features/sensCalculator/SensCalculator";
-import { isNewsCategorySlug } from "@/src/lib/newsCategories";
+import { isNewsCategorySlug, newsCategoryListingPath } from "@/src/lib/newsCategories";
 import { isAdminLoggedIn } from "@/src/server/auth";
 import { listNewsCategorySlugs } from "@/src/server/repositories/newsCategoryRepository";
 import { getCalculatorPhoneModels } from "@/src/server/repositories/calculatorPhoneModelsRepository";
@@ -108,6 +108,12 @@ export async function generateMetadata({ params, searchParams }: Props): Promise
   const knownCategorySlugs = await listNewsCategorySlugs();
   if (isNewsCategorySlug(slug, knownCategorySlugs)) {
     const listingPage = Math.max(Number(query.page ?? "1") || 1, 1);
+    const canonicalPath = newsCategoryListingPath(slug);
+    if (canonicalPath !== `/${slug}`) {
+      permanentRedirect(
+        listingPage > 1 ? `${canonicalPath}?page=${listingPage}` : canonicalPath,
+      );
+    }
     return buildCategoryNewsMetadata(slug, listingPage);
   }
   const isPreview = query.preview === "1";
@@ -166,6 +172,12 @@ export default async function DynamicTemplatePage({ params, searchParams }: Prop
   const knownCategorySlugs = await listNewsCategorySlugs();
   if (isNewsCategorySlug(slug, knownCategorySlugs)) {
     const listingPage = Math.max(Number(query.page ?? "1") || 1, 1);
+    const canonicalPath = newsCategoryListingPath(slug);
+    if (canonicalPath !== `/${slug}`) {
+      permanentRedirect(
+        listingPage > 1 ? `${canonicalPath}?page=${listingPage}` : canonicalPath,
+      );
+    }
     return <CategoryNewsListingPage category={slug} page={listingPage} />;
   }
   const allowDraftPreview = query.preview === "1" && (await isAdminLoggedIn());

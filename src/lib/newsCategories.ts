@@ -32,14 +32,18 @@ export function isValidCategorySlugFormat(value: string): boolean {
   return SLUG_RE.test(value);
 }
 
-export function normalizeCategorySlugInput(value: string): string {
+/** Live input: spaces become hyphens, trailing hyphen kept so the next word can be typed. */
+export function formatCategorySlugDraft(value: string): string {
   return value
-    .trim()
     .toLowerCase()
     .replace(/\s+/g, "-")
     .replace(/[^a-z0-9-]/g, "")
     .replace(/-+/g, "-")
-    .replace(/^-+|-+$/g, "");
+    .replace(/^-+/, "");
+}
+
+export function normalizeCategorySlugInput(value: string): string {
+  return formatCategorySlugDraft(value).replace(/-+$/g, "");
 }
 
 /** True when slug is in the known list (DB or defaults). */
@@ -165,8 +169,15 @@ const NEWS_LISTING_UNDER_NEWS_PREFIX = new Set([
   "ff-max",
 ]);
 
+export function categoryListingOccupiesTopSlug(slug: string): boolean {
+  const cat = slug.trim().toLowerCase();
+  if (!cat) return false;
+  return !NEWS_LISTING_UNDER_NEWS_PREFIX.has(cat);
+}
+
 export function newsCategoryListingPath(slug: string): string {
-  const cat = coerceNewsCategory(slug);
+  const cat = slug.trim().toLowerCase();
+  if (!cat) return `/${DEFAULT_NEWS_CATEGORY}`;
   if (NEWS_LISTING_UNDER_NEWS_PREFIX.has(cat)) return `/news/${cat}`;
   return `/${cat}`;
 }

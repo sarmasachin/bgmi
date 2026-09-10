@@ -2,10 +2,10 @@ import {
   createPage,
   deletePage,
   listPages,
-  pageSlugExists,
   pageTitleExists,
   updatePage,
 } from "@/src/server/repositories/pagesRepository";
+import { isPagePublicSlugTaken } from "@/src/server/publicUrlConflicts";
 import { addAuditLog } from "@/src/server/repositories/auditRepository";
 import { readAdminJsonBody } from "@/src/server/admin/adminApiHelpers";
 import { getAutoNotifySettings } from "@/src/server/repositories/autoNotifySettingsRepository";
@@ -34,7 +34,19 @@ const schema = z.object({
 
 function mapPageWriteError(error: unknown) {
   if (error instanceof Error && error.message === "SLUG_EXISTS") {
-    return NextResponse.json({ error: "Slug already exists." }, { status: 409 });
+    return NextResponse.json({ error: "This URL is already used by a page. Choose another slug." }, { status: 409 });
+  }
+  if (error instanceof Error && error.message === "URL_TAKEN_SITE") {
+    return NextResponse.json(
+      { error: "This URL already exists on the website. Choose another slug." },
+      { status: 409 },
+    );
+  }
+  if (error instanceof Error && error.message === "URL_TAKEN_CATEGORY") {
+    return NextResponse.json(
+      { error: "This URL is already used by a news category. Choose another slug." },
+      { status: 409 },
+    );
   }
   if (error instanceof Error && error.message === "TITLE_EXISTS") {
     return NextResponse.json({ error: "Title already exists." }, { status: 409 });
@@ -58,7 +70,7 @@ export async function GET(request: NextRequest) {
   const title = request.nextUrl.searchParams.get("title");
   const excludeId = request.nextUrl.searchParams.get("excludeId") ?? undefined;
   if (slug) {
-    const exists = await pageSlugExists(slug, excludeId);
+    const exists = await isPagePublicSlugTaken(slug, excludeId);
     return NextResponse.json({ exists });
   }
   if (title) {

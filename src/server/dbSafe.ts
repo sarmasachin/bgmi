@@ -74,6 +74,9 @@ export async function tryPrismaLong<T>(runner: () => Promise<T>): Promise<T | nu
         error.message === "TITLE_EXISTS" ||
         error.message === "INVALID_SLUG" ||
         error.message === "INVALID_LABEL" ||
+        error.message === "URL_TAKEN_SITE" ||
+        error.message === "URL_TAKEN_PAGE" ||
+        error.message === "URL_TAKEN_CATEGORY" ||
         error.message === "DB_UNAVAILABLE")
     ) {
       throw error;
