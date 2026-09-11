@@ -10,16 +10,23 @@ import {
   buildCategoryNewsMetadata,
   CategoryNewsListingPage,
 } from "@/src/features/news/CategoryNewsListingPage";
+import {
+  buildNewsDetailMetadata,
+  NewsDetailView,
+} from "@/src/features/news/NewsDetailView";
 import { LiteSensCalculator } from "@/src/features/sensCalculator/LiteSensCalculator";
 import { SensCalculator } from "@/src/features/sensCalculator/SensCalculator";
 import { isNewsCategorySlug, newsCategoryListingPath } from "@/src/lib/newsCategories";
 import { isAdminLoggedIn } from "@/src/server/auth";
 import { listNewsCategorySlugs } from "@/src/server/repositories/newsCategoryRepository";
 import { getCalculatorPhoneModels } from "@/src/server/repositories/calculatorPhoneModelsRepository";
+import { getPublishedNewsBySlug } from "@/src/server/repositories/newsRepository";
 import { getPageBySlug, getPublishedPageBySlug } from "@/src/server/repositories/pagesRepository";
 import { getSettings } from "@/src/server/repositories/settingsRepository";
 import { toCanonicalUrl } from "@/src/lib/siteUrl";
 import { buildSocialMetadata } from "@/src/lib/socialMeta";
+
+export const dynamic = "force-dynamic";
 
 type TemplateType = "home" | "article" | "landing";
 type CloneGame =
@@ -134,6 +141,8 @@ export async function generateMetadata({ params, searchParams }: Props): Promise
     : undefined;
 
   if (!page) {
+    const news = await getPublishedNewsBySlug(slug);
+    if (news) return buildNewsDetailMetadata(news);
     return previewRobots ? { robots: previewRobots } : {};
   }
 
@@ -187,7 +196,11 @@ export default async function DynamicTemplatePage({ params, searchParams }: Prop
     getCalculatorPhoneModels(),
     getSettings(),
   ]);
-  if (!page) notFound();
+  if (!page) {
+    const news = await getPublishedNewsBySlug(slug);
+    if (news) return <NewsDetailView item={news} />;
+    notFound();
+  }
 
   const extracted = extractContentData(page.content);
   const articleHtml = extracted.html;

@@ -4,7 +4,12 @@ import { HomeHeader } from "@/src/components/HomeHeader";
 import { NewsCommentSection } from "@/src/components/NewsCommentSection";
 import { SiteFooter } from "@/src/components/SiteFooter";
 import { extractNewsMeta, resolveNewsSeoDescription } from "@/src/lib/newsContent";
-import { coerceNewsCategory, newsCategoryLabel } from "@/src/lib/newsCategories";
+import {
+  coerceNewsCategory,
+  newsCategoryLabel,
+  newsCategoryListingPath,
+} from "@/src/lib/newsCategories";
+import "@/src/features/news/newsDetail.css";
 import { getAdPlacementVisibility } from "@/src/server/repositories/adPlacementRepository";
 import { listApprovedCommentsByNewsId } from "@/src/server/repositories/commentsRepository";
 import { listNewsCategories } from "@/src/server/repositories/newsCategoryRepository";
@@ -89,7 +94,7 @@ export async function NewsDetailView({ item }: { item: NewsDetailItem }) {
 
   const knownSlugs = categories.map((c) => c.slug);
   const primary = coerceNewsCategory(item.primaryCategory, knownSlugs);
-  const categoryHref = `/${primary}`;
+  const categoryHref = newsCategoryListingPath(primary);
   const categoryLabel = newsCategoryLabel(primary, categories);
 
   const baseUrl = getSiteUrl();

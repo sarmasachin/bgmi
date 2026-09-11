@@ -131,8 +131,9 @@ function checkStaticWiring() {
   const articleRoute = read("app/[slug]/[newsSlug]/page.tsx");
   assert(articleRoute.includes("isNewsCategorySlug"), "article route missing category guard");
   assert(articleRoute.includes("listNewsCategorySlugs"), "article route must use DB category list");
-  assert(articleRoute.includes("permanentRedirect"), "wrong-category should redirect");
-  assert(articleRoute.includes("NewsDetailView"), "article route missing detail view");
+  assert(articleRoute.includes("permanentRedirect"), "legacy /{category}/{slug} must 308 to /{slug}");
+  assert(articleRoute.includes("redirectLegacyCategoryNewsUrl"), "legacy article route must only redirect");
+  assert(!articleRoute.includes("NewsDetailView"), "legacy /{category}/{slug} must not render the article");
   assert(articleRoute.includes("newsSlug"), "article route must use newsSlug param");
 
   // Next.js forbids app/[category] beside app/[slug]
@@ -149,6 +150,8 @@ function checkStaticWiring() {
   assert(slugPage.includes("isNewsCategorySlug"), "category hub not wired in [slug]");
   assert(slugPage.includes("listNewsCategorySlugs"), "[slug] must use DB category list");
   assert(slugPage.includes("CategoryNewsListingPage"), "category listing page missing");
+  assert(slugPage.includes("getPublishedNewsBySlug"), "[slug] must serve news at /{slug}");
+  assert(slugPage.includes("NewsDetailView"), "[slug] must render news detail");
 
   const sitemap = read("src/server/sitemap/buildSitemap.ts");
   assert(sitemap.includes("newsArticlePath"), "sitemap not using primary path");
@@ -176,7 +179,7 @@ function helperSuite() {
   const DEFAULT = "ff-max";
   const set = new Set(["ff-max", "free-fire"]);
   const coerce = (v) => (set.has(String(v || "").trim().toLowerCase()) ? String(v).trim().toLowerCase() : DEFAULT);
-  const pathFor = (cat, slug) => `/${coerce(cat)}/${String(slug).trim().replace(/^\/+|\/+$/g, "")}`;
+  const pathFor = (_cat, slug) => `/${String(slug).trim().replace(/^\/+|\/+$/g, "")}`;
   const extras = (primary, list) => {
     const p = coerce(primary);
     const out = [];
@@ -192,9 +195,9 @@ function helperSuite() {
     return out;
   };
 
-  assert(pathFor("ff-max", "redeem-codes") === "/ff-max/redeem-codes", "primary path ff-max");
-  assert(pathFor("free-fire", "redeem-codes") === "/free-fire/redeem-codes", "primary path free-fire");
-  assert(pathFor("nope", "x") === "/ff-max/x", "invalid primary falls back");
+  assert(pathFor("ff-max", "redeem-codes") === "/redeem-codes", "article URL has no category");
+  assert(pathFor("free-fire", "redeem-codes") === "/redeem-codes", "category change does not change URL");
+  assert(pathFor("nope", "x") === "/x", "path is slug-only");
   assert(JSON.stringify(extras("ff-max", ["free-fire", "ff-max", "free-fire"])) === '["free-fire"]', "extras dedupe + drop primary");
   assert(JSON.stringify(extras("free-fire", ["ff-max"])) === '["ff-max"]', "extras allow other hub");
   console.log("PASS  helper: one primary URL + extras listing-only");

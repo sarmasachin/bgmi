@@ -93,7 +93,7 @@ async function main() {
     assert(listAll().some((x) => x.id === id), "on /news");
     assert(listCat("ff-max").some((x) => x.id === id), "on /ff-max primary");
     assert(listCat("free-fire").some((x) => x.id === id), "on /free-fire extra");
-    assert(newsArticlePath(created.primaryCategory, created.slug) === `/ff-max/${slug}`, "one URL");
+    assert(newsArticlePath(created.primaryCategory, created.slug) === `/${slug}`, "one URL");
 
     console.log("2) update primary→free-fire extras=[]");
     const updated = updateNews({
@@ -106,7 +106,7 @@ async function main() {
     });
     assert(updated.primaryCategory === "free-fire", "primary updated");
     assert(updated.extraCategories.length === 0, "extras cleared");
-    assert(newsArticlePath(updated.primaryCategory, updated.slug) === `/free-fire/${slug}`, "URL follows primary");
+    assert(newsArticlePath(updated.primaryCategory, updated.slug) === `/${slug}`, "URL stays when primary changes");
     assert(!listCat("ff-max").some((x) => x.id === id), "left /ff-max");
     assert(listCat("free-fire").some((x) => x.id === id), "on /free-fire");
 
@@ -120,7 +120,7 @@ async function main() {
     });
     assert(again.primaryCategory === "free-fire", "primary stable");
     assert(JSON.stringify(again.extraCategories) === '["ff-max"]', "extra added");
-    assert(newsArticlePath(again.primaryCategory, again.slug) === `/free-fire/${slug}`, "still one link");
+    assert(newsArticlePath(again.primaryCategory, again.slug) === `/${slug}`, "still one link");
     assert(listCat("ff-max").some((x) => x.id === id), "on /ff-max via extra");
     assert(listCat("free-fire").some((x) => x.id === id), "still on /free-fire primary");
 

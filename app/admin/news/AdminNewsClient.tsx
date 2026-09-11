@@ -642,11 +642,11 @@ export default function AdminNewsClient({
             </div>
             <div className="admin-field admin-input-wide">
               <label htmlFor="news-primary-category">
-                Main category (URL){" "}
+                Main category{" "}
                 <span className="admin-confirm-meta-slug">
                   {slug.trim()
                     ? newsArticlePath(primaryCategory, slug.trim())
-                    : `/${primaryCategory}/…`}
+                    : "/…"}
                 </span>
               </label>
               <select

@@ -48,6 +48,12 @@ function mapPageWriteError(error: unknown) {
       { status: 409 },
     );
   }
+  if (error instanceof Error && error.message === "URL_TAKEN_NEWS") {
+    return NextResponse.json(
+      { error: "This URL is already used by a news article. Choose another slug." },
+      { status: 409 },
+    );
+  }
   if (error instanceof Error && error.message === "TITLE_EXISTS") {
     return NextResponse.json({ error: "Title already exists." }, { status: 409 });
   }

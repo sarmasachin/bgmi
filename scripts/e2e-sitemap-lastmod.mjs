@@ -48,7 +48,7 @@ function checkFiles() {
   assert(fs.existsSync(path.join(root, "app", "sitemap-news.xml", "route.ts")), "missing sitemap-news.xml");
 
   const build = read("src/server/sitemap/buildSitemap.ts");
-  assert(build.includes("newsArticlePath"), "articles must use primary category path");
+  assert(build.includes("newsArticlePath"), "articles must use newsArticlePath");
   assert(build.includes("listNewsCategorySlugs"), "category hubs from DB");
   assert(build.includes("listPublishedLegalForSitemap"), "custom legal pages must be listed");
   assert(!build.includes("publishedAt"), "must not use publishedAt (old date)");

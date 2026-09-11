@@ -15,6 +15,7 @@ import {
 import { RESERVED_PUBLIC_SLUGS, isReservedPublicSlug } from "../src/lib/reservedPublicSlugs.ts";
 import {
   findCategoryPublicSlugConflict,
+  findNewsPublicSlugConflict,
   findPagePublicSlugConflict,
 } from "../src/server/publicUrlConflicts.ts";
 
@@ -105,6 +106,7 @@ function staticWiring() {
   const slugPage = read("app/[slug]/page.tsx");
   assert(slugPage.includes("newsCategoryListingPath"), "[slug] must compare canonical listing path");
   assert(slugPage.includes("permanentRedirect"), "shadowed category hubs must redirect");
+  assert(slugPage.includes("getPublishedNewsBySlug"), "[slug] must serve news at /{slug}");
 
   const dbSafe = read("src/server/dbSafe.ts");
   assert(dbSafe.includes("URL_TAKEN_SITE"), "tryPrismaLong must rethrow URL clashes");
@@ -178,6 +180,16 @@ async function dbSuite(prisma) {
   for (const row of news) {
     const slug = row.slug.trim().toLowerCase();
     newsSlugFreq.set(slug, (newsSlugFreq.get(slug) ?? 0) + 1);
+    if (isReservedPublicSlug(slug)) {
+      collisions.push(`news "${row.slug}" clashes with website URL /${slug}`);
+    }
+    if (catBySlug.has(slug)) {
+      collisions.push(`news "${row.slug}" clashes with category /${slug}`);
+    }
+    const pageHits = pageByTop.get(slug) ?? [];
+    for (const page of pageHits) {
+      collisions.push(`news "${row.slug}" and page "${page.slug}" share /${slug}`);
+    }
   }
   for (const [slug, count] of newsSlugFreq) {
     if (count > 1) collisions.push(`duplicate news article slug: ${slug} x${count}`);
@@ -200,6 +212,10 @@ async function dbSuite(prisma) {
   const freeSlug = `e2e-url-uniq-${stamp}`;
   assert((await findCategoryPublicSlugConflict(freeSlug)) === null, "fresh category slug is free");
   assert((await findPagePublicSlugConflict(freeSlug)) === null, "fresh page slug is free");
+  assert((await findNewsPublicSlugConflict("contact")) === "URL_TAKEN_SITE", "news contact vs /contact");
+  assert((await findNewsPublicSlugConflict("pubg")) === "URL_TAKEN_SITE", "news cannot take /pubg");
+  assert((await findNewsPublicSlugConflict("ff-max")) === "URL_TAKEN_CATEGORY", "news cannot take a category slug");
+  assert((await findNewsPublicSlugConflict(freeSlug)) === null, "fresh news slug is free");
 
   const page = await prisma.pageTemplate.create({
     data: {
@@ -215,6 +231,7 @@ async function dbSuite(prisma) {
       "category cannot reuse an existing page URL",
     );
     assert((await findPagePublicSlugConflict(freeSlug, page.id)) === null, "same page can keep its slug");
+    assert((await findNewsPublicSlugConflict(freeSlug)) === "URL_TAKEN_PAGE", "news cannot reuse a page URL");
   } finally {
     await prisma.pageTemplate.delete({ where: { id: page.id } });
   }

@@ -20,7 +20,7 @@ type Props = {
 /**
  * `/news/[slug]`:
  * - known category → filtered category listing (used when `/{category}` is a calculator)
- * - else legacy article slug → redirect to `/{category}/{slug}`
+ * - else legacy article slug → redirect to `/{slug}`
  */
 export async function generateMetadata({ params, searchParams }: Props): Promise<Metadata> {
   const { slug } = await params;

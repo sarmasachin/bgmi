@@ -3,12 +3,12 @@ import {
   deleteNews,
   getNewsById,
   listNews,
-  newsSlugExists,
   newsTitleExists,
   updateNews,
   updateNewsStatus,
 } from "@/src/server/repositories/newsRepository";
 import { isValidCategorySlugFormat, newsArticlePath } from "@/src/lib/newsCategories";
+import { findNewsPublicSlugConflict, isNewsPublicSlugTaken } from "@/src/server/publicUrlConflicts";
 import { addAuditLog } from "@/src/server/repositories/auditRepository";
 import { listNewsCategorySlugs } from "@/src/server/repositories/newsCategoryRepository";
 import { readAdminJsonBody } from "@/src/server/admin/adminApiHelpers";
@@ -68,6 +68,24 @@ function mapNewsWriteError(error: unknown) {
   if (error instanceof Error && error.message === "SLUG_EXISTS") {
     return NextResponse.json({ error: "Slug already exists." }, { status: 409 });
   }
+  if (error instanceof Error && error.message === "URL_TAKEN_SITE") {
+    return NextResponse.json(
+      { error: "This URL already exists on the website. Choose another slug." },
+      { status: 409 },
+    );
+  }
+  if (error instanceof Error && error.message === "URL_TAKEN_PAGE") {
+    return NextResponse.json(
+      { error: "This URL is already used by a page. Choose another slug." },
+      { status: 409 },
+    );
+  }
+  if (error instanceof Error && error.message === "URL_TAKEN_CATEGORY") {
+    return NextResponse.json(
+      { error: "This URL is already used by a news category. Choose another slug." },
+      { status: 409 },
+    );
+  }
   if (error instanceof Error && error.message === "TITLE_EXISTS") {
     return NextResponse.json({ error: "Title already exists." }, { status: 409 });
   }
@@ -91,7 +109,7 @@ export async function GET(request: NextRequest) {
   const title = request.nextUrl.searchParams.get("title");
   const excludeId = request.nextUrl.searchParams.get("excludeId") ?? undefined;
   if (slug) {
-    const exists = await newsSlugExists(slug, excludeId);
+    const exists = await isNewsPublicSlugTaken(slug, excludeId);
     return NextResponse.json({ exists });
   }
   if (title) {
@@ -121,6 +139,8 @@ export async function POST(request: NextRequest) {
   }
   const categoryError = await assertKnownCategories(parsed.data);
   if (categoryError) return categoryError;
+  const slugClash = await findNewsPublicSlugConflict(parsed.data.slug);
+  if (slugClash) return mapNewsWriteError(new Error(slugClash));
   try {
     const item = await createNews(parsed.data);
     await addAuditLog({
@@ -213,6 +233,11 @@ export async function PATCH(request: NextRequest) {
   }
   const categoryError = await assertKnownCategories(contentParsed.data);
   if (categoryError) return categoryError;
+  const slugClash = await findNewsPublicSlugConflict(
+    contentParsed.data.slug,
+    contentParsed.data.id,
+  );
+  if (slugClash) return mapNewsWriteError(new Error(slugClash));
   try {
     const item = await updateNews(contentParsed.data);
     if (!item) return NextResponse.json({ error: "Not found" }, { status: 404 });
