@@ -27,6 +27,63 @@ export type PubgApkCountdown = {
   liveMessage: string;
 };
 
+/** Public page shows a hero CTA only when Show is on, label and URL are both set. */
+export function isPubgApkHeroButtonPublic(btn: PubgApkHeroButton): boolean {
+  return btn.visible && Boolean(btn.label.trim()) && Boolean(btn.href.trim());
+}
+
+/** True while admin timer is on and the target time is still in the future. */
+export function isPubgApkCountdownTicking(
+  countdown: Pick<PubgApkCountdown, "visible" | "targetIso">,
+  nowMs: number = Date.now(),
+): boolean {
+  if (!countdown.visible) return false;
+  const target = countdown.targetIso.trim();
+  if (!target) return false;
+  const targetMs = Date.parse(target);
+  return Number.isFinite(targetMs) && targetMs > nowMs;
+}
+
+/** Only real image paths/URLs — rejects title text pasted into the URL field by mistake. */
+export function isUsablePubgHeroImageSrc(value: string): boolean {
+  const v = value.trim();
+  if (!v) return false;
+  return (
+    v.startsWith("/") ||
+    /^https?:\/\//i.test(v) ||
+    v.startsWith("data:image/")
+  );
+}
+
+/** Admin hint: why a button will / will not appear on /pubg-apk. */
+export function pubgApkHeroButtonPublicStatus(
+  btn: PubgApkHeroButton,
+  countdown?: Pick<PubgApkCountdown, "visible" | "targetIso">,
+): {
+  visible: boolean;
+  message: string;
+} {
+  if (!btn.visible) {
+    return { visible: false, message: "Public: HIDDEN — Show is off" };
+  }
+  if (!btn.label.trim()) {
+    return { visible: false, message: "Public: HIDDEN — label is empty" };
+  }
+  if (!btn.href.trim()) {
+    return {
+      visible: false,
+      message: "Public: HIDDEN — paste URL below (Show alone is not enough)",
+    };
+  }
+  if (countdown && isPubgApkCountdownTicking(countdown)) {
+    return {
+      visible: false,
+      message: "Public: HIDDEN while timer is counting — shows automatically when timer ends/off",
+    };
+  }
+  return { visible: true, message: "Public: VISIBLE on /pubg-apk" };
+}
+
 export type PubgApkCard = {
   id: string;
   badge: string;
@@ -108,7 +165,7 @@ export const DEFAULT_PUBG_APK_PAGE: PubgApkPageContent = {
     apk: {
       label: "APK",
       href: "",
-      visible: true,
+      visible: false,
     },
   },
   countdown: {
@@ -121,6 +178,90 @@ export const DEFAULT_PUBG_APK_PAGE: PubgApkPageContent = {
   heroImage: "",
   heroImageAlt: "PUBG Mobile download guide — Play Store and APK options",
   cards: [
+    {
+      id: "latest-update-features",
+      badge: "Update",
+      icon: "fa-rocket",
+      title: "PUBG Mobile Latest Update Features & Patch Highlights",
+      summary:
+        "Quick look at what the newest PUBG Mobile patch usually brings — modes, balance tweaks, fixes — and what you should do right after updating.",
+      points: [
+        "Confirm the live version and full changelog on Google Play / Krafton",
+        "New weapons, maps, or modes can change recoil — test in Training Ground",
+        "After a big patch, retune Camera, ADS, and Gyroscope sensitivity",
+        "If the game crashes post-update, clear cache or reinstall from Play Store",
+      ],
+      ctaLabel: "Open PUBG Mobile calculator",
+      ctaHref: "/pubg",
+    },
+    {
+      id: "common-errors-fixes",
+      badge: "Fixes",
+      icon: "fa-wrench",
+      title: "Common Errors & Fixes (High-Intent Problem Solving)",
+      summary:
+        "Stuck on install, login, or update errors? Use these quick fixes before you try random APK sites or paid “repair” links.",
+      points: [
+        "App not installing / parse error — free storage, allow unknown apps only if you use APK, then retry from Play Store",
+        "Update stuck or fails — clear Play Store cache, check network, restart phone, try Wi‑Fi",
+        "Game crashes on open — update Android System WebView/Chrome, clear PUBG Mobile cache, reinstall if needed",
+        "Login / ban / device limit — use official Krafton help; never share OTP or account password",
+        "Black screen or low FPS — lower graphics to Smooth, close background apps, cool the device",
+      ],
+      ctaLabel: "Read PUBG Mobile APK guide",
+      ctaHref: "#pubg-apk-guide",
+    },
+    {
+      id: "obb-file-setup",
+      badge: "OBB",
+      icon: "fa-file-zipper",
+      title: "OBB File Setup (Direct Search Intent)",
+      summary:
+        "Looking for PUBG Mobile OBB / data pack setup? Here’s where files go, how version matching works, and how to avoid fake OBB download traps.",
+      points: [
+        "Play Store installs usually fetch data packs for you — prefer that over random OBB links",
+        "Sideload APK only with the matching OBB/version pair; mismatched packs cause black screen or stuck loading",
+        "Typical path: Android/obb/com.tencent.ig/ — do not rename folders or mix Lite/full packs",
+        "Need free storage for main + data; clear junk before a big update",
+        "Never pay for “OBB unlock” files or OTP links — we do not host OBB/APK on this site",
+      ],
+      ctaLabel: "Read PUBG Mobile APK guide",
+      ctaHref: "#pubg-apk-guide",
+    },
+    {
+      id: "fps-graphics-unlock",
+      badge: "FPS",
+      icon: "fa-gauge-high",
+      title: "90 FPS / Graphics Unlock Guide",
+      summary:
+        "Want 90 FPS or higher graphics on PUBG Mobile? Use device-supported in-game options first — skip fake “unlock config” APKs and paid GFX tools.",
+      points: [
+        "Open Settings → Graphics: pick Smooth/Balanced and the highest FPS your phone lists (60 / 90 / Extreme if available)",
+        "90 FPS only appears on supported devices and game versions — Force / magisk “unlock” packs risk ban and crashes",
+        "Heat or FPS drops? Lower style to Smooth, turn off shadows/anti-aliasing, close background apps, cool the phone",
+        "After a big update, re-check graphics + retune sensi — higher FPS changes aim feel",
+        "Never download “90 FPS unlocker”, GameGuardian scripts, or paid config files from random links",
+      ],
+      ctaLabel: "Open PUBG Mobile calculator",
+      ctaHref: "/pubg",
+    },
+    {
+      id: "ban-prevention-safety",
+      badge: "Ban",
+      icon: "fa-user-shield",
+      title: "Ban Prevention & Account Safety Rules",
+      summary:
+        "Keep your PUBG Mobile account safe — follow these ban-prevention rules and skip shady APKs, mods, and account-sharing traps.",
+      points: [
+        "Play only official PUBG Mobile (Play Store or the single admin APK link on this page) — mod / hack / aimbot clients = high ban risk",
+        "Never share OTP, password, or Krafton ID with “recovery” or “unban” sellers on WhatsApp/Telegram",
+        "Don’t use VPN spoof regions, emulator farms, or multi-login tools that break Krafton device rules",
+        "Avoid paid “UC generator”, guest-to-main converters, and config unlock packs — they steal accounts",
+        "If you get a device limit or ban notice, use official Krafton support only; we do not sell unban services",
+      ],
+      ctaLabel: "Read PUBG Mobile APK guide",
+      ctaHref: "#pubg-apk-guide",
+    },
     {
       id: "play-store",
       badge: "Official",
@@ -161,6 +302,19 @@ export const DEFAULT_PUBG_APK_PAGE: PubgApkPageContent = {
       ],
     },
     {
+      id: "device",
+      badge: "Device",
+      icon: "fa-mobile-screen",
+      title: "What you need to play",
+      summary:
+        "PUBG Mobile needs a capable Android phone, storage for the download, and a stable FPS before you copy sensitivity codes.",
+      points: [
+        "Use Smooth + lowest graphics if FPS drops",
+        "Close background apps before ranked",
+        "Retune sensi after a big game update",
+      ],
+    },
+    {
       id: "vs-lite",
       badge: "Compare",
       icon: "fa-table",
@@ -174,19 +328,6 @@ export const DEFAULT_PUBG_APK_PAGE: PubgApkPageContent = {
       ],
       ctaLabel: "Open PUBG Lite APK page",
       ctaHref: "/pubg-mobile-lite-apk",
-    },
-    {
-      id: "device",
-      badge: "Device",
-      icon: "fa-mobile-screen",
-      title: "What you need to play",
-      summary:
-        "PUBG Mobile needs a capable Android phone, storage for the download, and a stable FPS before you copy sensitivity codes.",
-      points: [
-        "Use Smooth + lowest graphics if FPS drops",
-        "Close background apps before ranked",
-        "Retune sensi after a big game update",
-      ],
     },
     {
       id: "sensi-ready",

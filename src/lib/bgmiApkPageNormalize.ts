@@ -1,6 +1,7 @@
 import { sanitizeHtml } from "@/src/lib/sanitizeHtml";
 import {
   DEFAULT_BGMI_APK_PAGE,
+  isUsableHeroImageSrc,
   type BgmiApkCard,
   type BgmiApkCountdown,
   type BgmiApkHeroButton,
@@ -90,7 +91,43 @@ function normalizeCards(raw: unknown, defaults: BgmiApkCard[]): BgmiApkCard[] {
     const card = normalizeCard(list[i], i, defaults[i] ?? defaults[0]);
     if (card) out.push(card);
   }
-  return out.length ? out : defaults.map((c) => ({ ...c, points: [...c.points] }));
+  const cards =
+    out.length > 0 ? out : defaults.map((c) => ({ ...c, points: [...c.points] }));
+  return ensurePinnedBgmiApkCardsFirst(cards, defaults);
+}
+
+/** Keep high-intent featured cards at the top (prepend if missing from older DB rows). */
+const PINNED_BGMI_APK_CARD_IDS = [
+  "latest-update-features",
+  "common-errors-fixes",
+  "obb-file-setup",
+  "fps-graphics-unlock",
+  "ban-prevention-safety",
+] as const;
+
+function ensurePinnedBgmiApkCardsFirst(
+  cards: BgmiApkCard[],
+  defaults: BgmiApkCard[],
+): BgmiApkCard[] {
+  const rest = [...cards];
+  const pinned: BgmiApkCard[] = [];
+
+  for (const id of PINNED_BGMI_APK_CARD_IDS) {
+    const featured =
+      defaults.find((c) => c.id === id) ??
+      DEFAULT_BGMI_APK_PAGE.cards.find((c) => c.id === id);
+    if (!featured) continue;
+
+    const idx = rest.findIndex((c) => c.id === id);
+    if (idx >= 0) {
+      const [card] = rest.splice(idx, 1);
+      pinned.push(card);
+    } else {
+      pinned.push({ ...featured, points: [...featured.points] });
+    }
+  }
+
+  return [...pinned, ...rest];
 }
 
 function normalizeFaqs(
@@ -169,7 +206,11 @@ export function normalizeBgmiApkPage(raw: unknown): BgmiApkPageContent {
       apk: normalizeHeroButton(buttonsRaw.apk, defaults.heroButtons.apk),
     },
     countdown: normalizeCountdown(raw.countdown, defaults.countdown),
-    heroImage: sanitizeString(raw.heroImage, defaults.heroImage),
+    heroImage: (() => {
+      const rawImage = sanitizeString(raw.heroImage, defaults.heroImage);
+      // Drop non-URL values (e.g. title text pasted into the image field).
+      return isUsableHeroImageSrc(rawImage) ? rawImage : "";
+    })(),
     // Allow empty alt — do not re-fill defaults when admin clears the field.
     heroImageAlt: sanitizeString(raw.heroImageAlt, defaults.heroImageAlt),
     cards: normalizeCards(raw.cards, defaults.cards),

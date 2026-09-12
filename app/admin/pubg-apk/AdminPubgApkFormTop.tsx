@@ -1,7 +1,34 @@
 "use client";
 
-import type { PubgApkPageContent, PubgApkPageSectionId } from "@/src/lib/pubgApkPage";
+import {
+  pubgApkHeroButtonPublicStatus,
+  type PubgApkPageContent,
+  type PubgApkPageSectionId,
+} from "@/src/lib/pubgApkPage";
 import { AdminAccordionSection, AdminCheckbox, AdminCountdownTarget, AdminField, AdminLinesEditor } from "./adminPubgApkFields";
+
+function HeroButtonStatus({
+  btn,
+  countdown,
+}: {
+  btn: PubgApkPageContent["heroButtons"]["apk"];
+  countdown: PubgApkPageContent["countdown"];
+}) {
+  const status = pubgApkHeroButtonPublicStatus(btn, countdown);
+  return (
+    <p
+      style={{
+        margin: "0 0 12px",
+        fontSize: 12,
+        fontWeight: 600,
+        color: status.visible ? "#4ade80" : "#fbbf24",
+        lineHeight: 1.45,
+      }}
+    >
+      {status.message}
+    </p>
+  );
+}
 
 type Props = {
   page: PubgApkPageContent;
@@ -53,7 +80,7 @@ export function AdminPubgApkFormTop({ page, openIds, onToggle, onPatch }: Props)
           }
         />
         <AdminField
-          label="Hero image URL"
+          label="Hero image URL (must start with / or https:// — leave empty to hide)"
           value={page.heroImage}
           onChange={(heroImage) => onPatch((p) => ({ ...p, heroImage }))}
         />
@@ -72,9 +99,11 @@ export function AdminPubgApkFormTop({ page, openIds, onToggle, onPatch }: Props)
       >
         <p style={{ margin: "0 0 12px", fontSize: 12, color: "#94a3b8", lineHeight: 1.45 }}>
           Public page shows a button only if Show is on, label is filled, and URL is filled.
-          We do not host APK files — paste the link you want.
+          We do not host APK files — paste the link you want. Check the yellow/green status under
+          each button before saving.
         </p>
         <strong style={{ display: "block", color: "#e2e8f0", marginBottom: 8 }}>Play Store</strong>
+        <HeroButtonStatus btn={page.heroButtons.playStore} countdown={page.countdown} />
         <AdminCheckbox
           label="Show Play Store button"
           checked={page.heroButtons.playStore.visible}
@@ -106,6 +135,7 @@ export function AdminPubgApkFormTop({ page, openIds, onToggle, onPatch }: Props)
           }
         />
         <strong style={{ display: "block", color: "#e2e8f0", margin: "8px 0" }}>APK</strong>
+        <HeroButtonStatus btn={page.heroButtons.apk} countdown={page.countdown} />
         <AdminCheckbox
           label="Show APK button"
           checked={page.heroButtons.apk.visible}
@@ -127,7 +157,7 @@ export function AdminPubgApkFormTop({ page, openIds, onToggle, onPatch }: Props)
           }
         />
         <AdminField
-          label="APK URL"
+          label="APK URL (required to show on public page)"
           value={page.heroButtons.apk.href}
           onChange={(href) =>
             onPatch((p) => ({
@@ -145,9 +175,8 @@ export function AdminPubgApkFormTop({ page, openIds, onToggle, onPatch }: Props)
         onToggle={onToggle}
       >
         <p style={{ margin: "0 0 12px", fontSize: 12, color: "#94a3b8", lineHeight: 1.45 }}>
-          Turn this on when the next PUBG Mobile update date is known. Public page shows the timer
-          only if Show is on and a date is set. Buttons stay separate — hide them if you want
-          only the timer.
+          While the timer is counting, Play/APK buttons stay hidden on the public page. When the
+          timer ends or you turn it off, buttons show automatically (if Show + label + URL are set).
         </p>
         <AdminCheckbox
           label="Show update countdown"

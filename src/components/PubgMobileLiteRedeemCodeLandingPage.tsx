@@ -15,6 +15,7 @@ import {
 import {
   formatRedeemUpdatedLabelIst,
   resolveRedeemFreshnessAt,
+  resolveRedeemFreshnessBanner,
 } from "@/src/lib/bgmiLiteRedeemFreshness";
 import {
   applyAutoExpireRedeemCode,
@@ -56,6 +57,7 @@ export async function PubgMobileLiteRedeemCodeLandingPage() {
   const updatedLabel = freshnessAt
     ? formatRedeemUpdatedLabelIst(freshnessAt, ui.updatedLabelPrefix)
     : null;
+  const freshnessBanner = resolveRedeemFreshnessBanner(updatedToday, live.length);
   const faqItems = page.faqs.map((item) => ({
     id: item.id,
     question: item.question,
@@ -129,12 +131,12 @@ export async function PubgMobileLiteRedeemCodeLandingPage() {
 
           <h2 className="lite-redeem-h2">{page.sectionHeading}</h2>
 
-          {!updatedToday ? (
+          {freshnessBanner === "idle" ? (
             <div className="lite-redeem-freshness lite-redeem-freshness--idle" role="status">
               <p className="lite-redeem-freshness-title">{ui.freshnessIdleTitle}</p>
               <p className="lite-redeem-freshness-text">{ui.freshnessIdleText}</p>
             </div>
-          ) : updatedLabel ? (
+          ) : freshnessBanner === "ok" && updatedLabel ? (
             <p className="lite-redeem-freshness lite-redeem-freshness--ok" role="status">
               <i className="fa-solid fa-circle-check" aria-hidden />
               <span>{updatedLabel}</span>

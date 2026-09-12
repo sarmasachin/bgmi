@@ -1,6 +1,7 @@
 import { sanitizeHtml } from "@/src/lib/sanitizeHtml";
 import {
   DEFAULT_PUBG_APK_PAGE,
+  isUsablePubgHeroImageSrc,
   type PubgApkCard,
   type PubgApkCountdown,
   type PubgApkHeroButton,
@@ -90,7 +91,43 @@ function normalizeCards(raw: unknown, defaults: PubgApkCard[]): PubgApkCard[] {
     const card = normalizeCard(list[i], i, defaults[i] ?? defaults[0]);
     if (card) out.push(card);
   }
-  return out.length ? out : defaults.map((c) => ({ ...c, points: [...c.points] }));
+  const cards =
+    out.length > 0 ? out : defaults.map((c) => ({ ...c, points: [...c.points] }));
+  return ensurePinnedPubgApkCardsFirst(cards, defaults);
+}
+
+/** Keep high-intent featured cards at the top (prepend if missing from older DB rows). */
+const PINNED_PUBG_APK_CARD_IDS = [
+  "latest-update-features",
+  "common-errors-fixes",
+  "obb-file-setup",
+  "fps-graphics-unlock",
+  "ban-prevention-safety",
+] as const;
+
+function ensurePinnedPubgApkCardsFirst(
+  cards: PubgApkCard[],
+  defaults: PubgApkCard[],
+): PubgApkCard[] {
+  const rest = [...cards];
+  const pinned: PubgApkCard[] = [];
+
+  for (const id of PINNED_PUBG_APK_CARD_IDS) {
+    const featured =
+      defaults.find((c) => c.id === id) ??
+      DEFAULT_PUBG_APK_PAGE.cards.find((c) => c.id === id);
+    if (!featured) continue;
+
+    const idx = rest.findIndex((c) => c.id === id);
+    if (idx >= 0) {
+      const [card] = rest.splice(idx, 1);
+      pinned.push(card);
+    } else {
+      pinned.push({ ...featured, points: [...featured.points] });
+    }
+  }
+
+  return [...pinned, ...rest];
 }
 
 function normalizeFaqs(
@@ -169,7 +206,11 @@ export function normalizePubgApkPage(raw: unknown): PubgApkPageContent {
       apk: normalizeHeroButton(buttonsRaw.apk, defaults.heroButtons.apk),
     },
     countdown: normalizeCountdown(raw.countdown, defaults.countdown),
-    heroImage: sanitizeString(raw.heroImage, defaults.heroImage),
+    heroImage: (() => {
+      const rawImage = sanitizeString(raw.heroImage, defaults.heroImage);
+      // Drop non-URL values (e.g. title text pasted into the image field).
+      return isUsablePubgHeroImageSrc(rawImage) ? rawImage : "";
+    })(),
     // Allow empty alt — do not re-fill defaults when admin clears the field.
     heroImageAlt: sanitizeString(raw.heroImageAlt, defaults.heroImageAlt),
     cards: normalizeCards(raw.cards, defaults.cards),

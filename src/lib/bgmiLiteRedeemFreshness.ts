@@ -71,3 +71,16 @@ export function formatRedeemUpdatedLabelIst(
   const head = prefix.trim() || "Updated";
   return `${head} ${day} ${month}, ${hour}:${minute} ${dayPeriod} IST`;
 }
+
+/**
+ * Idle “No new codes today” only when there are no live codes.
+ * If live codes exist (even from earlier days), hide that banner so users are not confused.
+ */
+export function resolveRedeemFreshnessBanner(
+  updatedToday: boolean,
+  liveCount: number,
+): "ok" | "idle" | "none" {
+  if (updatedToday) return "ok";
+  if (liveCount <= 0) return "idle";
+  return "none";
+}

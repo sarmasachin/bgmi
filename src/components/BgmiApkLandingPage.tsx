@@ -10,6 +10,7 @@ import {
   BGMI_APK_PAGE_KEY,
   BGMI_APK_PATH,
   DEFAULT_BGMI_APK_PAGE,
+  isUsableHeroImageSrc,
   type BgmiApkPageContent,
 } from "@/src/lib/bgmiApkPage";
 import { breadcrumbListSchema, faqSchema, webPageSchema } from "@/src/lib/schema";
@@ -113,7 +114,7 @@ export async function BgmiApkLandingPage() {
           apk={page.heroButtons.apk}
         />
 
-        {page.heroImage ? (
+        {isUsableHeroImageSrc(page.heroImage) ? (
           <img
             className="ff-as-feature-image"
             src={page.heroImage}

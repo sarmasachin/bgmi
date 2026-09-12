@@ -80,7 +80,7 @@ export function AdminBgmiApkFormTop({ page, openIds, onToggle, onPatch }: Props)
           }
         />
         <AdminField
-          label="Hero image URL"
+          label="Hero image URL (must start with / or https:// — leave empty to hide)"
           value={page.heroImage}
           onChange={(heroImage) => onPatch((p) => ({ ...p, heroImage }))}
         />
