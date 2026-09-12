@@ -86,31 +86,6 @@ export default function AdminPubgMobileLiteRedeemClient({ initialData }: Props) 
     }
   }
 
-  async function onReset() {
-    if (!window.confirm("Reset redeem codes page to built-in defaults?")) return;
-    setSaving(true);
-    try {
-      const res = await fetch("/api/admin/pubg-mobile-lite-redeem", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        credentials: "include",
-        body: JSON.stringify({ action: "reset" }),
-      });
-      if (!res.ok) {
-        setMessage(await readApiError(res, "Could not reset redeem codes page."));
-        return;
-      }
-      const json = await parseSaveResponse(res);
-      if (json.page) setPage(json.page);
-      setUsingDefault(Boolean(json.usingDefault));
-      setMessage("Reverted to built-in redeem code defaults.");
-    } catch (err) {
-      setMessage(messageFromUnknownError(err, "Network error. Please retry."));
-    } finally {
-      setSaving(false);
-    }
-  }
-
   return (
     <ClientErrorBoundary label="PUBG Mobile Lite Redeem admin">
       <section className="admin-section admin-redeem-page">
@@ -153,14 +128,6 @@ export default function AdminPubgMobileLiteRedeemClient({ initialData }: Props) 
               {usingDefault ? "Unsaved defaults" : "Ready to publish changes"}
             </div>
             <div className="admin-redeem-sticky-actions">
-              <button
-                type="button"
-                className="admin-news-btn admin-news-btn-edit"
-                onClick={onReset}
-                disabled={saving}
-              >
-                Reset
-              </button>
               <button type="submit" className="admin-news-btn" disabled={saving}>
                 {saving ? "Saving…" : "Save page"}
               </button>

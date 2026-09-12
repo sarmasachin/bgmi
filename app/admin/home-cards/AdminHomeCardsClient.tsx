@@ -109,38 +109,6 @@ export default function AdminHomeCardsClient({ initialByVariant }: Props) {
     }
   }
 
-  async function onReset() {
-    if (!window.confirm(`Reset ${meta.label} page cards to built-in defaults?`)) return;
-    setSaving(true);
-    try {
-      const res = await fetch("/api/admin/home-cards", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        credentials: "include",
-        body: JSON.stringify({ action: "reset", game: variant }),
-      });
-      if (!res.ok) {
-        setMessage(await readApiError(res, "Could not reset page cards."));
-        return;
-      }
-      const json = (await res.json()) as { cards?: FfHomeCards; usingDefault?: boolean };
-      if (json.cards) {
-        setByVariant((prev) => ({
-          ...prev,
-          [variant]: {
-            cards: json.cards!,
-            usingDefault: Boolean(json.usingDefault),
-          },
-        }));
-      }
-      setMessage(`Reverted ${meta.label} to built-in defaults.`);
-    } catch {
-      setMessage("Network error. Please retry.");
-    } finally {
-      setSaving(false);
-    }
-  }
-
   return (
     <section className="admin-section">
       <div className="admin-comments-head">
@@ -225,14 +193,6 @@ export default function AdminHomeCardsClient({ initialByVariant }: Props) {
         >
           <button type="submit" className="admin-news-btn admin-news-btn-primary" disabled={saving}>
             {saving ? "Saving…" : `Save ${meta.label}`}
-          </button>
-          <button
-            type="button"
-            className="admin-news-btn admin-news-btn-edit"
-            disabled={saving || active.usingDefault}
-            onClick={() => void onReset()}
-          >
-            Reset to defaults
           </button>
         </div>
       </form>

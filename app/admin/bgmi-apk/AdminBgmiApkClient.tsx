@@ -18,7 +18,6 @@ type InitialData = {
 
 export default function AdminBgmiApkClient({ initialData }: { initialData: InitialData }) {
   const [page, setPage] = useState(initialData.page);
-  const [usingDefault, setUsingDefault] = useState(initialData.usingDefault);
   const [openIds, setOpenIds] = useState<Set<BgmiApkPageSectionId>>(
     () => new Set(),
   );
@@ -51,39 +50,9 @@ export default function AdminBgmiApkClient({ initialData }: { initialData: Initi
       }
       const json = (await res.json()) as {
         page?: BgmiApkPageContent;
-        usingDefault?: boolean;
       };
       if (json.page) setPage(json.page);
-      setUsingDefault(Boolean(json.usingDefault));
       setMessage("BGMI APK page saved.");
-    } catch {
-      setMessage("Network error. Please retry.");
-    } finally {
-      setSaving(false);
-    }
-  }
-
-  async function onReset() {
-    if (!window.confirm("Reset BGMI APK page to built-in defaults?")) return;
-    setSaving(true);
-    try {
-      const res = await fetch("/api/admin/bgmi-apk", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        credentials: "include",
-        body: JSON.stringify({ action: "reset" }),
-      });
-      if (!res.ok) {
-        setMessage(await readApiError(res, "Could not reset BGMI APK page."));
-        return;
-      }
-      const json = (await res.json()) as {
-        page?: BgmiApkPageContent;
-        usingDefault?: boolean;
-      };
-      if (json.page) setPage(json.page);
-      setUsingDefault(Boolean(json.usingDefault));
-      setMessage("Reverted to built-in BGMI APK defaults.");
     } catch {
       setMessage("Network error. Please retry.");
     } finally {
@@ -129,14 +98,6 @@ export default function AdminBgmiApkClient({ initialData }: { initialData: Initi
         >
           <button type="submit" className="admin-news-btn admin-news-btn-primary" disabled={saving}>
             {saving ? "Saving…" : "Save all"}
-          </button>
-          <button
-            type="button"
-            className="admin-news-btn admin-news-btn-edit"
-            disabled={saving || usingDefault}
-            onClick={() => void onReset()}
-          >
-            Reset to defaults
           </button>
         </div>
       </form>

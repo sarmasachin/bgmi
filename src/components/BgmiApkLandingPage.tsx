@@ -1,9 +1,8 @@
 import Link from "next/link";
-import type { ReactNode } from "react";
+import { BgmiApkHeroActions } from "@/src/components/BgmiApkHeroActions";
 import { BgmiLiteBetaApkInfoBlocks } from "@/src/components/BgmiLiteBetaApkInfoBlocks";
 import { ClientErrorBoundary } from "@/src/components/ClientErrorBoundary";
 import { FaqAccordion } from "@/src/components/FaqAccordion";
-import { FfAdvanceServerCountdown } from "@/src/components/FfAdvanceServerCountdown";
 import { HomeHeader } from "@/src/components/HomeHeader";
 import { PageCommentSection } from "@/src/components/PageCommentSection";
 import { SiteFooter } from "@/src/components/SiteFooter";
@@ -11,7 +10,6 @@ import {
   BGMI_APK_PAGE_KEY,
   BGMI_APK_PATH,
   DEFAULT_BGMI_APK_PAGE,
-  type BgmiApkHeroButton,
   type BgmiApkPageContent,
 } from "@/src/lib/bgmiApkPage";
 import { breadcrumbListSchema, faqSchema, webPageSchema } from "@/src/lib/schema";
@@ -22,41 +20,6 @@ import {
   type PublicPageComment,
 } from "@/src/server/repositories/pageCommentsRepository";
 import { getSettings, type SiteSettings } from "@/src/server/repositories/settingsRepository";
-
-function isPublicHeroButton(btn: BgmiApkHeroButton): boolean {
-  return btn.visible && Boolean(btn.label.trim()) && Boolean(btn.href.trim());
-}
-
-function HeroCtaLink({
-  btn,
-  className,
-  icon,
-}: {
-  btn: BgmiApkHeroButton;
-  className: string;
-  icon: string;
-}) {
-  const href = btn.href.trim();
-  const external = /^https?:\/\//i.test(href);
-  const inner: ReactNode = (
-    <>
-      <i className={`fa-solid ${icon}`} aria-hidden />
-      <span>{btn.label}</span>
-    </>
-  );
-  if (external) {
-    return (
-      <a className={className} href={href} target="_blank" rel="noopener noreferrer">
-        {inner}
-      </a>
-    );
-  }
-  return (
-    <Link className={className} href={href}>
-      {inner}
-    </Link>
-  );
-}
 
 type LandingData = {
   settings: SiteSettings;
@@ -96,8 +59,6 @@ export async function BgmiApkLandingPage() {
     question: item.question,
     answer: item.answer,
   }));
-  const showPlay = isPublicHeroButton(page.heroButtons.playStore);
-  const showApk = isPublicHeroButton(page.heroButtons.apk);
 
   const faqLd = faqSchema(faqItems);
   const breadcrumbLd = breadcrumbListSchema([
@@ -146,35 +107,11 @@ export async function BgmiApkLandingPage() {
           ))}
         </ul>
 
-        {page.countdown.visible && page.countdown.targetIso ? (
-          <ClientErrorBoundary label="Update countdown">
-            <FfAdvanceServerCountdown
-              label={page.countdown.label}
-              targetIso={page.countdown.targetIso}
-              dateText={page.countdown.dateText}
-              liveMessage={page.countdown.liveMessage}
-            />
-          </ClientErrorBoundary>
-        ) : null}
-
-        {showPlay || showApk ? (
-          <div className="ff-as-hero-btns" role="group" aria-label="BGMI download options">
-            {showPlay ? (
-              <HeroCtaLink
-                btn={page.heroButtons.playStore}
-                className="ff-as-apk-btn"
-                icon="fa-store"
-              />
-            ) : null}
-            {showApk ? (
-              <HeroCtaLink
-                btn={page.heroButtons.apk}
-                className="ff-as-apk-btn ff-as-apk-btn--alt"
-                icon="fa-download"
-              />
-            ) : null}
-          </div>
-        ) : null}
+        <BgmiApkHeroActions
+          countdown={page.countdown}
+          playStore={page.heroButtons.playStore}
+          apk={page.heroButtons.apk}
+        />
 
         {page.heroImage ? (
           <img

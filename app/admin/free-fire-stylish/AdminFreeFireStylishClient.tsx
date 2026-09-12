@@ -26,7 +26,6 @@ export type AdminFreeFireStylishClientProps = {
   savedPathLabel?: string;
   pathLockedLabel?: string;
   saveSuccessMessage?: string;
-  resetSuccessMessage?: string;
   boundaryLabel?: string;
 };
 
@@ -38,7 +37,6 @@ export default function AdminFreeFireStylishClient({
   savedPathLabel = "/free-fire-stylish-name",
   pathLockedLabel = "/free-fire-stylish-name",
   saveSuccessMessage = "Free Fire stylish name page saved.",
-  resetSuccessMessage = "Reverted to built-in name page defaults.",
   boundaryLabel = "Free Fire Stylish Name admin",
 }: AdminFreeFireStylishClientProps) {
   const [page, setPage] = useState(initialData.page);
@@ -104,31 +102,6 @@ export default function AdminFreeFireStylishClient({
     }
   }
 
-  async function onReset() {
-    if (!window.confirm("Reset name page to built-in defaults?")) return;
-    setSaving(true);
-    try {
-      const res = await fetch(apiPath, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        credentials: "include",
-        body: JSON.stringify({ action: "reset" }),
-      });
-      if (!res.ok) {
-        setMessage(await readApiError(res, "Could not reset name page."));
-        return;
-      }
-      const json = await parseSaveResponse(res);
-      if (json.page) setPage(json.page);
-      setUsingDefault(Boolean(json.usingDefault));
-      setMessage(resetSuccessMessage);
-    } catch (err) {
-      setMessage(messageFromUnknownError(err, "Network error. Please retry."));
-    } finally {
-      setSaving(false);
-    }
-  }
-
   return (
     <ClientErrorBoundary label={boundaryLabel}>
       <section className="admin-section">
@@ -161,14 +134,6 @@ export default function AdminFreeFireStylishClient({
           <div style={{ display: "flex", gap: 10, flexWrap: "wrap", marginTop: 16 }}>
             <button type="submit" className="admin-news-btn" disabled={saving}>
               {saving ? "Saving…" : "Save page"}
-            </button>
-            <button
-              type="button"
-              className="admin-news-btn admin-news-btn-edit"
-              onClick={onReset}
-              disabled={saving}
-            >
-              Reset to defaults
             </button>
           </div>
         </form>

@@ -121,7 +121,7 @@ export function normalizeAdvanceServerPage(raw: unknown): FfAdvanceServerPageCon
     seoDescription:
       sanitizeString(raw.seoDescription, defaults.seoDescription) || defaults.seoDescription,
     seoKeywords: sanitizeStringList(raw.seoKeywords, defaults.seoKeywords),
-    heroImageAlt: sanitizeString(raw.heroImageAlt, defaults.heroImageAlt) || defaults.heroImageAlt,
+    heroImageAlt: sanitizeString(raw.heroImageAlt, defaults.heroImageAlt),
     subtitleEn: sanitizeString(raw.subtitleEn, defaults.subtitleEn) || defaults.subtitleEn,
     apkCta: "",
     officialUrl: "",

@@ -170,7 +170,8 @@ export function normalizePubgApkPage(raw: unknown): PubgApkPageContent {
     },
     countdown: normalizeCountdown(raw.countdown, defaults.countdown),
     heroImage: sanitizeString(raw.heroImage, defaults.heroImage),
-    heroImageAlt: sanitizeString(raw.heroImageAlt, defaults.heroImageAlt) || defaults.heroImageAlt,
+    // Allow empty alt — do not re-fill defaults when admin clears the field.
+    heroImageAlt: sanitizeString(raw.heroImageAlt, defaults.heroImageAlt),
     cards: normalizeCards(raw.cards, defaults.cards),
     preRegister: normalizeInstall(raw.preRegister, defaults.preRegister),
     facts: normalizeFacts(raw.facts, defaults.facts),

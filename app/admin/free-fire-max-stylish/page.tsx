@@ -20,7 +20,6 @@ export default async function AdminFreeFireMaxStylishPage() {
       savedPathLabel="/free-fire-max-stylish-name"
       pathLockedLabel="/free-fire-max-stylish-name"
       saveSuccessMessage="Free Fire Max stylish name page saved."
-      resetSuccessMessage="Reverted to built-in Free Fire Max name defaults."
       boundaryLabel="Free Fire Max Stylish Name admin"
     />
   );

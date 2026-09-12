@@ -19,7 +19,6 @@ export default async function AdminFreeFireMaxRedeemPage() {
       heading="Free Fire Max Redeem Codes"
       savedPathLabel="/free-fire-max-redeem-code"
       saveSuccessMessage="Free Fire Max redeem codes page saved."
-      resetSuccessMessage="Reverted to built-in Free Fire Max redeem defaults."
       boundaryLabel="Free Fire Max Redeem admin"
     />
   );

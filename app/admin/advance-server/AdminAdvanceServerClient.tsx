@@ -22,7 +22,6 @@ type Props = {
 
 export default function AdminAdvanceServerClient({ initialData, loadError = false }: Props) {
   const [page, setPage] = useState(initialData.page);
-  const [usingDefault, setUsingDefault] = useState(initialData.usingDefault);
   const [openIds, setOpenIds] = useState<Set<AdvanceServerPageSectionId>>(
     () => new Set(),
   );
@@ -67,7 +66,6 @@ export default function AdminAdvanceServerClient({ initialData, loadError = fals
       const json = (await res.json()) as {
         ok?: boolean;
         page?: FfAdvanceServerPageContent;
-        usingDefault?: boolean;
         warning?: string;
       };
       if (!json.ok || !json.page) {
@@ -75,46 +73,11 @@ export default function AdminAdvanceServerClient({ initialData, loadError = fals
         return;
       }
       setPage(json.page);
-      setUsingDefault(Boolean(json.usingDefault));
       if (json.warning) {
         toast.warning(`Advance Server page saved. Push: ${json.warning}`);
       } else {
         toast.success("Advance Server page saved.");
       }
-    } catch {
-      toast.error("Network error. Please retry.");
-    } finally {
-      setSaving(false);
-    }
-  }
-
-  async function onReset() {
-    if (blocked) return;
-    if (!window.confirm("Reset Advance Server page to built-in defaults?")) return;
-    setSaving(true);
-    try {
-      const res = await fetch("/api/admin/advance-server", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        credentials: "include",
-        body: JSON.stringify({ action: "reset" }),
-      });
-      if (!res.ok) {
-        toast.error(await readApiError(res, "Could not reset Advance Server page."));
-        return;
-      }
-      const json = (await res.json()) as {
-        ok?: boolean;
-        page?: FfAdvanceServerPageContent;
-        usingDefault?: boolean;
-      };
-      if (!json.ok || !json.page) {
-        toast.error("Could not reset Advance Server page.");
-        return;
-      }
-      setPage(json.page);
-      setUsingDefault(Boolean(json.usingDefault));
-      toast.success("Reverted to built-in Advance Server defaults.");
     } catch {
       toast.error("Network error. Please retry.");
     } finally {
@@ -166,14 +129,6 @@ export default function AdminAdvanceServerClient({ initialData, loadError = fals
         >
           <button type="submit" className="admin-news-btn admin-news-btn-primary" disabled={blocked}>
             {saving ? "Saving…" : "Save all"}
-          </button>
-          <button
-            type="button"
-            className="admin-news-btn admin-news-btn-edit"
-            disabled={blocked || usingDefault}
-            onClick={() => void onReset()}
-          >
-            Reset to defaults
           </button>
         </div>
       </form>

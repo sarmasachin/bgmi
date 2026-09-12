@@ -122,7 +122,7 @@ export default function AdminAutoNotifyClient({
         <h2>Auto push notifications</h2>
         <p style={{ margin: "0 0 16px", opacity: 0.8, fontSize: 13 }}>
           Default is off. Enable only what should ping subscribers. Manual campaigns stay under{" "}
-          <strong>Notifications</strong>. Reset-to-defaults never sends a push.
+          <strong>Notifications</strong>.
         </p>
 
         {TOGGLES.map((item) => (

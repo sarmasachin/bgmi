@@ -198,30 +198,6 @@ export default function AdminGameArticlesClient({ initialData }: Props) {
     }
   }
 
-  async function clearToDefault() {
-    if (!window.confirm("Clear custom article and use the built-in default on the site?")) return;
-    setSaving(true);
-    try {
-      const res = await fetch("/api/admin/game-articles", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        credentials: "include",
-        body: JSON.stringify({ game, html: "" }),
-      });
-      if (!res.ok) {
-        setMessage(await readApiError(res, "Could not clear article."));
-        return;
-      }
-      clearEditorDraft(game);
-      setMessage("Reverted to built-in default article.");
-      await load({ soft: true });
-    } catch {
-      setMessage("Network error. Please retry.");
-    } finally {
-      setSaving(false);
-    }
-  }
-
   return (
     <section className="admin-section">
       <div className="admin-comments-head">
@@ -277,14 +253,6 @@ export default function AdminGameArticlesClient({ initialData }: Props) {
           <div className="admin-news-actions-wrap" style={{ marginTop: 14, gap: 8 }}>
             <button type="submit" className="admin-news-btn admin-news-btn-primary" disabled={saving}>
               {saving ? "Saving…" : `Save ${labelFor(game)} article`}
-            </button>
-            <button
-              type="button"
-              className="admin-news-btn admin-news-btn-edit"
-              disabled={saving || usingDefault}
-              onClick={() => void clearToDefault()}
-            >
-              Use built-in default
             </button>
             <a
               className="admin-news-btn admin-news-btn-edit"

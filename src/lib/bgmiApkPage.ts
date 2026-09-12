@@ -27,6 +27,52 @@ export type BgmiApkCountdown = {
   liveMessage: string;
 };
 
+/** Public page shows a hero CTA only when Show is on, label and URL are both set. */
+export function isBgmiApkHeroButtonPublic(btn: BgmiApkHeroButton): boolean {
+  return btn.visible && Boolean(btn.label.trim()) && Boolean(btn.href.trim());
+}
+
+/** True while admin timer is on and the target time is still in the future. */
+export function isBgmiApkCountdownTicking(
+  countdown: Pick<BgmiApkCountdown, "visible" | "targetIso">,
+  nowMs: number = Date.now(),
+): boolean {
+  if (!countdown.visible) return false;
+  const target = countdown.targetIso.trim();
+  if (!target) return false;
+  const targetMs = Date.parse(target);
+  return Number.isFinite(targetMs) && targetMs > nowMs;
+}
+
+/** Admin hint: why a button will / will not appear on /bgmi-apk. */
+export function bgmiApkHeroButtonPublicStatus(
+  btn: BgmiApkHeroButton,
+  countdown?: Pick<BgmiApkCountdown, "visible" | "targetIso">,
+): {
+  visible: boolean;
+  message: string;
+} {
+  if (!btn.visible) {
+    return { visible: false, message: "Public: HIDDEN — Show is off" };
+  }
+  if (!btn.label.trim()) {
+    return { visible: false, message: "Public: HIDDEN — label is empty" };
+  }
+  if (!btn.href.trim()) {
+    return {
+      visible: false,
+      message: "Public: HIDDEN — paste URL below (Show alone is not enough)",
+    };
+  }
+  if (countdown && isBgmiApkCountdownTicking(countdown)) {
+    return {
+      visible: false,
+      message: "Public: HIDDEN while timer is counting — shows automatically when timer ends/off",
+    };
+  }
+  return { visible: true, message: "Public: VISIBLE on /bgmi-apk" };
+}
+
 export type BgmiApkCard = {
   id: string;
   badge: string;
@@ -108,7 +154,8 @@ export const DEFAULT_BGMI_APK_PAGE: BgmiApkPageContent = {
     apk: {
       label: "APK",
       href: "",
-      visible: true,
+      // Off until admin pastes a URL — avoids “Show on” but button missing on public page.
+      visible: false,
     },
   },
   countdown: {
