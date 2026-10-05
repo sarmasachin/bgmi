@@ -52,7 +52,6 @@ export async function listApprovedPageComments(pageKey: string): Promise<PublicP
     return pc.findMany({
       where: { pageKey: key, status: "approved" },
       orderBy: { createdAt: "desc" },
-      take: 200,
       select: { id: true, name: true, message: true, createdAt: true },
     });
   });

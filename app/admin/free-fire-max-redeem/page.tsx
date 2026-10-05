@@ -20,6 +20,7 @@ export default async function AdminFreeFireMaxRedeemPage() {
       savedPathLabel="/free-fire-max-redeem-code"
       saveSuccessMessage="Free Fire Max redeem codes page saved."
       boundaryLabel="Free Fire Max Redeem admin"
+      articleStorageKey="bgmi_admin_ff_max_redeem_article_v1"
     />
   );
 }

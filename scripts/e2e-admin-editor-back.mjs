@@ -79,11 +79,13 @@ function checkHookAndWiring() {
   const layout = read("app/admin/AdminLayoutClient.tsx");
   const idx = layout.indexOf("admin-nav-link");
   assert(idx > 0, "nav link missing");
-  assert(layout.slice(idx - 180, idx + 40).includes("replace"), "sidebar Link replace still required");
+  const navSlice = layout.slice(idx - 180, idx + 40);
+  assert(navSlice.includes("replace"), "sidebar Link replace still required");
+  assert(navSlice.includes("prefetch={false}"), "sidebar must not prefetch stale admin pages");
 
   const pagesLines = lineCount("app/admin/pages/AdminPagesClient.tsx");
   assert(pagesLines <= 1000, `AdminPagesClient over 1000 lines (${pagesLines})`);
-  console.log("PASS  hook wired in News + Pages; sidebar replace; line limit");
+  console.log("PASS  hook wired in News + Pages; sidebar replace + no prefetch; line limit");
 }
 
 function main() {

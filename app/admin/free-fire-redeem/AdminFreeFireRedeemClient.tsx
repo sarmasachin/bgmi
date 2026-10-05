@@ -1,6 +1,7 @@
 "use client";
 
 import { FormEvent, useState } from "react";
+import { useRouter } from "next/navigation";
 import { useAdminFlash } from "@/src/components/admin/AdminToast";
 import { ClientErrorBoundary } from "@/src/components/ClientErrorBoundary";
 import {
@@ -26,6 +27,7 @@ export type AdminFreeFireRedeemClientProps = {
   savedPathLabel?: string;
   saveSuccessMessage?: string;
   boundaryLabel?: string;
+  articleStorageKey?: string;
 };
 
 export default function AdminFreeFireRedeemClient({
@@ -36,7 +38,9 @@ export default function AdminFreeFireRedeemClient({
   savedPathLabel = "/free-fire-redeem-code",
   saveSuccessMessage = "Free Fire redeem codes page saved.",
   boundaryLabel = "Free Fire Redeem admin",
+  articleStorageKey,
 }: AdminFreeFireRedeemClientProps) {
+  const router = useRouter();
   const [page, setPage] = useState(initialData.page);
   const [usingDefault, setUsingDefault] = useState(initialData.usingDefault);
   const [openIds, setOpenIds] = useState<Set<RedeemAdminSectionId>>(
@@ -85,6 +89,7 @@ export default function AdminFreeFireRedeemClient({
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
+        cache: "no-store",
         body: JSON.stringify({ action: "save", page }),
       });
       if (!res.ok) {
@@ -95,6 +100,7 @@ export default function AdminFreeFireRedeemClient({
       if (json.page) setPage(json.page);
       setUsingDefault(Boolean(json.usingDefault));
       setMessage(saveSuccessMessage);
+      router.refresh();
     } catch (err) {
       setMessage(messageFromUnknownError(err, "Network error. Please retry."));
     } finally {
@@ -137,6 +143,7 @@ export default function AdminFreeFireRedeemClient({
             openIds={openIds}
             onToggle={toggle}
             onPatch={patchPage}
+            articleStorageKey={articleStorageKey}
           />
 
           <div className="admin-redeem-sticky-bar">

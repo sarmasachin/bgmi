@@ -1,6 +1,7 @@
 "use client";
 
 import { FormEvent, useRef, useState } from "react";
+import { usePublicCommentReveal } from "@/src/components/usePublicCommentReveal";
 import { UserErrorBanner } from "@/src/components/ui/UserErrorBanner";
 import { messageFromUnknownError, readApiError } from "@/src/lib/userFacingError";
 import type { PublicComment } from "@/src/server/repositories/commentsRepository";
@@ -23,6 +24,7 @@ function formatCommentDate(iso: string) {
 export function NewsCommentSection({ newsId, initialComments = [] }: Props) {
   const submittingRef = useRef(false);
   const [comments] = useState<PublicComment[]>(initialComments);
+  const { isHidden, hasMore, showMore } = usePublicCommentReveal(comments.length);
   const [name, setName] = useState("");
   const [message, setMessage] = useState("");
   const [submitting, setSubmitting] = useState(false);
@@ -142,8 +144,8 @@ export function NewsCommentSection({ newsId, initialComments = [] }: Props) {
           <p className="news-comments-empty">No comments yet. Be the first to comment.</p>
         ) : (
           <ul className="news-comments-items">
-            {comments.map((item) => (
-              <li key={item.id} className="news-comments-item">
+            {comments.map((item, index) => (
+              <li key={item.id} className="news-comments-item" hidden={isHidden(index)}>
                 <div className="news-comments-item-head">
                   <span className="news-comments-item-name">{item.name}</span>
                   {item.createdAt ? (
@@ -157,6 +159,11 @@ export function NewsCommentSection({ newsId, initialComments = [] }: Props) {
             ))}
           </ul>
         )}
+        {hasMore ? (
+          <button type="button" className="news-comments-load-more" onClick={showMore}>
+            Load more
+          </button>
+        ) : null}
       </div>
     </section>
   );

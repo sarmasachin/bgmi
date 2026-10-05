@@ -33,6 +33,7 @@ type Props = {
   onPatch: (
     updater: (prev: FreeFireRedeemCodePageContent) => FreeFireRedeemCodePageContent,
   ) => void;
+  articleStorageKey?: string;
 };
 
 function Field({
@@ -99,7 +100,13 @@ function Section({
   );
 }
 
-export function AdminFreeFireRedeemForm({ page, openIds, onToggle, onPatch }: Props) {
+export function AdminFreeFireRedeemForm({
+  page,
+  openIds,
+  onToggle,
+  onPatch,
+  articleStorageKey = "bgmi_admin_ff_redeem_article_v1",
+}: Props) {
   const liveCount = page.codes.filter((c) => c.status === "live").length;
   const servers = ensureGlobalRedeemServer(page.servers);
 
@@ -222,7 +229,7 @@ export function AdminFreeFireRedeemForm({ page, openIds, onToggle, onPatch }: Pr
           <RichTextEditor
             value={page.articleHtml}
             onChange={(articleHtml) => onPatch((p) => ({ ...p, articleHtml }))}
-            storageKey="bgmi_admin_ff_redeem_article_v1"
+            storageKey={articleStorageKey}
           />
         </div>
         <Field

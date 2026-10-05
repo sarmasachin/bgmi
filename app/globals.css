@@ -113,7 +113,6 @@ h1.main-title.ff-gradient-title {
   border-bottom: 1px solid rgba(var(--primary-rgb), 0.12);
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.28);
   backdrop-filter: blur(10px);
-  transition: transform 0.28s ease;
 }
 
 .home-site-header.home-header--scroll-hidden {
@@ -3220,6 +3219,25 @@ footer,
   padding: 12px 14px;
 }
 
+.news-comments-item[hidden] {
+  display: none !important;
+}
+
+.news-comments-load-more {
+  display: block;
+  width: auto;
+  margin: 16px auto 0;
+  flex: 0 0 auto;
+  border: 0;
+  border-radius: 10px;
+  background: var(--primary);
+  color: #041015;
+  font-size: 0.95rem;
+  font-weight: 700;
+  padding: 10px 18px;
+  cursor: pointer;
+}
+
 .news-comments-item-head {
   display: flex;
   flex-wrap: wrap;
@@ -4608,13 +4626,27 @@ footer,
   gap: 8px;
 }
 
-.admin-comments-stats span {
+.admin-comments-stats span,
+.admin-comments-stats button {
   border: 1px solid #2a3c58;
   border-radius: 999px;
   padding: 5px 10px;
   font-size: 12px;
   color: #c8daf4;
   background: #0d1728;
+}
+
+.admin-comments-stats button {
+  flex: 0 0 auto;
+  font-family: inherit;
+  font-weight: 400;
+  cursor: pointer;
+}
+
+.admin-comments-stats button.is-active {
+  border-color: rgba(var(--primary-rgb), 0.55);
+  color: var(--primary);
+  background: rgba(var(--primary-rgb), 0.08);
 }
 
 .admin-comments-message {
@@ -4679,6 +4711,8 @@ footer,
 .admin-comments-message-cell {
   max-width: 420px;
   white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  word-break: break-word;
   line-height: 1.45;
 }
 
@@ -11020,6 +11054,26 @@ html {
   border-radius: 12px;
   border: 1px solid rgba(255, 255, 255, 0.1);
   background: rgba(255, 255, 255, 0.03);
+}
+
+.ff-as-comments-item[hidden] {
+  display: none !important;
+}
+
+.ff-as-comments-load-more {
+  display: block;
+  width: auto;
+  margin: 16px auto 0;
+  flex: 0 0 auto;
+  min-height: 46px;
+  padding: 12px 20px;
+  border: 0;
+  border-radius: 10px;
+  background: #f5c518;
+  color: #111827;
+  font-size: 0.95rem;
+  font-weight: 800;
+  cursor: pointer;
 }
 
 .ff-as-comments-item-head {

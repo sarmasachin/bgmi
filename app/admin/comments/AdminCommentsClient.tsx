@@ -6,6 +6,15 @@ import { useAdminFlash } from "@/src/components/admin/AdminToast";
 import { readApiError } from "@/src/lib/userFacingError";
 
 type CommentItem = AdminCommentItem;
+type StatusFilter = "all" | CommentItem["status"];
+
+const STATUS_FILTERS: Array<[StatusFilter, string]> = [
+  ["all", "All"],
+  ["pending", "Pending"],
+  ["approved", "Approved"],
+  ["rejected", "Rejected"],
+  ["spam", "Spam"],
+];
 
 type Props = {
   initialItems?: CommentItem[];
@@ -24,6 +33,7 @@ export default function AdminCommentsClient({ initialItems }: Props) {
   const [workingId, setWorkingId] = useState<string | null>(null);
   const setMessage = useAdminFlash();
   const [visibleCount, setVisibleCount] = useState(10);
+  const [filter, setFilter] = useState<StatusFilter>("all");
   const [confirmDelete, setConfirmDelete] = useState<ConfirmDelete | null>(null);
   const [confirmBusy, setConfirmBusy] = useState(false);
 
@@ -59,7 +69,6 @@ export default function AdminCommentsClient({ initialItems }: Props) {
         email: item.email ? String(item.email) : "",
       }));
       setItems(next);
-      setVisibleCount(10);
     } catch {
       setMessage("Network error. Please retry.");
       setItems([]);
@@ -91,7 +100,13 @@ export default function AdminCommentsClient({ initialItems }: Props) {
           ? `Comment marked ${status}.`
           : await readApiError(res, "Action failed."),
       );
-      if (res.ok) await loadComments();
+      if (res.ok) {
+        setItems((current) =>
+          current.map((item) =>
+            item.id === id && item.source === source ? { ...item, status } : item,
+          ),
+        );
+      }
     } catch {
       setMessage("Network error. Please retry.");
     }
@@ -108,7 +123,9 @@ export default function AdminCommentsClient({ initialItems }: Props) {
         credentials: "include",
       });
       setMessage(res.ok ? "Comment deleted." : await readApiError(res, "Delete failed."));
-      if (res.ok) await loadComments();
+      if (res.ok) {
+        setItems((current) => current.filter((item) => !(item.id === id && item.source === source)));
+      }
       return res.ok;
     } catch {
       setMessage("Network error. Please retry.");
@@ -131,20 +148,39 @@ export default function AdminCommentsClient({ initialItems }: Props) {
     if (ok) setConfirmDelete(null);
   }
 
-  const visibleItems = useMemo(() => items.slice(0, visibleCount), [items, visibleCount]);
-  const hasMore = visibleCount < items.length;
+  const filteredItems = useMemo(() => {
+    if (filter === "all") return items;
+    return items.filter((item) => item.status === filter);
+  }, [items, filter]);
+
+  const visibleItems = useMemo(
+    () => filteredItems.slice(0, visibleCount),
+    [filteredItems, visibleCount],
+  );
+  const hasMore = visibleCount < filteredItems.length;
+
+  useEffect(() => {
+    setVisibleCount(10);
+  }, [filter]);
 
   return (
     <>
       <section className="admin-section admin-comments-section">
         <div className="admin-comments-head">
           <h1>Comments Moderation</h1>
-          <div className="admin-comments-stats">
-            <span>All: {counts.all}</span>
-            <span>Pending: {counts.pending}</span>
-            <span>Approved: {counts.approved}</span>
-            <span>Rejected: {counts.rejected}</span>
-            <span>Spam: {counts.spam}</span>
+          <div className="admin-comments-stats" role="tablist" aria-label="Filter comments by status">
+            {STATUS_FILTERS.map(([value, label]) => (
+              <button
+                key={value}
+                type="button"
+                role="tab"
+                aria-selected={filter === value}
+                className={filter === value ? "is-active" : undefined}
+                onClick={() => setFilter(value)}
+              >
+                {label}: {counts[value]}
+              </button>
+            ))}
           </div>
         </div>
 
@@ -166,9 +202,11 @@ export default function AdminCommentsClient({ initialItems }: Props) {
                 <tr>
                   <td colSpan={7}>Loading comments...</td>
                 </tr>
-              ) : items.length === 0 ? (
+              ) : filteredItems.length === 0 ? (
                 <tr>
-                  <td colSpan={7}>No comments found.</td>
+                  <td colSpan={7}>
+                    {filter === "all" ? "No comments found." : `No ${filter} comments.`}
+                  </td>
                 </tr>
               ) : (
                 visibleItems.map((item) => (

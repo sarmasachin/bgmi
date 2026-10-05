@@ -1,6 +1,7 @@
 "use client";
 
 import { FormEvent, useRef, useState } from "react";
+import { usePublicCommentReveal } from "@/src/components/usePublicCommentReveal";
 import { UserErrorBanner } from "@/src/components/ui/UserErrorBanner";
 import { messageFromUnknownError, readApiError } from "@/src/lib/userFacingError";
 import type { PublicPageComment } from "@/src/server/repositories/pageCommentsRepository";
@@ -31,6 +32,7 @@ export function PageCommentSection({
 }: Props) {
   const submittingRef = useRef(false);
   const [comments] = useState<PublicPageComment[]>(initialComments);
+  const { isHidden, hasMore, showMore } = usePublicCommentReveal(comments.length);
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [message, setMessage] = useState("");
@@ -175,8 +177,8 @@ export function PageCommentSection({
             <p className="ff-as-comments-empty">No comments yet. Be the first to comment.</p>
           ) : (
             <ul className="ff-as-comments-items">
-              {comments.map((item) => (
-                <li key={item.id} className="ff-as-comments-item">
+              {comments.map((item, index) => (
+                <li key={item.id} className="ff-as-comments-item" hidden={isHidden(index)}>
                   <div className="ff-as-comments-item-head">
                     <span className="ff-as-comments-item-name">{item.name}</span>
                     {item.createdAt ? (
@@ -187,10 +189,15 @@ export function PageCommentSection({
                   </div>
                   <p className="ff-as-comments-item-message">{item.message}</p>
                 </li>
-              ))}
-            </ul>
-          )}
-        </div>
+            ))}
+          </ul>
+        )}
+        {hasMore ? (
+          <button type="button" className="ff-as-comments-load-more" onClick={showMore}>
+            Load more
+          </button>
+        ) : null}
+      </div>
       </div>
     </section>
   );

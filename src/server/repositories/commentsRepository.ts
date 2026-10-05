@@ -35,7 +35,6 @@ export async function listApprovedCommentsByNewsId(newsId: string): Promise<Publ
     prisma.newsComment.findMany({
       where: { newsId: id, status: "approved" },
       orderBy: { createdAt: "desc" },
-      take: 100,
       select: { id: true, name: true, message: true, createdAt: true },
     }),
   );

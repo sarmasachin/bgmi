@@ -258,6 +258,11 @@ console.log("\n== E) Admin + public wiring (source evidence) ==");
     ffForm.includes("AdminFreeFireRedeemCodesSection"),
   );
   ok("FF admin client exists", ffClient.includes("AdminFreeFireRedeemForm") || ffClient.includes("Save"));
+  ok("FF admin save refreshes RSC so form is not stale", ffClient.includes("router.refresh()"));
+  ok(
+    "FF Max article draft key is separate from FF redeem",
+    maxPageSrc.includes("bgmi_admin_ff_max_redeem_article_v1"),
+  );
   ok("FF admin page exists", ffPage.length > 0);
 }
 
