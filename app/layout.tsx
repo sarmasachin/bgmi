@@ -15,6 +15,10 @@ import { defaultSeoSettings } from "@/src/lib/siteSettings";
 import { getHeadSnippets, getSettings } from "@/src/server/repositories/settingsRepository";
 import "./globals.css";
 
+/** Google AdSense Auto ads. Must be in the initial HTML <head>, not injected later. */
+const ADSENSE_CLIENT = "ca-pub-9467977262277079";
+const ADSENSE_AUTO_SRC = `https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=${ADSENSE_CLIENT}`;
+
 /* Limit downloaded axis pressure; swap keeps text visible for LCP */
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -125,9 +129,10 @@ export default async function RootLayout({
   return (
     <html lang="en" className={geistSans.variable} data-scroll-behavior="smooth">
       <head>
-        {/* AdSense soon after open; GA a bit later — never on first click (INP). */}
+        {/* AdSense Auto ads in the initial HTML. Analytics stays deferred. */}
         <link rel="dns-prefetch" href="https://www.googletagmanager.com" />
         <link rel="dns-prefetch" href="https://pagead2.googlesyndication.com" />
+        <script async src={ADSENSE_AUTO_SRC} crossOrigin="anonymous" />
         <link rel="preconnect" href="https://cdnjs.cloudflare.com" crossOrigin="anonymous" />
         {/* Preload FA font; CSS uses media=print→all so it does not block first paint (FCP). */}
         <link
@@ -180,7 +185,9 @@ export default async function RootLayout({
               : null
           }
           adsense={
-            adsense
+            adsense &&
+            adsense.clientId !== ADSENSE_CLIENT &&
+            !adsense.externalSrc?.includes(ADSENSE_CLIENT)
               ? {
                   id: "site-adsense",
                   externalSrc: adsense.externalSrc,
