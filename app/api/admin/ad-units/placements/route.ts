@@ -10,6 +10,8 @@ import {
 const schema = z.object({
   home: z.object({
     home_below_title: z.boolean(),
+    free_fire_redeem_below_title: z.boolean(),
+    free_fire_max_redeem_below_title: z.boolean(),
     home_above_calculator: z.boolean(),
     home_between_tool_and_article: z.boolean(),
   }),

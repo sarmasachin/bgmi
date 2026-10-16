@@ -2,20 +2,28 @@ import { AdSlotClient } from "@/src/components/AdSlotClient";
 import { getAdPlacementVisibility } from "@/src/server/repositories/adPlacementRepository";
 import { getPublicAdSlot } from "@/src/server/repositories/adsRepository";
 
-const SLOT_KEY = "home_below_title";
-
-/** Free Fire homepage, under the title. Shows only when admin enables this slot and pastes code. */
-export async function HomeTitleDummyAd() {
+/** Responsive ad under a page title. Each slotKey has its own admin code. */
+export async function HomeTitleDummyAd({
+  slotKey = "home_below_title",
+}: {
+  slotKey?: string;
+} = {}) {
   const [places, slot] = await Promise.all([
     getAdPlacementVisibility(),
-    getPublicAdSlot(SLOT_KEY),
+    getPublicAdSlot(slotKey),
   ]);
-  if (!places.home.home_below_title || !slot) return null;
+  const visible =
+    slotKey === "free_fire_redeem_below_title"
+      ? places.home.free_fire_redeem_below_title
+      : slotKey === "free_fire_max_redeem_below_title"
+        ? places.home.free_fire_max_redeem_below_title
+        : places.home.home_below_title;
+  if (!visible || !slot) return null;
 
   return (
     <div className="ff-home-ad">
       <div className="ff-home-ad-banner">
-        <AdSlotClient html={slot.html} slotKey={SLOT_KEY} />
+        <AdSlotClient html={slot.html} slotKey={slotKey} />
       </div>
       <style>{`
         .ff-home-ad {
@@ -24,6 +32,11 @@ export async function HomeTitleDummyAd() {
           margin: 0 auto 12px;
           box-sizing: border-box;
           min-width: 0;
+        }
+        .lite-redeem-inner .ff-home-ad {
+          width: 100%;
+          max-width: 100%;
+          margin: 12px 0 14px;
         }
         .ff-home-ad-banner,
         .ff-home-ad .ad-slot {

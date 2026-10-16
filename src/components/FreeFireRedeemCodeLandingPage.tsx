@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { ClientErrorBoundary } from "@/src/components/ClientErrorBoundary";
+import { HomeTitleDummyAd } from "@/src/components/HomeTitleDummyAd";
 import { FaqAccordion } from "@/src/components/FaqAccordion";
 import { FreeFireRedeemCodeBoard } from "@/src/components/FreeFireRedeemCodeBoard";
 import { HomeHeader } from "@/src/components/HomeHeader";
@@ -191,6 +192,11 @@ export async function FreeFireRedeemCodeLandingPage(
       <main className="lite-redeem-main">
         <div className="lite-redeem-inner">
           <h1 className="lite-redeem-title">{page.title}</h1>
+          <HomeTitleDummyAd
+            slotKey={
+              isMax ? "free_fire_max_redeem_below_title" : "free_fire_redeem_below_title"
+            }
+          />
           <p className="lite-redeem-intro">{page.intro}</p>
 
           <ClientErrorBoundary label="Redeem codes">
