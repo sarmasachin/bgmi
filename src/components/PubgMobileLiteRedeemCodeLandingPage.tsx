@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { ClientErrorBoundary } from "@/src/components/ClientErrorBoundary";
+import { HomeTitleDummyAd } from "@/src/components/HomeTitleDummyAd";
 import { FaqAccordion } from "@/src/components/FaqAccordion";
 import { HomeHeader } from "@/src/components/HomeHeader";
 import { PageCommentSection } from "@/src/components/PageCommentSection";
@@ -127,6 +128,7 @@ export async function PubgMobileLiteRedeemCodeLandingPage() {
       <main className="lite-redeem-main">
         <div className="lite-redeem-inner">
           <h1 className="lite-redeem-title">{page.title}</h1>
+          <HomeTitleDummyAd slotKey="free_fire_redeem_below_title" />
           <p className="lite-redeem-intro">{page.intro}</p>
 
           <h2 className="lite-redeem-h2">{page.sectionHeading}</h2>

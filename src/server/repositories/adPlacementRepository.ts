@@ -7,7 +7,6 @@ export type AdPlacementVisibility = {
   home: {
     home_below_title: boolean;
     free_fire_redeem_below_title: boolean;
-    free_fire_max_redeem_below_title: boolean;
     home_above_calculator: boolean;
     home_between_tool_and_article: boolean;
   };
@@ -22,7 +21,6 @@ export const DEFAULT_AD_PLACEMENT_VISIBILITY: AdPlacementVisibility = {
   home: {
     home_below_title: true,
     free_fire_redeem_below_title: true,
-    free_fire_max_redeem_below_title: true,
     home_above_calculator: true,
     home_between_tool_and_article: true,
   },
@@ -46,9 +44,6 @@ function mergeVisibility(raw: unknown): AdPlacementVisibility {
     }
     if (typeof h.free_fire_redeem_below_title === "boolean") {
       out.home.free_fire_redeem_below_title = h.free_fire_redeem_below_title;
-    }
-    if (typeof h.free_fire_max_redeem_below_title === "boolean") {
-      out.home.free_fire_max_redeem_below_title = h.free_fire_max_redeem_below_title;
     }
     if (typeof h.home_above_calculator === "boolean") {
       out.home.home_above_calculator = h.home_above_calculator;

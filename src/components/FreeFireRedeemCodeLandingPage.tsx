@@ -192,11 +192,7 @@ export async function FreeFireRedeemCodeLandingPage(
       <main className="lite-redeem-main">
         <div className="lite-redeem-inner">
           <h1 className="lite-redeem-title">{page.title}</h1>
-          <HomeTitleDummyAd
-            slotKey={
-              isMax ? "free_fire_max_redeem_below_title" : "free_fire_redeem_below_title"
-            }
-          />
+          <HomeTitleDummyAd slotKey="free_fire_redeem_below_title" />
           <p className="lite-redeem-intro">{page.intro}</p>
 
           <ClientErrorBoundary label="Redeem codes">

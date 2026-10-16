@@ -18,7 +18,6 @@ export type PlacementState = {
   home: {
     home_below_title: boolean;
     free_fire_redeem_below_title: boolean;
-    free_fire_max_redeem_below_title: boolean;
     home_above_calculator: boolean;
     home_between_tool_and_article: boolean;
   };
@@ -157,20 +156,7 @@ export function AdminAdsForm({ initialRows, initialPlacements }: Props) {
                 }))
               }
             />
-            Below Free Fire redeem title
-          </label>
-          <label className="admin-ads-enable" style={{ display: "block", marginBottom: 6 }}>
-            <input
-              type="checkbox"
-              checked={placements.home.free_fire_max_redeem_below_title}
-              onChange={(e) =>
-                setPlacements((p) => ({
-                  ...p,
-                  home: { ...p.home, free_fire_max_redeem_below_title: e.target.checked },
-                }))
-              }
-            />
-            Below Free Fire Max redeem title
+            Below redeem page title
           </label>
           <label className="admin-ads-enable" style={{ display: "block", marginBottom: 6 }}>
             <input

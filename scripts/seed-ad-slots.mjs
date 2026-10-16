@@ -6,8 +6,7 @@ const prisma = new PrismaClient();
 
 const SLOTS = [
   { slotKey: "home_below_title", title: "Home — below title" },
-  { slotKey: "free_fire_redeem_below_title", title: "Free Fire Redeem — below title" },
-  { slotKey: "free_fire_max_redeem_below_title", title: "Free Fire Max Redeem — below title" },
+  { slotKey: "free_fire_redeem_below_title", title: "Redeem pages — below title" },
   { slotKey: "home_above_calculator", title: "Home — above calculator" },
   { slotKey: "home_between_tool_and_article", title: "Home — between tool & article" },
   { slotKey: "news_list_top", title: "News list — top" },
@@ -43,9 +42,10 @@ async function main() {
     await prisma.adSlot.upsert({
       where: { slotKey: s.slotKey },
       create: { slotKey: s.slotKey, title: s.title, code: null, isEnabled: false },
-      update: {},
+      update: s.slotKey === "free_fire_redeem_below_title" ? { title: s.title } : {},
     });
   }
+  await prisma.adSlot.deleteMany({ where: { slotKey: "free_fire_max_redeem_below_title" } });
   console.log(`Upserted ${SLOTS.length} ad slots.`);
 }
 

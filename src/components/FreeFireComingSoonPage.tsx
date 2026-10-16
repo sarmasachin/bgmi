@@ -1,4 +1,5 @@
 import { FaqAccordion } from "@/src/components/FaqAccordion";
+import { HomeTitleDummyAd } from "@/src/components/HomeTitleDummyAd";
 import { FfComparisonTables } from "@/src/components/FfComparisonTables";
 import { FfExploreCards } from "@/src/components/FfExploreCards";
 import { FfNewsHub } from "@/src/components/FfNewsHub";
@@ -149,6 +150,7 @@ export async function FreeFireComingSoonPage({ variant }: { variant: FreeFireVar
     <div>
       <HomeHeader siteTitle={settings.homeDisplay.headerTitle} navigation={settings.navigation} />
       <h1 className="main-title ff-gradient-title">{title}</h1>
+      <HomeTitleDummyAd />
       <main className="page-container">
         {variant === "freefire-max" && maxCards ? <FfPatchStrip homeContent={maxCards.patchStrip} /> : null}
         <div id="ff-calculator" className="ff-calculator-anchor">

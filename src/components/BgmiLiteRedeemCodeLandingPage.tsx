@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { ClientErrorBoundary } from "@/src/components/ClientErrorBoundary";
+import { HomeTitleDummyAd } from "@/src/components/HomeTitleDummyAd";
 import { BgmiLiteRedeemCodeList } from "@/src/components/BgmiLiteRedeemCodeList";
 import { FaqAccordion } from "@/src/components/FaqAccordion";
 import { HomeHeader } from "@/src/components/HomeHeader";
@@ -124,6 +125,7 @@ export async function BgmiLiteRedeemCodeLandingPage() {
       <main className="lite-redeem-main">
         <div className="lite-redeem-inner">
           <h1 className="lite-redeem-title">{page.title}</h1>
+          <HomeTitleDummyAd slotKey="free_fire_redeem_below_title" />
           <p className="lite-redeem-intro">{page.intro}</p>
 
           <h2 className="lite-redeem-h2">{page.sectionHeading}</h2>
