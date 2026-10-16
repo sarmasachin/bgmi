@@ -5,6 +5,7 @@ import path from "path";
 const prisma = new PrismaClient();
 
 const SLOTS = [
+  { slotKey: "home_below_title", title: "Home — below title" },
   { slotKey: "home_above_calculator", title: "Home — above calculator" },
   { slotKey: "home_between_tool_and_article", title: "Home — between tool & article" },
   { slotKey: "news_list_top", title: "News list — top" },

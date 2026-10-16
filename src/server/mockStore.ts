@@ -120,6 +120,7 @@ function createMockStore(): MockStore {
     contactMessages: [],
     legalPages: [],
     ads: [
+      { id: "a0", slotKey: "home_below_title", enabled: false, code: "" },
       { id: "a1", slotKey: "home_above_calculator", enabled: false, code: "" },
       { id: "a2", slotKey: "home_between_tool_and_article", enabled: false, code: "" },
       { id: "a3", slotKey: "news_list_top", enabled: false, code: "" },

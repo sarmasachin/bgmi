@@ -3,6 +3,7 @@ import { prisma, tryPrisma } from "@/src/server/dbSafe";
 import { mockStore } from "@/src/server/mockStore";
 
 export const DEFAULT_AD_SLOTS = [
+  { slotKey: "home_below_title", title: "Home — below title" },
   { slotKey: "home_above_calculator", title: "Home — above calculator" },
   { slotKey: "home_between_tool_and_article", title: "Home — between tool & article" },
   { slotKey: "news_list_top", title: "News list — top" },
@@ -22,6 +23,16 @@ export type AdSlotRow = {
 };
 
 export async function listAdSlots(): Promise<AdSlotRow[]> {
+  await tryPrisma(() =>
+    prisma.adSlot.createMany({
+      data: DEFAULT_AD_SLOTS.map((slot) => ({
+        slotKey: slot.slotKey,
+        title: slot.title,
+        isEnabled: false,
+      })),
+      skipDuplicates: true,
+    }),
+  );
   const dbData = await tryPrisma(async () => prisma.adSlot.findMany({ orderBy: { slotKey: "asc" } }));
   if (dbData) {
     return dbData.map((row) => ({

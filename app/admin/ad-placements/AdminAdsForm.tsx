@@ -15,7 +15,11 @@ export type AdsRow = {
 };
 
 export type PlacementState = {
-  home: { home_above_calculator: boolean; home_between_tool_and_article: boolean };
+  home: {
+    home_below_title: boolean;
+    home_above_calculator: boolean;
+    home_between_tool_and_article: boolean;
+  };
   newsArticle: {
     news_detail_top: boolean;
     news_detail_mid: boolean;
@@ -127,6 +131,19 @@ export function AdminAdsForm({ initialRows, initialPlacements }: Props) {
         </p>
         <fieldset style={{ border: "none", padding: 0, margin: "12px 0" }}>
           <legend style={{ fontWeight: 600, marginBottom: 8 }}>Home page</legend>
+          <label className="admin-ads-enable" style={{ display: "block", marginBottom: 6 }}>
+            <input
+              type="checkbox"
+              checked={placements.home.home_below_title}
+              onChange={(e) =>
+                setPlacements((p) => ({
+                  ...p,
+                  home: { ...p.home, home_below_title: e.target.checked },
+                }))
+              }
+            />
+            Below homepage title
+          </label>
           <label className="admin-ads-enable" style={{ display: "block", marginBottom: 6 }}>
             <input
               type="checkbox"

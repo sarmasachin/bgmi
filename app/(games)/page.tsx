@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { HomeTitleDummyAd } from "@/src/components/HomeTitleDummyAd";
 import { toCanonicalUrl } from "@/src/lib/siteUrl";
 import { buildSocialMetadata } from "@/src/lib/socialMeta";
 import { getFfHomeCards } from "@/src/server/repositories/homeCardsRepository";
@@ -47,5 +48,10 @@ export async function generateMetadata(): Promise<Metadata> {
 export default async function HomePage() {
   const cards = await getFfHomeCards();
   const title = cards.hero.title.trim() || fallbackTitle;
-  return <h1 className="main-title ff-gradient-title">{title}</h1>;
+  return (
+    <>
+      <h1 className="main-title ff-gradient-title">{title}</h1>
+      <HomeTitleDummyAd />
+    </>
+  );
 }
