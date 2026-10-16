@@ -19,37 +19,37 @@ export async function HomeTitleDummyAd() {
       </div>
       <style>{`
         .ff-home-ad {
-          width: 95%;
-          max-width: 1100px;
+          width: min(1100px, 95%);
+          max-width: 100%;
           margin: 0 auto 12px;
           box-sizing: border-box;
+          min-width: 0;
         }
-        .ff-home-ad-banner {
-          width: 100%;
-          height: auto;
-          box-sizing: border-box;
-          background: #0b0e14;
-          border: 1px solid #30363d;
-          border-radius: 14px;
-          padding: 14px 16px;
-        }
+        .ff-home-ad-banner,
         .ff-home-ad .ad-slot {
           width: 100%;
-          max-width: none;
-          margin: 0;
-          padding: 0;
-          border: 0;
-          border-radius: 0;
+          max-width: 100%;
+          min-width: 0;
+          height: auto;
+          box-sizing: border-box;
           background: transparent;
-          color: inherit;
-          text-align: center;
+          border: 0;
+          padding: 0;
+          margin: 0;
+          overflow: hidden;
         }
         .ff-home-ad .ad-slot:empty {
           display: none;
         }
-        .ff-home-ad .ad-slot iframe,
-        .ff-home-ad .ad-slot img,
         .ff-home-ad .ad-slot ins {
+          display: block;
+          width: 100%;
+          max-width: 100%;
+          box-sizing: border-box;
+        }
+        .ff-home-ad .ad-slot iframe,
+        .ff-home-ad .ad-slot img {
+          display: block;
           max-width: 100%;
         }
       `}</style>
