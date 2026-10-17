@@ -10,6 +10,7 @@ import {
   type BgmiLiteRedeemUiLabels,
 } from "@/src/lib/bgmiLiteRedeemUiDefaults";
 import { attachRedeemScheduleFromRaw } from "@/src/lib/redeemCodeSchedule";
+import { renameLiteDisplayDeep } from "@/src/lib/renameLiteDisplayNames";
 import { prisma, tryPrismaLong } from "@/src/server/dbSafe";
 
 const KEY = "settings:bgmiLiteRedeemCodes";
@@ -95,7 +96,7 @@ function normalizeUi(raw: unknown): BgmiLiteRedeemUiLabels {
 
 export function normalizeBgmiLiteRedeemPage(raw: unknown): BgmiLiteRedeemCodePageContent {
   const defaults = DEFAULT_BGMI_LITE_REDEEM_PAGE;
-  if (!isPlainObject(raw)) return cloneBgmiLiteRedeemPage(defaults);
+  if (!isPlainObject(raw)) return renameLiteDisplayDeep(cloneBgmiLiteRedeemPage(defaults));
 
   const hasCodesField = Array.isArray(raw.codes);
   const codes = (hasCodesField ? raw.codes : defaults.codes)
@@ -107,7 +108,7 @@ export function normalizeBgmiLiteRedeemPage(raw: unknown): BgmiLiteRedeemCodePag
     .map((row, index) => normalizeFaq(row, index))
     .filter((row): row is BgmiLiteRedeemFaqItem => Boolean(row));
 
-  return {
+  return renameLiteDisplayDeep({
     path: defaults.path,
     seoTitle: sanitizeString(raw.seoTitle, defaults.seoTitle) || defaults.seoTitle,
     seoDescription:
@@ -126,7 +127,7 @@ export function normalizeBgmiLiteRedeemPage(raw: unknown): BgmiLiteRedeemCodePag
     ui: normalizeUi(raw.ui),
     faqs: hasFaqsField ? faqs : defaults.faqs.map((f) => ({ ...f })),
     codes: hasCodesField ? codes : defaults.codes.map((c) => ({ ...c })),
-  };
+  });
 }
 
 export async function getBgmiLiteRedeemPage(): Promise<BgmiLiteRedeemCodePageContent> {

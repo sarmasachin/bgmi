@@ -4,6 +4,7 @@ import {
   DEFAULT_PUBG_MOBILE_LITE_NAME_PAGE,
   type PubgMobileLiteNamePageContent,
 } from "@/src/lib/pubgMobileLiteNamePage";
+import { renameLiteDisplayDeep } from "@/src/lib/renameLiteDisplayNames";
 import { prisma, tryPrisma, tryPrismaLong } from "@/src/server/dbSafe";
 
 export const PUBG_MOBILE_LITE_NAME_SETTING_KEY = "settings:pubgMobileLiteName";
@@ -46,7 +47,7 @@ function normalizeStep(raw: unknown, index: number): NameStep | null {
 
 export function normalizePubgMobileLiteNamePage(raw: unknown): PubgMobileLiteNamePageContent {
   const defaults = DEFAULT_PUBG_MOBILE_LITE_NAME_PAGE;
-  if (!isPlainObject(raw)) return clonePubgMobileLiteNamePage(defaults);
+  if (!isPlainObject(raw)) return renameLiteDisplayDeep(clonePubgMobileLiteNamePage(defaults));
 
   const faqsRaw = Array.isArray(raw.faqs) ? raw.faqs : defaults.faqs;
   const faqs = faqsRaw
@@ -58,7 +59,7 @@ export function normalizePubgMobileLiteNamePage(raw: unknown): PubgMobileLiteNam
     .map((row, index) => normalizeStep(row, index))
     .filter((row): row is NameStep => Boolean(row));
 
-  return {
+  return renameLiteDisplayDeep({
     path: PUBG_MOBILE_LITE_NAME_PATH,
     seoTitle: sanitizeString(raw.seoTitle, defaults.seoTitle) || defaults.seoTitle,
     seoDescription:
@@ -79,7 +80,7 @@ export function normalizePubgMobileLiteNamePage(raw: unknown): PubgMobileLiteNam
     faqs: faqs.length ? faqs : defaults.faqs.map((f) => ({ ...f })),
     emptyStudioText:
       sanitizeString(raw.emptyStudioText, defaults.emptyStudioText) || defaults.emptyStudioText,
-  };
+  });
 }
 
 export async function getPubgMobileLiteNamePage(): Promise<PubgMobileLiteNamePageContent> {

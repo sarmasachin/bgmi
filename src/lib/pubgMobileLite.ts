@@ -1,7 +1,11 @@
 /** PUBG Mobile Flash calculator path + family menu helpers. */
 
+import { renameLiteDisplayLabel } from "@/src/lib/renameLiteDisplayNames";
+
 export const PUBG_MOBILE_LITE_PATH = "/pubg-mobile-lite";
 export const PUBG_MOBILE_LITE_LABEL = "PUBG Mobile Flash";
+export const BGMI_AIR_LABEL = "BGMI Air";
+export const BGMI_LITE_PATH = "/bgmi-lite";
 
 /** Lite-family routes (header menu on these pages). */
 export const PUBG_MOBILE_LITE_APK_PATH = "/pubg-mobile-lite-apk";
@@ -35,23 +39,43 @@ export const PUBG_MOBILE_LITE_NAV: Array<{ label: string; href: string }> = [
   { label: "News", href: "/news/pubg-mobile-lite" },
 ];
 
-/** Merge PUBG Mobile Flash nav link if missing from saved settings. */
+function normHref(href: string): string {
+  const t = href.trim();
+  if (!t) return t;
+  if (/^(https?:|mailto:|tel:|#)/i.test(t)) return t;
+  return t.startsWith("/") ? t.replace(/\/+$/, "") || "/" : `/${t.replace(/\/+$/, "")}`;
+}
+
+/** Normalize Lite→Air/Flash labels and ensure PUBG Mobile Flash nav link exists. */
 export function ensurePubgMobileLiteNavigation(
   links: Array<{ label: string; href: string }>,
 ): Array<{ label: string; href: string }> {
-  const out = [...links];
+  const out = links.map((row) => {
+    const href = normHref(row.href);
+    let label = renameLiteDisplayLabel(row.label);
+    if (href === BGMI_LITE_PATH || /^bgmi\s*lite$/i.test(row.label.trim())) {
+      label = BGMI_AIR_LABEL;
+    }
+    if (
+      href === PUBG_MOBILE_LITE_PATH ||
+      /pubg\s*mobile\s*(lite|flash)/i.test(row.label) ||
+      /^pubg\s*lite$/i.test(row.label.trim())
+    ) {
+      label = PUBG_MOBILE_LITE_LABEL;
+    }
+    return { ...row, label, href: href || row.href };
+  });
+
   const has = out.some(
     (row) =>
-      row.href === PUBG_MOBILE_LITE_PATH ||
-      row.href === PUBG_MOBILE_LITE_PATH.replace(/^\//, "") ||
+      normHref(row.href) === PUBG_MOBILE_LITE_PATH ||
       /pubg\s*mobile\s*(lite|flash)/i.test(row.label),
   );
   if (has) return out;
 
   const pubgIdx = out.findIndex(
     (row) =>
-      row.href === "/pubg" ||
-      row.href === "pubg" ||
+      normHref(row.href) === "/pubg" ||
       /^pubg(\s*mobile)?$/i.test(row.label.trim()),
   );
   const entry = { label: PUBG_MOBILE_LITE_LABEL, href: PUBG_MOBILE_LITE_PATH };

@@ -10,6 +10,7 @@ import {
   PUBG_MOBILE_LITE_NEWS_CATEGORY,
   type NewsCategoryDef,
 } from "@/src/lib/newsCategories";
+import { renameLiteDisplayText } from "@/src/lib/renameLiteDisplayNames";
 
 export type NewsCategoryRow = NewsCategoryDef & {
   id: string;
@@ -18,6 +19,12 @@ export type NewsCategoryRow = NewsCategoryDef & {
   seoDescription: string;
   seoKeywords: string;
 };
+
+function displayLabelForSlug(slug: string, label: string): string {
+  if (slug === BGMI_LITE_NEWS_CATEGORY) return "BGMI Air";
+  if (slug === PUBG_MOBILE_LITE_NEWS_CATEGORY) return "PUBG Mobile Flash";
+  return renameLiteDisplayText(label);
+}
 
 function toRow(item: {
   id: string;
@@ -31,11 +38,11 @@ function toRow(item: {
   return {
     id: item.id,
     slug: item.slug,
-    label: item.label,
+    label: displayLabelForSlug(item.slug, item.label),
     sortOrder: item.sortOrder,
-    seoTitle: (item.seoTitle ?? "").trim(),
-    seoDescription: (item.seoDescription ?? "").trim(),
-    seoKeywords: (item.seoKeywords ?? "").trim(),
+    seoTitle: renameLiteDisplayText((item.seoTitle ?? "").trim()),
+    seoDescription: renameLiteDisplayText((item.seoDescription ?? "").trim()),
+    seoKeywords: renameLiteDisplayText((item.seoKeywords ?? "").trim()),
   };
 }
 
@@ -51,7 +58,7 @@ async function seedDefaultsIfEmpty() {
   });
 }
 
-/** Ensure BGMI / Lite hubs exist even on older DBs that only seeded FF categories. */
+/** Ensure BGMI / Air / Flash hubs exist even on older DBs that only seeded FF categories. */
 async function ensureBgmiHubs() {
   const required = [
     { slug: "bgmi", label: "BGMI" },
@@ -61,7 +68,15 @@ async function ensureBgmiHubs() {
   ] as const;
   for (const hub of required) {
     const existing = await prisma.newsCategory.findUnique({ where: { slug: hub.slug } });
-    if (existing) continue;
+    if (existing) {
+      if (existing.label !== hub.label) {
+        await prisma.newsCategory.update({
+          where: { id: existing.id },
+          data: { label: hub.label },
+        });
+      }
+      continue;
+    }
     const max = await prisma.newsCategory.aggregate({ _max: { sortOrder: true } });
     await prisma.newsCategory.create({
       data: {

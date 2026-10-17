@@ -19,6 +19,7 @@ import { getSiteUrl, toCanonicalUrl } from "@/src/lib/siteUrl";
 import { breadcrumbListSchema, newsArticleSchema } from "@/src/lib/schema";
 import { buildSocialMetadata, DEFAULT_OG_IMAGE_PATH } from "@/src/lib/socialMeta";
 import { formatNewsPublishedAtIst, latestNewsDateValue } from "@/src/lib/formatNewsPublishedAt";
+import { renameLiteNewsPost } from "@/src/lib/renameLiteDisplayNames";
 import type { Metadata } from "next";
 import Link from "next/link";
 
@@ -38,6 +39,7 @@ type NewsDetailItem = {
 };
 
 export function buildNewsDetailMetadata(item: NewsDetailItem): Metadata {
+  item = renameLiteNewsPost(item as unknown as Record<string, unknown>) as unknown as NewsDetailItem;
   const primary = coerceNewsCategory(item.primaryCategory);
   const meta = extractNewsMeta(item.content);
   const articleUrl = resolveNewsCanonicalUrl(item.slug, meta.canonicalUrl, primary);
@@ -81,7 +83,10 @@ export function buildNewsDetailMetadata(item: NewsDetailItem): Metadata {
   };
 }
 
-export async function NewsDetailView({ item }: { item: NewsDetailItem }) {
+export async function NewsDetailView({ item: itemProp }: { item: NewsDetailItem }) {
+  const item = renameLiteNewsPost(
+    itemProp as unknown as Record<string, unknown>,
+  ) as unknown as NewsDetailItem;
   const meta = extractNewsMeta(item.content);
   const imageAlt = meta.socialImageAlt?.trim() || item.title;
 

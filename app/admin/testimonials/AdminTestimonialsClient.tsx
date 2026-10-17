@@ -15,17 +15,14 @@ type StatusFilter = "all" | "pending" | "approved" | "rejected";
 
 type Props = {
   initialItems?: AdminTestimonialItem[];
-  initialApprovedCount?: number;
   maxApproved?: number;
 };
 
 export default function AdminTestimonialsClient({
   initialItems,
-  initialApprovedCount = 0,
   maxApproved = 20,
 }: Props) {
   const [items, setItems] = useState<AdminTestimonialItem[]>(initialItems ?? []);
-  const [approvedCount, setApprovedCount] = useState(initialApprovedCount);
   const [filter, setFilter] = useState<StatusFilter>("pending");
   const [loading, setLoading] = useState(initialItems === undefined);
   const [workingId, setWorkingId] = useState<string | null>(null);
@@ -74,15 +71,9 @@ export default function AdminTestimonialsClient({
       }
       const json = (await res.json()) as {
         data?: Array<Record<string, unknown>>;
-        approvedCount?: number;
       };
       const next = (json.data ?? []).map(parseAdminTestimonialJson);
       setItems(next);
-      setApprovedCount(
-        typeof json.approvedCount === "number"
-          ? json.approvedCount
-          : next.filter((i) => i.status === "approved").length,
-      );
       setVisibleCount(10);
     } catch {
       setMessage("Network error. Please retry.");
@@ -114,7 +105,6 @@ export default function AdminTestimonialsClient({
       const json = (await res.json()) as {
         ok?: boolean;
         trimmed?: number;
-        approvedCount?: number;
         error?: string;
       };
 
@@ -125,12 +115,13 @@ export default function AdminTestimonialsClient({
 
       const trimmed = typeof json.trimmed === "number" ? json.trimmed : 0;
       if (status === "approved" && trimmed > 0) {
-        setMessage(`Approved. Removed ${trimmed} oldest approved to keep max ${maxApproved}.`);
+        setMessage(
+          `Approved. Removed ${trimmed} oldest approved for this game (max ${maxApproved} / game).`,
+        );
       } else {
         setMessage(`Testimonial marked ${status}.`);
       }
 
-      if (typeof json.approvedCount === "number") setApprovedCount(json.approvedCount);
       setItems((prev) =>
         prev.map((item) =>
           item.id === id
@@ -158,13 +149,12 @@ export default function AdminTestimonialsClient({
         method: "DELETE",
         credentials: "include",
       });
-      const json = (await res.json()) as { ok?: boolean; approvedCount?: number; error?: string };
+      const json = (await res.json()) as { ok?: boolean; error?: string };
       if (!res.ok) {
         setMessage(json.error ?? "Delete failed.");
         return false;
       }
       setMessage("Testimonial deleted.");
-      if (typeof json.approvedCount === "number") setApprovedCount(json.approvedCount);
       await loadTestimonials();
       return true;
     } catch {
@@ -231,7 +221,7 @@ export default function AdminTestimonialsClient({
       <div className="admin-comments-head">
         <h1>Testimonials Moderation</h1>
         <div className="admin-comments-stats">
-          <span>Approved slot: {approvedCount}/{maxApproved}</span>
+          <span>Max {maxApproved} / game</span>
           <span>All: {counts.all}</span>
           <span>Pending: {counts.pending}</span>
           <span>Approved: {counts.approved}</span>
@@ -240,8 +230,9 @@ export default function AdminTestimonialsClient({
       </div>
 
       <p className="admin-testimonials-hint">
-        Approving when the list is full removes the oldest approved testimonial automatically
-        (FIFO, max {maxApproved}). Edit changes review text only — it does not approve or trim.
+        Each game can have up to {maxApproved} approved. Approving when that game is full removes
+        the oldest approved for the same game only (FIFO). Other games are not touched. Edit
+        changes review text only — it does not approve or trim.
       </p>
 
       <div className="admin-testimonials-filters" role="tablist" aria-label="Filter by status">

@@ -39,7 +39,7 @@ export async function SiteFooter({ settings: settingsProp }: SiteFooterProps = {
           if (/pubg/i.test(label) && (item.href === "/" || !item.href.trim())) {
             return { ...item, href: "/pubg" };
           }
-          if (/^bgmi\s*lite$/i.test(label)) {
+          if (/^bgmi\s*(lite|air)$/i.test(label)) {
             return { ...item, href: "/bgmi-lite" };
           }
           if (/^bgmi$/i.test(label)) {

@@ -61,9 +61,10 @@ function buildDummyMockTestimonials(): TestimonialRecord[] {
   }));
 }
 
-export function trimApprovedOverflowMock() {
+/** Keep newest MAX_APPROVED_TESTIMONIALS approved rows for one game only. */
+export function trimApprovedOverflowMock(game: TestimonialRecord["game"]) {
   const approved = mockTestimonials
-    .filter((row) => row.status === "approved")
+    .filter((row) => row.status === "approved" && row.game === game)
     .sort((a, b) => {
       const aTime = (a.approvedAt ?? a.createdAt).getTime();
       const bTime = (b.approvedAt ?? b.createdAt).getTime();

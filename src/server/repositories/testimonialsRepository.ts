@@ -92,12 +92,12 @@ function displayNameForCreate(name: string) {
 }
 
 /**
- * Keep only the newest MAX_APPROVED_TESTIMONIALS approved rows.
- * Deletes oldest by approvedAt (fallback createdAt).
+ * Keep only the newest MAX_APPROVED_TESTIMONIALS approved rows for one game.
+ * Deletes oldest in that game by approvedAt (fallback createdAt). Other games untouched.
  */
-async function trimApprovedOverflowDb() {
+async function trimApprovedOverflowDb(game: TestimonialGame) {
   const approved = await prisma.testimonial.findMany({
-    where: { status: "approved" },
+    where: { status: "approved", game },
     orderBy: [{ approvedAt: "asc" }, { createdAt: "asc" }],
     select: { id: true },
   });
@@ -199,40 +199,7 @@ export async function createTestimonial(
   }
 }
 
-/** Public list: approved only, newest first, hard-capped at 20. */
-export async function listApprovedTestimonials(options?: {
-  game?: TestimonialGame;
-}): Promise<PublicTestimonial[]> {
-  const game = options?.game;
-
-  const dbRows = await tryPrisma(async () =>
-    prisma.testimonial.findMany({
-      where: {
-        status: "approved",
-        ...(game ? { game } : {}),
-      },
-      orderBy: [{ approvedAt: "desc" }, { createdAt: "desc" }],
-      take: MAX_APPROVED_TESTIMONIALS,
-    }),
-  );
-
-  if (dbRows) {
-    return dbRows
-      .map(mapRow)
-      .filter((row): row is TestimonialRecord => row != null)
-      .map(toPublic);
-  }
-
-  return mockTestimonials
-    .filter((row) => row.status === "approved" && (!game || row.game === game))
-    .sort((a, b) => {
-      const aTime = (a.approvedAt ?? a.createdAt).getTime();
-      const bTime = (b.approvedAt ?? b.createdAt).getTime();
-      return bTime - aTime;
-    })
-    .slice(0, MAX_APPROVED_TESTIMONIALS)
-    .map(toPublic);
-}
+export { listApprovedTestimonials } from "@/src/server/repositories/testimonialsList";
 
 export async function listAdminTestimonials(options?: {
   status?: TestimonialStatus;
@@ -289,13 +256,14 @@ export async function setTestimonialStatus(
       },
     });
 
-    let trimmed = 0;
-    if (status === "approved") {
-      trimmed = await trimApprovedOverflowDb();
-    }
-
     const mapped = mapRow(updated);
     if (!mapped) return { kind: "missing" as const };
+
+    let trimmed = 0;
+    if (status === "approved") {
+      trimmed = await trimApprovedOverflowDb(mapped.game);
+    }
+
     return { kind: "ok" as const, item: mapped, trimmed };
   });
 
@@ -315,7 +283,8 @@ export async function setTestimonialStatus(
   if (!item) return { ok: false, error: "not_found" };
   item.status = status;
   item.approvedAt = status === "approved" ? now : null;
-  const trimmed = status === "approved" ? trimApprovedOverflowMock() : 0;
+  const trimmed =
+    status === "approved" ? trimApprovedOverflowMock(item.game) : 0;
   return { ok: true, item: { ...item }, trimmed };
 }
 

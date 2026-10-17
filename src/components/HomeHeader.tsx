@@ -50,7 +50,7 @@ export function HomeHeader({ siteTitle, navigation }: HomeHeaderProps) {
     if (/pubg/i.test(label) && (item.href === "/" || !item.href.trim())) {
       return { ...item, href: "/pubg" };
     }
-    if (/^bgmi\s*lite$/i.test(label)) {
+    if (/^bgmi\s*(lite|air)$/i.test(label)) {
       return { ...item, href: "/bgmi-lite" };
     }
     if (/pubg\s*mobile\s*(lite|flash)/i.test(label)) {

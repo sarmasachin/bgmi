@@ -10,6 +10,7 @@ import {
   type PubgMobileLiteRedeemUiLabels,
 } from "@/src/lib/pubgMobileLiteRedeemUiDefaults";
 import { attachRedeemScheduleFromRaw } from "@/src/lib/redeemCodeSchedule";
+import { renameLiteDisplayDeep } from "@/src/lib/renameLiteDisplayNames";
 import { prisma, tryPrismaLong } from "@/src/server/dbSafe";
 
 const KEY = "settings:pubgMobileLiteRedeemCodes";
@@ -97,7 +98,7 @@ export function normalizePubgMobileLiteRedeemPage(
   raw: unknown,
 ): PubgMobileLiteRedeemCodePageContent {
   const defaults = DEFAULT_PUBG_MOBILE_LITE_REDEEM_PAGE;
-  if (!isPlainObject(raw)) return clonePubgMobileLiteRedeemPage(defaults);
+  if (!isPlainObject(raw)) return renameLiteDisplayDeep(clonePubgMobileLiteRedeemPage(defaults));
 
   const hasCodesField = Array.isArray(raw.codes);
   const codes = (hasCodesField ? raw.codes : defaults.codes)
@@ -109,7 +110,7 @@ export function normalizePubgMobileLiteRedeemPage(
     .map((row, index) => normalizeFaq(row, index))
     .filter((row): row is PubgMobileLiteRedeemFaqItem => Boolean(row));
 
-  return {
+  return renameLiteDisplayDeep({
     path: defaults.path,
     seoTitle: sanitizeString(raw.seoTitle, defaults.seoTitle) || defaults.seoTitle,
     seoDescription:
@@ -128,7 +129,7 @@ export function normalizePubgMobileLiteRedeemPage(
     ui: normalizeUi(raw.ui),
     faqs: hasFaqsField ? faqs : defaults.faqs.map((f) => ({ ...f })),
     codes: hasCodesField ? codes : defaults.codes.map((c) => ({ ...c })),
-  };
+  });
 }
 
 export async function getPubgMobileLiteRedeemPage(): Promise<PubgMobileLiteRedeemCodePageContent> {

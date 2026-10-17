@@ -26,7 +26,7 @@ const postSchema = z.object({
   showName: z.boolean().default(true),
 });
 
-/** Public: approved testimonials only (max 20). */
+/** Public: approved testimonials only (max 20 per game). */
 export async function GET(request: NextRequest) {
   const ip = getRequestIp(request);
   const rl = checkRateLimit(`testimonials:get:${ip}`, 120, 60_000);
@@ -50,7 +50,7 @@ export async function GET(request: NextRequest) {
   }
 
   const data = await listApprovedTestimonials({ game });
-  return NextResponse.json({ data, maxApproved: 20 });
+  return NextResponse.json({ data, maxApproved: 20, perGame: true });
 }
 
 /** Public: submit testimonial (always starts as pending). */

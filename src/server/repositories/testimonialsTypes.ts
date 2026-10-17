@@ -1,4 +1,4 @@
-/** Hard cap for publicly shown / approved testimonials (FIFO on approve). */
+/** Hard cap of approved testimonials per game (FIFO on approve for that game only). */
 export const MAX_APPROVED_TESTIMONIALS = 20;
 
 export type TestimonialGame =

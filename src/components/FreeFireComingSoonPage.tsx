@@ -23,6 +23,7 @@ import {
   newsCategoryLabel,
 } from "@/src/lib/newsCategories";
 import { formatNewsPublishedAtIst, latestNewsDateValue } from "@/src/lib/formatNewsPublishedAt";
+import { renameLiteNewsPost } from "@/src/lib/renameLiteDisplayNames";
 import { faqSchema, toolAppReviewSchema } from "@/src/lib/schema";
 import { getSiteUrl, toCanonicalUrl } from "@/src/lib/siteUrl";
 import { buildSocialMetadata } from "@/src/lib/socialMeta";
@@ -107,7 +108,8 @@ export async function FreeFireComingSoonPage({ variant }: { variant: FreeFireVar
       variant === "freefire-max" ? getFfPageCards("freefire-max") : Promise.resolve(null),
     ]);
 
-  const newsItems = (homeNews.data ?? []).map((item) => {
+  const newsItems = (homeNews.data ?? []).map((raw) => {
+    const item = renameLiteNewsPost(raw as Record<string, unknown>) as typeof raw;
     const rawDate = latestNewsDateValue(item);
     const date = rawDate ? new Date(rawDate) : null;
     const excerpt = (item.excerpt ?? "").trim();

@@ -10,6 +10,7 @@ import { DEFAULT_PUBG_ARTICLE_HTML } from "@/src/lib/pubgArticleDefault";
 import { DEFAULT_PUBG_MOBILE_CODES_ARTICLE_HTML } from "@/src/lib/pubgMobileCodesArticleDefault";
 import { DEFAULT_PUBG_MOBILE_LITE_ARTICLE_HTML } from "@/src/lib/pubgMobileLiteArticleDefault";
 import { gameContentToSitemapPath } from "@/src/lib/sitemapLastmod";
+import { renameLiteDisplayText } from "@/src/lib/renameLiteDisplayNames";
 import { sanitizeHtml } from "@/src/lib/sanitizeHtml";
 import { bumpSitemapLastmod } from "@/src/server/repositories/sitemapLastmodRepository";
 
@@ -70,7 +71,8 @@ export async function getGameArticleHtml(game: GameArticleGame): Promise<string 
     prisma.siteSetting.findUnique({ where: { key: keyFor(game) } }),
   );
   if (row === null || !row?.value) return null;
-  return parseHtml(row.value);
+  const html = parseHtml(row.value);
+  return html ? renameLiteDisplayText(html) : null;
 }
 
 /**

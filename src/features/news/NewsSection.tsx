@@ -9,6 +9,7 @@ import {
   type NewsCategorySlug,
 } from "@/src/lib/newsCategories";
 import { formatNewsPublishedAtIst, latestNewsDateValue } from "@/src/lib/formatNewsPublishedAt";
+import { renameLiteNewsPost } from "@/src/lib/renameLiteDisplayNames";
 import Link from "next/link";
 
 /** 15 per page: pattern = 1 big + 4 cards, repeated (3 blocks). */
@@ -124,18 +125,19 @@ export async function NewsSection({ page = 1, category, heading, listBasePath }:
   const basePath = listBasePath || (category ? `/${category}` : "/news");
 
   const items: NewsCardItem[] = (result.data ?? []).map((item, index) => {
+    const renamed = renameLiteNewsPost(item as Record<string, unknown>) as typeof item;
     const primary = coerceNewsCategory(
-      (item as { primaryCategory?: string | null }).primaryCategory,
+      (renamed as { primaryCategory?: string | null }).primaryCategory,
     );
     return {
-      id: item.id,
-      slug: item.slug ?? item.id,
-      href: newsArticlePath(primary, item.slug ?? item.id),
-      title: item.title,
-      excerpt: item.excerpt ?? "",
+      id: renamed.id,
+      slug: renamed.slug ?? renamed.id,
+      href: newsArticlePath(primary, renamed.slug ?? renamed.id),
+      title: renamed.title,
+      excerpt: renamed.excerpt ?? "",
       category: newsCategoryLabel(primary),
-      publishedAt: formatNewsPublishedAtIst(latestNewsDateValue(item)),
-      featureImage: item.featureImage ?? "",
+      publishedAt: formatNewsPublishedAtIst(latestNewsDateValue(renamed)),
+      featureImage: renamed.featureImage ?? "",
       imageClass: `news-image-${(index % 5) + 1}`,
     };
   });

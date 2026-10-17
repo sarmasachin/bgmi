@@ -11,6 +11,7 @@ import {
   PUBG_MOBILE_LITE_LABEL,
   PUBG_MOBILE_LITE_PATH,
 } from "@/src/lib/pubgMobileLite";
+import { renameLiteDisplayDeep, renameLiteDisplayText } from "@/src/lib/renameLiteDisplayNames";
 import { prisma, tryPrisma, tryPrismaLong } from "@/src/server/dbSafe";
 import {
   DEFAULT_FF_TRUST_BAR,
@@ -178,8 +179,13 @@ export const getSettings = cache(async function getSettings() {
   if (!rows) return defaultSettings;
 
   const map = Object.fromEntries(rows.map((row) => [row.key, row.value]));
+  const footerBranding = parseFooterBrandingValue(map[SETTINGS_KEYS.footerBranding]);
+  const homeDisplay = parseHomeDisplayValue(map[SETTINGS_KEYS.homeDisplay]);
   return {
-    seo: { ...defaultSettings.seo, ...(map[SETTINGS_KEYS.seo] as Record<string, unknown> | undefined) },
+    seo: renameLiteDisplayDeep({
+      ...defaultSettings.seo,
+      ...(map[SETTINGS_KEYS.seo] as Record<string, unknown> | undefined),
+    }),
     theme: {
       ...defaultSettings.theme,
       ...(map[SETTINGS_KEYS.theme] as Record<string, unknown> | undefined),
@@ -204,8 +210,14 @@ export const getSettings = cache(async function getSettings() {
         !/report-issue/i.test(item.href),
     ),
     footerCopyright: parseFooterCopyright(map[SETTINGS_KEYS.footerCopyright]),
-    footerBranding: parseFooterBrandingValue(map[SETTINGS_KEYS.footerBranding]),
-    homeDisplay: parseHomeDisplayValue(map[SETTINGS_KEYS.homeDisplay]),
+    footerBranding: {
+      brandTitle: footerBranding.brandTitle,
+      tagline: renameLiteDisplayText(footerBranding.tagline),
+    },
+    homeDisplay: {
+      headerTitle: renameLiteDisplayText(homeDisplay.headerTitle),
+      heroTitle: renameLiteDisplayText(homeDisplay.heroTitle),
+    },
     ffTrustBar: parseFfTrustBarValue(map[SETTINGS_KEYS.ffTrustBar]),
   };
 });

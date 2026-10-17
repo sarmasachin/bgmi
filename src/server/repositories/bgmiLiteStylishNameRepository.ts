@@ -4,6 +4,7 @@ import {
   DEFAULT_BGMI_LITE_STYLISH_PAGE,
   type BgmiLiteStylishNamePageContent,
 } from "@/src/lib/bgmiLiteStylishNamePage";
+import { renameLiteDisplayDeep } from "@/src/lib/renameLiteDisplayNames";
 import { prisma, tryPrisma, tryPrismaLong } from "@/src/server/dbSafe";
 
 export const BGMI_LITE_STYLISH_SETTING_KEY = "settings:bgmiLiteStylishName";
@@ -46,7 +47,7 @@ function normalizeStep(raw: unknown, index: number): StylishStep | null {
 
 export function normalizeBgmiLiteStylishPage(raw: unknown): BgmiLiteStylishNamePageContent {
   const defaults = DEFAULT_BGMI_LITE_STYLISH_PAGE;
-  if (!isPlainObject(raw)) return cloneBgmiLiteStylishPage(defaults);
+  if (!isPlainObject(raw)) return renameLiteDisplayDeep(cloneBgmiLiteStylishPage(defaults));
 
   const faqsRaw = Array.isArray(raw.faqs) ? raw.faqs : defaults.faqs;
   const faqs = faqsRaw
@@ -58,7 +59,7 @@ export function normalizeBgmiLiteStylishPage(raw: unknown): BgmiLiteStylishNameP
     .map((row, index) => normalizeStep(row, index))
     .filter((row): row is StylishStep => Boolean(row));
 
-  return {
+  return renameLiteDisplayDeep({
     path: BGMI_LITE_STYLISH_NAME_PATH,
     seoTitle: sanitizeString(raw.seoTitle, defaults.seoTitle) || defaults.seoTitle,
     seoDescription:
@@ -77,7 +78,7 @@ export function normalizeBgmiLiteStylishPage(raw: unknown): BgmiLiteStylishNameP
       sanitizeString(raw.commentsLead, defaults.commentsLead) || defaults.commentsLead,
     faqTitle: sanitizeString(raw.faqTitle, defaults.faqTitle) || defaults.faqTitle,
     faqs: faqs.length ? faqs : defaults.faqs.map((f) => ({ ...f })),
-  };
+  });
 }
 
 export async function getBgmiLiteStylishPage(): Promise<BgmiLiteStylishNamePageContent> {

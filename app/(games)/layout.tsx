@@ -24,6 +24,7 @@ import {
   newsCategoryLabel,
 } from "@/src/lib/newsCategories";
 import { formatNewsPublishedAtIst, latestNewsDateValue } from "@/src/lib/formatNewsPublishedAt";
+import { renameLiteNewsPost } from "@/src/lib/renameLiteDisplayNames";
 import { faqSchema, toolAppReviewSchema } from "@/src/lib/schema";
 import { getSiteUrl, toCanonicalUrl } from "@/src/lib/siteUrl";
 import { getAdPlacementVisibility } from "@/src/server/repositories/adPlacementRepository";
@@ -101,7 +102,8 @@ export default async function GamesLayout({ children }: { children: React.ReactN
     getFfPageCards("pubg"),
   ]);
   const mapNewsItems = (rows: typeof homeNews.data) =>
-    (rows ?? []).map((item) => {
+    (rows ?? []).map((raw) => {
+      const item = renameLiteNewsPost(raw as Record<string, unknown>) as typeof raw;
       const rawDate = latestNewsDateValue(item);
       const date = rawDate ? new Date(rawDate) : null;
       const excerpt = (item.excerpt ?? "").trim();

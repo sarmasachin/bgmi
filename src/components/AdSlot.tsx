@@ -21,10 +21,9 @@ export async function AdSlot({ slotKey }: Props) {
           min-width: 0;
         }
         .ff-public-ad .ad-slot {
-          width: 100% !important;
-          max-width: 100% !important;
+          width: 100%;
+          max-width: 100%;
           min-width: 0;
-          height: auto !important;
           box-sizing: border-box;
           background: transparent !important;
           border: 0 !important;
@@ -35,24 +34,9 @@ export async function AdSlot({ slotKey }: Props) {
           text-align: left;
           padding: 0 !important;
           margin: 0 !important;
-          overflow: hidden;
         }
         .ff-public-ad .ad-slot:empty {
           display: none;
-        }
-        .ff-public-ad .ad-slot ins,
-        .ff-public-ad .ad-slot > div {
-          display: block;
-          width: 100% !important;
-          max-width: 100% !important;
-          box-sizing: border-box;
-        }
-        .ff-public-ad .ad-slot iframe,
-        .ff-public-ad .ad-slot img {
-          display: block;
-          width: 100% !important;
-          max-width: 100% !important;
-          height: auto;
         }
       `}</style>
     </div>

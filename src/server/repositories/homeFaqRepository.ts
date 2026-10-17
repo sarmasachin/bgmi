@@ -1,4 +1,5 @@
 import { randomUUID } from "crypto";
+import { renameLiteDisplayDeep } from "@/src/lib/renameLiteDisplayNames";
 import { gameContentToSitemapPath } from "@/src/lib/sitemapLastmod";
 import { prisma, tryPrisma, tryPrismaLong } from "@/src/server/dbSafe";
 import { bumpSitemapLastmod } from "@/src/server/repositories/sitemapLastmodRepository";
@@ -193,11 +194,11 @@ export async function getGameFaqItems(game: GameFaqGame): Promise<HomeFaqItem[]>
   const key = KEYS[game];
   const row = await tryPrisma(async () => prisma.siteSetting.findUnique({ where: { key } }));
   if (row === null || !row?.value) {
-    return defaults;
+    return renameLiteDisplayDeep(defaults);
   }
   const parsed = parseStoredItems(row.value);
   if (parsed === null || parsed.length === 0) {
-    return defaults;
+    return renameLiteDisplayDeep(defaults);
   }
   // Drop stale pre-launch FAQ copy so live calculator pages stay indexable.
   const stale = parsed.some((item) =>
@@ -206,27 +207,29 @@ export async function getGameFaqItems(game: GameFaqGame): Promise<HomeFaqItem[]>
     ),
   );
   if (stale && (game === "freefire" || game === "freefire-max")) {
-    return defaults;
+    return renameLiteDisplayDeep(defaults);
   }
-  return parsed.map((item) => {
-    if (!/\bofficial\b/i.test(item.answer) && !/\bofficial\b/i.test(item.question)) {
-      return item;
-    }
-    const fromDefault = defaults.find((d) => d.id === item.id);
-    if (fromDefault) return { ...fromDefault };
-    return {
-      ...item,
-      answer: item.answer
-        .replace(/\bthe official in-game options\b/gi, "in-game sensitivity options")
-        .replace(/\bofficial\b/gi, "")
-        .replace(/\s{2,}/g, " ")
-        .trim(),
-      question: item.question
-        .replace(/\bofficial\b/gi, "")
-        .replace(/\s{2,}/g, " ")
-        .trim(),
-    };
-  });
+  return renameLiteDisplayDeep(
+    parsed.map((item) => {
+      if (!/\bofficial\b/i.test(item.answer) && !/\bofficial\b/i.test(item.question)) {
+        return item;
+      }
+      const fromDefault = defaults.find((d) => d.id === item.id);
+      if (fromDefault) return { ...fromDefault };
+      return {
+        ...item,
+        answer: item.answer
+          .replace(/\bthe official in-game options\b/gi, "in-game sensitivity options")
+          .replace(/\bofficial\b/gi, "")
+          .replace(/\s{2,}/g, " ")
+          .trim(),
+        question: item.question
+          .replace(/\bofficial\b/gi, "")
+          .replace(/\s{2,}/g, " ")
+          .trim(),
+      };
+    }),
+  );
 }
 
 /** FAQ cards on the home page article block (BGMI). */

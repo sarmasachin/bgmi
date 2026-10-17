@@ -7,6 +7,7 @@ import {
   type BgmiApkHeroButton,
   type BgmiApkPageContent,
 } from "@/src/lib/bgmiApkPage";
+import { renameLiteDisplayDeep } from "@/src/lib/renameLiteDisplayNames";
 
 function isPlainObject(value: unknown): value is Record<string, unknown> {
   return Boolean(value) && typeof value === "object" && !Array.isArray(value);
@@ -187,12 +188,12 @@ function normalizeFacts(
 
 export function normalizeBgmiApkPage(raw: unknown): BgmiApkPageContent {
   const defaults = DEFAULT_BGMI_APK_PAGE;
-  if (!isPlainObject(raw)) return defaults;
+  if (!isPlainObject(raw)) return renameLiteDisplayDeep(defaults);
   const buttonsRaw = isPlainObject(raw.heroButtons) ? raw.heroButtons : {};
   const articleHtml =
     sanitizeHtml(sanitizeString(raw.articleHtml, defaults.articleHtml)) || defaults.articleHtml;
 
-  return {
+  return renameLiteDisplayDeep({
     path: defaults.path,
     seoTitle: sanitizeString(raw.seoTitle, defaults.seoTitle) || defaults.seoTitle,
     seoDescription:
@@ -221,5 +222,5 @@ export function normalizeBgmiApkPage(raw: unknown): BgmiApkPageContent {
     faqTitle: sanitizeString(raw.faqTitle, defaults.faqTitle) || defaults.faqTitle,
     commentsLead:
       sanitizeString(raw.commentsLead, defaults.commentsLead) || defaults.commentsLead,
-  };
+  });
 }

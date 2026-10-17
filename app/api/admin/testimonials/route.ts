@@ -40,7 +40,7 @@ export async function GET(request: NextRequest) {
   });
 }
 
-/** Admin: approve or reject. Approve triggers FIFO trim to max 20. */
+/** Admin: approve or reject. Approve triggers per-game FIFO trim (max 20 for that game). */
 export async function PATCH(request: NextRequest) {
   const gate = await enforceAdminApiAccess(request);
   if (!gate.ok) return gate.response;

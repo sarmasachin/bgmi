@@ -1,5 +1,6 @@
 import { getDefaultPageCards } from "@/src/lib/homeCardsDefaults";
 import type { FfHomeCards, PageCardsVariant } from "@/src/lib/homeCardsTypes";
+import { renameLiteDisplayDeep } from "@/src/lib/renameLiteDisplayNames";
 import { pageCardsVariantToSitemapPath } from "@/src/lib/sitemapLastmod";
 import { prisma, tryPrismaLong } from "@/src/server/dbSafe";
 import { bumpSitemapLastmod } from "@/src/server/repositories/sitemapLastmodRepository";
@@ -318,7 +319,7 @@ export function normalizeFfHomeCards(
     freefireMax: normalizeExploreCard(merged.explore?.freefireMax, defaults.explore.freefireMax),
   };
 
-  return merged;
+  return renameLiteDisplayDeep(merged);
 }
 
 export function isPageCardsVariant(value: unknown): value is PageCardsVariant {
