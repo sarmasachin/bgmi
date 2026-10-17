@@ -32,7 +32,7 @@ import {
 import { listApprovedPageComments } from "@/src/server/repositories/pageCommentsRepository";
 import { getSettings } from "@/src/server/repositories/settingsRepository";
 
-/** White PUBG Mobile Lite redeem-code page: codes → article + FAQ → comments. */
+/** White PUBG Mobile Flash redeem-code page: codes → article + FAQ → comments. */
 export async function PubgMobileLiteRedeemCodeLandingPage() {
   const [settings, page, updatedAt, pageComments] = await Promise.all([
     getSettings(),
@@ -79,7 +79,7 @@ export async function PubgMobileLiteRedeemCodeLandingPage() {
 
   const breadcrumbLd = breadcrumbListSchema([
     { name: "Home", url: homeUrl },
-    { name: "PUBG Mobile Lite", url: liteCalcUrl },
+    { name: "PUBG Mobile Flash", url: liteCalcUrl },
     { name: crumbCurrent, url: canonical },
   ]);
   const webPageLd = webPageSchema({
@@ -102,7 +102,7 @@ export async function PubgMobileLiteRedeemCodeLandingPage() {
             "@type": "ListItem",
             position: index + 1,
             name: item.title,
-            description: `PUBG Mobile Lite redeem code: ${item.code}`,
+            description: `PUBG Mobile Flash redeem code: ${item.code}`,
           })),
         }
       : null;
@@ -119,7 +119,7 @@ export async function PubgMobileLiteRedeemCodeLandingPage() {
             <Link href="/">Home</Link>
           </li>
           <li>
-            <Link href={PUBG_MOBILE_LITE_PATH}>PUBG Mobile Lite</Link>
+            <Link href={PUBG_MOBILE_LITE_PATH}>PUBG Mobile Flash</Link>
           </li>
           <li aria-current="page">{crumbCurrent}</li>
         </ol>

@@ -18,6 +18,13 @@ function withAdminNoStore(response: NextResponse) {
   return response;
 }
 
+/** Root layout reads this so AdSense Auto ads are not in the admin HTML. */
+function nextAdminPage(request: NextRequest) {
+  const requestHeaders = new Headers(request.headers);
+  requestHeaders.set("x-pathname", request.nextUrl.pathname);
+  return withAdminNoStore(NextResponse.next({ request: { headers: requestHeaders } }));
+}
+
 function forbiddenJson() {
   return NextResponse.json(
     { error: "Forbidden. You do not have permission for this action." },
@@ -66,7 +73,7 @@ export async function middleware(request: NextRequest) {
     pathname === "/api/admin/auth/setup" ||
     pathname === "/api/admin/auth/setup-status"
   ) {
-    return isAdminPage ? withAdminNoStore(NextResponse.next()) : NextResponse.next();
+    return isAdminPage ? nextAdminPage(request) : NextResponse.next();
   }
 
   const raw = request.cookies.get(ADMIN_SESSION_COOKIE)?.value;
@@ -96,7 +103,7 @@ export async function middleware(request: NextRequest) {
     // auth-only → allowed for any valid session
   }
 
-  return isAdminPage ? withAdminNoStore(NextResponse.next()) : NextResponse.next();
+  return isAdminPage ? nextAdminPage(request) : NextResponse.next();
 }
 
 export const config = {

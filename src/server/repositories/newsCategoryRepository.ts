@@ -56,8 +56,8 @@ async function ensureBgmiHubs() {
   const required = [
     { slug: "bgmi", label: "BGMI" },
     { slug: "pubg", label: "PUBG Mobile" },
-    { slug: BGMI_LITE_NEWS_CATEGORY, label: "BGMI Lite" },
-    { slug: PUBG_MOBILE_LITE_NEWS_CATEGORY, label: "PUBG Mobile Lite" },
+    { slug: BGMI_LITE_NEWS_CATEGORY, label: "BGMI Air" },
+    { slug: PUBG_MOBILE_LITE_NEWS_CATEGORY, label: "PUBG Mobile Flash" },
   ] as const;
   for (const hub of required) {
     const existing = await prisma.newsCategory.findUnique({ where: { slug: hub.slug } });

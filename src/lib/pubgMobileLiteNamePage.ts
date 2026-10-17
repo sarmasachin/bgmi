@@ -28,30 +28,30 @@ export type PubgMobileLiteNamePageContent = {
 
 export const DEFAULT_PUBG_MOBILE_LITE_NAME_PAGE: PubgMobileLiteNamePageContent = {
   path: PUBG_MOBILE_LITE_NAME_PATH,
-  seoTitle: "PUBG Mobile Lite Stylish Name Generator",
+  seoTitle: "PUBG Mobile Flash Stylish Name Generator",
   seoDescription:
-    "Create readable PUBG Mobile Lite stylish names on mobile — fonts, light symbols, live length guide, and one-tap copy. Fan-made tool; preview inside the official client.",
+    "Create readable PUBG Mobile Flash stylish names on mobile — fonts, light symbols, live length guide, and one-tap copy. Fan-made tool; preview inside the official client.",
   seoKeywords: [
-    "PUBG Mobile Lite stylish name",
-    "PUBG Lite name generator",
-    "PUBG Lite nick name",
-    "PUBG Lite stylish ID",
-    "PUBG Mobile Lite rename",
+    "PUBG Mobile Flash stylish name",
+    "PUBG Flash name generator",
+    "PUBG Flash nick name",
+    "PUBG Flash stylish ID",
+    "PUBG Mobile Flash rename",
   ],
-  title: "PUBG Mobile Lite Stylish Name",
+  title: "PUBG Mobile Flash Stylish Name",
   subtitle:
-    "Type your name once. Pick a clean style. Copy and paste into PUBG Mobile Lite — built for thumbs on mobile.",
+    "Type your name once. Pick a clean style. Copy and paste into PUBG Mobile Flash — built for thumbs on mobile.",
   tipText:
-    "Preview in Notes or Lite rename before spending a Rename Card. Fancy letters also count toward the limit.",
-  stepsHeading: "Apply it in PUBG Mobile Lite",
+    "Preview in Notes or PUBG Mobile Flash rename before spending a Rename Card. Fancy letters also count toward the limit.",
+  stepsHeading: "Apply it in PUBG Mobile Flash",
   steps: [
     {
       title: "Copy a style",
       text: "Use the studio above and tap Copy on the name you like.",
     },
     {
-      title: "Open Lite rename",
-      text: "In PUBG Mobile Lite, open profile / rename and clear the old nickname field.",
+      title: "Open PUBG Mobile Flash rename",
+      text: "In PUBG Mobile Flash, open profile / rename and clear the old nickname field.",
     },
     {
       title: "Paste & preview",
@@ -61,10 +61,10 @@ export const DEFAULT_PUBG_MOBILE_LITE_NAME_PAGE: PubgMobileLiteNamePageContent =
   ideasHeading: "Quick name ideas",
   articleHtml: PUBG_MOBILE_LITE_NAME_ARTICLE_HTML,
   faqs: PUBG_MOBILE_LITE_NAME_FAQS.map((f) => ({ ...f })),
-  faqTitle: "PUBG Mobile Lite Stylish Name FAQ",
+  faqTitle: "PUBG Mobile Flash Stylish Name FAQ",
   commentsLead:
-    "Share a style that worked on your phone, or ask about Lite rename. Comments appear after admin approval — never post passwords or OTPs.",
-  emptyStudioText: "Type a name to see stylish PUBG Mobile Lite IDs.",
+    "Share a style that worked on your phone, or ask about PUBG Mobile Flash rename. Comments appear after admin approval — never post passwords or OTPs.",
+  emptyStudioText: "Type a name to see stylish PUBG Mobile Flash IDs.",
 };
 
 export function clonePubgMobileLiteNamePage(

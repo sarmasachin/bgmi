@@ -15,11 +15,11 @@ export const GAME_ARTICLE_GAMES: Array<{
   previewPath: string;
 }> = [
   { id: "bgmi", label: "BGMI", previewPath: "/bgmi" },
-  { id: "bgmi-lite", label: "BGMI Lite", previewPath: "/bgmi-lite" },
+  { id: "bgmi-lite", label: "BGMI Air", previewPath: "/bgmi-lite" },
   { id: "pubg", label: "PUBG Mobile", previewPath: "/pubg" },
   {
     id: "pubg-mobile-lite",
-    label: "PUBG Mobile Lite",
+    label: "PUBG Mobile Flash",
     previewPath: "/pubg-mobile-lite",
   },
   { id: "freefire", label: "Free Fire", previewPath: "/" },

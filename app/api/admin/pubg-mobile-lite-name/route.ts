@@ -81,7 +81,7 @@ export async function POST(request: NextRequest) {
     });
   } catch {
     return NextResponse.json(
-      { error: "Could not save PUBG Mobile Lite name page." },
+      { error: "Could not save PUBG Mobile Flash name page." },
       { status: 503 },
     );
   }

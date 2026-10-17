@@ -4036,6 +4036,8 @@ footer,
 
 .admin-confirm-modal {
   width: min(440px, 100%);
+  max-width: min(440px, calc(100vw - 32px));
+  min-width: 0;
   padding: 24px;
   border-radius: 16px;
   background:
@@ -4110,6 +4112,8 @@ footer,
 .admin-confirm-meta {
   display: grid;
   gap: 4px;
+  min-width: 0;
+  max-width: 100%;
   margin: 0 0 18px;
   padding: 12px 14px;
   border-radius: 12px;
@@ -4143,12 +4147,18 @@ footer,
   color: #e8eef7;
   font-size: 14px;
   font-weight: 700;
+  min-width: 0;
+  overflow-wrap: anywhere;
+  word-break: break-word;
 }
 
 .admin-confirm-meta-slug {
   color: #8ea0b8;
   font-size: 12px;
   font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  min-width: 0;
+  overflow-wrap: anywhere;
+  word-break: break-word;
 }
 
 .admin-confirm-pill {

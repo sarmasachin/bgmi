@@ -6,7 +6,7 @@ export const BGMI_APK_ARTICLE_HTML = `
 <h2>BGMI APK &amp; Play Store Guide (India)</h2>
 <p>
   <strong>Battlegrounds Mobile India (BGMI)</strong> is Krafton’s official battle royale for
-  India. This page is a fan-made info guide in the same layout as our BGMI Lite APK page:
+  India. This page is a fan-made info guide in the same layout as our BGMI Air APK page:
   two download buttons on top (Play Store and APK), then full details in the cards below.
 </p>
 <p>
@@ -30,11 +30,11 @@ export const BGMI_APK_ARTICLE_HTML = `
     <a href="/bgmi">BGMI sensitivity calculator</a> for Camera, ADS, and Gyroscope baselines.</li>
 </ol>
 
-<h3>BGMI vs BGMI Lite</h3>
+<h3>BGMI vs BGMI Air</h3>
 <p>
   Full BGMI targets mid-to-strong phones and higher FPS modes (60 / 90 / 120 where supported).
-  <a href="/bgmi-lite-apk">BGMI Lite</a> is the lighter client for budget phones. Do not paste
-  Lite codes into full BGMI, or flagship claw codes from a 120 FPS device into a 40 FPS phone.
+  <a href="/bgmi-lite-apk">BGMI Air</a> is the lighter client for budget phones. Do not paste
+  BGMI Air codes into full BGMI, or flagship claw codes from a 120 FPS device into a 40 FPS phone.
 </p>
 
 <h3>Safety reminder</h3>

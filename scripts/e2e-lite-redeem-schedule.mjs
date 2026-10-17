@@ -102,8 +102,8 @@ console.log("\n== A) Admin date pickers on all 4 families ==");
   for (const [name, file] of [
     ["BGMI", "app/admin/bgmi-redeem/AdminBgmiRedeemForm.tsx"],
     ["PUBG", "app/admin/pubg-redeem/AdminPubgRedeemForm.tsx"],
-    ["BGMI Lite", "app/admin/bgmi-lite-redeem/AdminBgmiLiteRedeemForm.tsx"],
-    ["PUBG Lite", "app/admin/pubg-mobile-lite-redeem/AdminPubgMobileLiteRedeemForm.tsx"],
+    ["BGMI Air", "app/admin/bgmi-lite-redeem/AdminBgmiLiteRedeemForm.tsx"],
+    ["PUBG Flash", "app/admin/pubg-mobile-lite-redeem/AdminPubgMobileLiteRedeemForm.tsx"],
     ["FF", "app/admin/free-fire-redeem/AdminFreeFireRedeemCodesSection.tsx"],
   ]) {
     const src = read(file);
@@ -123,9 +123,9 @@ console.log("\n== B) Repo persist ISO ==");
   const pages = [
     ["BGMI", bgmi.normalizeBgmiRedeemPage(samplePage("/bgmi-redeem-code"))],
     ["PUBG", pubg.normalizePubgRedeemPage(samplePage("/pubg-redeem-code"))],
-    ["BGMI Lite", bgmiLite.normalizeBgmiLiteRedeemPage(samplePage("/bgmi-lite-redeem-code"))],
+    ["BGMI Air", bgmiLite.normalizeBgmiLiteRedeemPage(samplePage("/bgmi-lite-redeem-code"))],
     [
-      "PUBG Lite",
+      "PUBG Flash",
       pubgLite.normalizePubgMobileLiteRedeemPage(samplePage("/pubg-mobile-lite-redeem-code")),
     ],
   ];
@@ -221,14 +221,14 @@ console.log("\n== E) Save ISO → public date format (restore after) ==");
       clear: () => pubgRepo.clearPubgRedeemPage(),
     },
     {
-      name: "BGMI Lite",
+      name: "BGMI Air",
       path: "/bgmi-lite-redeem-code",
       before: await bgmiLiteRepo.getBgmiLiteRedeemPageForAdmin(),
       save: (page) => bgmiLiteRepo.saveBgmiLiteRedeemPage(page),
       clear: () => bgmiLiteRepo.clearBgmiLiteRedeemPage(),
     },
     {
-      name: "PUBG Lite",
+      name: "PUBG Flash",
       path: "/pubg-mobile-lite-redeem-code",
       before: await pubgLiteRepo.getPubgMobileLiteRedeemPageForAdmin(),
       save: (page) => pubgLiteRepo.savePubgMobileLiteRedeemPage(page),

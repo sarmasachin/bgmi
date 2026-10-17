@@ -242,8 +242,8 @@ console.log("\n== 7) BGMI / PUBG / Lite now have date schedule ISO ==");
   const liteMgr = fs.readFileSync(resolve("app/admin/redeem-shared/AdminLiteRedeemCodesManager.tsx"), "utf8");
   ok("Lite manager has date schedule fields", liteMgr.includes("AdminRedeemCodeScheduleFields"));
   for (const [name, file] of [
-    ["BGMI Lite", "src/lib/bgmiLiteRedeemCodes.ts"],
-    ["PUBG Lite", "src/lib/pubgMobileLiteRedeemCodes.ts"],
+    ["BGMI Air", "src/lib/bgmiLiteRedeemCodes.ts"],
+    ["PUBG Flash", "src/lib/pubgMobileLiteRedeemCodes.ts"],
     ["BGMI", "src/lib/bgmiRedeemCodes.ts"],
     ["PUBG", "src/lib/pubgRedeemCodes.ts"],
   ]) {

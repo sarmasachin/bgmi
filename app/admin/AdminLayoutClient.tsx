@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { ReactNode, useEffect, useMemo, useState } from "react";
 import { usePathname } from "next/navigation";
+import { BlockAdminAds } from "@/src/components/admin/BlockAdminAds";
 import { AdminLogoutButton } from "@/src/components/admin/AdminLogoutButton";
 import { AdminToastProvider } from "@/src/components/admin/AdminToast";
 import { ADMIN_NAV_ACCESS } from "@/src/server/rbac/routeAccess";
@@ -255,6 +256,7 @@ export default function AdminLayoutClient({ children }: { children: ReactNode })
 
   return (
     <AdminToastProvider>
+      <BlockAdminAds />
       <div className="admin-shell">
         {isLoginPage ? (
           <div className="admin-main">{children}</div>

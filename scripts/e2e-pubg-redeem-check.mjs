@@ -79,7 +79,7 @@ try {
     ok("guide id", idle.text.includes('id="pubg-redeem-guide"'));
     ok("breadcrumb PUBG Mobile", idle.text.includes(">PUBG Mobile<") || idle.text.includes("PUBG Mobile"));
     ok("comments pageKey", idle.text.includes("pubg-redeem-code"));
-    ok("not Lite h1", !idle.text.includes("PUBG Mobile Lite Redeem Codes</h1>"));
+    ok("not Lite h1", !idle.text.includes("PUBG Mobile Flash Redeem Codes</h1>"));
     ok("no ItemList when empty", !idle.text.includes('"@type":"ItemList"'));
   }
 
@@ -165,7 +165,7 @@ try {
       "nav Redeem Code under PUBG Mobile",
       pub.text.includes('href="/pubg-redeem-code"') && pub.text.includes("Redeem Code"),
     );
-    ok("not lite-only copy", !pub.text.includes("PUBG Mobile Lite Redeem Codes</h1>"));
+    ok("not lite-only copy", !pub.text.includes("PUBG Mobile Flash Redeem Codes</h1>"));
     ok("ItemList JSON-LD after live save", pub.text.includes('"@type":"ItemList"') && pub.text.includes("E2E Live Crate"));
     ok("guide still present", pub.text.includes('id="pubg-redeem-guide"'));
   }

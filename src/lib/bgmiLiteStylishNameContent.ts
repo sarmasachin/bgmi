@@ -1,18 +1,18 @@
 /** SEO guide + FAQs for /bgmi-lite-stylish-name */
 
 export const BGMI_LITE_STYLISH_ARTICLE_HTML = `
-<h2>BGMI Lite Stylish Name Guide: Readable IDs That Fit Rename</h2>
+<h2>BGMI Air Stylish Name Guide: Readable IDs That Fit Rename</h2>
 <p>
-  A <strong>BGMI Lite stylish name</strong> is your normal nickname rewritten with Unicode
+  A <strong>BGMI Air stylish name</strong> is your normal nickname rewritten with Unicode
   letters or light symbols so it stands out in the lobby and kill feed — without needing a
   custom keyboard app.
 </p>
 <p>
-  This tool is fan-made for Lite players. It does not connect to Krafton servers. Always paste
-  the final name inside the official BGMI Lite client and preview before you spend a Rename Card.
+  This tool is fan-made for BGMI Air players. It does not connect to Krafton servers. Always paste
+  the final name inside the official BGMI Air client and preview before you spend a Rename Card.
 </p>
 
-<h3>Keep it short for Lite</h3>
+<h3>Keep it short for BGMI Air</h3>
 <p>
   Treat about <strong>14 characters</strong> as a practical guide. Fancy letters and frames also
   count. If the in-game field rejects a name, remove the heaviest symbols first, then try a
@@ -36,9 +36,9 @@ export const BGMI_LITE_STYLISH_ARTICLE_HTML = `
 export const BGMI_LITE_STYLISH_FAQS = [
   {
     id: "lite-stylish-what",
-    question: "What is a BGMI Lite stylish name?",
+    question: "What is a BGMI Air stylish name?",
     answer:
-      "It is your nickname styled with Unicode fonts or light symbols you can copy and paste into BGMI Lite rename. No special keyboard app is required.",
+      "It is your nickname styled with Unicode fonts or light symbols you can copy and paste into BGMI Air rename. No special keyboard app is required.",
   },
   {
     id: "lite-stylish-limit",
@@ -50,19 +50,19 @@ export const BGMI_LITE_STYLISH_FAQS = [
     id: "lite-stylish-boxes",
     question: "Why do some stylish letters show as boxes?",
     answer:
-      "Some phones or game builds do not render every Unicode style. Try Clean or Bold, or remove decorative frames, then preview again in Lite.",
+      "Some phones or game builds do not render every Unicode style. Try Clean or Bold, or remove decorative frames, then preview again in BGMI Air.",
   },
   {
     id: "lite-stylish-safe",
     question: "Is this tool safe?",
     answer:
-      "Yes for local styling — names are generated in your browser. We never ask for login, OTP, or payment. Rename only inside the official BGMI Lite client.",
+      "Yes for local styling — names are generated in your browser. We never ask for login, OTP, or payment. Rename only inside the official BGMI Air client.",
   },
   {
     id: "lite-stylish-how",
-    question: "How do I apply the name in BGMI Lite?",
+    question: "How do I apply the name in BGMI Air?",
     answer:
-      "Copy a style from this page, open BGMI Lite, use Rename / nickname edit, paste the name, preview, then confirm if you have a Rename Card or enough UC.",
+      "Copy a style from this page, open BGMI Air, use Rename / nickname edit, paste the name, preview, then confirm if you have a Rename Card or enough UC.",
   },
 ] as const;
 

@@ -1,4 +1,4 @@
-/** Budget-first phone suggestions for BGMI Lite (2GB–4GB class). */
+/** Budget-first phone suggestions for BGMI Air (2GB–4GB class). */
 export const LITE_DEFAULT_PHONE_MODELS = [
   "Redmi 9A",
   "Redmi 9C",

@@ -18,7 +18,7 @@ export async function GET(request: NextRequest) {
     const data = await getBgmiLiteApkPageForAdmin();
     return NextResponse.json({ data });
   } catch {
-    return NextResponse.json({ error: "Could not load BGMI Lite APK page." }, { status: 503 });
+    return NextResponse.json({ error: "Could not load BGMI Air APK page." }, { status: 503 });
   }
 }
 
@@ -84,6 +84,6 @@ export async function POST(request: NextRequest) {
       ...(push.warning ? { warning: push.warning } : {}),
     });
   } catch {
-    return NextResponse.json({ error: "Could not save BGMI Lite APK page." }, { status: 503 });
+    return NextResponse.json({ error: "Could not save BGMI Air APK page." }, { status: 503 });
   }
 }

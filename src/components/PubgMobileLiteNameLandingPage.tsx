@@ -17,7 +17,7 @@ import { listApprovedPageComments } from "@/src/server/repositories/pageComments
 import { getPubgMobileLiteNamePage } from "@/src/server/repositories/pubgMobileLiteNameRepository";
 import { getSettings } from "@/src/server/repositories/settingsRepository";
 
-/** PUBG Mobile Lite stylish name — mobile-first studio + DB-backed copy. */
+/** PUBG Mobile Flash stylish name — mobile-first studio + DB-backed copy. */
 export async function PubgMobileLiteNameLandingPage() {
   const [settings, page, pageComments] = await Promise.all([
     getSettings(),
@@ -27,7 +27,7 @@ export async function PubgMobileLiteNameLandingPage() {
   const canonical = toCanonicalUrl(PUBG_MOBILE_LITE_NAME_PATH);
   const homeUrl = toCanonicalUrl("/");
   const liteCalcUrl = toCanonicalUrl(PUBG_MOBILE_LITE_PATH);
-  const crumbCurrent = (page.title || "PUBG Lite Name").trim();
+  const crumbCurrent = (page.title || "PUBG Flash Name").trim();
   const faqItems = page.faqs.map((f) => ({
     id: f.id,
     question: f.question,
@@ -36,7 +36,7 @@ export async function PubgMobileLiteNameLandingPage() {
   const faqLd = faqSchema(faqItems);
   const breadcrumbLd = breadcrumbListSchema([
     { name: "Home", url: homeUrl },
-    { name: "PUBG Mobile Lite", url: liteCalcUrl },
+    { name: "PUBG Mobile Flash", url: liteCalcUrl },
     { name: crumbCurrent, url: canonical },
   ]);
   const webPageLd = webPageSchema({
@@ -57,7 +57,7 @@ export async function PubgMobileLiteNameLandingPage() {
             <Link href="/">Home</Link>
           </li>
           <li>
-            <Link href={PUBG_MOBILE_LITE_PATH}>PUBG Mobile Lite</Link>
+            <Link href={PUBG_MOBILE_LITE_PATH}>PUBG Mobile Flash</Link>
           </li>
           <li aria-current="page">{crumbCurrent}</li>
         </ol>

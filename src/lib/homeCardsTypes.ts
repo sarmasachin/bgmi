@@ -21,15 +21,15 @@ export const PAGE_CARDS_VARIANTS = [
   },
   {
     id: "bgmi-lite",
-    label: "BGMI Lite",
+    label: "BGMI Air",
     previewPath: "/bgmi-lite",
-    hint: "BGMI Lite calculator page sections (same pattern as Free Fire home)",
+    hint: "BGMI Air calculator page sections (same pattern as Free Fire home)",
   },
   {
     id: "pubg-mobile-lite",
-    label: "PUBG Mobile Lite",
+    label: "PUBG Mobile Flash",
     previewPath: "/pubg-mobile-lite",
-    hint: "PUBG Mobile Lite calculator page sections (same Lite layout)",
+    hint: "PUBG Mobile Flash calculator page sections (same Lite layout)",
   },
   {
     id: "pubg",
@@ -83,7 +83,7 @@ export const BGMI_CARD_SECTIONS = [
 ] as const;
 
 /**
- * BGMI Lite public page sections (games layout).
+ * BGMI Air public page sections (games layout).
  * Excludes nextUpdate/advanceServer — those cards are not rendered on /bgmi-lite.
  */
 export const BGMI_LITE_CARD_SECTIONS = [
@@ -100,7 +100,7 @@ export const BGMI_LITE_CARD_SECTIONS = [
   { id: "explore", label: "Explore calculators" },
 ] as const;
 
-/** Same sections as BGMI Lite — shared Lite chrome. */
+/** Same sections as BGMI Air — shared Lite chrome. */
 export const PUBG_MOBILE_LITE_CARD_SECTIONS = BGMI_LITE_CARD_SECTIONS;
 
 export const PUBG_CARD_SECTIONS = [
@@ -117,7 +117,7 @@ export type FfHomeHero = {
   title: string;
 };
 
-/** Yellow note above the Lite calculator (BGMI Lite / PUBG Mobile Lite). */
+/** Yellow note above the Lite calculator (BGMI Air / PUBG Mobile Flash). */
 export type FfHomeCalcBanner = {
   strong: string;
   rest: string;

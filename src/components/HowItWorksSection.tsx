@@ -96,7 +96,7 @@ const BGMI_LITE_STEPS: Step[] = [
     title: "Select Device",
     icon: "fa-mobile-screen",
     bullets: [
-      "Open the BGMI Lite calculator",
+      "Open the BGMI Air calculator",
       "Pick a budget phone close to yours (Redmi, Realme, Infinix…)",
       "Confirm RAM matches your device (often 2–4GB)",
     ],
@@ -115,7 +115,7 @@ const BGMI_LITE_STEPS: Step[] = [
     icon: "fa-wand-magic-sparkles",
     bullets: [
       "Tap Calculate for Camera, ADS, and Gyro",
-      "Copy values into BGMI Lite Settings",
+      "Copy values into BGMI Air Settings",
       "Tune Red Dot / 3x / 6x in Training Ground (±5)",
     ],
   },
@@ -125,7 +125,7 @@ const BGMI_LITE_STEPS: Step[] = [
     bullets: [
       "Prefer Smooth graphics for steady FPS",
       "Avoid copying flagship 90/120 FPS codes",
-      "Retune after Krafton’s final Lite client ships",
+      "Retune after Krafton’s final BGMI Air client ships",
     ],
   },
 ];
@@ -166,7 +166,7 @@ export function HowItWorksSection({
       : "How It Works";
   const subtitle = isLite
     ? (litePack?.subtitle ??
-      "Four steps to Lite-ready Camera, ADS, and Gyroscope settings.")
+      "Four steps to BGMI Air-ready Camera, ADS, and Gyroscope settings.")
     : isPubg || isBgmi
       ? "Get your pro sensitivity in just 4 simple steps."
       : (homeContent?.subtitle ?? "Get your Free Fire pro settings in just 4 simple steps.");

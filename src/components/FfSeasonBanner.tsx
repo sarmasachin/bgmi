@@ -19,7 +19,7 @@ type Props = {
 
 /**
  * Season / event banner.
- * Home = Free Fire; Max = Free Fire Max; Lite pages = BGMI Lite / PUBG Mobile Lite.
+ * Home = Free Fire; Max = Free Fire Max; Lite pages = BGMI Air / PUBG Mobile Flash.
  */
 export function FfSeasonBanner({ homeContent, liteContent, pubgLiteContent }: Props) {
   const pathname = usePathname() ?? "";

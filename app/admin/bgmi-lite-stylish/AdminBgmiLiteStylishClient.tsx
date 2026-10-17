@@ -64,7 +64,7 @@ export default function AdminBgmiLiteStylishClient({ initialData }: Props) {
       };
       if (json.page) setPage(json.page);
       setUsingDefault(Boolean(json.usingDefault));
-      setMessage("BGMI Lite stylish name page saved.");
+      setMessage("BGMI Air stylish name page saved.");
     } catch {
       setMessage("Network error. Please retry.");
     } finally {
@@ -75,7 +75,7 @@ export default function AdminBgmiLiteStylishClient({ initialData }: Props) {
   return (
     <section className="admin-section">
       <div className="admin-comments-head">
-        <h1>BGMI Lite Stylish Name</h1>
+        <h1>BGMI Air Stylish Name</h1>
         <a
           className="admin-news-btn admin-news-btn-edit"
           href={BGMI_LITE_STYLISH_NAME_PATH}

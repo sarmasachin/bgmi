@@ -2,7 +2,7 @@ import type { FfHomeCards } from "@/src/lib/homeCardsTypes";
 import { BGMI_LITE_APK_PATH } from "@/src/lib/resolveNavForPath";
 
 /**
- * Built-in /bgmi-lite page cards — BGMI Lite only (not Free Fire / not full BGMI copy).
+ * Built-in /bgmi-lite page cards — BGMI Air only (not Free Fire / not full BGMI copy).
  * Facts: Krafton India Lite, end-2026 window, Play pre-reg ~1GB, budget phones;
  * sensi ranges from low-end / Lite-family guides (provisional until live client).
  */
@@ -10,40 +10,40 @@ export function getDefaultBgmiLiteCards(): FfHomeCards {
   return {
     seo: {
       description:
-        "Free BGMI Lite sensitivity calculator for 2GB–4GB phones. Get Camera, ADS, and Gyroscope settings tuned for 30–60 FPS entry devices.",
+        "Free BGMI Air sensitivity calculator for 2GB–4GB phones. Get Camera, ADS, and Gyroscope settings tuned for 30–60 FPS entry devices.",
       keywords: [
-        "BGMI Lite sensitivity calculator",
-        "BGMI Lite sensitivity settings",
-        "BGMI Lite 2GB RAM",
-        "BGMI Lite gyroscope sensitivity",
-        "BGMI Lite ADS sensitivity",
-        "BGMI Lite camera sensitivity",
-        "BGMI Lite low end phone",
+        "BGMI Air sensitivity calculator",
+        "BGMI Air sensitivity settings",
+        "BGMI Air 2GB RAM",
+        "BGMI Air gyroscope sensitivity",
+        "BGMI Air ADS sensitivity",
+        "BGMI Air camera sensitivity",
+        "BGMI Air low end phone",
       ],
     },
     hero: {
-      title: "BGMI Lite Sensitivity Calculator",
+      title: "BGMI Air Sensitivity Calculator",
     },
     calcBanner: {
-      strong: "BGMI Lite calculator",
-      rest: " — tuned for entry phones (~2GB RAM, 30–60 FPS). Values follow Lite-family / low-end research until Krafton publishes final Lite specs. Apply in Settings → Sensitivity, then fine-tune in Training Ground.",
+      strong: "BGMI Air calculator",
+      rest: " — tuned for entry phones (~2GB RAM, 30–60 FPS). Values follow BGMI Air / low-end research until Krafton publishes final BGMI Air specs. Apply in Settings → Sensitivity, then fine-tune in Training Ground.",
     },
     patchStrip: {
       code: "bgmi-lite-prereg",
-      label: "BGMI Lite",
+      label: "BGMI Air",
       dateLabel: "Aug 2026",
       dateIso: "2026-08-25",
       typeLabel: "Pre-registration",
       summary:
-        "Krafton India opened Android pre-registration for BGMI Lite (~1GB initial download). Full launch targeted by end of 2026 — official RAM/specs still pending.",
+        "Krafton India opened Android pre-registration for BGMI Air (~1GB initial download). Full launch targeted by end of 2026 — official RAM/specs still pending.",
       articlePath: "/news",
       newsListPath: "/news",
       primaryCta: "Latest news",
       secondaryCta: "All news",
     },
     playModes: {
-      title: "Choose your Lite play style",
-      lead: "Tap a style — the BGMI Lite calculator Play style updates automatically.",
+      title: "Choose your BGMI Air play style",
+      lead: "Tap a style — the BGMI Air calculator Play style updates automatically.",
       modes: [
         {
           id: "close-fight",
@@ -55,7 +55,7 @@ export function getDefaultBgmiLiteCards(): FfHomeCards {
         {
           id: "balanced",
           label: "Balanced",
-          blurb: "All-round Lite aim",
+          blurb: "All-round BGMI Air aim",
           icon: "fa-scale-balanced",
           role: "flanker",
         },
@@ -76,13 +76,13 @@ export function getDefaultBgmiLiteCards(): FfHomeCards {
       ],
     },
     nextUpdate: {
-      badge: "Lite",
+      badge: "BGMI Air",
       code: "bgmi-lite-2026",
-      title: "BGMI Lite launch window",
+      title: "BGMI Air launch window",
       meta: "End of 2026 · Krafton India",
       metaIso: "2026-12-31",
       summary:
-        "Lite is confirmed for India. Features, maps, and official minimum specs will land closer to launch — retune sensi after the live client ships.",
+        "BGMI Air is confirmed for India. Features, maps, and official minimum specs will land closer to launch — retune sensi after the live client ships.",
       features: [
         "Designed for budget / older Android phones",
         "Play Store pre-reg · ~1GB first download (reported)",
@@ -90,9 +90,9 @@ export function getDefaultBgmiLiteCards(): FfHomeCards {
       ],
       note: "Fan-made calculator — not affiliated with Krafton. We do not host APKs.",
       primaryPath: "/bgmi-lite#bgmi-lite-calculator",
-      primaryCta: "Open Lite calculator",
+      primaryCta: "Open BGMI Air calculator",
       secondaryPath: "/news",
-      secondaryCta: "Lite news",
+      secondaryCta: "BGMI Air news",
     },
     advanceServer: {
       badge: "Tip",
@@ -100,19 +100,19 @@ export function getDefaultBgmiLiteCards(): FfHomeCards {
       title: "Download only from official stores",
       meta: "Security note",
       summary:
-        "Krafton has not published a public APK mirror for Lite. Use Google Play pre-registration only — skip random APK sites.",
+        "Krafton has not published a public APK mirror for BGMI Air. Use Google Play pre-registration only — skip random APK sites.",
       features: [
         "Verify publisher is Krafton on Play Store",
-        "No paid “Lite APK” links — those are scams",
+        "No paid “BGMI Air APK” links — those are scams",
         "Retune Camera / ADS / Gyro after install",
       ],
       note: "This site is a sensitivity tool, not a download hub.",
       primaryCta: "Back to calculator",
       secondaryPath: "/bgmi-lite#bgmi-lite-calculator",
-      secondaryCta: "Calculate Lite sensi",
+      secondaryCta: "Calculate BGMI Air sensi",
     },
     roleTips: {
-      title: "Best BGMI Lite sensi tips by play style",
+      title: "Best BGMI Air sensi tips by play style",
       items: [
         {
           role: "rusher",
@@ -129,44 +129,44 @@ export function getDefaultBgmiLiteCards(): FfHomeCards {
           role: "sniper",
           title: "Mid–long / support",
           icon: "fa-crosshairs",
-          lead: "On Lite-class phones, high scopes need control more than flagship speed. Match calculator FPS to the FPS you actually hold.",
+          lead: "On BGMI Air phones, high scopes need control more than flagship speed. Match calculator FPS to the FPS you actually hold.",
           tips: [
             "Lower 4x / 6x if spray climbs the sky",
             "Scope On gyro helps micro-adjust without always-on drift",
-            "Don’t paste 120 FPS full-BGMI codes onto Lite",
+            "Don’t paste 120 FPS full-BGMI codes onto BGMI Air",
           ],
           buttonLabel: "Use Mid–long in calculator",
         },
         {
           role: "flanker",
-          title: "BGMI Lite sensi for beginners",
+          title: "BGMI Air sensi for beginners",
           icon: "fa-graduation-cap",
-          lead: "Start balanced for 2GB–4GB RAM and 30–60 FPS. Copying Conqueror claw codes from full BGMI usually feels jumpy on Lite hardware.",
+          lead: "Start balanced for 2GB–4GB RAM and 30–60 FPS. Copying Conqueror claw codes from full BGMI usually feels jumpy on BGMI Air hardware.",
           tips: [
             "Safe Camera / ADS / Gyro starting points",
             "Scope On recommended before Always On",
             "Change one scope ±5 after each Training session",
           ],
-          buttonLabel: "Calculate beginner Lite sensi",
+          buttonLabel: "Calculate beginner BGMI Air sensi",
         },
       ],
     },
     season: {
       badge: "Coming",
-      title: "BGMI Lite — India, end of 2026",
+      title: "BGMI Air — India, end of 2026",
       summary:
-        "Krafton confirmed Lite for budget phones. Pre-register on Google Play when available, then use this calculator for Camera, ADS, and Gyroscope baselines.",
+        "Krafton confirmed BGMI Air for budget phones. Pre-register on Google Play when available, then use this calculator for Camera, ADS, and Gyroscope baselines.",
       dateLabel: "2026",
       dateIso: "2026-12-31",
       ctaPath: "/bgmi-lite#bgmi-lite-calculator",
-      ctaLabel: "Open Lite calculator",
+      ctaLabel: "Open BGMI Air calculator",
       secondaryPath: "/news",
       secondaryLabel: "News",
     },
     proTips: {
-      title: "Pro tips for BGMI Lite aim",
+      title: "Pro tips for BGMI Air aim",
       lead: "Low-end habits that matter more than copying flagship sensi codes.",
-      ctaLabel: "Apply in Lite calculator",
+      ctaLabel: "Apply in BGMI Air calculator",
       items: [
         {
           id: "stable-fps",
@@ -183,7 +183,7 @@ export function getDefaultBgmiLiteCards(): FfHomeCards {
         {
           id: "no-flagship",
           title: "Don’t paste full BGMI codes",
-          tip: "120 FPS claw codes from full BGMI overshoot on Lite-class sensors. Use this Lite tool, then fine-tune ±5.",
+          tip: "120 FPS claw codes from full BGMI overshoot on BGMI Air sensors. Use this BGMI Air tool, then fine-tune ±5.",
           icon: "fa-ban",
         },
         {
@@ -196,13 +196,13 @@ export function getDefaultBgmiLiteCards(): FfHomeCards {
     },
     howItWorks: {
       title: "How It Works",
-      subtitle: "Four steps to Lite-ready Camera, ADS, and Gyroscope settings.",
+      subtitle: "Four steps to BGMI Air-ready Camera, ADS, and Gyroscope settings.",
       steps: [
         {
           title: "Select Device",
           icon: "fa-mobile-screen",
           bullets: [
-            "Open the BGMI Lite calculator",
+            "Open the BGMI Air calculator",
             "Pick a budget phone close to yours (Redmi, Realme, Infinix…)",
             "Confirm RAM matches your device (often 2–4GB)",
           ],
@@ -221,7 +221,7 @@ export function getDefaultBgmiLiteCards(): FfHomeCards {
           icon: "fa-wand-magic-sparkles",
           bullets: [
             "Tap Calculate for Camera, ADS, and Gyro",
-            "Copy values into BGMI Lite Settings",
+            "Copy values into BGMI Air Settings",
             "Tune Red Dot / 3x / 6x in Training Ground (±5)",
           ],
         },
@@ -231,20 +231,20 @@ export function getDefaultBgmiLiteCards(): FfHomeCards {
           bullets: [
             "Prefer Smooth graphics for steady FPS",
             "Avoid copying flagship 90/120 FPS codes",
-            "Retune after Krafton’s final Lite client ships",
+            "Retune after Krafton’s final BGMI Air client ships",
           ],
         },
       ],
     },
     comparison: {
-      title: "BGMI vs BGMI Lite",
+      title: "BGMI vs BGMI Air",
       ctaBeforeLink: "Playing full BGMI?",
       ctaLinkLabel: "Open BGMI calculator",
       ctaHref: "/bgmi",
-      ramTitle: "RAM-wise BGMI Lite starting ranges (provisional)",
-      note: "Tip: These are researched low-end baselines — not official Krafton Lite specs. Retune ±5 in Training Ground after Lite launches.",
+      ramTitle: "RAM-wise BGMI Air starting ranges (provisional)",
+      note: "Tip: These are researched low-end baselines — not official BGMI Air specs. Retune ±5 in Training Ground after BGMI Air launches.",
       leftColLabel: "BGMI",
-      rightColLabel: "BGMI Lite",
+      rightColLabel: "BGMI Air",
       ramColLabels: {
         general: "Cam NS",
         redDot: "Cam RD",
@@ -282,13 +282,13 @@ export function getDefaultBgmiLiteCards(): FfHomeCards {
           icon: "fa-crosshairs",
           point: "Sensitivity tool",
           freefire: "Full BGMI calculator (/bgmi)",
-          freefireMax: "This Lite calculator (Camera / ADS / Gyro)",
+          freefireMax: "This BGMI Air calculator (Camera / ADS / Gyro)",
         },
         {
           icon: "fa-ban",
           point: "Code sharing",
           freefire: "Flagship claw codes common online",
-          freefireMax: "Don’t paste those here — retune for Lite",
+          freefireMax: "Don’t paste those here — retune for BGMI Air",
         },
       ],
       ramRows: [
@@ -331,21 +331,21 @@ export function getDefaultBgmiLiteCards(): FfHomeCards {
         text: "Full Battlegrounds Mobile India sensitivity — Camera & ADS/Gyro for mid and flagship phones.",
         points: [
           "60 / 90 / 120 FPS presets",
-          "Separate from this Lite tool",
+          "Separate from this BGMI Air tool",
           "Open /bgmi anytime",
         ],
         buttonLabel: "Open BGMI calculator",
         href: "/bgmi",
       },
       freefireMax: {
-        title: "BGMI Lite APK",
-        text: "Lite launch countdown, pre-registration steps, and safe download notes — official Play Store only; we do not host APKs.",
+        title: "BGMI Air APK",
+        text: "BGMI Air launch countdown, pre-registration steps, and safe download notes — official Play Store only; we do not host APKs.",
         points: [
           "Countdown to 12 Nov 2026",
           "Pre-reg / safety guide",
-          "Pair with Lite sensi above",
+          "Pair with BGMI Air sensi above",
         ],
-        buttonLabel: "Open Lite APK page",
+        buttonLabel: "Open BGMI Air APK page",
         href: BGMI_LITE_APK_PATH,
       },
     },

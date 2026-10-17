@@ -27,10 +27,10 @@ export type FfNewsHubItem = {
 type Props = {
   items: FfNewsHubItem[];
   total: number;
-  /** When set, BGMI Lite calculator pages use these instead of mixed `items`. */
+  /** When set, BGMI Air calculator pages use these instead of mixed `items`. */
   liteItems?: FfNewsHubItem[];
   liteTotal?: number;
-  /** When set, PUBG Mobile Lite calculator pages use these instead of BGMI Lite news. */
+  /** When set, PUBG Mobile Flash calculator pages use these instead of BGMI Air news. */
   pubgMobileLiteItems?: FfNewsHubItem[];
   pubgMobileLiteTotal?: number;
 };
@@ -71,13 +71,15 @@ export function FfNewsHub({
   const shown = visible.length;
   const title = isLite
     ? liteBrand === "pubg-mobile-lite"
-      ? "Latest PUBG Mobile Lite news"
-      : "Latest BGMI Lite news"
+      ? "Latest PUBG Mobile Flash news"
+      : "Latest BGMI Air news"
     : isMax
       ? "Latest Free Fire Max news"
       : "Latest News";
   const lead = isLite
-    ? `Latest ${shown} Lite ${shown === 1 ? "story" : "stories"} — swipe sideways to browse`
+    ? liteBrand === "pubg-mobile-lite"
+      ? `Latest ${shown} PUBG Mobile Flash ${shown === 1 ? "story" : "stories"} — swipe sideways to browse`
+      : `Latest ${shown} BGMI Air ${shown === 1 ? "story" : "stories"} — swipe sideways to browse`
     : isMax
       ? `Updates & guides for Max players — latest ${shown} ${shown === 1 ? "post" : "posts"}`
       : `Latest ${shown} ${shown === 1 ? "story" : "stories"} from all games — swipe sideways to browse`;
@@ -90,9 +92,9 @@ export function FfNewsHub({
         : "/news";
   const viewAllLabel =
     liteBrand === "pubg-mobile-lite"
-      ? "View all PUBG Mobile Lite news"
+      ? "View all PUBG Mobile Flash news"
       : liteBrand === "bgmi-lite"
-        ? "View all BGMI Lite news"
+        ? "View all BGMI Air news"
         : "View all news";
 
   return (

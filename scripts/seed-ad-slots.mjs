@@ -7,6 +7,8 @@ const prisma = new PrismaClient();
 const SLOTS = [
   { slotKey: "home_below_title", title: "Home — below title" },
   { slotKey: "free_fire_redeem_below_title", title: "Redeem pages — below title" },
+  { slotKey: "apk_below_title", title: "APK pages — below title" },
+  { slotKey: "apk_below_actions", title: "APK pages — below countdown / APK buttons" },
   { slotKey: "home_above_calculator", title: "Home — above calculator" },
   { slotKey: "home_between_tool_and_article", title: "Home — between tool & article" },
   { slotKey: "news_list_top", title: "News list — top" },
@@ -42,7 +44,12 @@ async function main() {
     await prisma.adSlot.upsert({
       where: { slotKey: s.slotKey },
       create: { slotKey: s.slotKey, title: s.title, code: null, isEnabled: false },
-      update: s.slotKey === "free_fire_redeem_below_title" ? { title: s.title } : {},
+      update:
+        s.slotKey === "free_fire_redeem_below_title" ||
+        s.slotKey === "apk_below_title" ||
+        s.slotKey === "apk_below_actions"
+          ? { title: s.title }
+          : {},
     });
   }
   await prisma.adSlot.deleteMany({ where: { slotKey: "free_fire_max_redeem_below_title" } });

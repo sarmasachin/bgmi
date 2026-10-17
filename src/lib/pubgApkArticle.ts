@@ -30,11 +30,11 @@ export const PUBG_APK_ARTICLE_HTML = `
     <a href="/pubg">PUBG Mobile sensitivity calculator</a> for Camera, ADS, and Gyroscope baselines.</li>
 </ol>
 
-<h3>PUBG Mobile vs PUBG Mobile Lite</h3>
+<h3>PUBG Mobile vs PUBG Mobile Flash</h3>
 <p>
   Full PUBG Mobile targets mid-to-strong phones and higher FPS modes where supported.
-  <a href="/pubg-mobile-lite-apk">PUBG Mobile Lite</a> is the lighter client for budget phones.
-  Do not paste Lite codes into full PUBG Mobile, or flagship claw codes from a 120 FPS device
+  <a href="/pubg-mobile-lite-apk">PUBG Mobile Flash</a> is the lighter client for budget phones.
+  Do not paste PUBG Mobile Flash codes into full PUBG Mobile, or flagship claw codes from a 120 FPS device
   into a 40 FPS phone.
 </p>
 

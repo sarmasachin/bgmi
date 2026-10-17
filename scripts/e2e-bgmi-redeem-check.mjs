@@ -121,7 +121,7 @@ try {
     ok("FAQ present", pub.text.includes("How do I redeem a BGMI code?"));
     ok("comments form present", pub.text.includes("Post comment") && pub.text.includes('pageKey":"bgmi-redeem-code') || pub.text.includes("bgmi-redeem-code"));
     ok("nav Redeem Code under BGMI", pub.text.includes('href="/bgmi-redeem-code">Redeem Code'));
-    ok("not lite-only copy", !pub.text.includes("BGMI Lite Redeem Codes</h1>"));
+    ok("not lite-only copy", !pub.text.includes("BGMI Air Redeem Codes</h1>"));
   }
 
   console.log("\n== 4) Isolation vs Lite ==");

@@ -23,7 +23,7 @@ const LOAD_STEP = 10;
 /** Mobile-first studio — gallery-style names + load more after 10. */
 export function BgmiLiteStylishNameStudio({
   tipText,
-  emptyText = "Type a name to see stylish BGMI Lite IDs.",
+  emptyText = "Type a name to see stylish BGMI Air IDs.",
 }: Props) {
   const [base, setBase] = useState("");
   const [active, setActive] = useState<FilterId>("all");

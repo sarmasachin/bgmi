@@ -186,7 +186,7 @@ const MAX_RAM_ROWS: Array<{
 
 /**
  * Comparison + RAM table.
- * Home = Free Fire vs Max; Max page = Max-first; Lite pages = BGMI / PUBG Mobile Lite.
+ * Home = Free Fire vs Max; Max page = Max-first; Lite pages = BGMI / PUBG Mobile Flash.
  */
 export function FfComparisonTables({
   homeContent,

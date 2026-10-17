@@ -145,7 +145,7 @@ export const DEFAULT_PUBG_APK_PAGE: PubgApkPageContent = {
     "PUBG APK",
     "PUBG Mobile official download",
     "PUBG Mobile Krafton",
-    "PUBG Mobile vs PUBG Lite",
+    "PUBG Mobile vs PUBG Flash",
     "PUBG Mobile sensitivity",
   ],
   heroTitle: "PUBG Mobile APK",
@@ -154,7 +154,7 @@ export const DEFAULT_PUBG_APK_PAGE: PubgApkPageContent = {
   pills: [
     { label: "Android · Google Play" },
     { label: "Global PUBG Mobile (not BGMI)" },
-    { label: "Full client (not Lite)" },
+    { label: "Full client (not PUBG Mobile Flash)" },
   ],
   heroButtons: {
     playStore: {
@@ -221,7 +221,7 @@ export const DEFAULT_PUBG_APK_PAGE: PubgApkPageContent = {
       points: [
         "Play Store installs usually fetch data packs for you — prefer that over random OBB links",
         "Sideload APK only with the matching OBB/version pair; mismatched packs cause black screen or stuck loading",
-        "Typical path: Android/obb/com.tencent.ig/ — do not rename folders or mix Lite/full packs",
+        "Typical path: Android/obb/com.tencent.ig/ — do not rename folders or mix PUBG Mobile Flash/full packs",
         "Need free storage for main + data; clear junk before a big update",
         "Never pay for “OBB unlock” files or OTP links — we do not host OBB/APK on this site",
       ],
@@ -318,15 +318,15 @@ export const DEFAULT_PUBG_APK_PAGE: PubgApkPageContent = {
       id: "vs-lite",
       badge: "Compare",
       icon: "fa-table",
-      title: "Full PUBG Mobile vs Lite",
+      title: "Full PUBG Mobile vs PUBG Mobile Flash",
       summary:
-        "This page is for full PUBG Mobile. Lite is a separate lighter client for budget phones, with its own Play listing and calculator.",
+        "This page is for full PUBG Mobile. PUBG Mobile Flash is a separate lighter client for budget phones, with its own Play listing and calculator.",
       points: [
         "Full PUBG Mobile: stronger phones, higher FPS modes",
-        "Lite: smaller install, entry-level hardware",
-        "Don’t mix Lite and full PUBG Mobile sensitivity codes",
+        "PUBG Mobile Flash: smaller install, entry-level hardware",
+        "Don’t mix PUBG Mobile Flash and full PUBG Mobile sensitivity codes",
       ],
-      ctaLabel: "Open PUBG Lite APK page",
+      ctaLabel: "Open PUBG Flash APK page",
       ctaHref: "/pubg-mobile-lite-apk",
     },
     {

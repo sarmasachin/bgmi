@@ -7,6 +7,8 @@ export type AdPlacementVisibility = {
   home: {
     home_below_title: boolean;
     free_fire_redeem_below_title: boolean;
+    apk_below_title: boolean;
+    apk_below_actions: boolean;
     home_above_calculator: boolean;
     home_between_tool_and_article: boolean;
   };
@@ -21,6 +23,8 @@ export const DEFAULT_AD_PLACEMENT_VISIBILITY: AdPlacementVisibility = {
   home: {
     home_below_title: true,
     free_fire_redeem_below_title: true,
+    apk_below_title: true,
+    apk_below_actions: true,
     home_above_calculator: true,
     home_between_tool_and_article: true,
   },
@@ -44,6 +48,12 @@ function mergeVisibility(raw: unknown): AdPlacementVisibility {
     }
     if (typeof h.free_fire_redeem_below_title === "boolean") {
       out.home.free_fire_redeem_below_title = h.free_fire_redeem_below_title;
+    }
+    if (typeof h.apk_below_title === "boolean") {
+      out.home.apk_below_title = h.apk_below_title;
+    }
+    if (typeof h.apk_below_actions === "boolean") {
+      out.home.apk_below_actions = h.apk_below_actions;
     }
     if (typeof h.home_above_calculator === "boolean") {
       out.home.home_above_calculator = h.home_above_calculator;

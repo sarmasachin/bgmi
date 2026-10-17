@@ -18,6 +18,8 @@ export type PlacementState = {
   home: {
     home_below_title: boolean;
     free_fire_redeem_below_title: boolean;
+    apk_below_title: boolean;
+    apk_below_actions: boolean;
     home_above_calculator: boolean;
     home_between_tool_and_article: boolean;
   };
@@ -157,6 +159,32 @@ export function AdminAdsForm({ initialRows, initialPlacements }: Props) {
               }
             />
             Below redeem page title
+          </label>
+          <label className="admin-ads-enable" style={{ display: "block", marginBottom: 6 }}>
+            <input
+              type="checkbox"
+              checked={placements.home.apk_below_title}
+              onChange={(e) =>
+                setPlacements((p) => ({
+                  ...p,
+                  home: { ...p.home, apk_below_title: e.target.checked },
+                }))
+              }
+            />
+            Below APK page title
+          </label>
+          <label className="admin-ads-enable" style={{ display: "block", marginBottom: 6 }}>
+            <input
+              type="checkbox"
+              checked={placements.home.apk_below_actions}
+              onChange={(e) =>
+                setPlacements((p) => ({
+                  ...p,
+                  home: { ...p.home, apk_below_actions: e.target.checked },
+                }))
+              }
+            />
+            Below APK countdown / download buttons
           </label>
           <label className="admin-ads-enable" style={{ display: "block", marginBottom: 6 }}>
             <input

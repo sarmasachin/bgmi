@@ -53,28 +53,28 @@ export type BgmiLiteRedeemCodePageContent = {
 };
 
 /**
- * Built-in BGMI Lite redeem-code page content.
+ * Built-in BGMI Air redeem-code page content.
  * Fan-made info only — codes are illustrative until admin/CMS wiring.
  */
 export const DEFAULT_BGMI_LITE_REDEEM_PAGE: BgmiLiteRedeemCodePageContent = {
   path: BGMI_LITE_REDEEM_CODE_PATH,
-  seoTitle: "BGMI Lite Redeem Codes (Latest)",
+  seoTitle: "BGMI Air Redeem Codes (Latest)",
   seoDescription:
-    "Latest BGMI Lite redeem codes with copy button, live and expired archive. Fan-made guide — redeem only in the official game client.",
+    "Latest BGMI Air redeem codes with copy button, live and expired archive. Fan-made guide — redeem only in the official game client.",
   seoKeywords: [
-    "BGMI Lite redeem code",
-    "BGMI Lite codes",
-    "BGMI Lite UC code",
-    "BGMI Lite crate code",
-    "BGMI Lite redeem",
+    "BGMI Air redeem code",
+    "BGMI Air codes",
+    "BGMI Air UC code",
+    "BGMI Air crate code",
+    "BGMI Air redeem",
   ],
-  title: "BGMI Lite Redeem Codes",
+  title: "BGMI Air Redeem Codes",
   intro:
-    "Find the latest working BGMI Lite redeem codes in one place. Copy a live code, open BGMI Lite, and redeem it from the official in-game redeem section. We never ask for your password, OTP, or UC payment.",
+    "Find the latest working BGMI Air redeem codes in one place. Copy a live code, open BGMI Air, and redeem it from the official in-game redeem section. We never ask for your password, OTP, or UC payment.",
   sectionHeading: "Active redeem codes",
   archiveHeading: "Expired archive",
   closing:
-    "Codes expire fast and can stop working without notice. Always redeem inside the official BGMI Lite / Krafton client. This page is a fan-made tracker — not affiliated with Krafton. If a code fails, wait for the next live drop and skip any paid “code seller” links.",
+    "Codes expire fast and can stop working without notice. Always redeem inside the official BGMI Air / Krafton client. This page is a fan-made tracker — not affiliated with Krafton. If a code fails, wait for the next live drop and skip any paid “code seller” links.",
   articleHtml: BGMI_LITE_REDEEM_ARTICLE_HTML,
   faqs: BGMI_LITE_REDEEM_FAQS.map((item) => ({ ...item })),
   commentsLead:

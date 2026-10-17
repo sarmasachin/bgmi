@@ -1,4 +1,4 @@
-/** Shared types for BGMI Lite stylish-name generator + studio. */
+/** Shared types for BGMI Air stylish-name generator + studio. */
 
 export type StylishCategory =
   | "crown"

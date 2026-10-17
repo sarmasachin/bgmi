@@ -3,6 +3,7 @@ import { ClientErrorBoundary } from "@/src/components/ClientErrorBoundary";
 import { FaqAccordion } from "@/src/components/FaqAccordion";
 import { FfAdvanceServerCountdown } from "@/src/components/FfAdvanceServerCountdown";
 import { HomeHeader } from "@/src/components/HomeHeader";
+import { HomeTitleDummyAd } from "@/src/components/HomeTitleDummyAd";
 import { PageCommentSection } from "@/src/components/PageCommentSection";
 import { PubgMobileLiteApkInfoBlocks } from "@/src/components/PubgMobileLiteApkInfoBlocks";
 import { SiteFooter } from "@/src/components/SiteFooter";
@@ -28,7 +29,7 @@ import { listApprovedPageComments } from "@/src/server/repositories/pageComments
 import { getSettings } from "@/src/server/repositories/settingsRepository";
 
 /**
- * PUBG Mobile Lite APK page — same dark hero + countdown layout as BGMI Lite APK.
+ * PUBG Mobile Flash APK page — same dark hero + countdown layout as BGMI Air APK.
  */
 export async function PubgMobileLiteApkLandingPage() {
   const [settings, pageComments] = await Promise.all([
@@ -49,8 +50,8 @@ export async function PubgMobileLiteApkLandingPage() {
   const faqLd = faqSchema(faqItems);
   const breadcrumbLd = breadcrumbListSchema([
     { name: "Home", url: homeUrl },
-    { name: "PUBG Mobile Lite", url: liteCalcUrl },
-    { name: "PUBG Lite APK", url: canonical },
+    { name: "PUBG Mobile Flash", url: liteCalcUrl },
+    { name: "PUBG Flash APK", url: canonical },
   ]);
   const webPageLd = webPageSchema({
     name: page.seoTitle,
@@ -71,9 +72,9 @@ export async function PubgMobileLiteApkLandingPage() {
             <Link href="/">Home</Link>
           </li>
           <li>
-            <Link href={PUBG_MOBILE_LITE_PATH}>PUBG Mobile Lite</Link>
+            <Link href={PUBG_MOBILE_LITE_PATH}>PUBG Mobile Flash</Link>
           </li>
-          <li aria-current="page">PUBG Lite APK</li>
+          <li aria-current="page">PUBG Flash APK</li>
         </ol>
       </nav>
 
@@ -81,9 +82,10 @@ export async function PubgMobileLiteApkLandingPage() {
         <h1 id="pml-apk-hero-title" className="ff-as-article-title">
           {page.heroTitle}
         </h1>
+        <HomeTitleDummyAd slotKey="apk_below_title" />
         <p className="ff-as-article-sub">{page.subtitleEn}</p>
 
-        <ul className="ff-as-pills" aria-label="PUBG Mobile Lite details">
+        <ul className="ff-as-pills" aria-label="PUBG Mobile Flash details">
           {page.pills.map((pill) => (
             <li key={pill.label} className="ff-as-pill">
               {pill.label}
@@ -97,6 +99,7 @@ export async function PubgMobileLiteApkLandingPage() {
           dateText={page.countdown.dateText}
           liveMessage={page.countdown.liveMessage}
         />
+        <HomeTitleDummyAd slotKey="apk_below_actions" />
 
         {page.heroImage ? (
           <img
@@ -164,7 +167,7 @@ export async function PubgMobileLiteApkLandingPage() {
             dangerouslySetInnerHTML={{ __html: page.articleHtml }}
           />
           {faqItems.length ? (
-            <FaqAccordion items={faqItems} title="PUBG Lite APK FAQ" />
+            <FaqAccordion items={faqItems} title="PUBG Flash APK FAQ" />
           ) : null}
         </div>
       </div>

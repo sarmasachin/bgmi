@@ -30,7 +30,7 @@ export const BGMI_APK_FACTS: BgmiApkFactsBlock = {
     { label: "Official install", value: "Google Play Store listing" },
     { label: "APK on this site", value: "Not hosted here — button is admin-controlled" },
     { label: "Sensitivity", value: "Use the BGMI calculator after install" },
-    { label: "Lighter client", value: "BGMI Lite is a separate page / listing" },
+    { label: "Lighter client", value: "BGMI Air is a separate page / listing" },
   ],
   note:
     "Always confirm the publisher name on Google Play. This site does not host APK files. Admin can hide or update the Play Store and APK buttons at any time.",

@@ -78,7 +78,7 @@ export default function AdminPubgMobileLiteRedeemClient({ initialData }: Props) 
       const json = await parseSaveResponse(res);
       if (json.page) setPage(json.page);
       setUsingDefault(Boolean(json.usingDefault));
-      setMessage("PUBG Mobile Lite redeem codes page saved.");
+      setMessage("PUBG Mobile Flash redeem codes page saved.");
     } catch (err) {
       setMessage(messageFromUnknownError(err, "Network error. Please retry."));
     } finally {
@@ -87,11 +87,11 @@ export default function AdminPubgMobileLiteRedeemClient({ initialData }: Props) 
   }
 
   return (
-    <ClientErrorBoundary label="PUBG Mobile Lite Redeem admin">
+    <ClientErrorBoundary label="PUBG Mobile Flash Redeem admin">
       <section className="admin-section admin-redeem-page">
         <div className="admin-comments-head">
           <div>
-            <h1>PUBG Mobile Lite Redeem Codes</h1>
+            <h1>PUBG Mobile Flash Redeem Codes</h1>
             <p className="admin-redeem-page-sub">
               {usingDefault
                 ? "Built-in defaults (not in DB yet). Save to publish your list."

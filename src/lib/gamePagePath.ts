@@ -14,7 +14,7 @@ export function isPubgMobileLitePath(pathname: string | null | undefined): boole
   return p === "/pubg-mobile-lite" || p.startsWith("/pubg-mobile-lite/");
 }
 
-/** Either Lite calculator page (BGMI Lite or PUBG Mobile Lite). */
+/** Either Lite calculator page (BGMI Air or PUBG Mobile Flash). */
 export function isLiteCalculatorPath(pathname: string | null | undefined): boolean {
   return isBgmiLitePath(pathname) || isPubgMobileLitePath(pathname);
 }
@@ -27,7 +27,7 @@ export function getLiteCalcBrand(
   return null;
 }
 
-/** Pick section content for home / BGMI Lite / PUBG Mobile Lite routes. */
+/** Pick section content for home / BGMI Air / PUBG Mobile Flash routes. */
 export function pickLitePageContent<T>(
   pathname: string | null | undefined,
   home: T | undefined,

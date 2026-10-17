@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { Geist } from "next/font/google";
+import { headers } from "next/headers";
 import { DeferredMarketingScripts } from "@/src/components/DeferredMarketingScripts";
 import { PushSoftPrompt } from "@/src/components/PushSoftPrompt";
 import { FA_CSS, FA_SOLID_WOFF2 } from "@/src/lib/fontAwesome";
@@ -122,6 +123,9 @@ export default async function RootLayout({
   children: React.ReactNode;
 }>) {
   const baseUrl = getSiteUrl();
+  const headerList = await headers();
+  const requestPath = headerList.get("x-pathname") ?? "";
+  const isAdminPage = requestPath === "/admin" || requestPath.startsWith("/admin/");
   const snippets = await getHeadSnippets();
   const analytics = parseAnalyticsSnippet(snippets.analyticsScript);
   const adsense = parseAdsenseSnippet(snippets.adsenseScript);
@@ -131,8 +135,12 @@ export default async function RootLayout({
       <head>
         {/* AdSense Auto ads in the initial HTML. Analytics stays deferred. */}
         <link rel="dns-prefetch" href="https://www.googletagmanager.com" />
-        <link rel="dns-prefetch" href="https://pagead2.googlesyndication.com" />
-        <script async src={ADSENSE_AUTO_SRC} crossOrigin="anonymous" />
+        {isAdminPage ? null : (
+          <>
+            <link rel="dns-prefetch" href="https://pagead2.googlesyndication.com" />
+            <script async src={ADSENSE_AUTO_SRC} crossOrigin="anonymous" />
+          </>
+        )}
         <link rel="preconnect" href="https://cdnjs.cloudflare.com" crossOrigin="anonymous" />
         {/* Preload FA font; CSS uses media=print→all so it does not block first paint (FCP). */}
         <link

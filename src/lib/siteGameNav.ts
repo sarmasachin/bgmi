@@ -61,7 +61,7 @@ export const SITE_GAME_NAV: readonly SiteNavItem[] = [
   },
   {
     id: "pubg-lite",
-    label: "PUBG Mobile Lite",
+    label: "PUBG Mobile Flash",
     href: PUBG_MOBILE_LITE_PATH,
     children: PUBG_MOBILE_LITE_NAV.map((row) => ({ label: row.label, href: row.href })),
   },
@@ -73,7 +73,7 @@ export const SITE_GAME_NAV: readonly SiteNavItem[] = [
   },
   {
     id: "bgmi-lite",
-    label: "BGMI Lite",
+    label: "BGMI Air",
     href: "/bgmi-lite",
     children: [...BGMI_LITE_NAV],
   },

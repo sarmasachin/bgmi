@@ -37,13 +37,13 @@ export const ADMIN_NAV_ACCESS: ReadonlyArray<{
     anyOf: ["advanceServer.view"],
   },
   {
-    label: "BGMI Lite Redeem",
+    label: "BGMI Air Redeem",
     href: "/admin/bgmi-lite-redeem",
     icon: "bgmiLiteRedeem",
     anyOf: ["bgmiLiteRedeem.view"],
   },
   {
-    label: "BGMI Lite APK",
+    label: "BGMI Air APK",
     href: "/admin/bgmi-lite-apk",
     icon: "bgmiLiteApk",
     anyOf: ["bgmiLiteApk.view"],
@@ -73,7 +73,7 @@ export const ADMIN_NAV_ACCESS: ReadonlyArray<{
     anyOf: ["pubgRedeem.view"],
   },
   {
-    label: "PUBG Lite Redeem",
+    label: "PUBG Flash Redeem",
     href: "/admin/pubg-mobile-lite-redeem",
     icon: "pubgMobileLiteRedeem",
     anyOf: ["pubgMobileLiteRedeem.view"],
@@ -91,13 +91,13 @@ export const ADMIN_NAV_ACCESS: ReadonlyArray<{
     anyOf: ["freeFireMaxRedeem.view"],
   },
   {
-    label: "BGMI Lite Stylish Name",
+    label: "BGMI Air Stylish Name",
     href: "/admin/bgmi-lite-stylish",
     icon: "bgmiLiteStylish",
     anyOf: ["bgmiLiteStylish.view"],
   },
   {
-    label: "PUBG Lite Name",
+    label: "PUBG Flash Name",
     href: "/admin/pubg-mobile-lite-name",
     icon: "pubgMobileLiteName",
     anyOf: ["pubgMobileLiteName.view"],

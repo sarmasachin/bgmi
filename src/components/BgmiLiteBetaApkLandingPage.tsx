@@ -4,6 +4,7 @@ import { ClientErrorBoundary } from "@/src/components/ClientErrorBoundary";
 import { FaqAccordion } from "@/src/components/FaqAccordion";
 import { FfAdvanceServerCountdown } from "@/src/components/FfAdvanceServerCountdown";
 import { HomeHeader } from "@/src/components/HomeHeader";
+import { HomeTitleDummyAd } from "@/src/components/HomeTitleDummyAd";
 import { PageCommentSection } from "@/src/components/PageCommentSection";
 import { SiteFooter } from "@/src/components/SiteFooter";
 import {
@@ -21,7 +22,7 @@ import { listApprovedPageComments } from "@/src/server/repositories/pageComments
 import { getSettings } from "@/src/server/repositories/settingsRepository";
 
 /**
- * BGMI Lite APK page.
+ * BGMI Air APK page.
  * Top = Advance Server–style dark hero (countdown + image + cards).
  * Below = site standard light article + FAQ (AS itself has no article).
  * Then comments.
@@ -45,8 +46,8 @@ export async function BgmiLiteBetaApkLandingPage() {
   const faqLd = faqSchema(faqItems);
   const breadcrumbLd = breadcrumbListSchema([
     { name: "Home", url: homeUrl },
-    { name: "BGMI Lite", url: liteCalcUrl },
-    { name: "BGMI Lite APK", url: canonical },
+    { name: "BGMI Air", url: liteCalcUrl },
+    { name: "BGMI Air APK", url: canonical },
   ]);
   const webPageLd = webPageSchema({
     name: page.seoTitle,
@@ -67,9 +68,9 @@ export async function BgmiLiteBetaApkLandingPage() {
             <Link href="/">Home</Link>
           </li>
           <li>
-            <Link href="/bgmi-lite">BGMI Lite</Link>
+            <Link href="/bgmi-lite">BGMI Air</Link>
           </li>
-          <li aria-current="page">BGMI Lite APK</li>
+          <li aria-current="page">BGMI Air APK</li>
         </ol>
       </nav>
 
@@ -77,9 +78,10 @@ export async function BgmiLiteBetaApkLandingPage() {
         <h1 id="bgmi-lite-apk-hero-title" className="ff-as-article-title">
           {page.heroTitle}
         </h1>
+        <HomeTitleDummyAd slotKey="apk_below_title" />
         <p className="ff-as-article-sub">{page.subtitleEn}</p>
 
-        <ul className="ff-as-pills" aria-label="BGMI Lite details">
+        <ul className="ff-as-pills" aria-label="BGMI Air details">
           {page.pills.map((pill, index) => (
             <li key={`pill-${index}`} className="ff-as-pill">
               {pill.label}
@@ -93,6 +95,7 @@ export async function BgmiLiteBetaApkLandingPage() {
           dateText={page.countdown.dateText}
           liveMessage={page.countdown.liveMessage}
         />
+        <HomeTitleDummyAd slotKey="apk_below_actions" />
 
         {page.heroImage ? (
           <img

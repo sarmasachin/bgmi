@@ -319,8 +319,8 @@ console.log("\n== H) BGMI / PUBG / Lite schedule wiring ==");
   for (const [name, file] of [
     ["BGMI", "src/server/repositories/bgmiRedeemCodesRepository.ts"],
     ["PUBG", "src/server/repositories/pubgRedeemCodesRepository.ts"],
-    ["BGMI Lite", "src/server/repositories/bgmiLiteRedeemCodesRepository.ts"],
-    ["PUBG Lite", "src/server/repositories/pubgMobileLiteRedeemCodesRepository.ts"],
+    ["BGMI Air", "src/server/repositories/bgmiLiteRedeemCodesRepository.ts"],
+    ["PUBG Flash", "src/server/repositories/pubgMobileLiteRedeemCodesRepository.ts"],
   ]) {
     const src = read(file);
     ok(`${name} repo attaches schedule ISO`, src.includes("attachRedeemScheduleFromRaw"));
@@ -329,8 +329,8 @@ console.log("\n== H) BGMI / PUBG / Lite schedule wiring ==");
   for (const [name, file] of [
     ["BGMI", "src/components/BgmiRedeemCodeLandingPage.tsx"],
     ["PUBG", "src/components/PubgRedeemCodeLandingPage.tsx"],
-    ["BGMI Lite", "src/components/BgmiLiteRedeemCodeLandingPage.tsx"],
-    ["PUBG Lite", "src/components/PubgMobileLiteRedeemCodeLandingPage.tsx"],
+    ["BGMI Air", "src/components/BgmiLiteRedeemCodeLandingPage.tsx"],
+    ["PUBG Flash", "src/components/PubgMobileLiteRedeemCodeLandingPage.tsx"],
   ]) {
     const src = read(file);
     ok(`${name} public uses isRedeemCodePubliclyLive`, src.includes("isRedeemCodePubliclyLive"));
@@ -340,8 +340,8 @@ console.log("\n== H) BGMI / PUBG / Lite schedule wiring ==");
   for (const [name, file] of [
     ["BGMI admin", "app/admin/bgmi-redeem/AdminBgmiRedeemForm.tsx"],
     ["PUBG admin", "app/admin/pubg-redeem/AdminPubgRedeemForm.tsx"],
-    ["BGMI Lite admin", "app/admin/bgmi-lite-redeem/AdminBgmiLiteRedeemForm.tsx"],
-    ["PUBG Lite admin", "app/admin/pubg-mobile-lite-redeem/AdminPubgMobileLiteRedeemForm.tsx"],
+    ["BGMI Air admin", "app/admin/bgmi-lite-redeem/AdminBgmiLiteRedeemForm.tsx"],
+    ["PUBG Flash admin", "app/admin/pubg-mobile-lite-redeem/AdminPubgMobileLiteRedeemForm.tsx"],
   ]) {
     ok(`${name} mounts shared date-picker manager`, read(file).includes("AdminLiteRedeemCodesManager"));
   }

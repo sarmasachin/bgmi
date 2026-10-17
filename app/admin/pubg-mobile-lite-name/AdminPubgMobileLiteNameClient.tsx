@@ -64,7 +64,7 @@ export default function AdminPubgMobileLiteNameClient({ initialData }: Props) {
       };
       if (json.page) setPage(json.page);
       setUsingDefault(Boolean(json.usingDefault));
-      setMessage("PUBG Mobile Lite name page saved.");
+      setMessage("PUBG Mobile Flash name page saved.");
     } catch {
       setMessage("Network error. Please retry.");
     } finally {
@@ -75,7 +75,7 @@ export default function AdminPubgMobileLiteNameClient({ initialData }: Props) {
   return (
     <section className="admin-section">
       <div className="admin-comments-head">
-        <h1>PUBG Mobile Lite Name</h1>
+        <h1>PUBG Mobile Flash Name</h1>
         <a
           className="admin-news-btn admin-news-btn-edit"
           href={PUBG_MOBILE_LITE_NAME_PATH}

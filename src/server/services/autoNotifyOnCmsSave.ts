@@ -98,8 +98,8 @@ export async function autoNotifyLiteApkSave(input: {
     enabled: settings.liteApkOnSave,
     changed: liteApkFingerprint(input.beforePage) !== liteApkFingerprint(input.afterPage),
     source: "liteApk",
-    title: input.title.trim() || "Lite APK update",
-    body: "Lite APK launch details were updated. Tap to see the countdown.",
+    title: input.title.trim() || "BGMI Air APK update",
+    body: "BGMI Air APK launch details were updated. Tap to see the countdown.",
     urlPath: input.urlPath,
   });
 }

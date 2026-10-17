@@ -72,43 +72,43 @@ export const BGMI_LITE_APK_PAGE_SECTIONS = [
 export type BgmiLiteApkPageSectionId = (typeof BGMI_LITE_APK_PAGE_SECTIONS)[number]["id"];
 
 /**
- * Fan-made BGMI Lite APK / pre-launch info page.
+ * Fan-made BGMI Air APK / pre-launch info page.
  * Does not host APKs or link to unofficial downloads.
  */
 export const DEFAULT_BGMI_LITE_APK_PAGE: BgmiLiteBetaApkPageContent = {
   path: BGMI_LITE_APK_PATH,
-  seoTitle: "BGMI Lite APK & Launch Countdown",
+  seoTitle: "BGMI Air APK & Launch Countdown",
   seoDescription:
-    "BGMI Lite APK guide with 12 November 2026 launch countdown, Google Play pre-registration tips, safety notes, and Lite sensitivity help — we do not host APKs.",
+    "BGMI Air APK guide with 12 November 2026 launch countdown, Google Play pre-registration tips, safety notes, and BGMI Air sensitivity help — we do not host APKs.",
   seoKeywords: [
-    "BGMI Lite APK",
-    "BGMI Lite launch date",
-    "BGMI Lite 12 November 2026",
-    "BGMI Lite pre-registration",
-    "BGMI Lite download",
-    "BGMI Lite countdown",
-    "BGMI Lite Google Play",
-    "BGMI Lite vs BGMI",
-    "BGMI Lite sensitivity",
+    "BGMI Air APK",
+    "BGMI Air launch date",
+    "BGMI Air 12 November 2026",
+    "BGMI Air pre-registration",
+    "BGMI Air download",
+    "BGMI Air countdown",
+    "BGMI Air Google Play",
+    "BGMI Air vs BGMI",
+    "BGMI Air sensitivity",
   ],
-  heroTitle: "BGMI Lite APK",
+  heroTitle: "BGMI Air APK",
   subtitleEn:
-    "Fan-made info guide for Krafton’s lighter BGMI client for budget phones. Pre-registration and install happen on the official Google Play listing — this is an info page with a launch countdown, not a BGMI Lite APK download hub.",
+    "Fan-made info guide for Krafton’s lighter BGMI client for budget phones. Pre-registration and install happen on the official Google Play listing — this is an info page with a launch countdown, not a BGMI Air APK download hub.",
   pills: [
     { label: "Launch target: 12 Nov 2026" },
     { label: "Android · Google Play" },
     { label: "~1GB first download" },
   ],
   countdown: {
-    label: "Countdown to BGMI Lite launch (12 November 2026)",
+    label: "Countdown to BGMI Air launch (12 November 2026)",
     targetIso: BGMI_LITE_LAUNCH_TARGET_ISO,
     dateText:
-      "BGMI Lite launch date · 12 November 2026 — confirm on Google Play / Krafton India",
-    liveMessage: "BGMI Lite launch window reached — check Google Play for the official listing",
+      "BGMI Air launch date · 12 November 2026 — confirm on Google Play / Krafton India",
+    liveMessage: "BGMI Air launch window reached — check Google Play for the official listing",
   },
   heroImage: "/bgmi/lite-beta-hero.png",
   heroImageAlt:
-    "BGMI Lite themed banner — lighter battle royale for budget Android phones",
+    "BGMI Air themed banner — lighter battle royale for budget Android phones",
   cards: [
     {
       id: "safe-download",
@@ -116,10 +116,10 @@ export const DEFAULT_BGMI_LITE_APK_PAGE: BgmiLiteBetaApkPageContent = {
       icon: "fa-shield-halved",
       title: "No random APK mirrors",
       summary:
-        "Krafton has not asked players to install Lite from random websites. Stick to the official Play Store listing when it is available.",
+        "Krafton has not asked players to install BGMI Air from random websites. Stick to the official Play Store listing when it is available.",
       points: [
         "Verify the publisher is Krafton on Google Play",
-        "Skip paid “Lite APK” links — those are scams",
+        "Skip paid “BGMI Air APK” links — those are scams",
         "This site does not host or mirror install files",
       ],
     },
@@ -129,7 +129,7 @@ export const DEFAULT_BGMI_LITE_APK_PAGE: BgmiLiteBetaApkPageContent = {
       icon: "fa-circle-info",
       title: "What is confirmed so far",
       summary:
-        "Krafton India confirmed BGMI Lite for India (end-of-2026 window) and Android pre-registration with an initial download around 1GB.",
+        "Krafton India confirmed BGMI Air for India (end-of-2026 window) and Android pre-registration with an initial download around 1GB.",
       points: [
         "Built for budget / older Android phones",
         "Pre-registration via Google Play (Android)",
@@ -157,7 +157,7 @@ export const DEFAULT_BGMI_LITE_APK_PAGE: BgmiLiteBetaApkPageContent = {
       summary:
         "Android players can pre-register on Google Play. No account transfer ritual is required beyond what Krafton documents on the listing.",
       points: [
-        "Search BGMI Lite on Google Play",
+        "Search BGMI Air on Google Play",
         "Tap Pre-register / enable auto-install if you want",
         "Wait for Krafton’s release — skip sideload APKs",
       ],
@@ -166,13 +166,13 @@ export const DEFAULT_BGMI_LITE_APK_PAGE: BgmiLiteBetaApkPageContent = {
       id: "vs-full",
       badge: "Compare",
       icon: "fa-table",
-      title: "BGMI Lite vs full BGMI",
+      title: "BGMI Air vs full BGMI",
       summary:
-        "Lite is for entry phones; full BGMI suits stronger devices and higher FPS modes. Use the matching calculator on this site.",
+        "BGMI Air is for entry phones; full BGMI suits stronger devices and higher FPS modes. Use the matching calculator on this site.",
       points: [
-        "Lite: smaller install, budget hardware focus",
+        "BGMI Air: smaller install, budget hardware focus",
         "Full BGMI: 60 / 90 / 120 FPS on stronger phones",
-        "Don’t paste flagship codes into Lite",
+        "Don’t paste flagship codes into BGMI Air",
       ],
       ctaLabel: "Open full BGMI calculator",
       ctaHref: "/bgmi",
@@ -181,15 +181,15 @@ export const DEFAULT_BGMI_LITE_APK_PAGE: BgmiLiteBetaApkPageContent = {
       id: "sensi-ready",
       badge: "Aim",
       icon: "fa-crosshairs",
-      title: "Get Lite sensitivity ready",
+      title: "Get BGMI Air sensitivity ready",
       summary:
-        "When Lite goes live, use our BGMI Lite calculator for Camera, ADS, and Gyroscope baselines for 2GB–4GB / 30–60 FPS phones.",
+        "When BGMI Air goes live, use our BGMI Air calculator for Camera, ADS, and Gyroscope baselines for 2GB–4GB / 30–60 FPS phones.",
       points: [
         "Don’t paste flagship 90/120 FPS full-BGMI codes",
         "Prefer Scope On gyro on entry phones",
         "Fine-tune ±5 in Training Ground after install",
       ],
-      ctaLabel: "Open BGMI Lite calculator",
+      ctaLabel: "Open BGMI Air calculator",
       ctaHref: "/bgmi-lite",
     },
   ],
@@ -203,9 +203,9 @@ export const DEFAULT_BGMI_LITE_APK_PAGE: BgmiLiteBetaApkPageContent = {
   },
   articleHtml: BGMI_LITE_APK_ARTICLE_HTML,
   faqs: BGMI_LITE_APK_FAQS.map((item) => ({ ...item })),
-  faqTitle: "BGMI Lite APK FAQ",
+  faqTitle: "BGMI Air APK FAQ",
   commentsLead:
-    "Ask questions or share BGMI Lite launch tips. Comments appear here after admin approval.",
+    "Ask questions or share BGMI Air launch tips. Comments appear here after admin approval.",
 };
 
 /** @deprecated Use DEFAULT_BGMI_LITE_APK_PAGE */

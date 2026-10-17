@@ -15,9 +15,9 @@ export type GameFaqGame =
 
 export const GAME_FAQ_GAMES: Array<{ id: GameFaqGame; label: string }> = [
   { id: "bgmi", label: "BGMI" },
-  { id: "bgmi-lite", label: "BGMI Lite" },
+  { id: "bgmi-lite", label: "BGMI Air" },
   { id: "pubg", label: "PUBG Mobile" },
-  { id: "pubg-mobile-lite", label: "PUBG Mobile Lite" },
+  { id: "pubg-mobile-lite", label: "PUBG Mobile Flash" },
   { id: "freefire", label: "Free Fire" },
   { id: "freefire-max", label: "Free Fire Max" },
 ];
@@ -56,9 +56,9 @@ export const DEFAULT_BGMI_FAQ: HomeFaqItem[] = [
 export const DEFAULT_BGMI_LITE_FAQ: HomeFaqItem[] = [
   {
     id: "bgmi-lite-faq-1",
-    question: "Is BGMI Lite the same as full BGMI for sensitivity?",
+    question: "Is BGMI Air the same as full BGMI for sensitivity?",
     answer:
-      "Not exactly. Lite targets lower-end phones that often run 30–60 FPS. Use this BGMI Lite calculator instead of copying a flagship 90/120 FPS BGMI code.",
+      "Not exactly. BGMI Air targets lower-end phones that often run 30–60 FPS. Use this BGMI Air calculator instead of copying a flagship 90/120 FPS BGMI code.",
   },
   {
     id: "bgmi-lite-faq-2",
@@ -68,9 +68,9 @@ export const DEFAULT_BGMI_LITE_FAQ: HomeFaqItem[] = [
   },
   {
     id: "bgmi-lite-faq-3",
-    question: "Are these values final for the live BGMI Lite client?",
+    question: "Are these values final for the live BGMI Air client?",
     answer:
-      "They are researched starting points based on Lite-family and low-end sensitivity guides. After Krafton ships Lite, re-check slider names and fine-tune ±5 in Training Ground.",
+      "They are researched starting points based on BGMI Air and low-end sensitivity guides. After Krafton ships BGMI Air, re-check slider names and fine-tune ±5 in Training Ground.",
   },
 ];
 
@@ -98,9 +98,9 @@ export const DEFAULT_PUBG_FAQ: HomeFaqItem[] = [
 export const DEFAULT_PUBG_MOBILE_LITE_FAQ: HomeFaqItem[] = [
   {
     id: "pubg-mobile-lite-faq-1",
-    question: "Is PUBG Mobile Lite the same as full PUBG Mobile for sensitivity?",
+    question: "Is PUBG Mobile Flash the same as full PUBG Mobile for sensitivity?",
     answer:
-      "Not exactly. Lite targets lower-end phones that often run 30–60 FPS. Use this PUBG Mobile Lite calculator instead of copying a flagship 90/120 FPS PUBG Mobile code.",
+      "Not exactly. PUBG Mobile Flash targets lower-end phones that often run 30–60 FPS. Use this PUBG Mobile Flash calculator instead of copying a flagship 90/120 FPS PUBG Mobile code.",
   },
   {
     id: "pubg-mobile-lite-faq-2",
@@ -110,9 +110,9 @@ export const DEFAULT_PUBG_MOBILE_LITE_FAQ: HomeFaqItem[] = [
   },
   {
     id: "pubg-mobile-lite-faq-3",
-    question: "Are these values final for the live PUBG Mobile Lite client?",
+    question: "Are these values final for the live PUBG Mobile Flash client?",
     answer:
-      "They are researched starting points based on Lite-family and low-end sensitivity guides. After the live Lite client ships or updates, re-check slider names and fine-tune ±5 in Training Ground.",
+      "They are researched starting points based on PUBG Mobile Flash and low-end sensitivity guides. After the live PUBG Mobile Flash client ships or updates, re-check slider names and fine-tune ±5 in Training Ground.",
   },
 ];
 

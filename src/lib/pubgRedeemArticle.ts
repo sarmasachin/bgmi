@@ -9,7 +9,7 @@ export const PUBG_REDEEM_ARTICLE_HTML = `
 <p>
   Always redeem inside the official <strong>PUBG Mobile</strong> client or the publisher’s
   official redeem page. We never ask for your password, OTP, UC payment, or account takeover
-  links. This page is for full PUBG Mobile — not <a href="/pubg-mobile-lite-redeem-code">PUBG Mobile Lite</a>
+  links. This page is for full PUBG Mobile — not <a href="/pubg-mobile-lite-redeem-code">PUBG Mobile Flash</a>
   and not <a href="/bgmi-redeem-code">BGMI</a>.
 </p>
 
@@ -26,7 +26,7 @@ export const PUBG_REDEEM_ARTICLE_HTML = `
   <li>The code already expired or hit a regional / device limit.</li>
   <li>You already redeemed that code on the same account.</li>
   <li>A typo or extra space — paste carefully from the Copy button.</li>
-  <li>You tried a Lite or BGMI code in full PUBG Mobile (or the other way around).</li>
+  <li>You tried a PUBG Mobile Flash or BGMI code in full PUBG Mobile (or the other way around).</li>
 </ul>
 
 <h3>Safety tips</h3>
@@ -57,7 +57,7 @@ export const PUBG_REDEEM_FAQS = [
     id: "pubg-redeem-fail",
     question: "Why did my PUBG Mobile redeem code fail?",
     answer:
-      "Codes can expire, hit account or region limits, or fail if you already redeemed them. Double-check for typos or spaces. Do not paste Lite or BGMI codes into full PUBG Mobile. Wait for the next LIVE drop if the code is marked expired on this page.",
+      "Codes can expire, hit account or region limits, or fail if you already redeemed them. Double-check for typos or spaces. Do not paste PUBG Mobile Flash or BGMI codes into full PUBG Mobile. Wait for the next LIVE drop if the code is marked expired on this page.",
   },
   {
     id: "pubg-redeem-safe",

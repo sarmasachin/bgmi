@@ -128,7 +128,7 @@ try {
     ok("webPage LD", types.includes("WebPage") || ld.some((item) => JSON.stringify(item).includes("WebPage")));
 
     const lite = await fetchText("/pubg-mobile-lite-apk");
-    ok("lite page is still Lite", lite.text.includes("PUBG Lite APK") || lite.text.includes("PUBG Mobile Lite"));
+    ok("lite page is still Lite", lite.text.includes("PUBG Flash APK") || lite.text.includes("PUBG Mobile Flash"));
     ok("lite does not use full PUBG APK h1", !lite.text.includes(">PUBG Mobile APK<"));
   }
 

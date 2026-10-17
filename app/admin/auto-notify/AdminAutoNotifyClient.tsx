@@ -19,7 +19,7 @@ const TOGGLES: Array<{ key: keyof AutoNotifySettings; label: string; hint: strin
   {
     key: "redeemOnSave",
     label: "Redeem codes",
-    hint: "When live codes change on FF, FF Max, BGMI Lite, or PUBG Lite. SEO-only saves do not notify.",
+    hint: "When live codes change on FF, FF Max, BGMI Air, or PUBG Flash. SEO-only saves do not notify.",
   },
   {
     key: "advanceServerOnSave",
@@ -29,12 +29,12 @@ const TOGGLES: Array<{ key: keyof AutoNotifySettings; label: string; hint: strin
   {
     key: "stylishNamesOnSave",
     label: "Stylish names",
-    hint: "When name ideas change (FF / FF Max chips, or Lite name-page copy).",
+    hint: "When name ideas change (FF / FF Max chips, or BGMI Air / PUBG Mobile Flash name-page copy).",
   },
   {
     key: "liteApkOnSave",
-    label: "Lite APK countdown",
-    hint: "When BGMI Lite APK launch/countdown details change. PUBG Lite APK has no admin save yet.",
+    label: "BGMI Air APK countdown",
+    hint: "When BGMI Air APK launch/countdown details change. PUBG Flash APK has no admin save yet.",
   },
 ];
 

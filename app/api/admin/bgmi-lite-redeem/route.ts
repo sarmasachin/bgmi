@@ -80,6 +80,6 @@ export async function POST(request: NextRequest) {
       ...(push.warning ? { warning: push.warning } : {}),
     });
   } catch {
-    return NextResponse.json({ error: "Could not save BGMI Lite redeem codes page." }, { status: 503 });
+    return NextResponse.json({ error: "Could not save BGMI Air redeem codes page." }, { status: 503 });
   }
 }

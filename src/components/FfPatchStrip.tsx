@@ -20,7 +20,7 @@ type Props = {
 
 /**
  * Update strip — CTAs stay on this website (news).
- * Home = Free Fire; Max = Free Fire Max; Lite pages = BGMI Lite / PUBG Mobile Lite.
+ * Home = Free Fire; Max = Free Fire Max; Lite pages = BGMI Air / PUBG Mobile Flash.
  */
 export function FfPatchStrip({ homeContent, liteContent, pubgLiteContent }: Props) {
   const pathname = usePathname() ?? "";
@@ -37,9 +37,9 @@ export function FfPatchStrip({ homeContent, liteContent, pubgLiteContent }: Prop
   const brand = getLiteCalcBrand(pathname);
   const aria =
     brand === "pubg-mobile-lite"
-      ? "PUBG Mobile Lite update news"
+      ? "PUBG Mobile Flash update news"
       : brand === "bgmi-lite"
-        ? "BGMI Lite update news"
+        ? "BGMI Air update news"
         : isMax
           ? "Free Fire Max update news"
           : "Free Fire update news";

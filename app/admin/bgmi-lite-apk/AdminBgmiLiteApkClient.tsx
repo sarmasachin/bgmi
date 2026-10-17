@@ -44,14 +44,14 @@ export default function AdminBgmiLiteApkClient({ initialData }: { initialData: I
         body: JSON.stringify({ action: "save", page }),
       });
       if (!res.ok) {
-        setMessage(await readApiError(res, "Could not save BGMI Lite APK page."));
+        setMessage(await readApiError(res, "Could not save BGMI Air APK page."));
         return;
       }
       const json = (await res.json()) as {
         page?: BgmiLiteBetaApkPageContent;
       };
       if (json.page) setPage(json.page);
-      setMessage("BGMI Lite APK page saved.");
+      setMessage("BGMI Air APK page saved.");
     } catch {
       setMessage("Network error. Please retry.");
     } finally {
@@ -62,7 +62,7 @@ export default function AdminBgmiLiteApkClient({ initialData }: { initialData: I
   return (
     <section className="admin-section">
       <div className="admin-comments-head">
-        <h1>BGMI Lite APK</h1>
+        <h1>BGMI Air APK</h1>
         <a
           className="admin-news-btn admin-news-btn-edit"
           href={BGMI_LITE_APK_PATH}

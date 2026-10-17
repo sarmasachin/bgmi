@@ -108,9 +108,9 @@ export function isPubgFamilyPath(pathname: string): boolean {
 /** Header menu when the user is on /bgmi-lite (and related Lite pages). */
 export const BGMI_LITE_NAV: NavLink[] = [
   { label: "Home", href: "/bgmi-lite" },
-  { label: "BGMI Lite APK", href: BGMI_LITE_APK_PATH },
+  { label: "BGMI Air APK", href: BGMI_LITE_APK_PATH },
   { label: "Redeem Code", href: BGMI_LITE_REDEEM_CODE_PATH },
-  { label: "BGMI Lite Stylish Name", href: BGMI_LITE_STYLISH_NAME_PATH },
+  { label: "BGMI Air Stylish Name", href: BGMI_LITE_STYLISH_NAME_PATH },
   { label: "News", href: newsCategoryListingPath("bgmi-lite") },
 ];
 

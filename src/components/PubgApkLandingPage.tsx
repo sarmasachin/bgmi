@@ -3,6 +3,7 @@ import { BgmiLiteBetaApkInfoBlocks } from "@/src/components/BgmiLiteBetaApkInfoB
 import { ClientErrorBoundary } from "@/src/components/ClientErrorBoundary";
 import { FaqAccordion } from "@/src/components/FaqAccordion";
 import { HomeHeader } from "@/src/components/HomeHeader";
+import { HomeTitleDummyAd } from "@/src/components/HomeTitleDummyAd";
 import { PageCommentSection } from "@/src/components/PageCommentSection";
 import { PubgApkHeroActions } from "@/src/components/PubgApkHeroActions";
 import { SiteFooter } from "@/src/components/SiteFooter";
@@ -98,6 +99,7 @@ export async function PubgApkLandingPage() {
         <h1 id="pubg-apk-hero-title" className="ff-as-article-title">
           {page.heroTitle}
         </h1>
+        <HomeTitleDummyAd slotKey="apk_below_title" />
         <p className="ff-as-article-sub">{page.subtitleEn}</p>
 
         <ul className="ff-as-pills" aria-label="PUBG Mobile details">
@@ -113,6 +115,7 @@ export async function PubgApkLandingPage() {
           playStore={page.heroButtons.playStore}
           apk={page.heroButtons.apk}
         />
+        <HomeTitleDummyAd slotKey="apk_below_actions" />
 
         {isUsablePubgHeroImageSrc(page.heroImage) ? (
           <img

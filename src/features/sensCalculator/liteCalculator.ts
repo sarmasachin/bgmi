@@ -32,7 +32,7 @@ type LiteScopeDef = {
 
 /**
  * Multipliers calibrated so default Lite inputs (2GB, 60 FPS, 2-finger, base 120)
- * land near researched PUBG Mobile Lite / low-end BGMI ranges for Camera, ADS, Gyro.
+ * land near researched PUBG Mobile Flash / low-end BGMI ranges for Camera, ADS, Gyro.
  * Sources: Sportskeeda Lite 2GB guide; low-end 30–60 FPS gyro guides (Scope On, lower gyro).
  */
 const liteScopes: LiteScopeDef[] = [

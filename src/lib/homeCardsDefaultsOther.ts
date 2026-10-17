@@ -24,10 +24,10 @@ export function getDefaultBgmiCards(): FfHomeCards {
   };
 }
 
-/** Built-in BGMI Lite page cards — full Lite sections (not Free Fire). */
+/** Built-in BGMI Air page cards — full Lite sections (not Free Fire). */
 export { getDefaultBgmiLiteCards } from "@/src/lib/homeCardsDefaultsBgmiLite";
 
-/** Built-in PUBG Mobile Lite page cards — same Lite layout, PUBG branding. */
+/** Built-in PUBG Mobile Flash page cards — same Lite layout, PUBG branding. */
 export { getDefaultPubgMobileLiteCards } from "@/src/lib/homeCardsDefaultsPubgMobileLite";
 
 /** Built-in PUBG page SEO + hero — used until admin saves overrides. */

@@ -6,9 +6,9 @@ import { PUBG_MOBILE_LITE_PATH } from "@/src/lib/pubgMobileLite";
 import { getFfPageCards } from "@/src/server/repositories/homeCardsRepository";
 
 const fallbackTitle =
-  "PUBG Mobile Lite Sensitivity Calculator | Camera ADS Gyro for Low-End Phones";
+  "PUBG Mobile Flash Sensitivity Calculator | Camera ADS Gyro for Low-End Phones";
 const fallbackDescription =
-  "Free PUBG Mobile Lite sensitivity calculator for 2GB–4GB phones. Get Camera, ADS, and Gyroscope settings tuned for 30–60 FPS entry devices.";
+  "Free PUBG Mobile Flash sensitivity calculator for 2GB–4GB phones. Get Camera, ADS, and Gyroscope settings tuned for 30–60 FPS entry devices.";
 const canonical = toCanonicalUrl(PUBG_MOBILE_LITE_PATH);
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -18,11 +18,11 @@ export async function generateMetadata(): Promise<Metadata> {
   const keywords = cards.seo.keywords.length
     ? cards.seo.keywords
     : [
-        "PUBG Mobile Lite sensitivity calculator",
-        "PUBG Mobile Lite sensitivity settings",
-        "PUBG Lite 2GB RAM sensitivity",
-        "PUBG Mobile Lite gyroscope",
-        "PUBG Mobile Lite ADS sensitivity",
+        "PUBG Mobile Flash sensitivity calculator",
+        "PUBG Mobile Flash sensitivity settings",
+        "PUBG Flash 2GB RAM sensitivity",
+        "PUBG Mobile Flash gyroscope",
+        "PUBG Mobile Flash ADS sensitivity",
       ];
   return {
     title: { absolute: title },

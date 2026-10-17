@@ -43,12 +43,12 @@ export const DEFAULT_BGMI_LITE_REDEEM_UI: BgmiLiteRedeemUiLabels = {
   emptyExpired: "No expired codes in the archive yet.",
   freshnessIdleTitle: "No new codes today",
   freshnessIdleText:
-    "Fresh BGMI Lite redeem codes were not published today (IST). Check back later — older live codes below may still work until they expire.",
+    "Fresh BGMI Air redeem codes were not published today (IST). Check back later — older live codes below may still work until they expire.",
   updatedLabelPrefix: "Updated",
-  faqTitle: "BGMI Lite Redeem Codes FAQ",
-  breadcrumbName: "BGMI Lite Redeem Code",
+  faqTitle: "BGMI Air Redeem Codes FAQ",
+  breadcrumbName: "BGMI Air Redeem Code",
   socialImage: "/icon.png?v=3",
-  socialImageAlt: "Sensitivity Settings — BGMI Lite redeem codes",
+  socialImageAlt: "Sensitivity Settings — BGMI Air redeem codes",
 };
 
 export function cloneBgmiLiteRedeemUi(

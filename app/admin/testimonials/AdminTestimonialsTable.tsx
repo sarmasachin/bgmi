@@ -3,9 +3,9 @@ import type { TestimonialsConfirmAction } from "./AdminTestimonialsConfirmModal"
 
 const GAME_LABEL: Record<AdminTestimonialItem["game"], string> = {
   bgmi: "BGMI",
-  "bgmi-lite": "BGMI Lite",
+  "bgmi-lite": "BGMI Air",
   pubg: "PUBG Mobile",
-  "pubg-mobile-lite": "PUBG Mobile Lite",
+  "pubg-mobile-lite": "PUBG Mobile Flash",
   freefire: "Free Fire",
   "freefire-max": "Free Fire Max",
 };

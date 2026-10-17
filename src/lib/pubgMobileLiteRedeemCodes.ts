@@ -53,28 +53,28 @@ export type PubgMobileLiteRedeemCodePageContent = {
 };
 
 /**
- * Built-in PUBG Mobile Lite redeem-code page content.
+ * Built-in PUBG Mobile Flash redeem-code page content.
  * Fan-made info only — admin CMS can override via /admin/pubg-mobile-lite-redeem.
  */
 export const DEFAULT_PUBG_MOBILE_LITE_REDEEM_PAGE: PubgMobileLiteRedeemCodePageContent = {
   path: PUBG_MOBILE_LITE_REDEEM_CODE_PATH,
-  seoTitle: "PUBG Mobile Lite Redeem Codes (Latest)",
+  seoTitle: "PUBG Mobile Flash Redeem Codes (Latest)",
   seoDescription:
-    "Latest PUBG Mobile Lite redeem codes with copy button, live and expired archive. Fan-made guide — redeem only in the official game client.",
+    "Latest PUBG Mobile Flash redeem codes with copy button, live and expired archive. Fan-made guide — redeem only in the official game client.",
   seoKeywords: [
-    "PUBG Mobile Lite redeem code",
-    "PUBG Lite redeem codes",
-    "PUBG Lite UC code",
-    "PUBG Lite crate code",
-    "PUBG Mobile Lite redeem",
+    "PUBG Mobile Flash redeem code",
+    "PUBG Flash redeem codes",
+    "PUBG Flash UC code",
+    "PUBG Flash crate code",
+    "PUBG Mobile Flash redeem",
   ],
-  title: "PUBG Mobile Lite Redeem Codes",
+  title: "PUBG Mobile Flash Redeem Codes",
   intro:
-    "Find the latest working PUBG Mobile Lite redeem codes in one place. Copy a live code, open PUBG Mobile Lite, and redeem it from the official in-game redeem section. We never ask for your password, OTP, or UC payment.",
+    "Find the latest working PUBG Mobile Flash redeem codes in one place. Copy a live code, open PUBG Mobile Flash, and redeem it from the official in-game redeem section. We never ask for your password, OTP, or UC payment.",
   sectionHeading: "Active redeem codes",
   archiveHeading: "Expired archive",
   closing:
-    "Codes expire fast and can stop working without notice. Always redeem inside the official PUBG Mobile Lite client. This page is a fan-made tracker — not affiliated with Krafton / PUBG. If a code fails, wait for the next live drop and skip any paid “code seller” links.",
+    "Codes expire fast and can stop working without notice. Always redeem inside the official PUBG Mobile Flash client. This page is a fan-made tracker — not affiliated with Krafton / PUBG. If a code fails, wait for the next live drop and skip any paid “code seller” links.",
   articleHtml: PUBG_MOBILE_LITE_REDEEM_ARTICLE_HTML,
   faqs: PUBG_MOBILE_LITE_REDEEM_FAQS.map((item) => ({ ...item })),
   commentsLead:

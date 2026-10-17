@@ -33,7 +33,7 @@ export async function SiteFooter({ settings: settingsProp }: SiteFooterProps = {
           if (/pubg\s*mobile\s*code/i.test(label)) {
             return { ...item, href: PUBG_MOBILE_CODES_PATH };
           }
-          if (/pubg\s*mobile\s*lite/i.test(label)) {
+          if (/pubg\s*mobile\s*(lite|flash)/i.test(label)) {
             return { ...item, href: PUBG_MOBILE_LITE_PATH };
           }
           if (/pubg/i.test(label) && (item.href === "/" || !item.href.trim())) {

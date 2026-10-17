@@ -29,7 +29,7 @@ import {
 import { listApprovedPageComments } from "@/src/server/repositories/pageCommentsRepository";
 import { getSettings } from "@/src/server/repositories/settingsRepository";
 
-/** White BGMI Lite redeem-code page: codes → article + FAQ → comments. */
+/** White BGMI Air redeem-code page: codes → article + FAQ → comments. */
 export async function BgmiLiteRedeemCodeLandingPage() {
   const [settings, page, updatedAt, pageComments] = await Promise.all([
     getSettings(),
@@ -41,7 +41,7 @@ export async function BgmiLiteRedeemCodeLandingPage() {
   const canonical = toCanonicalUrl(BGMI_LITE_REDEEM_CODE_PATH);
   const homeUrl = toCanonicalUrl("/");
   const liteCalcUrl = toCanonicalUrl("/bgmi-lite");
-  const crumbCurrent = ui.breadcrumbName.trim() || "BGMI Lite Redeem Code";
+  const crumbCurrent = ui.breadcrumbName.trim() || "BGMI Air Redeem Code";
   const dated = page.codes.map((c) => applyAutoExpireRedeemCode(c));
   const live = dated.filter((c) => isRedeemCodePubliclyLive(c));
   const expired = sortExpiredRedeemCodesNewestFirst(
@@ -76,7 +76,7 @@ export async function BgmiLiteRedeemCodeLandingPage() {
 
   const breadcrumbLd = breadcrumbListSchema([
     { name: "Home", url: homeUrl },
-    { name: "BGMI Lite", url: liteCalcUrl },
+    { name: "BGMI Air", url: liteCalcUrl },
     { name: crumbCurrent, url: canonical },
   ]);
   const webPageLd = webPageSchema({
@@ -99,7 +99,7 @@ export async function BgmiLiteRedeemCodeLandingPage() {
             "@type": "ListItem",
             position: index + 1,
             name: item.title,
-            description: `BGMI Lite redeem code: ${item.code}`,
+            description: `BGMI Air redeem code: ${item.code}`,
           })),
         }
       : null;
@@ -116,7 +116,7 @@ export async function BgmiLiteRedeemCodeLandingPage() {
             <Link href="/">Home</Link>
           </li>
           <li>
-            <Link href="/bgmi-lite">BGMI Lite</Link>
+            <Link href="/bgmi-lite">BGMI Air</Link>
           </li>
           <li aria-current="page">{crumbCurrent}</li>
         </ol>

@@ -145,7 +145,7 @@ export const DEFAULT_BGMI_APK_PAGE: BgmiApkPageContent = {
     "Battlegrounds Mobile India APK",
     "BGMI official download",
     "BGMI Krafton",
-    "BGMI vs BGMI Lite",
+    "BGMI vs BGMI Air",
     "BGMI sensitivity",
   ],
   heroTitle: "BGMI APK",
@@ -154,7 +154,7 @@ export const DEFAULT_BGMI_APK_PAGE: BgmiApkPageContent = {
   pills: [
     { label: "Android · Google Play" },
     { label: "Publisher: Krafton" },
-    { label: "Full BGMI (not Lite)" },
+    { label: "Full BGMI (not BGMI Air)" },
   ],
   heroButtons: {
     playStore: {
@@ -222,7 +222,7 @@ export const DEFAULT_BGMI_APK_PAGE: BgmiApkPageContent = {
       points: [
         "Play Store installs usually fetch data packs for you — prefer that over random OBB links",
         "Sideload APK only with the matching OBB/version pair; mismatched packs cause black screen or stuck loading",
-        "Typical path: Android/obb/com.pubg.imobile/ — do not rename folders or mix Lite/full packs",
+        "Typical path: Android/obb/com.pubg.imobile/ — do not rename folders or mix BGMI Air/full packs",
         "Need free storage for main + data; clear junk before a big update",
         "Never pay for “OBB unlock” files or OTP links — we do not host OBB/APK on this site",
       ],
@@ -319,15 +319,15 @@ export const DEFAULT_BGMI_APK_PAGE: BgmiApkPageContent = {
       id: "vs-lite",
       badge: "Compare",
       icon: "fa-table",
-      title: "Full BGMI vs BGMI Lite",
+      title: "Full BGMI vs BGMI Air",
       summary:
-        "This page is for full BGMI. Lite is a separate lighter client for budget phones, with its own Play listing and calculator.",
+        "This page is for full BGMI. BGMI Air is a separate lighter client for budget phones, with its own Play listing and calculator.",
       points: [
         "Full BGMI: stronger phones, higher FPS modes",
-        "Lite: smaller install, entry-level hardware",
-        "Don’t mix Lite and full BGMI sensitivity codes",
+        "BGMI Air: smaller install, entry-level hardware",
+        "Don’t mix BGMI Air and full BGMI sensitivity codes",
       ],
-      ctaLabel: "Open BGMI Lite APK page",
+      ctaLabel: "Open BGMI Air APK page",
       ctaHref: "/bgmi-lite-apk",
     },
     {

@@ -81,7 +81,7 @@ export async function POST(request: NextRequest) {
     });
   } catch {
     return NextResponse.json(
-      { error: "Could not save PUBG Mobile Lite redeem codes page." },
+      { error: "Could not save PUBG Mobile Flash redeem codes page." },
       { status: 503 },
     );
   }

@@ -153,7 +153,7 @@ export default function AdminNewsCategoriesClient({ initialRows }: Props) {
         <div className="admin-field">
           <input
             name="label"
-            placeholder="Label (e.g. BGMI Lite)"
+            placeholder="Label (e.g. BGMI Air)"
             value={form.label}
             onChange={(e) => setForm((f) => ({ ...f, label: e.target.value }))}
             required

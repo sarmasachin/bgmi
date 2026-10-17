@@ -5,9 +5,9 @@ import { buildSocialMetadata } from "@/src/lib/socialMeta";
 import { getFfPageCards } from "@/src/server/repositories/homeCardsRepository";
 
 const fallbackTitle =
-  "BGMI Lite Sensitivity Calculator | Camera ADS Gyro for Low-End Phones";
+  "BGMI Air Sensitivity Calculator | Camera ADS Gyro for Low-End Phones";
 const fallbackDescription =
-  "Free BGMI Lite sensitivity calculator for 2GB–4GB phones. Get Camera, ADS, and Gyroscope settings tuned for 30–60 FPS entry devices.";
+  "Free BGMI Air sensitivity calculator for 2GB–4GB phones. Get Camera, ADS, and Gyroscope settings tuned for 30–60 FPS entry devices.";
 const canonical = toCanonicalUrl("/bgmi-lite");
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -17,12 +17,12 @@ export async function generateMetadata(): Promise<Metadata> {
   const keywords = cards.seo.keywords.length
     ? cards.seo.keywords
     : [
-        "BGMI Lite sensitivity calculator",
-        "BGMI Lite sensitivity settings",
-        "BGMI Lite 2GB RAM sensitivity",
-        "BGMI Lite gyroscope",
-        "BGMI Lite ADS sensitivity",
-        "BGMI Lite camera sensitivity",
+        "BGMI Air sensitivity calculator",
+        "BGMI Air sensitivity settings",
+        "BGMI Air 2GB RAM sensitivity",
+        "BGMI Air gyroscope",
+        "BGMI Air ADS sensitivity",
+        "BGMI Air camera sensitivity",
       ];
   return {
     title: { absolute: title },

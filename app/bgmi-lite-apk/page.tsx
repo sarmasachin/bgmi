@@ -33,7 +33,7 @@ export async function generateMetadata(): Promise<Metadata> {
       description: page.seoDescription,
       url: canonical,
       image: page.heroImage || "/icon.png?v=3",
-      imageAlt: page.heroImageAlt || "Sensitivity Settings — BGMI Lite APK guide",
+      imageAlt: page.heroImageAlt || "Sensitivity Settings — BGMI Air APK guide",
     }),
   };
 }

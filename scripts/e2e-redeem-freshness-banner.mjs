@@ -193,7 +193,7 @@ try {
       const page = litePage.cloneBgmiLiteRedeemPage();
       page.codes = [liveCode({ id: "e2e-lite-fresh", code: "E2ELITEFRESH1" })];
       await liteRepo.saveBgmiLiteRedeemPage(page);
-      paths.push(["/bgmi-lite-redeem-code", "E2ELITEFRESH1", "BGMI Lite"]);
+      paths.push(["/bgmi-lite-redeem-code", "E2ELITEFRESH1", "BGMI Air"]);
     }
     {
       const page = ffPage.cloneFreeFireRedeemPage();

@@ -142,10 +142,10 @@ export default async function GamesLayout({ children }: { children: React.ReactN
   });
   const bgmiLiteToolLd = toolAppReviewSchema({
     baseUrl,
-    name: bgmiLiteCards.hero.title.trim() || "BGMI Lite Sensitivity Calculator",
+    name: bgmiLiteCards.hero.title.trim() || "BGMI Air Sensitivity Calculator",
     description:
       bgmiLiteCards.seo.description.trim() ||
-      "Free BGMI Lite sensitivity calculator for 2GB–4GB phones. Camera, ADS, and Gyroscope settings for 30–60 FPS devices.",
+      "Free BGMI Air sensitivity calculator for 2GB–4GB phones. Camera, ADS, and Gyroscope settings for 30–60 FPS devices.",
     url: toCanonicalUrl("/bgmi-lite"),
     reviews: mapReviews(bgmiLiteTestimonials),
   });
@@ -160,10 +160,10 @@ export default async function GamesLayout({ children }: { children: React.ReactN
   });
   const pubgMobileLiteToolLd = toolAppReviewSchema({
     baseUrl,
-    name: pubgMobileLiteCards.hero.title.trim() || "PUBG Mobile Lite Sensitivity Calculator",
+    name: pubgMobileLiteCards.hero.title.trim() || "PUBG Mobile Flash Sensitivity Calculator",
     description:
       pubgMobileLiteCards.seo.description.trim() ||
-      "Free PUBG Mobile Lite sensitivity calculator for 2GB–4GB phones. Camera, ADS, and Gyroscope settings for 30–60 FPS devices.",
+      "Free PUBG Mobile Flash sensitivity calculator for 2GB–4GB phones. Camera, ADS, and Gyroscope settings for 30–60 FPS devices.",
     url: toCanonicalUrl("/pubg-mobile-lite"),
     reviews: mapReviews(pubgMobileLiteTestimonials),
   });

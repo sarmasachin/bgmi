@@ -33,7 +33,7 @@ export async function generateMetadata(): Promise<Metadata> {
       description: page.seoDescription,
       url: canonical,
       image: "/icon.png?v=3",
-      imageAlt: page.title || "PUBG Mobile Lite stylish name generator",
+      imageAlt: page.title || "PUBG Mobile Flash stylish name generator",
     }),
   };
 }

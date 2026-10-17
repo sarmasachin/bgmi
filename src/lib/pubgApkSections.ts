@@ -30,7 +30,7 @@ export const PUBG_APK_FACTS: PubgApkFactsBlock = {
     { label: "Official install", value: "Google Play Store listing" },
     { label: "APK on this site", value: "Not hosted here — button is admin-controlled" },
     { label: "Sensitivity", value: "Use the PUBG Mobile calculator after install" },
-    { label: "Lighter client", value: "PUBG Mobile Lite is a separate page / listing" },
+    { label: "Lighter client", value: "PUBG Mobile Flash is a separate page / listing" },
   ],
   note:
     "Always confirm the publisher name on Google Play. This site does not host APK files. Admin can hide or update the Play Store and APK buttons at any time.",

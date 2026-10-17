@@ -1,7 +1,7 @@
-/** PUBG Mobile Lite calculator path + family menu helpers. */
+/** PUBG Mobile Flash calculator path + family menu helpers. */
 
 export const PUBG_MOBILE_LITE_PATH = "/pubg-mobile-lite";
-export const PUBG_MOBILE_LITE_LABEL = "PUBG Mobile Lite";
+export const PUBG_MOBILE_LITE_LABEL = "PUBG Mobile Flash";
 
 /** Lite-family routes (header menu on these pages). */
 export const PUBG_MOBILE_LITE_APK_PATH = "/pubg-mobile-lite-apk";
@@ -29,13 +29,13 @@ export function isPubgMobileLiteFamilyPath(pathname: string): boolean {
 /** Header menu on /pubg-mobile-lite (and related Lite pages) — only these links. */
 export const PUBG_MOBILE_LITE_NAV: Array<{ label: string; href: string }> = [
   { label: "Home", href: PUBG_MOBILE_LITE_PATH },
-  { label: "PUBG Lite APK", href: PUBG_MOBILE_LITE_APK_PATH },
+  { label: "PUBG Flash APK", href: PUBG_MOBILE_LITE_APK_PATH },
   { label: "Redeem Code", href: PUBG_MOBILE_LITE_REDEEM_CODE_PATH },
-  { label: "PUBG Lite Name", href: PUBG_MOBILE_LITE_NAME_PATH },
+  { label: "PUBG Flash Name", href: PUBG_MOBILE_LITE_NAME_PATH },
   { label: "News", href: "/news/pubg-mobile-lite" },
 ];
 
-/** Merge PUBG Mobile Lite nav link if missing from saved settings. */
+/** Merge PUBG Mobile Flash nav link if missing from saved settings. */
 export function ensurePubgMobileLiteNavigation(
   links: Array<{ label: string; href: string }>,
 ): Array<{ label: string; href: string }> {
@@ -44,7 +44,7 @@ export function ensurePubgMobileLiteNavigation(
     (row) =>
       row.href === PUBG_MOBILE_LITE_PATH ||
       row.href === PUBG_MOBILE_LITE_PATH.replace(/^\//, "") ||
-      /pubg\s*mobile\s*lite/i.test(row.label),
+      /pubg\s*mobile\s*(lite|flash)/i.test(row.label),
   );
   if (has) return out;
 

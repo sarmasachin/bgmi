@@ -37,7 +37,7 @@ export function coerceCloneGame(value: unknown): CloneGame {
 }
 
 export function cloneGameLabel(game: CloneGame) {
-  if (game === "bgmi-lite") return "BGMI Lite";
+  if (game === "bgmi-lite") return "BGMI Air";
   if (game === "pubg") return "PUBG Mobile";
   if (game === "pubg-mobile-codes") return "PUBG Mobile Code";
   if (game === "freefire") return "Free Fire";

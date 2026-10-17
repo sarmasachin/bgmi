@@ -188,12 +188,12 @@ export const ADMIN_PERMISSION_MODULES: ReadonlyArray<{
   },
   {
     id: "bgmiLiteRedeem",
-    label: "BGMI Lite Redeem",
+    label: "BGMI Air Redeem",
     permissions: ["bgmiLiteRedeem.view", "bgmiLiteRedeem.edit"],
   },
   {
     id: "pubgMobileLiteRedeem",
-    label: "PUBG Mobile Lite Redeem",
+    label: "PUBG Mobile Flash Redeem",
     permissions: ["pubgMobileLiteRedeem.view", "pubgMobileLiteRedeem.edit"],
   },
   {
@@ -208,12 +208,12 @@ export const ADMIN_PERMISSION_MODULES: ReadonlyArray<{
   },
   {
     id: "bgmiLiteStylish",
-    label: "BGMI Lite Stylish Name",
+    label: "BGMI Air Stylish Name",
     permissions: ["bgmiLiteStylish.view", "bgmiLiteStylish.edit"],
   },
   {
     id: "bgmiLiteApk",
-    label: "BGMI Lite APK",
+    label: "BGMI Air APK",
     permissions: ["bgmiLiteApk.view", "bgmiLiteApk.edit"],
   },
   {
@@ -238,7 +238,7 @@ export const ADMIN_PERMISSION_MODULES: ReadonlyArray<{
   },
   {
     id: "pubgMobileLiteName",
-    label: "PUBG Mobile Lite Name",
+    label: "PUBG Mobile Flash Name",
     permissions: ["pubgMobileLiteName.view", "pubgMobileLiteName.edit"],
   },
   {

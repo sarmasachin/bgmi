@@ -35,9 +35,9 @@ function main() {
     ["Free Fire", FREE_FIRE_FAMILY_NAV, newsCategoryListingPath("free-fire")],
     ["Free Fire Max", FREE_FIRE_MAX_FAMILY_NAV, newsCategoryListingPath("ff-max")],
     ["PUBG Mobile", PUBG_FAMILY_NAV, newsCategoryListingPath("pubg")],
-    ["PUBG Mobile Lite", PUBG_MOBILE_LITE_NAV, newsCategoryListingPath("pubg-mobile-lite")],
+    ["PUBG Mobile Flash", PUBG_MOBILE_LITE_NAV, newsCategoryListingPath("pubg-mobile-lite")],
     ["BGMI", BGMI_FAMILY_NAV, newsCategoryListingPath("bgmi")],
-    ["BGMI Lite", BGMI_LITE_NAV, newsCategoryListingPath("bgmi-lite")],
+    ["BGMI Air", BGMI_LITE_NAV, newsCategoryListingPath("bgmi-lite")],
   ];
   for (const [name, nav, href] of expected) {
     assert(newsHref(nav) === href, `${name} News should be ${href}, got ${newsHref(nav)}`);
@@ -47,8 +47,8 @@ function main() {
   const header = Object.fromEntries(SITE_GAME_NAV.map((item) => [item.id, item]));
   assert(newsHref(header.pubg.children) === "/news/pubg", "header PUBG submenu News");
   assert(newsHref(header.bgmi.children) === "/news/bgmi", "header BGMI submenu News");
-  assert(newsHref(header["bgmi-lite"].children) === "/news/bgmi-lite", "header BGMI Lite submenu News");
-  assert(newsHref(header["pubg-lite"].children) === "/news/pubg-mobile-lite", "header PUBG Lite submenu News");
+  assert(newsHref(header["bgmi-lite"].children) === "/news/bgmi-lite", "header BGMI Air submenu News");
+  assert(newsHref(header["pubg-lite"].children) === "/news/pubg-mobile-lite", "header PUBG Flash submenu News");
   assert(newsHref(header["free-fire"].children) === "/news/free-fire", "header FF submenu News");
   assert(newsHref(header["free-fire-max"].children) === "/news/ff-max", "header FF Max submenu News");
 

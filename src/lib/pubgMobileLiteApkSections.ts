@@ -19,10 +19,10 @@ export type PubgMobileLiteApkFactsBlock = {
 export const PUBG_MOBILE_LITE_APK_INSTALL: PubgMobileLiteApkInstallBlock = {
   title: "How to Pre-Register",
   intro:
-    "PUBG Mobile Lite pre-registration / install should be on Google Play (Android). Use only the official listing — never random APK sites:",
+    "PUBG Mobile Flash pre-registration / install should be on Google Play (Android). Use only the official listing — never random APK sites:",
   steps: [
     "Open the Google Play Store on your Android phone.",
-    'Search for "PUBG Mobile Lite" on the official listing.',
+    'Search for "PUBG Mobile Flash" on the official listing.',
     'Tap "Pre-register" (or Install when the game is live).',
     "Optionally enable auto-install so Play can download when storage allows.",
   ],
@@ -34,15 +34,15 @@ export const PUBG_MOBILE_LITE_APK_FACTS: PubgMobileLiteApkFactsBlock = {
   title: "What We Know So Far",
   rows: [
     { label: "Status", value: "Countdown · confirm on Google Play" },
-    { label: "Audience", value: "Budget / older Android phones (Lite-class)" },
+    { label: "Audience", value: "Budget / older Android phones (PUBG Mobile Flash)" },
     {
       label: "Countdown on this page",
-      value: "12 November 2026 (IST) — same target as BGMI Lite",
+      value: "12 November 2026 (IST) — same target as BGMI Air",
     },
     { label: "Install path", value: "Android · Google Play (official only)" },
     { label: "Developer", value: "PUBG / Krafton (confirm on store)" },
     { label: "Sensitivity", value: "Use /pubg-mobile-lite calculator on this site" },
   ],
   note:
-    "The 12 November 2026 date is this site’s shared Lite countdown target (same as BGMI Lite). Exact store availability can change — always confirm on Google Play before you install.",
+    "The 12 November 2026 date is this site’s shared PUBG Mobile Flash countdown target (same as BGMI Air). Exact store availability can change — always confirm on Google Play before you install.",
 };

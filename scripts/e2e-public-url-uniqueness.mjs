@@ -73,10 +73,10 @@ function collectStaticTopSlugs() {
 
 function helperSuite() {
   assert(formatCategorySlugDraft("bgmi ") === "bgmi-", "space after word must stay as trailing hyphen");
-  assert(formatCategorySlugDraft("BGMI Lite") === "bgmi-lite", "spaces become hyphens");
+  assert(formatCategorySlugDraft("BGMI Air") === "bgmi-air", "spaces become hyphens");
   assert(formatCategorySlugDraft("bgmi-") === "bgmi-", "trailing hyphen kept while typing");
   assert(normalizeCategorySlugInput("bgmi-") === "bgmi", "submit strips trailing hyphen");
-  assert(normalizeCategorySlugInput(" BGMI Lite ") === "bgmi-lite", "submit compact slug");
+  assert(normalizeCategorySlugInput(" BGMI Air ") === "bgmi-air", "submit compact slug");
   assert(newsCategoryListingPath("bgmi") === "/news/bgmi", "calculator hub stays under /news");
   assert(newsCategoryListingPath("guides") === "/guides", "custom category uses /{slug}");
   assert(categoryListingOccupiesTopSlug("bgmi") === false, "bgmi listing does not steal /bgmi");

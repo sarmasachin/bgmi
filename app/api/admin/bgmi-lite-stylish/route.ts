@@ -81,7 +81,7 @@ export async function POST(request: NextRequest) {
     });
   } catch {
     return NextResponse.json(
-      { error: "Could not save BGMI Lite stylish name page." },
+      { error: "Could not save BGMI Air stylish name page." },
       { status: 503 },
     );
   }

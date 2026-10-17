@@ -16,7 +16,7 @@ import { listApprovedPageComments } from "@/src/server/repositories/pageComments
 import { getBgmiLiteStylishPage } from "@/src/server/repositories/bgmiLiteStylishNameRepository";
 import { getSettings } from "@/src/server/repositories/settingsRepository";
 
-/** BGMI Lite stylish name — mobile-first studio + guide (DB-backed copy). */
+/** BGMI Air stylish name — mobile-first studio + guide (DB-backed copy). */
 export async function BgmiLiteStylishNameLandingPage() {
   const [settings, page, pageComments] = await Promise.all([
     getSettings(),
@@ -26,7 +26,7 @@ export async function BgmiLiteStylishNameLandingPage() {
   const canonical = toCanonicalUrl(BGMI_LITE_STYLISH_NAME_PATH);
   const homeUrl = toCanonicalUrl("/");
   const liteCalcUrl = toCanonicalUrl("/bgmi-lite");
-  const crumbCurrent = (page.title || "BGMI Lite Stylish Name").trim();
+  const crumbCurrent = (page.title || "BGMI Air Stylish Name").trim();
   const faqItems = page.faqs.map((f) => ({
     id: f.id,
     question: f.question,
@@ -35,7 +35,7 @@ export async function BgmiLiteStylishNameLandingPage() {
   const faqLd = faqSchema(faqItems);
   const breadcrumbLd = breadcrumbListSchema([
     { name: "Home", url: homeUrl },
-    { name: "BGMI Lite", url: liteCalcUrl },
+    { name: "BGMI Air", url: liteCalcUrl },
     { name: crumbCurrent, url: canonical },
   ]);
   const webPageLd = webPageSchema({
@@ -56,7 +56,7 @@ export async function BgmiLiteStylishNameLandingPage() {
             <Link href="/">Home</Link>
           </li>
           <li>
-            <Link href="/bgmi-lite">BGMI Lite</Link>
+            <Link href="/bgmi-lite">BGMI Air</Link>
           </li>
           <li aria-current="page">{crumbCurrent}</li>
         </ol>

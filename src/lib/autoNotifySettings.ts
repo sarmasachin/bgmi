@@ -1,13 +1,13 @@
 export type AutoNotifySettings = {
   newsOnPublish: boolean;
   pagesOnPublish: boolean;
-  /** Live redeem codes changed on FF / FF Max / BGMI Lite / PUBG Lite. */
+  /** Live redeem codes changed on FF / FF Max / BGMI Air / PUBG Flash. */
   redeemOnSave: boolean;
   /** Advance Server countdown / APK details changed. */
   advanceServerOnSave: boolean;
   /** Stylish name lists / name-page copy changed. */
   stylishNamesOnSave: boolean;
-  /** BGMI Lite APK countdown / launch details changed. */
+  /** BGMI Air APK countdown / launch details changed. */
   liteApkOnSave: boolean;
 };
 

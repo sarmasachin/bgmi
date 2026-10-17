@@ -33,7 +33,7 @@ export async function generateMetadata(): Promise<Metadata> {
       description: page.seoDescription,
       url: canonical,
       image: "/icon.png?v=3",
-      imageAlt: page.title || "BGMI Lite stylish name generator",
+      imageAlt: page.title || "BGMI Air stylish name generator",
     }),
   };
 }

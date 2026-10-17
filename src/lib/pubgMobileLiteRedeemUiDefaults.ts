@@ -43,12 +43,12 @@ export const DEFAULT_PUBG_MOBILE_LITE_REDEEM_UI: PubgMobileLiteRedeemUiLabels = 
   emptyExpired: "No expired codes in the archive yet.",
   freshnessIdleTitle: "No new codes today",
   freshnessIdleText:
-    "Fresh PUBG Mobile Lite redeem codes were not published today (IST). Check back later — older live codes below may still work until they expire.",
+    "Fresh PUBG Mobile Flash redeem codes were not published today (IST). Check back later — older live codes below may still work until they expire.",
   updatedLabelPrefix: "Updated",
-  faqTitle: "PUBG Mobile Lite Redeem Codes FAQ",
+  faqTitle: "PUBG Mobile Flash Redeem Codes FAQ",
   breadcrumbName: "Redeem Code",
   socialImage: "/icon.png?v=3",
-  socialImageAlt: "Sensitivity Settings — PUBG Mobile Lite redeem codes",
+  socialImageAlt: "Sensitivity Settings — PUBG Mobile Flash redeem codes",
 };
 
 export function clonePubgMobileLiteRedeemUi(
