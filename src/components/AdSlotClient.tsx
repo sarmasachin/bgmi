@@ -13,13 +13,61 @@ declare global {
   }
 }
 
+function isAdReady(ins: HTMLElement): boolean {
+  const status = (ins.getAttribute("data-ad-status") || "").toLowerCase();
+  if (status === "filled" || status === "unfill-optimized") return true;
+  return Boolean(ins.querySelector("iframe"));
+}
+
+/** Actual creative height — never the tall empty reserve AdSense leaves behind. */
+function measureCreativeHeight(ins: HTMLElement): number {
+  const iframe = ins.querySelector("iframe");
+  if (iframe instanceof HTMLElement && iframe.offsetHeight > 20) {
+    return Math.ceil(iframe.offsetHeight);
+  }
+
+  let childMax = 0;
+  for (const child of Array.from(ins.children)) {
+    if (!(child instanceof HTMLElement)) continue;
+    if (child.tagName === "SCRIPT") continue;
+    childMax = Math.max(childMax, child.offsetHeight, child.scrollHeight);
+  }
+  if (childMax > 20) return Math.ceil(childMax);
+
+  return 0;
+}
+
+function fitWrapToAd(el: HTMLElement, ins: HTMLElement) {
+  if (!isAdReady(ins)) return;
+
+  // Drop AdSense reserved min-height so we can hug the creative.
+  ins.style.minHeight = "0px";
+  el.style.minHeight = "0px";
+
+  const creativeH = measureCreativeHeight(ins);
+  if (creativeH < 20) return;
+
+  const h = `${creativeH}px`;
+  if (el.style.height === h && ins.style.height === h) return;
+
+  ins.style.height = h;
+  ins.style.maxHeight = h;
+  el.style.height = h;
+  el.style.maxHeight = h;
+  el.style.overflow = "hidden";
+  el.style.display = "block";
+
+  const shell = el.closest(".ff-home-ad, .ff-public-ad");
+  if (shell instanceof HTMLElement) {
+    shell.style.minHeight = "0px";
+    shell.style.height = "auto";
+    shell.style.display = "block";
+  }
+}
+
 /**
  * Injects ad HTML and re-executes inline <script> tags.
- * - Strips duplicate adsbygoogle.js (already in root layout).
- * - Delayed push so React Strict Mode remount does not double-push / flash-hide.
- * - Never clips creatives with % height caps (that caused half-ads).
- * - Never hides slots on AdSense "unfilled" (that caused show-then-hide).
- * - Only trims clear white space when the iframe is shorter than the reserved box.
+ * Wrap width = 100% (responsive). Height hugs the creative — no tall empty div.
  */
 export function AdSlotClient({ html, slotKey }: Props) {
   const ref = useRef<HTMLDivElement>(null);
@@ -30,12 +78,23 @@ export function AdSlotClient({ html, slotKey }: Props) {
     let cancelled = false;
 
     el.style.display = "";
+    el.style.height = "";
     el.style.maxHeight = "";
+    el.style.minHeight = "";
     el.style.overflow = "";
     el.innerHTML = html;
 
     el.querySelectorAll("ins.adsbygoogle").forEach((node) => {
       if (!(node instanceof HTMLElement)) return;
+      // Responsive unit: full width of parent, AdSense picks height.
+      node.setAttribute("data-full-width-responsive", "true");
+      const format = (node.getAttribute("data-ad-format") || "").toLowerCase();
+      if (!format || format === "rectangle") {
+        node.setAttribute("data-ad-format", "auto");
+      }
+      node.style.display = "block";
+      node.style.width = "100%";
+      node.style.maxWidth = "100%";
       node.style.height = "";
       node.style.minHeight = "";
       node.style.maxHeight = "";
@@ -55,7 +114,6 @@ export function AdSlotClient({ html, slotKey }: Props) {
       oldScript.replaceWith(s);
     });
 
-    // Defer push: Strict Mode cleanup cancels the first scheduled push.
     const pushTimer = window.setTimeout(() => {
       if (cancelled) return;
       const pending = el.querySelectorAll("ins.adsbygoogle:not([data-adsbygoogle-status])");
@@ -78,31 +136,30 @@ export function AdSlotClient({ html, slotKey }: Props) {
       };
     }
 
-    const trimWhiteGapOnly = () => {
+    const fit = () => {
       if (cancelled) return;
-      if (ins.getAttribute("data-ad-status") !== "filled") return;
-      const iframe = ins.querySelector("iframe");
-      const iframeH = iframe instanceof HTMLElement ? iframe.offsetHeight : 0;
-      const h = ins.offsetHeight;
-      if (iframeH > 40 && h > iframeH + 24) {
-        ins.style.height = `${iframeH}px`;
-        ins.style.maxHeight = `${iframeH}px`;
-        el.style.maxHeight = `${iframeH}px`;
-        el.style.overflow = "hidden";
-      }
+      fitWrapToAd(el, ins);
     };
 
-    const mo = new MutationObserver(trimWhiteGapOnly);
-    mo.observe(ins, { attributes: true, attributeFilter: ["style", "data-ad-status"] });
-    const t1 = window.setTimeout(trimWhiteGapOnly, 1200);
-    const t2 = window.setTimeout(trimWhiteGapOnly, 3500);
+    const mo = new MutationObserver(fit);
+    mo.observe(ins, {
+      attributes: true,
+      attributeFilter: ["style", "data-ad-status", "data-adsbygoogle-status"],
+      childList: true,
+      subtree: true,
+    });
+
+    const ro = typeof ResizeObserver !== "undefined" ? new ResizeObserver(fit) : null;
+    ro?.observe(ins);
+
+    const times = [400, 1000, 2000, 4000, 7000].map((ms) => window.setTimeout(fit, ms));
 
     return () => {
       cancelled = true;
       mo.disconnect();
+      ro?.disconnect();
       window.clearTimeout(pushTimer);
-      window.clearTimeout(t1);
-      window.clearTimeout(t2);
+      for (const t of times) window.clearTimeout(t);
     };
   }, [html, slotKey]);
 
@@ -116,17 +173,18 @@ export function AdSlotClient({ html, slotKey }: Props) {
       />
       <style>{`
         .ad-slot.ad-slot--flush {
+          display: block;
           width: 100%;
           max-width: 100%;
           min-width: 0;
+          min-height: 0;
+          height: auto;
           box-sizing: border-box;
           background: transparent !important;
           border: 0 !important;
           border-radius: 0 !important;
           outline: 0 !important;
           box-shadow: none !important;
-          color: inherit;
-          text-align: left;
           padding: 0 !important;
           margin: 0 !important;
         }
@@ -135,13 +193,22 @@ export function AdSlotClient({ html, slotKey }: Props) {
         }
         .ad-slot.ad-slot--flush ins.adsbygoogle {
           display: block;
-          width: 100%;
-          box-sizing: border-box;
+          width: 100% !important;
           max-width: 100%;
+          min-width: 0;
+          min-height: 0;
+          box-sizing: border-box;
+          margin: 0 !important;
+          padding: 0 !important;
+          background: transparent !important;
         }
         .ad-slot.ad-slot--flush iframe {
           display: block;
+          width: 100% !important;
           max-width: 100%;
+          border: 0;
+          margin: 0;
+          vertical-align: bottom;
         }
       `}</style>
     </>

@@ -5,7 +5,7 @@ type Props = {
   slotKey: string;
 };
 
-/** Server: loads enabled ad code from DB (or mock) by placement key; client injects HTML + scripts. */
+/** Server: loads enabled ad code from DB; client injects HTML + scripts. */
 export async function AdSlot({ slotKey }: Props) {
   const slot = await getPublicAdSlot(slotKey);
   if (!slot) return null;
@@ -14,29 +14,17 @@ export async function AdSlot({ slotKey }: Props) {
       <AdSlotClient html={slot.html} slotKey={slotKey} />
       <style>{`
         .ff-public-ad {
+          display: block;
           width: 100%;
           max-width: 100%;
+          min-height: 0;
+          height: auto;
           margin: 12px 0;
+          padding: 0;
           box-sizing: border-box;
-          min-width: 0;
-        }
-        .ff-public-ad .ad-slot {
-          width: 100%;
-          max-width: 100%;
-          min-width: 0;
-          box-sizing: border-box;
-          background: transparent !important;
-          border: 0 !important;
-          border-radius: 0 !important;
-          outline: 0 !important;
-          box-shadow: none !important;
-          color: inherit;
-          text-align: left;
-          padding: 0 !important;
-          margin: 0 !important;
-        }
-        .ff-public-ad .ad-slot:empty {
-          display: none;
+          background: transparent;
+          border: 0;
+          overflow: hidden;
         }
       `}</style>
     </div>
