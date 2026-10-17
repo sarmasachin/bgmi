@@ -13,14 +13,13 @@ declare global {
   }
 }
 
-const MOBILE_MAX = 720;
-
 /**
  * Injects ad HTML and re-executes inline <script> tags.
  * - Strips duplicate adsbygoogle.js (already in root layout).
- * - On phone widths, prefers horizontal format so Auto+FWR does not reserve a
- *   square (100vw × 100vw) that leaves white space under short multipled creatives.
- * - After fill, clamps wrap height to the iframe when AdSense reserved a taller box.
+ * - Delayed push so React Strict Mode remount does not double-push / flash-hide.
+ * - Never clips creatives with % height caps (that caused half-ads).
+ * - Never hides slots on AdSense "unfilled" (that caused show-then-hide).
+ * - Only trims clear white space when the iframe is shorter than the reserved box.
  */
 export function AdSlotClient({ html, slotKey }: Props) {
   const ref = useRef<HTMLDivElement>(null);
@@ -28,20 +27,15 @@ export function AdSlotClient({ html, slotKey }: Props) {
   useEffect(() => {
     const el = ref.current;
     if (!el) return;
+    let cancelled = false;
+
+    el.style.display = "";
     el.style.maxHeight = "";
     el.style.overflow = "";
     el.innerHTML = html;
 
-    const mobile = window.innerWidth <= MOBILE_MAX;
     el.querySelectorAll("ins.adsbygoogle").forEach((node) => {
       if (!(node instanceof HTMLElement)) return;
-      if (mobile) {
-        const format = (node.getAttribute("data-ad-format") || "").toLowerCase();
-        if (format === "auto" || format === "") {
-          node.setAttribute("data-ad-format", "horizontal");
-        }
-      }
-      // Clear stale inline square height before AdSense runs.
       node.style.height = "";
       node.style.minHeight = "";
       node.style.maxHeight = "";
@@ -61,8 +55,11 @@ export function AdSlotClient({ html, slotKey }: Props) {
       oldScript.replaceWith(s);
     });
 
-    const pending = el.querySelectorAll("ins.adsbygoogle:not([data-adsbygoogle-status])");
-    if (pending.length) {
+    // Defer push: Strict Mode cleanup cancels the first scheduled push.
+    const pushTimer = window.setTimeout(() => {
+      if (cancelled) return;
+      const pending = el.querySelectorAll("ins.adsbygoogle:not([data-adsbygoogle-status])");
+      if (!pending.length) return;
       window.adsbygoogle = window.adsbygoogle || [];
       pending.forEach(() => {
         try {
@@ -71,53 +68,43 @@ export function AdSlotClient({ html, slotKey }: Props) {
           /* already processed */
         }
       });
-    }
+    }, 50);
 
     const ins = el.querySelector("ins.adsbygoogle");
-    if (!(ins instanceof HTMLElement)) return;
+    if (!(ins instanceof HTMLElement)) {
+      return () => {
+        cancelled = true;
+        window.clearTimeout(pushTimer);
+      };
+    }
 
-    const clampFilled = () => {
-      const status = ins.getAttribute("data-ad-status");
-      if (status === "unfilled") {
-        el.style.display = "none";
-        return;
-      }
-      if (status !== "filled") return;
-
+    const trimWhiteGapOnly = () => {
+      if (cancelled) return;
+      if (ins.getAttribute("data-ad-status") !== "filled") return;
       const iframe = ins.querySelector("iframe");
       const iframeH = iframe instanceof HTMLElement ? iframe.offsetHeight : 0;
       const h = ins.offsetHeight;
-      const w = Math.max(ins.offsetWidth, 1);
-
-      // AdSense reserved taller than the creative iframe → trim white gap.
-      if (iframeH > 40 && h > iframeH + 20) {
+      if (iframeH > 40 && h > iframeH + 24) {
         ins.style.height = `${iframeH}px`;
         ins.style.maxHeight = `${iframeH}px`;
         el.style.maxHeight = `${iframeH}px`;
         el.style.overflow = "hidden";
-        return;
-      }
-
-      // Mobile near-square reserve with no usable iframe height yet.
-      if (mobile && h >= w * 0.85 && h > 260) {
-        const cap = Math.min(280, Math.round(w * 0.4));
-        el.style.maxHeight = `${cap}px`;
-        el.style.overflow = "hidden";
       }
     };
 
-    const mo = new MutationObserver(clampFilled);
+    const mo = new MutationObserver(trimWhiteGapOnly);
     mo.observe(ins, { attributes: true, attributeFilter: ["style", "data-ad-status"] });
-    const t1 = window.setTimeout(clampFilled, 800);
-    const t2 = window.setTimeout(clampFilled, 2000);
-    const t3 = window.setTimeout(clampFilled, 4000);
+    const t1 = window.setTimeout(trimWhiteGapOnly, 1200);
+    const t2 = window.setTimeout(trimWhiteGapOnly, 3500);
+
     return () => {
+      cancelled = true;
       mo.disconnect();
+      window.clearTimeout(pushTimer);
       window.clearTimeout(t1);
       window.clearTimeout(t2);
-      window.clearTimeout(t3);
     };
-  }, [html]);
+  }, [html, slotKey]);
 
   return (
     <>
@@ -148,6 +135,7 @@ export function AdSlotClient({ html, slotKey }: Props) {
         }
         .ad-slot.ad-slot--flush ins.adsbygoogle {
           display: block;
+          width: 100%;
           box-sizing: border-box;
           max-width: 100%;
         }
