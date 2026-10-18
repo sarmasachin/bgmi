@@ -1,3 +1,4 @@
+import type { ApkHeroButton, ApkHeroCountdown } from "@/src/lib/apkHeroCta";
 import { BGMI_LITE_APK_PATH } from "@/src/lib/resolveNavForPath";
 import {
   BGMI_LITE_APK_ARTICLE_HTML,
@@ -11,6 +12,9 @@ import {
 } from "@/src/lib/bgmiLiteBetaApkSections";
 
 export const BGMI_LITE_APK_PAGE_KEY = "bgmi-lite-apk";
+
+export type BgmiLiteApkHeroButton = ApkHeroButton;
+export type BgmiLiteApkCountdown = ApkHeroCountdown;
 
 /** @deprecated Use BGMI_LITE_APK_PATH */
 export const BGMI_LITE_BETA_APK_PATH = BGMI_LITE_APK_PATH;
@@ -41,12 +45,11 @@ export type BgmiLiteBetaApkPageContent = {
   heroTitle: string;
   subtitleEn: string;
   pills: Array<{ label: string }>;
-  countdown: {
-    label: string;
-    targetIso: string;
-    dateText: string;
-    liveMessage: string;
+  heroButtons: {
+    playStore: BgmiLiteApkHeroButton;
+    apk: BgmiLiteApkHeroButton;
   };
+  countdown: BgmiLiteApkCountdown;
   heroImage: string;
   heroImageAlt: string;
   cards: BgmiLiteBetaApkCard[];
@@ -61,6 +64,7 @@ export type BgmiLiteBetaApkPageContent = {
 export const BGMI_LITE_APK_PAGE_SECTIONS = [
   { id: "seo", label: "SEO" },
   { id: "hero", label: "Hero" },
+  { id: "heroButtons", label: "Hero buttons" },
   { id: "countdown", label: "Countdown" },
   { id: "cards", label: "Content cards" },
   { id: "preRegister", label: "Pre-register" },
@@ -99,7 +103,20 @@ export const DEFAULT_BGMI_LITE_APK_PAGE: BgmiLiteBetaApkPageContent = {
     { label: "Android · Google Play" },
     { label: "~1GB first download" },
   ],
+  heroButtons: {
+    playStore: {
+      label: "Play Store",
+      href: "",
+      visible: true,
+    },
+    apk: {
+      label: "APK",
+      href: "",
+      visible: false,
+    },
+  },
   countdown: {
+    visible: true,
     label: "Countdown to BGMI Air launch (12 November 2026)",
     targetIso: BGMI_LITE_LAUNCH_TARGET_ISO,
     dateText:

@@ -1,14 +1,25 @@
+import type { ApkHeroButton, ApkHeroCountdown } from "@/src/lib/apkHeroCta";
 import { BGMI_LITE_LAUNCH_TARGET_ISO } from "@/src/lib/bgmiLiteBetaApkPage";
 import { PUBG_MOBILE_LITE_APK_PATH } from "@/src/lib/pubgMobileLite";
 import {
   PUBG_MOBILE_LITE_APK_ARTICLE_HTML,
   PUBG_MOBILE_LITE_APK_FAQS,
 } from "@/src/lib/pubgMobileLiteApkArticle";
+import {
+  PUBG_MOBILE_LITE_APK_FACTS,
+  PUBG_MOBILE_LITE_APK_INSTALL,
+  type PubgMobileLiteApkFactsBlock,
+  type PubgMobileLiteApkInstallBlock,
+} from "@/src/lib/pubgMobileLiteApkSections";
 
 export const PUBG_MOBILE_LITE_APK_PAGE_KEY = "pubg-mobile-lite-apk";
 
 /** Same site-tracked launch target as BGMI Air APK (IST). */
 export const PUBG_MOBILE_LITE_LAUNCH_TARGET_ISO = BGMI_LITE_LAUNCH_TARGET_ISO;
+
+export type PubgMobileLiteApkHeroButton = ApkHeroButton;
+export type PubgMobileLiteApkCountdown = ApkHeroCountdown;
+export type { PubgMobileLiteApkFactsBlock, PubgMobileLiteApkInstallBlock };
 
 export type PubgMobileLiteApkCard = {
   id: string;
@@ -29,19 +40,34 @@ export type PubgMobileLiteApkPageContent = {
   heroTitle: string;
   subtitleEn: string;
   pills: Array<{ label: string }>;
-  countdown: {
-    label: string;
-    targetIso: string;
-    dateText: string;
-    liveMessage: string;
+  heroButtons: {
+    playStore: PubgMobileLiteApkHeroButton;
+    apk: PubgMobileLiteApkHeroButton;
   };
+  countdown: PubgMobileLiteApkCountdown;
   heroImage: string;
   heroImageAlt: string;
   cards: PubgMobileLiteApkCard[];
+  /** Pre-register / install steps block (admin-editable). */
+  install: PubgMobileLiteApkInstallBlock;
+  /** Facts table block (admin-editable). */
+  facts: PubgMobileLiteApkFactsBlock;
   articleHtml: string;
   faqs: Array<{ id: string; question: string; answer: string }>;
   commentsLead: string;
 };
+
+export const PUBG_MOBILE_LITE_APK_PAGE_SECTIONS = [
+  { id: "seo", label: "SEO" },
+  { id: "hero", label: "Hero" },
+  { id: "heroButtons", label: "Hero buttons" },
+  { id: "countdown", label: "Countdown" },
+  { id: "install", label: "Pre-register / install" },
+  { id: "facts", label: "Facts table" },
+] as const;
+
+export type PubgMobileLiteApkPageSectionId =
+  (typeof PUBG_MOBILE_LITE_APK_PAGE_SECTIONS)[number]["id"];
 
 /**
  * Fan-made PUBG Mobile Flash APK page — same layout/timer as BGMI Air APK.
@@ -71,7 +97,20 @@ export const DEFAULT_PUBG_MOBILE_LITE_APK_PAGE: PubgMobileLiteApkPageContent = {
     { label: "Android · Google Play" },
     { label: "No APK hosting" },
   ],
+  heroButtons: {
+    playStore: {
+      label: "Play Store",
+      href: "",
+      visible: true,
+    },
+    apk: {
+      label: "APK",
+      href: "",
+      visible: false,
+    },
+  },
   countdown: {
+    visible: true,
     label: "Countdown to PUBG Mobile Flash launch (12 November 2026)",
     targetIso: PUBG_MOBILE_LITE_LAUNCH_TARGET_ISO,
     dateText:
@@ -166,6 +205,18 @@ export const DEFAULT_PUBG_MOBILE_LITE_APK_PAGE: PubgMobileLiteApkPageContent = {
       ctaHref: "/pubg-mobile-lite",
     },
   ],
+  install: {
+    title: PUBG_MOBILE_LITE_APK_INSTALL.title,
+    intro: PUBG_MOBILE_LITE_APK_INSTALL.intro,
+    steps: [...PUBG_MOBILE_LITE_APK_INSTALL.steps],
+    guideHref: PUBG_MOBILE_LITE_APK_INSTALL.guideHref,
+    guideLabel: PUBG_MOBILE_LITE_APK_INSTALL.guideLabel,
+  },
+  facts: {
+    title: PUBG_MOBILE_LITE_APK_FACTS.title,
+    rows: PUBG_MOBILE_LITE_APK_FACTS.rows.map((r) => ({ ...r })),
+    note: PUBG_MOBILE_LITE_APK_FACTS.note,
+  },
   articleHtml: PUBG_MOBILE_LITE_APK_ARTICLE_HTML,
   faqs: PUBG_MOBILE_LITE_APK_FAQS.map((item) => ({ ...item })),
   commentsLead:

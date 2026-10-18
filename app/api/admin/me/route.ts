@@ -8,12 +8,14 @@ import { cookies } from "next/headers";
 import { resolveAdminAuthFromDb } from "@/src/server/repositories/adminUsersRepository";
 import { createSessionTokenFromAuthSnapshot } from "@/src/server/rbac/sessionFromUser";
 import { subjectFromSessionPayload } from "@/src/server/rbac/sessionSubject";
+import { clearAdminNoAdsCookie, setAdminNoAdsCookie } from "@/src/server/adminNoAdsCookie";
 
 function clearSession(response: NextResponse) {
   response.cookies.set(ADMIN_SESSION_COOKIE, "", {
     ...adminSessionCookieOptions(0),
     maxAge: 0,
   });
+  clearAdminNoAdsCookie(response);
   return response;
 }
 
@@ -69,5 +71,6 @@ export async function GET(_request: NextRequest) {
     },
   });
   response.cookies.set(ADMIN_SESSION_COOKIE, token, adminSessionCookieOptions());
+  setAdminNoAdsCookie(response);
   return response;
 }

@@ -33,6 +33,10 @@ export type NavGameContext = "freefire" | "pubg" | "default";
 export const BGMI_APK_PATH = "/bgmi-apk";
 /** Full PUBG Mobile APK info page (same layout as BGMI APK). */
 export const PUBG_APK_PATH = "/pubg-apk";
+/** Full Free Fire APK info page (same layout as BGMI / PUBG APK). */
+export const FREE_FIRE_APK_PATH = "/free-fire-apk";
+/** Full Free Fire MAX APK info page (same layout as Free Fire APK). */
+export const FREE_FIRE_MAX_APK_PATH = "/free-fire-max-apk";
 /** BGMI (not Lite) redeem codes. */
 export const BGMI_REDEEM_CODE_PATH = "/bgmi-redeem-code";
 /** Full PUBG Mobile (not Lite) redeem codes. */
@@ -163,6 +167,10 @@ export function detectNavGameContext(pathname: string): NavGameContext {
     p.startsWith("/free-fire/") ||
     p === "/ff-max" ||
     p.startsWith("/ff-max/") ||
+    p === FREE_FIRE_APK_PATH ||
+    p.startsWith(`${FREE_FIRE_APK_PATH}/`) ||
+    p === FREE_FIRE_MAX_APK_PATH ||
+    p.startsWith(`${FREE_FIRE_MAX_APK_PATH}/`) ||
     p === "/news/free-fire" ||
     p.startsWith("/news/free-fire/") ||
     p === FREE_FIRE_MAX_NEWS_PATH ||

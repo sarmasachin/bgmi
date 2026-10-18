@@ -3,7 +3,6 @@
 import Link from "next/link";
 import { ReactNode, useEffect, useMemo, useState } from "react";
 import { usePathname } from "next/navigation";
-import { BlockAdminAds } from "@/src/components/admin/BlockAdminAds";
 import { AdminLogoutButton } from "@/src/components/admin/AdminLogoutButton";
 import { AdminToastProvider } from "@/src/components/admin/AdminToast";
 import { ADMIN_NAV_ACCESS } from "@/src/server/rbac/routeAccess";
@@ -21,6 +20,8 @@ type SidebarIconName =
   | "bgmiLiteApk"
   | "bgmiApk"
   | "pubgApk"
+  | "freeFireApk"
+  | "freeFireMaxApk"
   | "bgmiRedeem"
   | "pubgRedeem"
   | "pubgMobileLiteRedeem"
@@ -92,6 +93,8 @@ function SidebarIcon({ name }: { name: SidebarIconName }) {
     case "bgmiLiteApk":
     case "bgmiApk":
     case "pubgApk":
+    case "freeFireApk":
+    case "freeFireMaxApk":
       return <svg {...shared}><rect x="4" y="4" width="16" height="16" rx="2" /><path d="M8 12h8M12 8v8" /></svg>;
     case "pubgMobileLiteRedeem":
     case "freeFireRedeem":
@@ -256,7 +259,6 @@ export default function AdminLayoutClient({ children }: { children: ReactNode })
 
   return (
     <AdminToastProvider>
-      <BlockAdminAds />
       <div className="admin-shell">
         {isLoginPage ? (
           <div className="admin-main">{children}</div>

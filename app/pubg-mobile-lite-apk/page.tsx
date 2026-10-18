@@ -1,16 +1,14 @@
 import { PubgMobileLiteApkLandingPage } from "@/src/components/PubgMobileLiteApkLandingPage";
-import {
-  DEFAULT_PUBG_MOBILE_LITE_APK_PAGE,
-} from "@/src/lib/pubgMobileLiteApkPage";
 import { PUBG_MOBILE_LITE_APK_PATH } from "@/src/lib/pubgMobileLite";
 import { buildSocialMetadata } from "@/src/lib/socialMeta";
 import { toCanonicalUrl } from "@/src/lib/siteUrl";
+import { getPubgMobileLiteApkPage } from "@/src/server/repositories/pubgMobileLiteApkPageRepository";
 import type { Metadata } from "next";
 
 export const dynamic = "force-dynamic";
 
 export async function generateMetadata(): Promise<Metadata> {
-  const page = DEFAULT_PUBG_MOBILE_LITE_APK_PAGE;
+  const page = await getPubgMobileLiteApkPage();
   const canonical = toCanonicalUrl(page.path || PUBG_MOBILE_LITE_APK_PATH);
 
   return {

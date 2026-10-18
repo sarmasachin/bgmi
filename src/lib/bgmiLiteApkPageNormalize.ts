@@ -1,4 +1,5 @@
 import { sanitizeHtml } from "@/src/lib/sanitizeHtml";
+import type { ApkHeroButton, ApkHeroCountdown } from "@/src/lib/apkHeroCta";
 import {
   DEFAULT_BGMI_LITE_APK_PAGE,
   type BgmiLiteBetaApkCard,
@@ -30,6 +31,26 @@ function slugId(raw: string, fallback: string) {
     .replace(/^-+|-+$/g, "")
     .slice(0, 48);
   return slug || fallback;
+}
+
+function normalizeHeroButton(raw: unknown, fallback: ApkHeroButton): ApkHeroButton {
+  const row = isPlainObject(raw) ? raw : {};
+  return {
+    label: sanitizeString(row.label, fallback.label) || fallback.label,
+    href: sanitizeString(row.href, fallback.href),
+    visible: typeof row.visible === "boolean" ? row.visible : fallback.visible,
+  };
+}
+
+function normalizeCountdown(raw: unknown, fallback: ApkHeroCountdown): ApkHeroCountdown {
+  const row = isPlainObject(raw) ? raw : {};
+  return {
+    visible: typeof row.visible === "boolean" ? row.visible : fallback.visible,
+    label: sanitizeString(row.label, fallback.label) || fallback.label,
+    targetIso: sanitizeString(row.targetIso, fallback.targetIso),
+    dateText: sanitizeString(row.dateText, fallback.dateText) || fallback.dateText,
+    liveMessage: sanitizeString(row.liveMessage, fallback.liveMessage) || fallback.liveMessage,
+  };
 }
 
 function normalizePills(raw: unknown, defaults: Array<{ label: string }>) {
@@ -130,7 +151,7 @@ function normalizeFacts(
 export function normalizeBgmiLiteApkPage(raw: unknown): BgmiLiteBetaApkPageContent {
   const defaults = DEFAULT_BGMI_LITE_APK_PAGE;
   if (!isPlainObject(raw)) return renameLiteDisplayDeep(defaults);
-  const countdownRaw = isPlainObject(raw.countdown) ? raw.countdown : {};
+  const buttonsRaw = isPlainObject(raw.heroButtons) ? raw.heroButtons : {};
   const articleHtml =
     sanitizeHtml(sanitizeString(raw.articleHtml, defaults.articleHtml)) || defaults.articleHtml;
 
@@ -143,18 +164,11 @@ export function normalizeBgmiLiteApkPage(raw: unknown): BgmiLiteBetaApkPageConte
     heroTitle: sanitizeString(raw.heroTitle, defaults.heroTitle) || defaults.heroTitle,
     subtitleEn: sanitizeString(raw.subtitleEn, defaults.subtitleEn) || defaults.subtitleEn,
     pills: normalizePills(raw.pills, defaults.pills),
-    countdown: {
-      label: sanitizeString(countdownRaw.label, defaults.countdown.label) || defaults.countdown.label,
-      targetIso:
-        sanitizeString(countdownRaw.targetIso, defaults.countdown.targetIso) ||
-        defaults.countdown.targetIso,
-      dateText:
-        sanitizeString(countdownRaw.dateText, defaults.countdown.dateText) ||
-        defaults.countdown.dateText,
-      liveMessage:
-        sanitizeString(countdownRaw.liveMessage, defaults.countdown.liveMessage) ||
-        defaults.countdown.liveMessage,
+    heroButtons: {
+      playStore: normalizeHeroButton(buttonsRaw.playStore, defaults.heroButtons.playStore),
+      apk: normalizeHeroButton(buttonsRaw.apk, defaults.heroButtons.apk),
     },
+    countdown: normalizeCountdown(raw.countdown, defaults.countdown),
     heroImage: sanitizeString(raw.heroImage, defaults.heroImage) || defaults.heroImage,
     // Allow empty alt — do not re-fill defaults when admin clears the field.
     heroImageAlt: sanitizeString(raw.heroImageAlt, defaults.heroImageAlt),

@@ -6,6 +6,7 @@ import { HomeHeader } from "@/src/components/HomeHeader";
 import { PageCommentSection } from "@/src/components/PageCommentSection";
 import { PubgMobileLiteRedeemCodeList } from "@/src/components/PubgMobileLiteRedeemCodeList";
 import { SiteFooter } from "@/src/components/SiteFooter";
+import { ToolPageRatingBlock } from "@/src/components/ToolPageRatingBlock";
 import {
   PUBG_MOBILE_LITE_PATH,
 } from "@/src/lib/pubgMobileLite";
@@ -30,15 +31,17 @@ import {
   getPubgMobileLiteRedeemUpdatedAt,
 } from "@/src/server/repositories/pubgMobileLiteRedeemCodesRepository";
 import { listApprovedPageComments } from "@/src/server/repositories/pageCommentsRepository";
+import { getRatingSummary } from "@/src/server/repositories/ratingSummaryRepository";
 import { getSettings } from "@/src/server/repositories/settingsRepository";
 
 /** White PUBG Mobile Flash redeem-code page: codes → article + FAQ → comments. */
 export async function PubgMobileLiteRedeemCodeLandingPage() {
-  const [settings, page, updatedAt, pageComments] = await Promise.all([
+  const [settings, page, updatedAt, pageComments, ratingSummary] = await Promise.all([
     getSettings(),
     getPubgMobileLiteRedeemPage(),
     getPubgMobileLiteRedeemUpdatedAt(),
     listApprovedPageComments(PUBG_MOBILE_LITE_REDEEM_PAGE_KEY),
+    getRatingSummary("tool", PUBG_MOBILE_LITE_REDEEM_PAGE_KEY).catch(() => null),
   ]);
   const ui = page.ui;
   const canonical = toCanonicalUrl(PUBG_MOBILE_LITE_REDEEM_CODE_PATH);
@@ -89,6 +92,7 @@ export async function PubgMobileLiteRedeemCodeLandingPage() {
     keywords: [...page.seoKeywords],
     inLanguage: "en",
     dateModified: updatedAt ? updatedAt.toISOString() : undefined,
+    mainEntityId: `${canonical}#app`,
   });
   const faqLd = faqSchema(faqItems);
   const itemListLd =
@@ -188,6 +192,15 @@ export async function PubgMobileLiteRedeemCodeLandingPage() {
           </div>
         </div>
       ) : null}
+
+      <ToolPageRatingBlock
+        pageKey={PUBG_MOBILE_LITE_REDEEM_PAGE_KEY}
+        lead="Was this PUBG Flash redeem code guide helpful? Tap a star to rate."
+        ratingSummary={ratingSummary}
+        appName={page.seoTitle || crumbCurrent}
+        appDescription={page.seoDescription}
+        appUrl={canonical}
+      />
 
       <PageCommentSection
         pageKey={PUBG_MOBILE_LITE_REDEEM_PAGE_KEY}

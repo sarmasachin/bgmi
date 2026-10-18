@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef } from "react";
+import { readAdminNoAdsFlag } from "@/src/lib/adminNoAdsFlag";
 
 type Props = {
   html: string;
@@ -75,6 +76,13 @@ export function AdSlotClient({ html, slotKey }: Props) {
   useEffect(() => {
     const el = ref.current;
     if (!el) return;
+    if (
+      readAdminNoAdsFlag(document.cookie) ||
+      document.documentElement.hasAttribute("data-admin-no-ads")
+    ) {
+      el.innerHTML = "";
+      return;
+    }
     let cancelled = false;
 
     el.style.display = "";

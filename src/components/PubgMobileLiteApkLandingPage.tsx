@@ -1,11 +1,12 @@
 import Link from "next/link";
 import { ClientErrorBoundary } from "@/src/components/ClientErrorBoundary";
 import { FaqAccordion } from "@/src/components/FaqAccordion";
-import { FfAdvanceServerCountdown } from "@/src/components/FfAdvanceServerCountdown";
+import { ApkHeroDownloadActions } from "@/src/components/ApkHeroDownloadActions";
 import { HomeHeader } from "@/src/components/HomeHeader";
 import { HomeTitleDummyAd } from "@/src/components/HomeTitleDummyAd";
 import { PageCommentSection } from "@/src/components/PageCommentSection";
 import { PubgMobileLiteApkInfoBlocks } from "@/src/components/PubgMobileLiteApkInfoBlocks";
+import { RatingWidget } from "@/src/components/RatingWidget";
 import { SiteFooter } from "@/src/components/SiteFooter";
 import {
   PUBG_MOBILE_LITE_APK_PATH,
@@ -15,28 +16,30 @@ import {
   DEFAULT_PUBG_MOBILE_LITE_APK_PAGE,
   PUBG_MOBILE_LITE_APK_PAGE_KEY,
 } from "@/src/lib/pubgMobileLiteApkPage";
+import { ratingWidgetRemountKey } from "@/src/lib/ratingWidgetKey";
 import {
-  PUBG_MOBILE_LITE_APK_FACTS,
-  PUBG_MOBILE_LITE_APK_INSTALL,
-} from "@/src/lib/pubgMobileLiteApkSections";
-import {
+  androidApkAppSchema,
   breadcrumbListSchema,
   faqSchema,
   webPageSchema,
 } from "@/src/lib/schema";
 import { toCanonicalUrl } from "@/src/lib/siteUrl";
 import { listApprovedPageComments } from "@/src/server/repositories/pageCommentsRepository";
+import { getPubgMobileLiteApkPage } from "@/src/server/repositories/pubgMobileLiteApkPageRepository";
+import { getRatingSummary } from "@/src/server/repositories/ratingSummaryRepository";
 import { getSettings } from "@/src/server/repositories/settingsRepository";
 
 /**
  * PUBG Mobile Flash APK page — same dark hero + countdown layout as BGMI Air APK.
  */
 export async function PubgMobileLiteApkLandingPage() {
-  const [settings, pageComments] = await Promise.all([
+  const [settings, pageComments, ratingSummary, pageResult] = await Promise.all([
     getSettings(),
     listApprovedPageComments(PUBG_MOBILE_LITE_APK_PAGE_KEY),
+    getRatingSummary("tool", PUBG_MOBILE_LITE_APK_PAGE_KEY).catch(() => null),
+    getPubgMobileLiteApkPage().catch(() => DEFAULT_PUBG_MOBILE_LITE_APK_PAGE),
   ]);
-  const page = DEFAULT_PUBG_MOBILE_LITE_APK_PAGE;
+  const page = pageResult;
   const canonical = toCanonicalUrl(PUBG_MOBILE_LITE_APK_PATH);
   const homeUrl = toCanonicalUrl("/");
   const liteCalcUrl = toCanonicalUrl(PUBG_MOBILE_LITE_PATH);
@@ -53,6 +56,13 @@ export async function PubgMobileLiteApkLandingPage() {
     { name: "PUBG Mobile Flash", url: liteCalcUrl },
     { name: "PUBG Flash APK", url: canonical },
   ]);
+  const appLd = androidApkAppSchema({
+    name: page.heroTitle,
+    description: page.seoDescription,
+    url: canonical,
+    image: ogImageAbs,
+    ratingSummary,
+  });
   const webPageLd = webPageSchema({
     name: page.seoTitle,
     description: page.seoDescription,
@@ -60,6 +70,7 @@ export async function PubgMobileLiteApkLandingPage() {
     image: ogImageAbs,
     keywords: [...page.seoKeywords],
     inLanguage: "en",
+    mainEntityId: `${canonical}#app`,
   });
 
   return (
@@ -93,11 +104,11 @@ export async function PubgMobileLiteApkLandingPage() {
           ))}
         </ul>
 
-        <FfAdvanceServerCountdown
-          label={page.countdown.label}
-          targetIso={page.countdown.targetIso}
-          dateText={page.countdown.dateText}
-          liveMessage={page.countdown.liveMessage}
+        <ApkHeroDownloadActions
+          countdown={page.countdown}
+          playStore={page.heroButtons.playStore}
+          apk={page.heroButtons.apk}
+          groupLabel="PUBG Mobile Flash download options"
         />
         <HomeTitleDummyAd slotKey="apk_below_actions" />
 
@@ -150,10 +161,7 @@ export async function PubgMobileLiteApkLandingPage() {
           ))}
         </div>
 
-        <PubgMobileLiteApkInfoBlocks
-          install={PUBG_MOBILE_LITE_APK_INSTALL}
-          facts={PUBG_MOBILE_LITE_APK_FACTS}
-        />
+        <PubgMobileLiteApkInfoBlocks install={page.install} facts={page.facts} />
       </main>
 
       <div
@@ -172,6 +180,24 @@ export async function PubgMobileLiteApkLandingPage() {
         </div>
       </div>
 
+      <section className="ff-as-rating" aria-label="Rate this page">
+        <div className="ff-as-rating-inner">
+          <h2 className="ff-as-rating-title">Rate this page</h2>
+          <p className="ff-as-rating-lead">
+            Was this PUBG Mobile Flash APK guide helpful? Tap a star to rate.
+          </p>
+          <ClientErrorBoundary label="Rating">
+            <RatingWidget
+              key={ratingWidgetRemountKey("tool", PUBG_MOBILE_LITE_APK_PAGE_KEY)}
+              title=""
+              targetType="tool"
+              targetId={PUBG_MOBILE_LITE_APK_PAGE_KEY}
+              initialSummary={ratingSummary}
+            />
+          </ClientErrorBoundary>
+        </div>
+      </section>
+
       <PageCommentSection
         pageKey={PUBG_MOBILE_LITE_APK_PAGE_KEY}
         initialComments={pageComments}
@@ -187,6 +213,10 @@ export async function PubgMobileLiteApkLandingPage() {
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbLd) }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(appLd) }}
       />
       <script
         type="application/ld+json"

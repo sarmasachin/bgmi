@@ -6,6 +6,7 @@ import { FaqAccordion } from "@/src/components/FaqAccordion";
 import { HomeHeader } from "@/src/components/HomeHeader";
 import { PageCommentSection } from "@/src/components/PageCommentSection";
 import { SiteFooter } from "@/src/components/SiteFooter";
+import { ToolPageRatingBlock } from "@/src/components/ToolPageRatingBlock";
 import {
   BGMI_LITE_STYLISH_NAME_PATH,
   BGMI_LITE_STYLISH_PAGE_KEY,
@@ -14,14 +15,16 @@ import { breadcrumbListSchema, faqSchema, webPageSchema } from "@/src/lib/schema
 import { toCanonicalUrl } from "@/src/lib/siteUrl";
 import { listApprovedPageComments } from "@/src/server/repositories/pageCommentsRepository";
 import { getBgmiLiteStylishPage } from "@/src/server/repositories/bgmiLiteStylishNameRepository";
+import { getRatingSummary } from "@/src/server/repositories/ratingSummaryRepository";
 import { getSettings } from "@/src/server/repositories/settingsRepository";
 
 /** BGMI Air stylish name — mobile-first studio + guide (DB-backed copy). */
 export async function BgmiLiteStylishNameLandingPage() {
-  const [settings, page, pageComments] = await Promise.all([
+  const [settings, page, pageComments, ratingSummary] = await Promise.all([
     getSettings(),
     getBgmiLiteStylishPage(),
     listApprovedPageComments(BGMI_LITE_STYLISH_PAGE_KEY),
+    getRatingSummary("tool", BGMI_LITE_STYLISH_PAGE_KEY).catch(() => null),
   ]);
   const canonical = toCanonicalUrl(BGMI_LITE_STYLISH_NAME_PATH);
   const homeUrl = toCanonicalUrl("/");
@@ -44,6 +47,7 @@ export async function BgmiLiteStylishNameLandingPage() {
     url: canonical,
     keywords: [...page.seoKeywords],
     inLanguage: "en",
+    mainEntityId: `${canonical}#app`,
   });
 
   return (
@@ -107,6 +111,15 @@ export async function BgmiLiteStylishNameLandingPage() {
           {faqItems.length ? <FaqAccordion items={faqItems} title={page.faqTitle} /> : null}
         </div>
       </div>
+
+      <ToolPageRatingBlock
+        pageKey={BGMI_LITE_STYLISH_PAGE_KEY}
+        lead="Was this BGMI Air stylish name tool helpful? Tap a star to rate."
+        ratingSummary={ratingSummary}
+        appName={page.seoTitle || crumbCurrent}
+        appDescription={page.seoDescription}
+        appUrl={canonical}
+      />
 
       <PageCommentSection
         pageKey={BGMI_LITE_STYLISH_PAGE_KEY}

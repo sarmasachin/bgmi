@@ -6,6 +6,7 @@ import { FaqAccordion } from "@/src/components/FaqAccordion";
 import { HomeHeader } from "@/src/components/HomeHeader";
 import { PageCommentSection } from "@/src/components/PageCommentSection";
 import { SiteFooter } from "@/src/components/SiteFooter";
+import { ToolPageRatingBlock } from "@/src/components/ToolPageRatingBlock";
 import {
   cloneFreeFireStylishNamePage,
   FREE_FIRE_STYLISH_NAME_PAGE_KEY,
@@ -27,6 +28,10 @@ import {
 import { getFreeFireStylishNamePage } from "@/src/server/repositories/freeFireStylishNameRepository";
 import { getFreeFireMaxStylishNamePage } from "@/src/server/repositories/freeFireMaxStylishNameRepository";
 import {
+  getRatingSummary,
+  type RatingSummary,
+} from "@/src/server/repositories/ratingSummaryRepository";
+import {
   getSettings,
   type SiteSettings,
 } from "@/src/server/repositories/settingsRepository";
@@ -42,6 +47,7 @@ type LandingData = {
   settings: SiteSettings;
   page: FreeFireStylishNamePageContent;
   pageComments: PublicPageComment[];
+  ratingSummary: RatingSummary | null;
 };
 
 async function loadLandingData(
@@ -49,10 +55,11 @@ async function loadLandingData(
 ): Promise<LandingData> {
   const isMax = variant === "free-fire-max";
   const pageKey = isMax ? FREE_FIRE_MAX_STYLISH_NAME_PAGE_KEY : FREE_FIRE_STYLISH_NAME_PAGE_KEY;
-  const [settingsResult, pageResult, commentsResult] = await Promise.allSettled([
+  const [settingsResult, pageResult, commentsResult, ratingResult] = await Promise.allSettled([
     getSettings(),
     isMax ? getFreeFireMaxStylishNamePage() : getFreeFireStylishNamePage(),
     listApprovedPageComments(pageKey),
+    getRatingSummary("tool", pageKey),
   ]);
 
   if (settingsResult.status === "rejected") {
@@ -66,6 +73,7 @@ async function loadLandingData(
     settings: settingsResult.value,
     page: pageResult.status === "fulfilled" ? pageResult.value : fallback,
     pageComments: commentsResult.status === "fulfilled" ? commentsResult.value : [],
+    ratingSummary: ratingResult.status === "fulfilled" ? ratingResult.value : null,
   };
 }
 
@@ -75,7 +83,7 @@ export async function FreeFireStylishNameLandingPage(
 ) {
   const variant = options.variant ?? "free-fire";
   const isMax = variant === "free-fire-max";
-  const { settings, page, pageComments } = await loadLandingData(variant);
+  const { settings, page, pageComments, ratingSummary } = await loadLandingData(variant);
   const path =
     options.path?.trim() ||
     (isMax ? FREE_FIRE_MAX_STYLISH_NAME_PATH : FREE_FIRE_STYLISH_NAME_PATH);
@@ -104,6 +112,7 @@ export async function FreeFireStylishNameLandingPage(
     url: canonical,
     keywords: [...page.seoKeywords],
     inLanguage: "en",
+    mainEntityId: `${canonical}#app`,
   });
 
   return (
@@ -184,6 +193,15 @@ export async function FreeFireStylishNameLandingPage(
           </div>
         </ClientErrorBoundary>
       ) : null}
+
+      <ToolPageRatingBlock
+        pageKey={pageKey}
+        lead={`Was this ${isMax ? "FF Max" : "Free Fire"} stylish name tool helpful? Tap a star to rate.`}
+        ratingSummary={ratingSummary}
+        appName={page.seoTitle || crumbCurrent}
+        appDescription={page.seoDescription}
+        appUrl={canonical}
+      />
 
       <ClientErrorBoundary label="Comments">
         <PageCommentSection

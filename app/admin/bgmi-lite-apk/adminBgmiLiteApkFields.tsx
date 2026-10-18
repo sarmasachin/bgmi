@@ -49,6 +49,32 @@ export function AdminField({
   );
 }
 
+export function AdminCheckbox({
+  label,
+  checked,
+  onChange,
+}: {
+  label: string;
+  checked: boolean;
+  onChange: (v: boolean) => void;
+}) {
+  return (
+    <label
+      style={{
+        display: "flex",
+        alignItems: "center",
+        gap: 8,
+        marginBottom: 12,
+        color: "#e2e8f0",
+        fontSize: 13,
+      }}
+    >
+      <input type="checkbox" checked={checked} onChange={(e) => onChange(e.target.checked)} />
+      {label}
+    </label>
+  );
+}
+
 export function AdminLinesEditor({
   label,
   lines,

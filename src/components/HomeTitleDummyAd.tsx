@@ -1,4 +1,5 @@
 import { AdSlotClient } from "@/src/components/AdSlotClient";
+import { isAdminAdsHidden } from "@/src/server/adminNoAds";
 import { getAdPlacementVisibility } from "@/src/server/repositories/adPlacementRepository";
 import { getPublicAdSlot } from "@/src/server/repositories/adsRepository";
 
@@ -8,6 +9,7 @@ export async function HomeTitleDummyAd({
 }: {
   slotKey?: string;
 } = {}) {
+  if (await isAdminAdsHidden()) return null;
   const [places, slot] = await Promise.all([
     getAdPlacementVisibility(),
     getPublicAdSlot(slotKey),

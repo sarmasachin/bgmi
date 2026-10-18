@@ -12,6 +12,7 @@ import {
 } from "@/src/lib/ffAdvanceServerPage";
 import { ratingWidgetRemountKey } from "@/src/lib/ratingWidgetKey";
 import {
+  androidApkAppSchema,
   breadcrumbListSchema,
   faqSchema,
   webPageSchema,
@@ -61,6 +62,13 @@ export async function FfAdvanceServerLandingPage() {
     { name: "Home", url: homeUrl },
     { name: "Advance Server", url: canonical },
   ]);
+  const appLd = androidApkAppSchema({
+    name: page.heroTitle,
+    description: page.seoDescription,
+    url: canonical,
+    image: ogImageAbs,
+    ratingSummary,
+  });
   const webPageLd = webPageSchema({
     name: page.seoTitle,
     description: page.seoDescription,
@@ -69,6 +77,7 @@ export async function FfAdvanceServerLandingPage() {
     dateModified: toSitemapLastmodIst(contentUpdatedAt),
     keywords: [...page.seoKeywords],
     inLanguage: "en",
+    mainEntityId: `${canonical}#app`,
   });
 
   return (
@@ -288,6 +297,10 @@ export async function FfAdvanceServerLandingPage() {
           dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbLd) }}
         />
       ) : null}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(appLd) }}
+      />
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(webPageLd) }}

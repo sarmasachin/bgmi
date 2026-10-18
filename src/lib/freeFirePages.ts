@@ -12,8 +12,11 @@ export const FREE_FIRE_REDEEM_CODE_PATH = "/free-fire-redeem-code";
 export const FREE_FIRE_STYLISH_NAME_PATH = "/free-fire-stylish-name";
 
 /** Header menu on Free Fire family routes (home calculator + related pages). */
+export const FREE_FIRE_APK_MENU_PATH = "/free-fire-apk";
+
 export const FREE_FIRE_FAMILY_NAV = [
   { label: "Home", href: "/" },
+  { label: "FF Apk", href: FREE_FIRE_APK_MENU_PATH },
   { label: "Redeem Code", href: FREE_FIRE_REDEEM_CODE_PATH },
   { label: "Advance Server", href: FREE_FIRE_ADVANCE_SERVER_PATH },
   { label: "FF Names", href: FREE_FIRE_STYLISH_NAME_PATH },
@@ -22,6 +25,7 @@ export const FREE_FIRE_FAMILY_NAV = [
 
 export const FREE_FIRE_FAMILY_PATHS = [
   "/",
+  FREE_FIRE_APK_MENU_PATH,
   FREE_FIRE_PATH,
   FREE_FIRE_ADVANCE_SERVER_PATH,
   FREE_FIRE_REDEEM_CODE_PATH,

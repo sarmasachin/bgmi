@@ -6,6 +6,7 @@ import { FaqAccordion } from "@/src/components/FaqAccordion";
 import { HomeHeader } from "@/src/components/HomeHeader";
 import { HomeTitleDummyAd } from "@/src/components/HomeTitleDummyAd";
 import { PageCommentSection } from "@/src/components/PageCommentSection";
+import { RatingWidget } from "@/src/components/RatingWidget";
 import { SiteFooter } from "@/src/components/SiteFooter";
 import {
   BGMI_APK_PAGE_KEY,
@@ -14,9 +15,19 @@ import {
   isUsableHeroImageSrc,
   type BgmiApkPageContent,
 } from "@/src/lib/bgmiApkPage";
-import { breadcrumbListSchema, faqSchema, webPageSchema } from "@/src/lib/schema";
+import { ratingWidgetRemountKey } from "@/src/lib/ratingWidgetKey";
+import {
+  androidApkAppSchema,
+  breadcrumbListSchema,
+  faqSchema,
+  webPageSchema,
+} from "@/src/lib/schema";
 import { toCanonicalUrl } from "@/src/lib/siteUrl";
 import { getBgmiApkPage } from "@/src/server/repositories/bgmiApkPageRepository";
+import {
+  getRatingSummary,
+  type RatingSummary,
+} from "@/src/server/repositories/ratingSummaryRepository";
 import {
   listApprovedPageComments,
   type PublicPageComment,
@@ -27,14 +38,16 @@ type LandingData = {
   settings: SiteSettings;
   page: BgmiApkPageContent;
   pageComments: PublicPageComment[];
+  ratingSummary: RatingSummary | null;
 };
 
 /** Isolate data failures so comments/CMS cannot blank the whole page. */
 async function loadLandingData(): Promise<LandingData> {
-  const [settingsResult, pageResult, commentsResult] = await Promise.allSettled([
+  const [settingsResult, pageResult, commentsResult, ratingResult] = await Promise.allSettled([
     getSettings(),
     getBgmiApkPage(),
     listApprovedPageComments(BGMI_APK_PAGE_KEY),
+    getRatingSummary("tool", BGMI_APK_PAGE_KEY),
   ]);
 
   if (settingsResult.status === "rejected") {
@@ -47,11 +60,12 @@ async function loadLandingData(): Promise<LandingData> {
     settings: settingsResult.value,
     page: pageResult.status === "fulfilled" ? pageResult.value : DEFAULT_BGMI_APK_PAGE,
     pageComments: commentsResult.status === "fulfilled" ? commentsResult.value : [],
+    ratingSummary: ratingResult.status === "fulfilled" ? ratingResult.value : null,
   };
 }
 
 export async function BgmiApkLandingPage() {
-  const { settings, pageComments, page } = await loadLandingData();
+  const { settings, pageComments, page, ratingSummary } = await loadLandingData();
   const canonical = toCanonicalUrl(BGMI_APK_PATH);
   const homeUrl = toCanonicalUrl("/");
   const bgmiUrl = toCanonicalUrl("/bgmi");
@@ -68,6 +82,13 @@ export async function BgmiApkLandingPage() {
     { name: "BGMI", url: bgmiUrl },
     { name: "BGMI APK", url: canonical },
   ]);
+  const appLd = androidApkAppSchema({
+    name: page.heroTitle,
+    description: page.seoDescription,
+    url: canonical,
+    image: ogImageAbs,
+    ratingSummary,
+  });
   const webPageLd = webPageSchema({
     name: page.seoTitle,
     description: page.seoDescription,
@@ -75,6 +96,7 @@ export async function BgmiApkLandingPage() {
     image: ogImageAbs,
     keywords: [...page.seoKeywords],
     inLanguage: "en",
+    mainEntityId: `${canonical}#app`,
   });
 
   return (
@@ -187,6 +209,24 @@ export async function BgmiApkLandingPage() {
         </div>
       </div>
 
+      <section className="ff-as-rating" aria-label="Rate this page">
+        <div className="ff-as-rating-inner">
+          <h2 className="ff-as-rating-title">Rate this page</h2>
+          <p className="ff-as-rating-lead">
+            Was this BGMI APK guide helpful? Tap a star to rate.
+          </p>
+          <ClientErrorBoundary label="Rating">
+            <RatingWidget
+              key={ratingWidgetRemountKey("tool", BGMI_APK_PAGE_KEY)}
+              title=""
+              targetType="tool"
+              targetId={BGMI_APK_PAGE_KEY}
+              initialSummary={ratingSummary}
+            />
+          </ClientErrorBoundary>
+        </div>
+      </section>
+
       <ClientErrorBoundary label="Comments">
         <PageCommentSection
           pageKey={BGMI_APK_PAGE_KEY}
@@ -204,6 +244,10 @@ export async function BgmiApkLandingPage() {
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbLd) }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(appLd) }}
       />
       <script
         type="application/ld+json"

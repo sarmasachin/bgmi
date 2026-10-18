@@ -5,10 +5,13 @@ import { FREE_FIRE_MAX_PATH } from "@/src/lib/freeFirePages";
 export const FREE_FIRE_MAX_REDEEM_CODE_PATH = "/free-fire-max-redeem-code";
 export const FREE_FIRE_MAX_STYLISH_NAME_PATH = "/free-fire-max-stylish-name";
 export const FREE_FIRE_MAX_NEWS_PATH = "/news/ff-max";
+/** Same path string as FREE_FIRE_MAX_APK_PATH in resolveNavForPath. */
+export const FREE_FIRE_MAX_APK_MENU_PATH = "/free-fire-max-apk";
 
 /** Header menu on Free Fire Max family routes. */
 export const FREE_FIRE_MAX_FAMILY_NAV = [
   { label: "Home", href: FREE_FIRE_MAX_PATH },
+  { label: "FF Max Apk", href: FREE_FIRE_MAX_APK_MENU_PATH },
   { label: "Redeem Code", href: FREE_FIRE_MAX_REDEEM_CODE_PATH },
   { label: "FF Max Names", href: FREE_FIRE_MAX_STYLISH_NAME_PATH },
   { label: "News", href: FREE_FIRE_MAX_NEWS_PATH },
@@ -16,6 +19,7 @@ export const FREE_FIRE_MAX_FAMILY_NAV = [
 
 export const FREE_FIRE_MAX_FAMILY_PATHS = [
   FREE_FIRE_MAX_PATH,
+  FREE_FIRE_MAX_APK_MENU_PATH,
   FREE_FIRE_MAX_REDEEM_CODE_PATH,
   FREE_FIRE_MAX_STYLISH_NAME_PATH,
 ] as const;

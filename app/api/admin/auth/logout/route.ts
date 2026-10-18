@@ -3,6 +3,7 @@ import {
   ADMIN_SESSION_COOKIE,
   adminSessionCookieOptions,
 } from "@/src/server/adminSession";
+import { clearAdminNoAdsCookie } from "@/src/server/adminNoAdsCookie";
 
 export async function POST() {
   const response = NextResponse.json({ ok: true });
@@ -10,6 +11,7 @@ export async function POST() {
     ...adminSessionCookieOptions(0),
     maxAge: 0,
   });
+  clearAdminNoAdsCookie(response);
   response.headers.set("Cache-Control", "no-store, no-cache, must-revalidate, private");
   // Drop cached admin HTML so Back does not flash a logged-in dashboard.
   response.headers.set("Clear-Site-Data", '"cache"');

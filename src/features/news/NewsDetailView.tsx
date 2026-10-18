@@ -2,6 +2,7 @@ import { AdSlot } from "@/src/components/AdSlot";
 import { ClientErrorBoundary } from "@/src/components/ClientErrorBoundary";
 import { HomeHeader } from "@/src/components/HomeHeader";
 import { NewsCommentSection } from "@/src/components/NewsCommentSection";
+import { RatingWidget } from "@/src/components/RatingWidget";
 import { SiteFooter } from "@/src/components/SiteFooter";
 import { extractNewsMeta, resolveNewsSeoDescription } from "@/src/lib/newsContent";
 import {
@@ -14,9 +15,11 @@ import { getAdPlacementVisibility } from "@/src/server/repositories/adPlacementR
 import { listApprovedCommentsByNewsId } from "@/src/server/repositories/commentsRepository";
 import { listNewsCategories } from "@/src/server/repositories/newsCategoryRepository";
 import { resolveNewsCanonicalUrl } from "@/src/server/repositories/newsRepository";
+import { getRatingSummary } from "@/src/server/repositories/ratingSummaryRepository";
 import { getSettings } from "@/src/server/repositories/settingsRepository";
 import { getSiteUrl, toCanonicalUrl } from "@/src/lib/siteUrl";
 import { breadcrumbListSchema, newsArticleSchema } from "@/src/lib/schema";
+import { ratingWidgetRemountKey } from "@/src/lib/ratingWidgetKey";
 import { buildSocialMetadata, DEFAULT_OG_IMAGE_PATH } from "@/src/lib/socialMeta";
 import { formatNewsPublishedAtIst, latestNewsDateValue } from "@/src/lib/formatNewsPublishedAt";
 import { renameLiteNewsPost } from "@/src/lib/renameLiteDisplayNames";
@@ -90,11 +93,12 @@ export async function NewsDetailView({ item: itemProp }: { item: NewsDetailItem 
   const meta = extractNewsMeta(item.content);
   const imageAlt = meta.socialImageAlt?.trim() || item.title;
 
-  const [adPlaces, settings, comments, categories] = await Promise.all([
+  const [adPlaces, settings, comments, categories, ratingSummary] = await Promise.all([
     getAdPlacementVisibility(),
     getSettings(),
     listApprovedCommentsByNewsId(item.id),
     listNewsCategories(),
+    getRatingSummary("news", item.id).catch(() => null),
   ]);
 
   const knownSlugs = categories.map((c) => c.slug);
@@ -124,6 +128,7 @@ export async function NewsDetailView({ item: itemProp }: { item: NewsDetailItem 
     dateModified: item.updatedAt,
     image: meta.ogImageUrl?.trim() || item.featureImage || `${baseUrl}${DEFAULT_OG_IMAGE_PATH}`,
     mainEntityOfPage: articleUrl,
+    ratingSummary,
   });
 
   return (
@@ -169,6 +174,15 @@ export async function NewsDetailView({ item: itemProp }: { item: NewsDetailItem 
           ) : null}
           {adPlaces.newsArticle.news_detail_mid ? <AdSlot slotKey="news_detail_mid" /> : null}
           {adPlaces.newsArticle.news_detail_bottom ? <AdSlot slotKey="news_detail_bottom" /> : null}
+          <ClientErrorBoundary label="Rating">
+            <RatingWidget
+              key={ratingWidgetRemountKey("news", item.id)}
+              title="Was this article helpful? Tap a star to rate."
+              targetType="news"
+              targetId={item.id}
+              initialSummary={ratingSummary}
+            />
+          </ClientErrorBoundary>
         </article>
         <ClientErrorBoundary label="Comments">
           <NewsCommentSection newsId={item.id} initialComments={comments} />

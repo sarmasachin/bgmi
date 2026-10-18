@@ -2,16 +2,19 @@ import Link from "next/link";
 import { BgmiLiteBetaApkInfoBlocks } from "@/src/components/BgmiLiteBetaApkInfoBlocks";
 import { ClientErrorBoundary } from "@/src/components/ClientErrorBoundary";
 import { FaqAccordion } from "@/src/components/FaqAccordion";
-import { FfAdvanceServerCountdown } from "@/src/components/FfAdvanceServerCountdown";
+import { ApkHeroDownloadActions } from "@/src/components/ApkHeroDownloadActions";
 import { HomeHeader } from "@/src/components/HomeHeader";
 import { HomeTitleDummyAd } from "@/src/components/HomeTitleDummyAd";
 import { PageCommentSection } from "@/src/components/PageCommentSection";
+import { RatingWidget } from "@/src/components/RatingWidget";
 import { SiteFooter } from "@/src/components/SiteFooter";
 import {
   BGMI_LITE_APK_PAGE_KEY,
   BGMI_LITE_APK_PATH,
 } from "@/src/lib/bgmiLiteBetaApkPage";
+import { ratingWidgetRemountKey } from "@/src/lib/ratingWidgetKey";
 import {
+  androidApkAppSchema,
   breadcrumbListSchema,
   faqSchema,
   webPageSchema,
@@ -19,19 +22,21 @@ import {
 import { toCanonicalUrl } from "@/src/lib/siteUrl";
 import { getBgmiLiteApkPage } from "@/src/server/repositories/bgmiLiteApkPageRepository";
 import { listApprovedPageComments } from "@/src/server/repositories/pageCommentsRepository";
+import { getRatingSummary } from "@/src/server/repositories/ratingSummaryRepository";
 import { getSettings } from "@/src/server/repositories/settingsRepository";
 
 /**
  * BGMI Air APK page.
  * Top = Advance Server–style dark hero (countdown + image + cards).
  * Below = site standard light article + FAQ (AS itself has no article).
- * Then comments.
+ * Then rating, then comments.
  */
 export async function BgmiLiteBetaApkLandingPage() {
-  const [settings, pageComments, page] = await Promise.all([
+  const [settings, pageComments, page, ratingSummary] = await Promise.all([
     getSettings(),
     listApprovedPageComments(BGMI_LITE_APK_PAGE_KEY),
     getBgmiLiteApkPage(),
+    getRatingSummary("tool", BGMI_LITE_APK_PAGE_KEY).catch(() => null),
   ]);
   const canonical = toCanonicalUrl(BGMI_LITE_APK_PATH);
   const homeUrl = toCanonicalUrl("/");
@@ -49,6 +54,13 @@ export async function BgmiLiteBetaApkLandingPage() {
     { name: "BGMI Air", url: liteCalcUrl },
     { name: "BGMI Air APK", url: canonical },
   ]);
+  const appLd = androidApkAppSchema({
+    name: page.heroTitle,
+    description: page.seoDescription,
+    url: canonical,
+    image: ogImageAbs,
+    ratingSummary,
+  });
   const webPageLd = webPageSchema({
     name: page.seoTitle,
     description: page.seoDescription,
@@ -56,6 +68,7 @@ export async function BgmiLiteBetaApkLandingPage() {
     image: ogImageAbs,
     keywords: [...page.seoKeywords],
     inLanguage: "en",
+    mainEntityId: `${canonical}#app`,
   });
 
   return (
@@ -89,11 +102,11 @@ export async function BgmiLiteBetaApkLandingPage() {
           ))}
         </ul>
 
-        <FfAdvanceServerCountdown
-          label={page.countdown.label}
-          targetIso={page.countdown.targetIso}
-          dateText={page.countdown.dateText}
-          liveMessage={page.countdown.liveMessage}
+        <ApkHeroDownloadActions
+          countdown={page.countdown}
+          playStore={page.heroButtons.playStore}
+          apk={page.heroButtons.apk}
+          groupLabel="BGMI Air download options"
         />
         <HomeTitleDummyAd slotKey="apk_below_actions" />
 
@@ -168,6 +181,24 @@ export async function BgmiLiteBetaApkLandingPage() {
         </div>
       </div>
 
+      <section className="ff-as-rating" aria-label="Rate this page">
+        <div className="ff-as-rating-inner">
+          <h2 className="ff-as-rating-title">Rate this page</h2>
+          <p className="ff-as-rating-lead">
+            Was this BGMI Air APK guide helpful? Tap a star to rate.
+          </p>
+          <ClientErrorBoundary label="Rating">
+            <RatingWidget
+              key={ratingWidgetRemountKey("tool", BGMI_LITE_APK_PAGE_KEY)}
+              title=""
+              targetType="tool"
+              targetId={BGMI_LITE_APK_PAGE_KEY}
+              initialSummary={ratingSummary}
+            />
+          </ClientErrorBoundary>
+        </div>
+      </section>
+
       <PageCommentSection
         pageKey={BGMI_LITE_APK_PAGE_KEY}
         initialComments={pageComments}
@@ -183,6 +214,10 @@ export async function BgmiLiteBetaApkLandingPage() {
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbLd) }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(appLd) }}
       />
       <script
         type="application/ld+json"

@@ -3,6 +3,8 @@ import { z } from "zod";
 import { FREE_FIRE_ADVANCE_SERVER_PATH } from "@/src/lib/ffAdvanceServerPage";
 import { BGMI_APK_PAGE_KEY } from "@/src/lib/bgmiApkPage";
 import { PUBG_APK_PAGE_KEY } from "@/src/lib/pubgApkPage";
+import { FREE_FIRE_APK_PAGE_KEY } from "@/src/lib/freeFireApkPage";
+import { FREE_FIRE_MAX_APK_PAGE_KEY } from "@/src/lib/freeFireMaxApkPage";
 import { BGMI_LITE_APK_PAGE_KEY } from "@/src/lib/bgmiLiteBetaApkPage";
 import { BGMI_REDEEM_PAGE_KEY } from "@/src/lib/bgmiRedeemCodes";
 import { PUBG_REDEEM_PAGE_KEY } from "@/src/lib/pubgRedeemCodes";
@@ -29,6 +31,8 @@ const ALLOWED_PAGE_KEYS = new Set([
   "free-fire-advance-server",
   BGMI_APK_PAGE_KEY,
   PUBG_APK_PAGE_KEY,
+  FREE_FIRE_APK_PAGE_KEY,
+  FREE_FIRE_MAX_APK_PAGE_KEY,
   BGMI_LITE_APK_PAGE_KEY,
   BGMI_REDEEM_PAGE_KEY,
   PUBG_REDEEM_PAGE_KEY,

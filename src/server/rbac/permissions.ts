@@ -2,10 +2,8 @@
  * RBAC Phase 1 — permission catalog + pure helpers.
  * Enforcement on routes/sidebar comes in later phases.
  */
-
 export const ADMIN_ROLES = ["superadmin", "subadmin"] as const;
 export type AdminRole = (typeof ADMIN_ROLES)[number];
-
 /**
  * Normalize role strings. Fail closed: unknown/empty → subadmin (least privilege).
  * Legacy DB value `"admin"` is treated as superadmin.
@@ -16,11 +14,9 @@ export function normalizeAdminRole(role: unknown): AdminRole {
   if (raw === "subadmin") return "subadmin";
   return "subadmin";
 }
-
 export function isSuperAdminRole(role: unknown): boolean {
   return normalizeAdminRole(role) === "superadmin";
 }
-
 export const ADMIN_PERMISSIONS = [
   "dashboard.view",
   "news.view",
@@ -50,6 +46,10 @@ export const ADMIN_PERMISSIONS = [
   "bgmiApk.edit",
   "pubgApk.view",
   "pubgApk.edit",
+  "freeFireApk.view",
+  "freeFireApk.edit",
+  "freeFireMaxApk.view",
+  "freeFireMaxApk.edit",
   "bgmiRedeem.view",
   "bgmiRedeem.edit",
   "pubgRedeem.view",
@@ -89,17 +89,12 @@ export const ADMIN_PERMISSIONS = [
   "backups.restore",
   "system.view",
 ] as const;
-
 export type AdminPermission = (typeof ADMIN_PERMISSIONS)[number];
-
 export const ALL_ADMIN_PERMISSIONS: readonly AdminPermission[] = ADMIN_PERMISSIONS;
-
 const PERMISSION_SET = new Set<string>(ADMIN_PERMISSIONS);
-
 export function isAdminPermission(value: unknown): value is AdminPermission {
   return typeof value === "string" && PERMISSION_SET.has(value);
 }
-
 /** Keep only known permission strings; drop junk / typos. */
 export function normalizePermissionList(raw: unknown): AdminPermission[] {
   if (!Array.isArray(raw)) return [];
@@ -112,7 +107,6 @@ export function normalizePermissionList(raw: unknown): AdminPermission[] {
   }
   return out;
 }
-
 /** Permissions that must never be granted to subadmin. */
 export const SUPERADMIN_ONLY_PERMISSIONS: readonly AdminPermission[] = [
   "audit.delete",
@@ -121,9 +115,7 @@ export const SUPERADMIN_ONLY_PERMISSIONS: readonly AdminPermission[] = [
   "backups.restore",
   "system.view",
 ];
-
 const SUPERADMIN_ONLY_SET = new Set<string>(SUPERADMIN_ONLY_PERMISSIONS);
-
 /**
  * Effective permissions for a user.
  * Superadmin always gets the full catalog (DB list ignored).
@@ -135,32 +127,27 @@ export function resolvePermissions(role: unknown, stored: unknown): AdminPermiss
   }
   return normalizePermissionList(stored).filter((p) => !SUPERADMIN_ONLY_SET.has(p));
 }
-
 export type AdminAuthSubject = {
   role: AdminRole;
   permissions: readonly AdminPermission[];
 };
-
 export function can(subject: AdminAuthSubject | null | undefined, permission: AdminPermission): boolean {
   if (!subject) return false;
   if (isSuperAdminRole(subject.role)) return true;
   return subject.permissions.includes(permission);
 }
-
 export function canAny(
   subject: AdminAuthSubject | null | undefined,
   permissions: readonly AdminPermission[],
 ): boolean {
   return permissions.some((p) => can(subject, p));
 }
-
 export function canAll(
   subject: AdminAuthSubject | null | undefined,
   permissions: readonly AdminPermission[],
 ): boolean {
   return permissions.every((p) => can(subject, p));
 }
-
 /** Modules shown as checkbox groups in Phase 2 UI. */
 export const ADMIN_PERMISSION_MODULES: ReadonlyArray<{
   id: string;
@@ -225,6 +212,16 @@ export const ADMIN_PERMISSION_MODULES: ReadonlyArray<{
     id: "pubgApk",
     label: "PUBG APK",
     permissions: ["pubgApk.view", "pubgApk.edit"],
+  },
+  {
+    id: "freeFireApk",
+    label: "FF Apk",
+    permissions: ["freeFireApk.view", "freeFireApk.edit"],
+  },
+  {
+    id: "freeFireMaxApk",
+    label: "FF Max Apk",
+    permissions: ["freeFireMaxApk.view", "freeFireMaxApk.edit"],
   },
   {
     id: "bgmiRedeem",
@@ -345,6 +342,10 @@ export const ADMIN_PERMISSION_PRESETS: ReadonlyArray<{
       "bgmiApk.edit",
       "pubgApk.view",
       "pubgApk.edit",
+      "freeFireApk.view",
+      "freeFireApk.edit",
+      "freeFireMaxApk.view",
+      "freeFireMaxApk.edit",
       "bgmiRedeem.view",
       "bgmiRedeem.edit",
       "pubgRedeem.view",

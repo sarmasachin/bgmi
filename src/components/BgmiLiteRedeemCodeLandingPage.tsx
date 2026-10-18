@@ -6,6 +6,7 @@ import { FaqAccordion } from "@/src/components/FaqAccordion";
 import { HomeHeader } from "@/src/components/HomeHeader";
 import { PageCommentSection } from "@/src/components/PageCommentSection";
 import { SiteFooter } from "@/src/components/SiteFooter";
+import { ToolPageRatingBlock } from "@/src/components/ToolPageRatingBlock";
 import {
   BGMI_LITE_REDEEM_CODE_PATH,
   BGMI_LITE_REDEEM_PAGE_KEY,
@@ -27,15 +28,17 @@ import {
   getBgmiLiteRedeemUpdatedAt,
 } from "@/src/server/repositories/bgmiLiteRedeemCodesRepository";
 import { listApprovedPageComments } from "@/src/server/repositories/pageCommentsRepository";
+import { getRatingSummary } from "@/src/server/repositories/ratingSummaryRepository";
 import { getSettings } from "@/src/server/repositories/settingsRepository";
 
 /** White BGMI Air redeem-code page: codes → article + FAQ → comments. */
 export async function BgmiLiteRedeemCodeLandingPage() {
-  const [settings, page, updatedAt, pageComments] = await Promise.all([
+  const [settings, page, updatedAt, pageComments, ratingSummary] = await Promise.all([
     getSettings(),
     getBgmiLiteRedeemPage(),
     getBgmiLiteRedeemUpdatedAt(),
     listApprovedPageComments(BGMI_LITE_REDEEM_PAGE_KEY),
+    getRatingSummary("tool", BGMI_LITE_REDEEM_PAGE_KEY).catch(() => null),
   ]);
   const ui = page.ui;
   const canonical = toCanonicalUrl(BGMI_LITE_REDEEM_CODE_PATH);
@@ -86,6 +89,7 @@ export async function BgmiLiteRedeemCodeLandingPage() {
     keywords: [...page.seoKeywords],
     inLanguage: "en",
     dateModified: updatedAt ? updatedAt.toISOString() : undefined,
+    mainEntityId: `${canonical}#app`,
   });
   const faqLd = faqSchema(faqItems);
   const itemListLd =
@@ -185,6 +189,15 @@ export async function BgmiLiteRedeemCodeLandingPage() {
           </div>
         </div>
       ) : null}
+
+      <ToolPageRatingBlock
+        pageKey={BGMI_LITE_REDEEM_PAGE_KEY}
+        lead="Was this BGMI Air redeem code guide helpful? Tap a star to rate."
+        ratingSummary={ratingSummary}
+        appName={page.seoTitle || crumbCurrent}
+        appDescription={page.seoDescription}
+        appUrl={canonical}
+      />
 
       <PageCommentSection
         pageKey={BGMI_LITE_REDEEM_PAGE_KEY}

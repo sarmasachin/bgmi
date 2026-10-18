@@ -6,6 +6,7 @@ import { HomeHeader } from "@/src/components/HomeHeader";
 import { HomeTitleDummyAd } from "@/src/components/HomeTitleDummyAd";
 import { PageCommentSection } from "@/src/components/PageCommentSection";
 import { PubgApkHeroActions } from "@/src/components/PubgApkHeroActions";
+import { RatingWidget } from "@/src/components/RatingWidget";
 import { SiteFooter } from "@/src/components/SiteFooter";
 import {
   DEFAULT_PUBG_APK_PAGE,
@@ -14,9 +15,19 @@ import {
   isUsablePubgHeroImageSrc,
   type PubgApkPageContent,
 } from "@/src/lib/pubgApkPage";
-import { breadcrumbListSchema, faqSchema, webPageSchema } from "@/src/lib/schema";
+import { ratingWidgetRemountKey } from "@/src/lib/ratingWidgetKey";
+import {
+  androidApkAppSchema,
+  breadcrumbListSchema,
+  faqSchema,
+  webPageSchema,
+} from "@/src/lib/schema";
 import { toCanonicalUrl } from "@/src/lib/siteUrl";
 import { getPubgApkPage } from "@/src/server/repositories/pubgApkPageRepository";
+import {
+  getRatingSummary,
+  type RatingSummary,
+} from "@/src/server/repositories/ratingSummaryRepository";
 import {
   listApprovedPageComments,
   type PublicPageComment,
@@ -27,14 +38,16 @@ type LandingData = {
   settings: SiteSettings;
   page: PubgApkPageContent;
   pageComments: PublicPageComment[];
+  ratingSummary: RatingSummary | null;
 };
 
 /** Isolate data failures so comments/CMS cannot blank the whole page. */
 async function loadLandingData(): Promise<LandingData> {
-  const [settingsResult, pageResult, commentsResult] = await Promise.allSettled([
+  const [settingsResult, pageResult, commentsResult, ratingResult] = await Promise.allSettled([
     getSettings(),
     getPubgApkPage(),
     listApprovedPageComments(PUBG_APK_PAGE_KEY),
+    getRatingSummary("tool", PUBG_APK_PAGE_KEY),
   ]);
 
   if (settingsResult.status === "rejected") {
@@ -47,11 +60,12 @@ async function loadLandingData(): Promise<LandingData> {
     settings: settingsResult.value,
     page: pageResult.status === "fulfilled" ? pageResult.value : DEFAULT_PUBG_APK_PAGE,
     pageComments: commentsResult.status === "fulfilled" ? commentsResult.value : [],
+    ratingSummary: ratingResult.status === "fulfilled" ? ratingResult.value : null,
   };
 }
 
 export async function PubgApkLandingPage() {
-  const { settings, pageComments, page } = await loadLandingData();
+  const { settings, pageComments, page, ratingSummary } = await loadLandingData();
   const canonical = toCanonicalUrl(PUBG_APK_PATH);
   const homeUrl = toCanonicalUrl("/");
   const pubgUrl = toCanonicalUrl("/pubg");
@@ -68,6 +82,13 @@ export async function PubgApkLandingPage() {
     { name: "PUBG Mobile", url: pubgUrl },
     { name: "PUBG APK", url: canonical },
   ]);
+  const appLd = androidApkAppSchema({
+    name: page.heroTitle,
+    description: page.seoDescription,
+    url: canonical,
+    image: ogImageAbs,
+    ratingSummary,
+  });
   const webPageLd = webPageSchema({
     name: page.seoTitle,
     description: page.seoDescription,
@@ -75,6 +96,7 @@ export async function PubgApkLandingPage() {
     image: ogImageAbs,
     keywords: [...page.seoKeywords],
     inLanguage: "en",
+    mainEntityId: `${canonical}#app`,
   });
 
   return (
@@ -187,6 +209,24 @@ export async function PubgApkLandingPage() {
         </div>
       </div>
 
+      <section className="ff-as-rating" aria-label="Rate this page">
+        <div className="ff-as-rating-inner">
+          <h2 className="ff-as-rating-title">Rate this page</h2>
+          <p className="ff-as-rating-lead">
+            Was this PUBG APK guide helpful? Tap a star to rate.
+          </p>
+          <ClientErrorBoundary label="Rating">
+            <RatingWidget
+              key={ratingWidgetRemountKey("tool", PUBG_APK_PAGE_KEY)}
+              title=""
+              targetType="tool"
+              targetId={PUBG_APK_PAGE_KEY}
+              initialSummary={ratingSummary}
+            />
+          </ClientErrorBoundary>
+        </div>
+      </section>
+
       <ClientErrorBoundary label="Comments">
         <PageCommentSection
           pageKey={PUBG_APK_PAGE_KEY}
@@ -204,6 +244,10 @@ export async function PubgApkLandingPage() {
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbLd) }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(appLd) }}
       />
       <script
         type="application/ld+json"

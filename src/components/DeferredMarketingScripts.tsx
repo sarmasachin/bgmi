@@ -2,6 +2,7 @@
 
 import { useEffect } from "react";
 import { usePathname } from "next/navigation";
+import { readAdminNoAdsFlag } from "@/src/lib/adminNoAdsFlag";
 
 export type DeferredScriptPayload = {
   externalSrc?: string;
@@ -64,7 +65,7 @@ export function DeferredMarketingScripts({
   const pathname = usePathname();
 
   useEffect(() => {
-    if (isAdminPath(pathname)) return;
+    if (isAdminPath(pathname) || readAdminNoAdsFlag(document.cookie)) return;
     if (!analytics && !adsense) return;
 
     let adsenseDone = false;

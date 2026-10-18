@@ -60,6 +60,8 @@ export async function buildPageSitemapEntries(): Promise<SitemapUrlEntry[]> {
     row(baseUrl, "/free-fire-max-stylish-name", lastmod("/free-fire-max-stylish-name")),
     row(baseUrl, "/pubg", lastmod("/pubg")),
     row(baseUrl, "/pubg-apk", lastmod("/pubg-apk")),
+    row(baseUrl, "/free-fire-apk", lastmod("/free-fire-apk")),
+    row(baseUrl, "/free-fire-max-apk", lastmod("/free-fire-max-apk")),
     row(baseUrl, "/pubg-redeem-code", lastmod("/pubg-redeem-code")),
     row(baseUrl, "/pubg-mobile-codes", lastmod("/pubg-mobile-codes")),
     row(baseUrl, "/free-fire-max-sensitivity-settings-calculator", lastmod("/free-fire-max-sensitivity-settings-calculator")),

@@ -262,6 +262,8 @@ export function webPageSchema(options: {
   dateModified?: string;
   keywords?: string[];
   inLanguage?: string;
+  /** Optional link to SoftwareApplication / WebApplication `@id` on the same page. */
+  mainEntityId?: string;
 }) {
   const keywords = (options.keywords ?? []).map((k) => k.trim()).filter(Boolean);
   return {
@@ -281,9 +283,48 @@ export function webPageSchema(options: {
       : {}),
     ...(options.dateModified ? { dateModified: options.dateModified } : {}),
     ...(keywords.length ? { keywords: keywords.join(", ") } : {}),
+    ...(options.mainEntityId
+      ? { mainEntity: { "@id": options.mainEntityId } }
+      : {}),
     isPartOf: {
       "@type": "WebSite",
       name: "Sensitivity Settings",
+    },
+  };
+}
+
+/**
+ * CollectionPage + ItemList for news / category listing pages.
+ * Empty item lists still emit CollectionPage (no fake articles).
+ */
+export function collectionPageSchema(options: {
+  name: string;
+  description: string;
+  url: string;
+  items: Array<{ name: string; url: string }>;
+}) {
+  const items = options.items
+    .map((item) => ({
+      name: item.name?.trim() ?? "",
+      url: item.url?.trim() ?? "",
+    }))
+    .filter((item) => item.name && item.url);
+
+  return {
+    "@context": "https://schema.org",
+    "@type": "CollectionPage",
+    name: options.name.trim(),
+    description: options.description.trim(),
+    url: options.url,
+    mainEntity: {
+      "@type": "ItemList",
+      numberOfItems: items.length,
+      itemListElement: items.map((item, index) => ({
+        "@type": "ListItem",
+        position: index + 1,
+        name: item.name,
+        url: item.url,
+      })),
     },
   };
 }
@@ -297,10 +338,14 @@ export function androidApkAppSchema(options: {
   downloadUrl?: string;
   operatingSystem?: string;
   image?: string | null;
+  /** Real RatingWidget summary only — AggregateRating omitted when count is 0. */
+  ratingSummary?: { average: number | null; count: number } | null;
 }) {
+  const ratingFields = newsArticleRatingFields(options.ratingSummary ?? null);
   return {
     "@context": "https://schema.org",
     "@type": "SoftwareApplication",
+    "@id": `${options.url}#app`,
     name: options.name.trim(),
     description: options.description.trim(),
     url: options.url,
@@ -312,5 +357,6 @@ export function androidApkAppSchema(options: {
       price: "0",
       priceCurrency: "INR",
     },
+    ...(ratingFields ?? {}),
   };
 }

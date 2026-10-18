@@ -4,6 +4,7 @@ import {
   ADMIN_SESSION_COOKIE,
   adminSessionCookieOptions,
 } from "@/src/server/adminSession";
+import { setAdminNoAdsCookie } from "@/src/server/adminNoAdsCookie";
 import { getAdminUserAuthSnapshot } from "@/src/server/repositories/adminUsersRepository";
 import { createSessionTokenFromAuthSnapshot } from "@/src/server/rbac/sessionFromUser";
 import { checkRateLimit } from "@/src/server/rateLimit";
@@ -55,6 +56,7 @@ export async function POST(request: NextRequest) {
       permissions: snapshot.permissions,
     });
     response.cookies.set(ADMIN_SESSION_COOKIE, token, adminSessionCookieOptions());
+    setAdminNoAdsCookie(response);
     return response;
   } catch (err) {
     console.error("[admin-verify-otp] session create failed:", err);

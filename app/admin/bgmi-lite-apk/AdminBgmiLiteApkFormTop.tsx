@@ -1,12 +1,41 @@
 "use client";
 
-import type { BgmiLiteApkPageSectionId, BgmiLiteBetaApkPageContent } from "@/src/lib/bgmiLiteBetaApkPage";
+import { apkHeroButtonPublicStatus } from "@/src/lib/apkHeroCta";
+import {
+  BGMI_LITE_APK_PATH,
+  type BgmiLiteApkPageSectionId,
+  type BgmiLiteBetaApkPageContent,
+} from "@/src/lib/bgmiLiteBetaApkPage";
 import {
   AdminAccordionSection,
+  AdminCheckbox,
   AdminCountdownTarget,
   AdminField,
   AdminLinesEditor,
 } from "./adminBgmiLiteApkFields";
+
+function HeroButtonStatus({
+  btn,
+  countdown,
+}: {
+  btn: BgmiLiteBetaApkPageContent["heroButtons"]["apk"];
+  countdown: BgmiLiteBetaApkPageContent["countdown"];
+}) {
+  const status = apkHeroButtonPublicStatus(btn, countdown, BGMI_LITE_APK_PATH);
+  return (
+    <p
+      style={{
+        margin: "0 0 12px",
+        fontSize: 12,
+        fontWeight: 600,
+        color: status.visible ? "#4ade80" : "#fbbf24",
+        lineHeight: 1.45,
+      }}
+    >
+      {status.message}
+    </p>
+  );
+}
 
 type Props = {
   page: BgmiLiteBetaApkPageContent;
@@ -70,11 +99,100 @@ export function AdminBgmiLiteApkFormTop({ page, openIds, onToggle, onPatch }: Pr
       </AdminAccordionSection>
 
       <AdminAccordionSection
+        id="heroButtons"
+        title="Hero buttons (Play Store + APK)"
+        open={openIds.has("heroButtons")}
+        onToggle={onToggle}
+      >
+        <p style={{ margin: "0 0 12px", fontSize: 12, color: "#94a3b8", lineHeight: 1.45 }}>
+          Public page shows a button only if Show is on, label is filled, and URL is filled. While
+          the countdown is ticking, buttons stay hidden — they show when the timer ends or is
+          turned off.
+        </p>
+        <strong style={{ display: "block", color: "#e2e8f0", marginBottom: 8 }}>Play Store</strong>
+        <HeroButtonStatus btn={page.heroButtons.playStore} countdown={page.countdown} />
+        <AdminCheckbox
+          label="Show Play Store button"
+          checked={page.heroButtons.playStore.visible}
+          onChange={(visible) =>
+            onPatch((p) => ({
+              ...p,
+              heroButtons: { ...p.heroButtons, playStore: { ...p.heroButtons.playStore, visible } },
+            }))
+          }
+        />
+        <AdminField
+          label="Play Store label"
+          value={page.heroButtons.playStore.label}
+          onChange={(label) =>
+            onPatch((p) => ({
+              ...p,
+              heroButtons: { ...p.heroButtons, playStore: { ...p.heroButtons.playStore, label } },
+            }))
+          }
+        />
+        <AdminField
+          label="Play Store URL"
+          value={page.heroButtons.playStore.href}
+          onChange={(href) =>
+            onPatch((p) => ({
+              ...p,
+              heroButtons: { ...p.heroButtons, playStore: { ...p.heroButtons.playStore, href } },
+            }))
+          }
+        />
+        <strong style={{ display: "block", color: "#e2e8f0", margin: "8px 0" }}>APK</strong>
+        <HeroButtonStatus btn={page.heroButtons.apk} countdown={page.countdown} />
+        <AdminCheckbox
+          label="Show APK button"
+          checked={page.heroButtons.apk.visible}
+          onChange={(visible) =>
+            onPatch((p) => ({
+              ...p,
+              heroButtons: { ...p.heroButtons, apk: { ...p.heroButtons.apk, visible } },
+            }))
+          }
+        />
+        <AdminField
+          label="APK label"
+          value={page.heroButtons.apk.label}
+          onChange={(label) =>
+            onPatch((p) => ({
+              ...p,
+              heroButtons: { ...p.heroButtons, apk: { ...p.heroButtons.apk, label } },
+            }))
+          }
+        />
+        <AdminField
+          label="APK URL (required to show on public page)"
+          value={page.heroButtons.apk.href}
+          onChange={(href) =>
+            onPatch((p) => ({
+              ...p,
+              heroButtons: { ...p.heroButtons, apk: { ...p.heroButtons.apk, href } },
+            }))
+          }
+        />
+      </AdminAccordionSection>
+
+      <AdminAccordionSection
         id="countdown"
         title="Countdown"
         open={openIds.has("countdown")}
         onToggle={onToggle}
       >
+        <p style={{ margin: "0 0 12px", fontSize: 12, color: "#94a3b8", lineHeight: 1.45 }}>
+          While the timer is counting, Play/APK buttons stay hidden. When you turn the timer off —
+          or when the date passes — download buttons show automatically (if Show + label + URL are
+          set).
+        </p>
+        <AdminCheckbox
+          label="Show countdown timer"
+          checked={page.countdown.visible}
+          onChange={(visible) =>
+            onPatch((p) => ({ ...p, countdown: { ...p.countdown, visible } }))
+          }
+        />
         <AdminField
           label="Countdown label"
           value={page.countdown.label}

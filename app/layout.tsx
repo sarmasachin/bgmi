@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import { Geist } from "next/font/google";
 import { headers } from "next/headers";
 import { DeferredMarketingScripts } from "@/src/components/DeferredMarketingScripts";
+import { BlockAdminAds } from "@/src/components/admin/BlockAdminAds";
 import { PushSoftPrompt } from "@/src/components/PushSoftPrompt";
 import { FA_CSS, FA_SOLID_WOFF2 } from "@/src/lib/fontAwesome";
 import { organizationSchema, websiteSchema } from "@/src/lib/schema";
@@ -13,6 +14,7 @@ import {
 import { getSiteUrl } from "@/src/lib/siteUrl";
 import { DEFAULT_OG_IMAGE_PATH } from "@/src/lib/socialMeta";
 import { defaultSeoSettings } from "@/src/lib/siteSettings";
+import { isAdminAdsHidden } from "@/src/server/adminNoAds";
 import { getHeadSnippets, getSettings } from "@/src/server/repositories/settingsRepository";
 import "./globals.css";
 
@@ -126,6 +128,8 @@ export default async function RootLayout({
   const headerList = await headers();
   const requestPath = headerList.get("x-pathname") ?? "";
   const isAdminPage = requestPath === "/admin" || requestPath.startsWith("/admin/");
+  const hideAdsForAdmin = await isAdminAdsHidden();
+  const skipAds = isAdminPage || hideAdsForAdmin;
   const snippets = await getHeadSnippets();
   const analytics = parseAnalyticsSnippet(snippets.analyticsScript);
   const adsense = parseAdsenseSnippet(snippets.adsenseScript);
@@ -135,7 +139,7 @@ export default async function RootLayout({
       <head>
         {/* AdSense Auto ads in the initial HTML. Analytics stays deferred. */}
         <link rel="dns-prefetch" href="https://www.googletagmanager.com" />
-        {isAdminPage ? null : (
+        {skipAds ? null : (
           <>
             <link rel="dns-prefetch" href="https://pagead2.googlesyndication.com" />
             <script async src={ADSENSE_AUTO_SRC} crossOrigin="anonymous" />
@@ -181,6 +185,7 @@ export default async function RootLayout({
           }}
         />
         {children}
+        <BlockAdminAds sessionHidden={hideAdsForAdmin} />
         <PushSoftPrompt />
         <DeferredMarketingScripts
           analytics={
@@ -193,6 +198,7 @@ export default async function RootLayout({
               : null
           }
           adsense={
+            !skipAds &&
             adsense &&
             adsense.clientId !== ADSENSE_CLIENT &&
             !adsense.externalSrc?.includes(ADSENSE_CLIENT)

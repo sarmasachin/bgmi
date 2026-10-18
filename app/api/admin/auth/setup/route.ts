@@ -10,6 +10,7 @@ import {
   ADMIN_SESSION_COOKIE,
   adminSessionCookieOptions,
 } from "@/src/server/adminSession";
+import { setAdminNoAdsCookie } from "@/src/server/adminNoAdsCookie";
 import { createSessionTokenFromAuthSnapshot } from "@/src/server/rbac/sessionFromUser";
 import {
   normalizeAdminRole,
@@ -114,6 +115,7 @@ export async function POST(request: NextRequest) {
 
     const response = NextResponse.json({ ok: true, email: result.email });
     response.cookies.set(ADMIN_SESSION_COOKIE, token, adminSessionCookieOptions());
+    setAdminNoAdsCookie(response);
     return response;
   } catch (err) {
     console.error("[admin-setup] session create failed:", err);

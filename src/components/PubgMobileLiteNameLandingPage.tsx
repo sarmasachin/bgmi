@@ -6,6 +6,7 @@ import { FaqAccordion } from "@/src/components/FaqAccordion";
 import { HomeHeader } from "@/src/components/HomeHeader";
 import { PageCommentSection } from "@/src/components/PageCommentSection";
 import { SiteFooter } from "@/src/components/SiteFooter";
+import { ToolPageRatingBlock } from "@/src/components/ToolPageRatingBlock";
 import { PUBG_MOBILE_LITE_PATH } from "@/src/lib/pubgMobileLite";
 import {
   PUBG_MOBILE_LITE_NAME_PAGE_KEY,
@@ -15,14 +16,16 @@ import { breadcrumbListSchema, faqSchema, webPageSchema } from "@/src/lib/schema
 import { toCanonicalUrl } from "@/src/lib/siteUrl";
 import { listApprovedPageComments } from "@/src/server/repositories/pageCommentsRepository";
 import { getPubgMobileLiteNamePage } from "@/src/server/repositories/pubgMobileLiteNameRepository";
+import { getRatingSummary } from "@/src/server/repositories/ratingSummaryRepository";
 import { getSettings } from "@/src/server/repositories/settingsRepository";
 
 /** PUBG Mobile Flash stylish name — mobile-first studio + DB-backed copy. */
 export async function PubgMobileLiteNameLandingPage() {
-  const [settings, page, pageComments] = await Promise.all([
+  const [settings, page, pageComments, ratingSummary] = await Promise.all([
     getSettings(),
     getPubgMobileLiteNamePage(),
     listApprovedPageComments(PUBG_MOBILE_LITE_NAME_PAGE_KEY),
+    getRatingSummary("tool", PUBG_MOBILE_LITE_NAME_PAGE_KEY).catch(() => null),
   ]);
   const canonical = toCanonicalUrl(PUBG_MOBILE_LITE_NAME_PATH);
   const homeUrl = toCanonicalUrl("/");
@@ -45,6 +48,7 @@ export async function PubgMobileLiteNameLandingPage() {
     url: canonical,
     keywords: [...page.seoKeywords],
     inLanguage: "en",
+    mainEntityId: `${canonical}#app`,
   });
 
   return (
@@ -108,6 +112,15 @@ export async function PubgMobileLiteNameLandingPage() {
           {faqItems.length ? <FaqAccordion items={faqItems} title={page.faqTitle} /> : null}
         </div>
       </div>
+
+      <ToolPageRatingBlock
+        pageKey={PUBG_MOBILE_LITE_NAME_PAGE_KEY}
+        lead="Was this PUBG Flash stylish name tool helpful? Tap a star to rate."
+        ratingSummary={ratingSummary}
+        appName={page.seoTitle || crumbCurrent}
+        appDescription={page.seoDescription}
+        appUrl={canonical}
+      />
 
       <PageCommentSection
         pageKey={PUBG_MOBILE_LITE_NAME_PAGE_KEY}

@@ -61,6 +61,24 @@ export const ADMIN_NAV_ACCESS: ReadonlyArray<{
     anyOf: ["pubgApk.view"],
   },
   {
+    label: "PUBG Flash APK",
+    href: "/admin/pubg-mobile-lite-apk",
+    icon: "pubgApk",
+    anyOf: ["pubgApk.view"],
+  },
+  {
+    label: "FF Apk",
+    href: "/admin/free-fire-apk",
+    icon: "freeFireApk",
+    anyOf: ["freeFireApk.view"],
+  },
+  {
+    label: "FF Max Apk",
+    href: "/admin/free-fire-max-apk",
+    icon: "freeFireMaxApk",
+    anyOf: ["freeFireMaxApk.view"],
+  },
+  {
     label: "BGMI Redeem",
     href: "/admin/bgmi-redeem",
     icon: "bgmiRedeem",
@@ -233,30 +251,39 @@ export function resolveAdminApiPermission(
     if (isRead) return { type: "permission", permission: "homeCards.view" };
     return { type: "permission", permission: "homeCards.edit" };
   }
-
   if (path.startsWith("/api/admin/advance-server")) {
     if (isRead) return { type: "permission", permission: "advanceServer.view" };
     return { type: "permission", permission: "advanceServer.edit" };
   }
-
   if (path.startsWith("/api/admin/bgmi-lite-redeem")) {
     if (isRead) return { type: "permission", permission: "bgmiLiteRedeem.view" };
     return { type: "permission", permission: "bgmiLiteRedeem.edit" };
   }
-
   if (path.startsWith("/api/admin/bgmi-lite-apk")) {
     if (isRead) return { type: "permission", permission: "bgmiLiteApk.view" };
     return { type: "permission", permission: "bgmiLiteApk.edit" };
   }
-
   if (path.startsWith("/api/admin/bgmi-apk")) {
     if (isRead) return { type: "permission", permission: "bgmiApk.view" };
     return { type: "permission", permission: "bgmiApk.edit" };
   }
-
+  if (path.startsWith("/api/admin/pubg-mobile-lite-apk")) {
+    if (isRead) return { type: "permission", permission: "pubgApk.view" };
+    return { type: "permission", permission: "pubgApk.edit" };
+  }
   if (path.startsWith("/api/admin/pubg-apk")) {
     if (isRead) return { type: "permission", permission: "pubgApk.view" };
     return { type: "permission", permission: "pubgApk.edit" };
+  }
+
+  if (path.startsWith("/api/admin/free-fire-apk")) {
+    if (isRead) return { type: "permission", permission: "freeFireApk.view" };
+    return { type: "permission", permission: "freeFireApk.edit" };
+  }
+
+  if (path.startsWith("/api/admin/free-fire-max-apk")) {
+    if (isRead) return { type: "permission", permission: "freeFireMaxApk.view" };
+    return { type: "permission", permission: "freeFireMaxApk.edit" };
   }
 
   if (path.startsWith("/api/admin/bgmi-redeem")) {
@@ -351,7 +378,6 @@ export function resolveAdminApiPermission(
     if (path.includes("/upload") || path.includes("/convert")) {
       return { type: "permission", permission: "media.upload" };
     }
-    // defaults / other writes
     return { type: "any", permissions: ["media.upload", "media.delete"] };
   }
 
@@ -364,6 +390,6 @@ export function resolveAdminApiPermission(
     return { type: "permission", permission: "settings.edit" };
   }
 
-  // Fail closed for anything else under /api/admin (except auth allowlist handled in middleware).
+  // Fail closed for anything else under /api/admin.
   return { type: "deny" };
 }

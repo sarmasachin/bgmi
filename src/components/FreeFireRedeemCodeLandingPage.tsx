@@ -6,6 +6,7 @@ import { FreeFireRedeemCodeBoard } from "@/src/components/FreeFireRedeemCodeBoar
 import { HomeHeader } from "@/src/components/HomeHeader";
 import { PageCommentSection } from "@/src/components/PageCommentSection";
 import { SiteFooter } from "@/src/components/SiteFooter";
+import { ToolPageRatingBlock } from "@/src/components/ToolPageRatingBlock";
 import {
   formatRedeemUpdatedLabelIst,
   resolveRedeemFreshnessAt,
@@ -42,6 +43,10 @@ import {
   getFreeFireMaxRedeemUpdatedAt,
 } from "@/src/server/repositories/freeFireMaxRedeemCodesRepository";
 import {
+  getRatingSummary,
+  type RatingSummary,
+} from "@/src/server/repositories/ratingSummaryRepository";
+import {
   getSettings,
   type SiteSettings,
 } from "@/src/server/repositories/settingsRepository";
@@ -59,6 +64,7 @@ type LandingData = {
   page: FreeFireRedeemCodePageContent;
   updatedAt: Date | null;
   pageComments: PublicPageComment[];
+  ratingSummary: RatingSummary | null;
 };
 
 /** Isolate data failures so one soft-fail source cannot blank the whole page. */
@@ -67,12 +73,14 @@ async function loadLandingData(
 ): Promise<LandingData> {
   const isMax = variant === "free-fire-max";
   const pageKey = isMax ? FREE_FIRE_MAX_REDEEM_PAGE_KEY : FREE_FIRE_REDEEM_PAGE_KEY;
-  const [settingsResult, pageResult, updatedAtResult, commentsResult] = await Promise.allSettled([
-    getSettings(),
-    isMax ? getFreeFireMaxRedeemPage() : getFreeFireRedeemPage(),
-    isMax ? getFreeFireMaxRedeemUpdatedAt() : getFreeFireRedeemUpdatedAt(),
-    listApprovedPageComments(pageKey),
-  ]);
+  const [settingsResult, pageResult, updatedAtResult, commentsResult, ratingResult] =
+    await Promise.allSettled([
+      getSettings(),
+      isMax ? getFreeFireMaxRedeemPage() : getFreeFireRedeemPage(),
+      isMax ? getFreeFireMaxRedeemUpdatedAt() : getFreeFireRedeemUpdatedAt(),
+      listApprovedPageComments(pageKey),
+      getRatingSummary("tool", pageKey),
+    ]);
 
   if (settingsResult.status === "rejected") {
     throw settingsResult.reason instanceof Error
@@ -86,6 +94,7 @@ async function loadLandingData(
     page: pageResult.status === "fulfilled" ? pageResult.value : fallbackPage,
     updatedAt: updatedAtResult.status === "fulfilled" ? updatedAtResult.value : null,
     pageComments: commentsResult.status === "fulfilled" ? commentsResult.value : [],
+    ratingSummary: ratingResult.status === "fulfilled" ? ratingResult.value : null,
   };
 }
 
@@ -95,7 +104,7 @@ export async function FreeFireRedeemCodeLandingPage(
 ) {
   const variant = options.variant ?? "free-fire";
   const isMax = variant === "free-fire-max";
-  const { settings, page, updatedAt, pageComments } = await loadLandingData(variant);
+  const { settings, page, updatedAt, pageComments, ratingSummary } = await loadLandingData(variant);
   const ui = page.ui;
   const path =
     options.path?.trim() ||
@@ -151,6 +160,7 @@ export async function FreeFireRedeemCodeLandingPage(
     keywords: [...page.seoKeywords],
     inLanguage: "en",
     dateModified: updatedAt ? updatedAt.toISOString() : undefined,
+    mainEntityId: `${canonical}#app`,
   });
   const faqLd = faqSchema(faqItems);
   const itemListLd =
@@ -245,6 +255,15 @@ export async function FreeFireRedeemCodeLandingPage(
           </div>
         </ClientErrorBoundary>
       ) : null}
+
+      <ToolPageRatingBlock
+        pageKey={pageKey}
+        lead={`Was this ${codeLabel} guide helpful? Tap a star to rate.`}
+        ratingSummary={ratingSummary}
+        appName={page.seoTitle || crumbCurrent}
+        appDescription={page.seoDescription}
+        appUrl={canonical}
+      />
 
       <ClientErrorBoundary label="Comments">
         <PageCommentSection

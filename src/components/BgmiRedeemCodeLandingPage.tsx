@@ -6,6 +6,7 @@ import { FaqAccordion } from "@/src/components/FaqAccordion";
 import { HomeHeader } from "@/src/components/HomeHeader";
 import { PageCommentSection } from "@/src/components/PageCommentSection";
 import { SiteFooter } from "@/src/components/SiteFooter";
+import { ToolPageRatingBlock } from "@/src/components/ToolPageRatingBlock";
 import {
   formatRedeemUpdatedLabelIst,
   resolveRedeemFreshnessAt,
@@ -32,6 +33,10 @@ import {
   listApprovedPageComments,
   type PublicPageComment,
 } from "@/src/server/repositories/pageCommentsRepository";
+import {
+  getRatingSummary,
+  type RatingSummary,
+} from "@/src/server/repositories/ratingSummaryRepository";
 import { getSettings, type SiteSettings } from "@/src/server/repositories/settingsRepository";
 
 type LandingData = {
@@ -39,16 +44,19 @@ type LandingData = {
   page: BgmiRedeemCodePageContent;
   updatedAt: Date | null;
   pageComments: PublicPageComment[];
+  ratingSummary: RatingSummary | null;
 };
 
 /** Isolate data failures so comments/CMS cannot blank the whole page. */
 async function loadLandingData(): Promise<LandingData> {
-  const [settingsResult, pageResult, updatedAtResult, commentsResult] = await Promise.allSettled([
-    getSettings(),
-    getBgmiRedeemPage(),
-    getBgmiRedeemUpdatedAt(),
-    listApprovedPageComments(BGMI_REDEEM_PAGE_KEY),
-  ]);
+  const [settingsResult, pageResult, updatedAtResult, commentsResult, ratingResult] =
+    await Promise.allSettled([
+      getSettings(),
+      getBgmiRedeemPage(),
+      getBgmiRedeemUpdatedAt(),
+      listApprovedPageComments(BGMI_REDEEM_PAGE_KEY),
+      getRatingSummary("tool", BGMI_REDEEM_PAGE_KEY),
+    ]);
 
   if (settingsResult.status === "rejected") {
     throw settingsResult.reason instanceof Error
@@ -61,12 +69,13 @@ async function loadLandingData(): Promise<LandingData> {
     page: pageResult.status === "fulfilled" ? pageResult.value : cloneBgmiRedeemPage(),
     updatedAt: updatedAtResult.status === "fulfilled" ? updatedAtResult.value : null,
     pageComments: commentsResult.status === "fulfilled" ? commentsResult.value : [],
+    ratingSummary: ratingResult.status === "fulfilled" ? ratingResult.value : null,
   };
 }
 
 /** White BGMI redeem-code page: codes → article + FAQ → comments. */
 export async function BgmiRedeemCodeLandingPage() {
-  const { settings, page, updatedAt, pageComments } = await loadLandingData();
+  const { settings, page, updatedAt, pageComments, ratingSummary } = await loadLandingData();
   const ui = page.ui;
   const canonical = toCanonicalUrl(BGMI_REDEEM_CODE_PATH);
   const homeUrl = toCanonicalUrl("/");
@@ -116,6 +125,7 @@ export async function BgmiRedeemCodeLandingPage() {
     keywords: [...page.seoKeywords],
     inLanguage: "en",
     dateModified: updatedAt ? updatedAt.toISOString() : undefined,
+    mainEntityId: `${canonical}#app`,
   });
   const faqLd = faqSchema(faqItems);
   const itemListLd =
@@ -223,6 +233,15 @@ export async function BgmiRedeemCodeLandingPage() {
           </div>
         </ClientErrorBoundary>
       ) : null}
+
+      <ToolPageRatingBlock
+        pageKey={BGMI_REDEEM_PAGE_KEY}
+        lead="Was this BGMI redeem code guide helpful? Tap a star to rate."
+        ratingSummary={ratingSummary}
+        appName={page.seoTitle || crumbCurrent}
+        appDescription={page.seoDescription}
+        appUrl={canonical}
+      />
 
       <ClientErrorBoundary label="Comments">
         <PageCommentSection

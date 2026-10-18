@@ -4,6 +4,8 @@ import {
   ADMIN_SESSION_COOKIE,
   verifyAdminSessionToken,
 } from "@/src/server/adminSession";
+import { ADMIN_NO_ADS_COOKIE } from "@/src/lib/adminNoAdsFlag";
+import { syncAdminNoAdsCookie } from "@/src/server/adminNoAdsCookie";
 import { isAdminMutationOriginAllowed } from "@/src/server/adminRequestOrigin";
 import { resolveAdminApiPermission } from "@/src/server/rbac/routeAccess";
 import { subjectFromSessionPayload } from "@/src/server/rbac/sessionSubject";
@@ -19,10 +21,26 @@ function withAdminNoStore(response: NextResponse) {
 }
 
 /** Root layout reads this so AdSense Auto ads are not in the admin HTML. */
-function nextAdminPage(request: NextRequest) {
+function nextAdminPage(request: NextRequest, loggedIn: boolean) {
   const requestHeaders = new Headers(request.headers);
   requestHeaders.set("x-pathname", request.nextUrl.pathname);
-  return withAdminNoStore(NextResponse.next({ request: { headers: requestHeaders } }));
+  if (loggedIn) requestHeaders.set("x-admin-no-ads", "1");
+  const response = withAdminNoStore(NextResponse.next({ request: { headers: requestHeaders } }));
+  syncAdminNoAdsCookie(response, request.cookies.get(ADMIN_NO_ADS_COOKIE)?.value, loggedIn);
+  return response;
+}
+
+function continuePublic(request: NextRequest, loggedIn: boolean) {
+  let response: NextResponse;
+  if (loggedIn) {
+    const requestHeaders = new Headers(request.headers);
+    requestHeaders.set("x-admin-no-ads", "1");
+    response = NextResponse.next({ request: { headers: requestHeaders } });
+  } else {
+    response = NextResponse.next();
+  }
+  syncAdminNoAdsCookie(response, request.cookies.get(ADMIN_NO_ADS_COOKIE)?.value, loggedIn);
+  return response;
 }
 
 function forbiddenJson() {
@@ -53,7 +71,9 @@ export async function middleware(request: NextRequest) {
   const isAdminApi = pathname.startsWith("/api/admin");
 
   if (!isAdminPage && !isAdminApi) {
-    const response = NextResponse.next();
+    const raw = request.cookies.get(ADMIN_SESSION_COOKIE)?.value;
+    const session = raw ? await verifyAdminSessionToken(raw) : null;
+    const response = continuePublic(request, Boolean(session));
     if (isPreview) {
       response.headers.set("X-Robots-Tag", "noindex, nofollow, noarchive");
     }
@@ -73,7 +93,10 @@ export async function middleware(request: NextRequest) {
     pathname === "/api/admin/auth/setup" ||
     pathname === "/api/admin/auth/setup-status"
   ) {
-    return isAdminPage ? nextAdminPage(request) : NextResponse.next();
+    if (!isAdminPage) return NextResponse.next();
+    const raw = request.cookies.get(ADMIN_SESSION_COOKIE)?.value;
+    const session = raw ? await verifyAdminSessionToken(raw) : null;
+    return nextAdminPage(request, Boolean(session));
   }
 
   const raw = request.cookies.get(ADMIN_SESSION_COOKIE)?.value;
@@ -83,7 +106,9 @@ export async function middleware(request: NextRequest) {
       return NextResponse.json({ error: "Unauthorized. Please log in again." }, { status: 401 });
     }
     const loginUrl = new URL("/admin/login", request.url);
-    return withAdminNoStore(NextResponse.redirect(loginUrl));
+    const response = withAdminNoStore(NextResponse.redirect(loginUrl));
+    syncAdminNoAdsCookie(response, request.cookies.get(ADMIN_NO_ADS_COOKIE)?.value, false);
+    return response;
   }
 
   // Phase 3: enforce RBAC on admin APIs (pages are guarded in server components).
@@ -103,7 +128,7 @@ export async function middleware(request: NextRequest) {
     // auth-only → allowed for any valid session
   }
 
-  return isAdminPage ? nextAdminPage(request) : NextResponse.next();
+  return isAdminPage ? nextAdminPage(request, true) : NextResponse.next();
 }
 
 export const config = {
