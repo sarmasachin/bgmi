@@ -14,7 +14,7 @@ export type DeferredScriptPayload = {
 type Props = {
   analytics?: DeferredScriptPayload | null;
   adsense?: DeferredScriptPayload | null;
-  /** AdSense delay after open (ms). Short so impressions are not lost. */
+  /** Extra AdSense snippet delay (ms). Auto ads load separately after window load. */
   adsenseDelayMs?: number;
   /** Analytics delay after open (ms). Longer — less impact on INP/LCP. */
   analyticsDelayMs?: number;
@@ -59,8 +59,8 @@ function injectPayload(p: DeferredScriptPayload) {
 export function DeferredMarketingScripts({
   analytics,
   adsense,
-  adsenseDelayMs = 1200,
-  analyticsDelayMs = 4500,
+  adsenseDelayMs = 2800,
+  analyticsDelayMs = 5500,
 }: Props) {
   const pathname = usePathname();
 

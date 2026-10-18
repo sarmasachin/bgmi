@@ -19,7 +19,8 @@ export async function AdSlot({ slotKey }: Props) {
           display: block;
           width: 100%;
           max-width: 100%;
-          min-height: 0;
+          /* Stable floor before creative loads (Core Web Vitals CLS). */
+          min-height: 90px;
           height: auto;
           margin: 12px 0;
           padding: 0;
@@ -27,6 +28,7 @@ export async function AdSlot({ slotKey }: Props) {
           background: transparent;
           border: 0;
           overflow: hidden;
+          contain: layout;
         }
       `}</style>
     </div>

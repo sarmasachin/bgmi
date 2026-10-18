@@ -137,12 +137,19 @@ export default async function RootLayout({
   return (
     <html lang="en" className={geistSans.variable} data-scroll-behavior="smooth">
       <head>
-        {/* AdSense Auto ads in the initial HTML. Analytics stays deferred. */}
+        {/*
+          AdSense Auto: keep a <head> bootstrap (policy), but delay the network
+          fetch until after window load so LCP/TBT are not blocked by ads JS.
+        */}
         <link rel="dns-prefetch" href="https://www.googletagmanager.com" />
         {skipAds ? null : (
           <>
             <link rel="dns-prefetch" href="https://pagead2.googlesyndication.com" />
-            <script async src={ADSENSE_AUTO_SRC} crossOrigin="anonymous" />
+            <script
+              dangerouslySetInnerHTML={{
+                __html: `(function(){var u=${JSON.stringify(ADSENSE_AUTO_SRC)};function l(){if(document.getElementById('ss-adsense-auto'))return;var s=document.createElement('script');s.id='ss-adsense-auto';s.async=true;s.src=u;s.crossOrigin='anonymous';document.head.appendChild(s)}function d(){setTimeout(l,1800)}if(document.readyState==='complete')d();else window.addEventListener('load',d)})();`,
+              }}
+            />
           </>
         )}
         <link rel="preconnect" href="https://cdnjs.cloudflare.com" crossOrigin="anonymous" />

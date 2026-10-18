@@ -32,7 +32,8 @@ export async function HomeTitleDummyAd({
           display: block;
           width: min(1100px, 95%);
           max-width: 100%;
-          min-height: 0;
+          /* Reserve space before AdSense paints — cuts CLS from 0→banner. */
+          min-height: 90px;
           height: auto;
           margin: 0 auto 12px;
           padding: 0;
@@ -40,6 +41,7 @@ export async function HomeTitleDummyAd({
           background: transparent;
           border: 0;
           overflow: hidden;
+          contain: layout;
         }
         .lite-redeem-inner .ff-home-ad,
         .ff-as-article-head .ff-home-ad {
