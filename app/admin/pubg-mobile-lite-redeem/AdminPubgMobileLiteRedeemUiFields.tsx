@@ -38,7 +38,7 @@ export function AdminPubgMobileLiteRedeemUiFields({ ui, onPatchUi }: Props) {
   return (
     <>
       <p style={{ margin: "0 0 12px", fontSize: 12, color: "#94a3b8", lineHeight: 1.45 }}>
-        URL path stays locked to <code>/pubg-mobile-lite-redeem-code</code>. Comment approve/delete stays in{" "}
+        URL path stays locked to <code>/pubg-mobile-flash-redeem-code</code>. Comment approve/delete stays in{" "}
         <code>/admin/comments</code>.
       </p>
       {FIELDS.map((field) => (

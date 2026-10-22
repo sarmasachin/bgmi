@@ -143,7 +143,8 @@ export function toolAppReviewSchema(options: {
 }
 
 /**
- * News Article aggregateRating from real RatingWidget summary only.
+ * AggregateRating for SoftwareApplication only.
+ * Article is not an allowed review-snippet parent, so news pages must not use this.
  * Returns null when count is 0 (never invent stars).
  */
 export function newsArticleRatingFields(summary: {
@@ -166,7 +167,7 @@ export function newsArticleRatingFields(summary: {
   };
 }
 
-/** Hardened Article JSON-LD for news detail pages. */
+/** Hardened Article JSON-LD for news detail pages. No review or aggregateRating. */
 export function newsArticleSchema(options: {
   baseUrl: string;
   headline: string;
@@ -175,9 +176,7 @@ export function newsArticleSchema(options: {
   dateModified?: string | Date | null;
   image?: string | null;
   mainEntityOfPage: string;
-  ratingSummary?: { average: number | null; count: number } | null;
 }) {
-  const ratingFields = newsArticleRatingFields(options.ratingSummary ?? null);
   return {
     "@context": "https://schema.org",
     "@type": "Article",
@@ -201,7 +200,6 @@ export function newsArticleSchema(options: {
     },
     image: options.image || absoluteAsset(options.baseUrl, DEFAULT_OG_IMAGE_PATH),
     mainEntityOfPage: options.mainEntityOfPage,
-    ...(ratingFields ?? {}),
   };
 }
 

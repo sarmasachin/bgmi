@@ -202,7 +202,7 @@ export const DEFAULT_PUBG_MOBILE_LITE_APK_PAGE: PubgMobileLiteApkPageContent = {
         "Fine-tune ±5 in Training Ground after install",
       ],
       ctaLabel: "Open PUBG Mobile Flash calculator",
-      ctaHref: "/pubg-mobile-lite",
+      ctaHref: "/pubg-mobile-flash",
     },
   ],
   install: {

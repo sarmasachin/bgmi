@@ -40,7 +40,7 @@ export async function BgmiLiteBetaApkLandingPage() {
   ]);
   const canonical = toCanonicalUrl(BGMI_LITE_APK_PATH);
   const homeUrl = toCanonicalUrl("/");
-  const liteCalcUrl = toCanonicalUrl("/bgmi-lite");
+  const liteCalcUrl = toCanonicalUrl("/bgmi-air");
   const ogImageAbs = toCanonicalUrl(page.heroImage || "/icon.png?v=3");
   const faqItems = page.faqs.map((item) => ({
     id: item.id,
@@ -81,7 +81,7 @@ export async function BgmiLiteBetaApkLandingPage() {
             <Link href="/">Home</Link>
           </li>
           <li>
-            <Link href="/bgmi-lite">BGMI Air</Link>
+            <Link href="/bgmi-air">BGMI Air</Link>
           </li>
           <li aria-current="page">BGMI Air APK</li>
         </ol>

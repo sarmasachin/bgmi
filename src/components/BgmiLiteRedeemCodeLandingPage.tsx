@@ -43,7 +43,7 @@ export async function BgmiLiteRedeemCodeLandingPage() {
   const ui = page.ui;
   const canonical = toCanonicalUrl(BGMI_LITE_REDEEM_CODE_PATH);
   const homeUrl = toCanonicalUrl("/");
-  const liteCalcUrl = toCanonicalUrl("/bgmi-lite");
+  const liteCalcUrl = toCanonicalUrl("/bgmi-air");
   const crumbCurrent = ui.breadcrumbName.trim() || "BGMI Air Redeem Code";
   const dated = page.codes.map((c) => applyAutoExpireRedeemCode(c));
   const live = dated.filter((c) => isRedeemCodePubliclyLive(c));
@@ -120,7 +120,7 @@ export async function BgmiLiteRedeemCodeLandingPage() {
             <Link href="/">Home</Link>
           </li>
           <li>
-            <Link href="/bgmi-lite">BGMI Air</Link>
+            <Link href="/bgmi-air">BGMI Air</Link>
           </li>
           <li aria-current="page">{crumbCurrent}</li>
         </ol>

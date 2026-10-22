@@ -3,6 +3,7 @@ import {
   CategoryNewsListingPage,
 } from "@/src/features/news/CategoryNewsListingPage";
 import {
+  canonicalNewsCategorySlug,
   coerceNewsCategory,
   isNewsCategorySlug,
   newsArticlePath,
@@ -23,7 +24,8 @@ type Props = {
  * - else legacy article slug → redirect to `/{slug}`
  */
 export async function generateMetadata({ params, searchParams }: Props): Promise<Metadata> {
-  const { slug } = await params;
+  const { slug: rawSlug } = await params;
+  const slug = canonicalNewsCategorySlug(rawSlug);
   const known = await listNewsCategorySlugs();
   if (isNewsCategorySlug(slug, known)) {
     const page = Math.max(Number((await searchParams).page ?? "1") || 1, 1);
@@ -33,7 +35,8 @@ export async function generateMetadata({ params, searchParams }: Props): Promise
 }
 
 export default async function NewsSlugOrCategoryPage({ params, searchParams }: Props) {
-  const { slug } = await params;
+  const { slug: rawSlug } = await params;
+  const slug = canonicalNewsCategorySlug(rawSlug);
   const known = await listNewsCategorySlugs();
   if (isNewsCategorySlug(slug, known)) {
     const page = Math.max(Number((await searchParams).page ?? "1") || 1, 1);

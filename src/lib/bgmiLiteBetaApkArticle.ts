@@ -50,7 +50,7 @@ export const BGMI_LITE_APK_ARTICLE_HTML = `
   Full BGMI targets mid-to-strong phones and often runs 60 / 90 / 120 FPS. BGMI Air is aimed at
   entry devices that need a smaller download and smoother play at lower hardware cost. Do not
   paste flagship claw sensitivity codes from full BGMI into BGMI Air — use the
-  <a href="/bgmi-lite">BGMI Air sensitivity calculator</a> for Camera, ADS, and Gyroscope
+  <a href="/bgmi-air">BGMI Air sensitivity calculator</a> for Camera, ADS, and Gyroscope
   baselines on 2GB–4GB / 30–60 FPS setups.
 </p>
 

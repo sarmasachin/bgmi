@@ -22,13 +22,13 @@ export const PAGE_CARDS_VARIANTS = [
   {
     id: "bgmi-lite",
     label: "BGMI Air",
-    previewPath: "/bgmi-lite",
+    previewPath: "/bgmi-air",
     hint: "BGMI Air calculator page sections (same pattern as Free Fire home)",
   },
   {
     id: "pubg-mobile-lite",
     label: "PUBG Mobile Flash",
-    previewPath: "/pubg-mobile-lite",
+    previewPath: "/pubg-mobile-flash",
     hint: "PUBG Mobile Flash calculator page sections (same Lite layout)",
   },
   {

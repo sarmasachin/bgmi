@@ -15,9 +15,9 @@ export function pageCardsVariantToSitemapPath(variant: string): string | null {
     case "bgmi":
       return "/bgmi";
     case "bgmi-lite":
-      return "/bgmi-lite";
+      return "/bgmi-air";
     case "pubg-mobile-lite":
-      return "/pubg-mobile-lite";
+      return "/pubg-mobile-flash";
     case "pubg":
       return "/pubg";
     case "pubg-mobile-codes":
@@ -60,17 +60,17 @@ export const SITEMAP_PATH_CONTENT_KEYS: Record<string, string[]> = {
     "settings:gameArticle:bgmi",
     "settings:homeFaq",
   ],
-  "/bgmi-lite": [
+  "/bgmi-air": [
     "settings:homeCards:bgmi-lite",
     "settings:gameFaq:bgmi-lite",
     "settings:gameArticle:bgmi-lite",
   ],
-  "/pubg-mobile-lite": [
+  "/pubg-mobile-flash": [
     "settings:homeCards:pubg-mobile-lite",
     "settings:gameFaq:pubg-mobile-lite",
     "settings:gameArticle:pubg-mobile-lite",
   ],
-  "/pubg-mobile-lite-apk": [],
+  "/pubg-mobile-flash-apk": [],
   "/pubg": [
     "settings:homeCards:pubg",
     "settings:gameArticle:pubg",
@@ -92,11 +92,11 @@ export const SITEMAP_PATH_CONTENT_KEYS: Record<string, string[]> = {
   "/free-fire-max-apk": ["settings:freeFireMaxApkPage"],
   "/bgmi-redeem-code": ["settings:bgmiRedeemCodes"],
   "/pubg-redeem-code": ["settings:pubgRedeemCodes"],
-  "/bgmi-lite-redeem-code": ["settings:bgmiLiteRedeemCodes"],
-  "/bgmi-lite-stylish-name": ["settings:bgmiLiteStylishName"],
-  "/bgmi-lite-apk": [],
-  "/pubg-mobile-lite-redeem-code": ["settings:pubgMobileLiteRedeemCodes"],
-  "/pubg-mobile-lite-name": ["settings:pubgMobileLiteName"],
+  "/bgmi-air-redeem-code": ["settings:bgmiLiteRedeemCodes"],
+  "/bgmi-air-stylish-name": ["settings:bgmiLiteStylishName"],
+  "/bgmi-air-apk": [],
+  "/pubg-mobile-flash-redeem-code": ["settings:pubgMobileLiteRedeemCodes"],
+  "/pubg-mobile-flash-name": ["settings:pubgMobileLiteName"],
   "/free-fire-redeem-code": ["settings:freeFireRedeemCodes"],
   "/free-fire-stylish-name": ["settings:freeFireStylishName"],
   "/free-fire-max-redeem-code": ["settings:freeFireMaxRedeemCodes"],
@@ -110,17 +110,17 @@ export const SITEMAP_STATIC_PATHS = [
   "/bgmi",
   "/bgmi-apk",
   "/bgmi-redeem-code",
-  "/bgmi-lite",
-  "/bgmi-lite-apk",
-  "/bgmi-lite-redeem-code",
-  "/bgmi-lite-stylish-name",
+  "/bgmi-air",
+  "/bgmi-air-apk",
+  "/bgmi-air-redeem-code",
+  "/bgmi-air-stylish-name",
   "/pubg",
   "/pubg-apk",
   "/pubg-redeem-code",
-  "/pubg-mobile-lite",
-  "/pubg-mobile-lite-apk",
-  "/pubg-mobile-lite-redeem-code",
-  "/pubg-mobile-lite-name",
+  "/pubg-mobile-flash",
+  "/pubg-mobile-flash-apk",
+  "/pubg-mobile-flash-redeem-code",
+  "/pubg-mobile-flash-name",
   "/free-fire-apk",
   "/free-fire-redeem-code",
   "/free-fire-stylish-name",

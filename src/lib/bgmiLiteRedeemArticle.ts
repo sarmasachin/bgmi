@@ -37,9 +37,9 @@ export const BGMI_LITE_REDEEM_ARTICLE_HTML = `
 <h3>Related BGMI Air pages</h3>
 <p>
   After redeeming, tune aim with the
-  <a href="/bgmi-lite">BGMI Air sensitivity calculator</a>
+  <a href="/bgmi-air">BGMI Air sensitivity calculator</a>
   and read the
-  <a href="/bgmi-lite-apk">BGMI Air APK launch guide</a>
+  <a href="/bgmi-air-apk">BGMI Air APK launch guide</a>
   for pre-registration and install safety notes.
 </p>
 `.trim();

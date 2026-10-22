@@ -33,7 +33,7 @@ export const BGMI_APK_ARTICLE_HTML = `
 <h3>BGMI vs BGMI Air</h3>
 <p>
   Full BGMI targets mid-to-strong phones and higher FPS modes (60 / 90 / 120 where supported).
-  <a href="/bgmi-lite-apk">BGMI Air</a> is the lighter client for budget phones. Do not paste
+  <a href="/bgmi-air-apk">BGMI Air</a> is the lighter client for budget phones. Do not paste
   BGMI Air codes into full BGMI, or flagship claw codes from a 120 FPS device into a 40 FPS phone.
 </p>
 

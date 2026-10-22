@@ -122,7 +122,7 @@ export function AdminPubgMobileLiteNameForm({ page, openIds, onToggle, onPatch }
     <>
       <Section id="seo" title="SEO" open={openIds.has("seo")} onToggle={onToggle}>
         <p style={{ margin: "0 0 10px", fontSize: 12, color: "#94a3b8" }}>
-          URL path stays locked to <code>/pubg-mobile-lite-name</code>.
+          URL path stays locked to <code>/pubg-mobile-flash-name</code>.
         </p>
         <Field
           label="SEO title"

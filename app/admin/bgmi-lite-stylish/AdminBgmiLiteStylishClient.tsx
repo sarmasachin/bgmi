@@ -89,7 +89,7 @@ export default function AdminBgmiLiteStylishClient({ initialData }: Props) {
       <p style={{ color: "#94a3b8", marginBottom: 16 }}>
         {usingDefault
           ? "Using built-in defaults (not saved in DB yet). Edit title, article, FAQ — then Save."
-          : "Showing saved DB content for /bgmi-lite-stylish-name. Name generator stays code-based."}
+          : "Showing saved DB content for /bgmi-air-stylish-name. Name generator stays code-based."}
       </p>
 
       <form onSubmit={onSave}>

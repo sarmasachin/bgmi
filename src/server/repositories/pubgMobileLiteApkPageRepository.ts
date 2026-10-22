@@ -51,7 +51,7 @@ export async function savePubgMobileLiteApkPage(
     return true;
   });
   if (saved === null && process.env.DATABASE_URL) throw new Error("DB_UNAVAILABLE");
-  bumpSitemapLastmod(["/pubg-mobile-lite-apk"]);
+  bumpSitemapLastmod(["/pubg-mobile-flash-apk"]);
   return { page, usingDefault: false };
 }
 
@@ -64,6 +64,6 @@ export async function clearPubgMobileLiteApkPage(): Promise<{
     return true;
   });
   if (deleted === null && process.env.DATABASE_URL) throw new Error("DB_UNAVAILABLE");
-  bumpSitemapLastmod(["/pubg-mobile-lite-apk"]);
+  bumpSitemapLastmod(["/pubg-mobile-flash-apk"]);
   return { page: DEFAULT_PUBG_MOBILE_LITE_APK_PAGE, usingDefault: true };
 }

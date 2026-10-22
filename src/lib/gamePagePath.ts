@@ -5,13 +5,13 @@ export type LiteCalcBrand = "bgmi-lite" | "pubg-mobile-lite";
 export function isBgmiLitePath(pathname: string | null | undefined): boolean {
   const raw = typeof pathname === "string" ? pathname.trim() : "";
   const p = raw.replace(/\/+$/, "") || "/";
-  return p === "/bgmi-lite" || p.startsWith("/bgmi-lite/");
+  return p === "/bgmi-air" || p.startsWith("/bgmi-air/");
 }
 
 export function isPubgMobileLitePath(pathname: string | null | undefined): boolean {
   const raw = typeof pathname === "string" ? pathname.trim() : "";
   const p = raw.replace(/\/+$/, "") || "/";
-  return p === "/pubg-mobile-lite" || p.startsWith("/pubg-mobile-lite/");
+  return p === "/pubg-mobile-flash" || p.startsWith("/pubg-mobile-flash/");
 }
 
 /** Either Lite calculator page (BGMI Air or PUBG Mobile Flash). */

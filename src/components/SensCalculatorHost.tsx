@@ -5,6 +5,7 @@ import { FfCalculator } from "@/src/features/ffCalculator/FfCalculator";
 import "@/src/features/ffCalculator/ffCalculator.css";
 import { LiteSensCalculator } from "@/src/features/sensCalculator/LiteSensCalculator";
 import { SensCalculator } from "@/src/features/sensCalculator/SensCalculator";
+import { isBgmiLitePath, isPubgMobileLitePath } from "@/src/lib/gamePagePath";
 import type { FfTrustBarItem } from "@/src/lib/ffTrustBar";
 import type { FfHomeCalcBanner } from "@/src/lib/homeCardsTypes";
 
@@ -31,7 +32,7 @@ export function SensCalculatorHost({
     );
   }
 
-  if (pathname === "/bgmi-lite" || pathname.startsWith("/bgmi-lite/")) {
+  if (isBgmiLitePath(pathname)) {
     return (
       <LiteSensCalculator
         key="bgmi-lite"
@@ -42,7 +43,7 @@ export function SensCalculatorHost({
     );
   }
 
-  if (pathname === "/pubg-mobile-lite" || pathname.startsWith("/pubg-mobile-lite/")) {
+  if (isPubgMobileLitePath(pathname)) {
     return (
       <LiteSensCalculator
         key="pubg-mobile-lite"

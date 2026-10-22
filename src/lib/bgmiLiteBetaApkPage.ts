@@ -207,7 +207,7 @@ export const DEFAULT_BGMI_LITE_APK_PAGE: BgmiLiteBetaApkPageContent = {
         "Fine-tune ±5 in Training Ground after install",
       ],
       ctaLabel: "Open BGMI Air calculator",
-      ctaHref: "/bgmi-lite",
+      ctaHref: "/bgmi-air",
     },
   ],
   preRegister: {

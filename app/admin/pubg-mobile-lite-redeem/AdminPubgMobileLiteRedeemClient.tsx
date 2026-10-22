@@ -95,7 +95,7 @@ export default function AdminPubgMobileLiteRedeemClient({ initialData }: Props) 
             <p className="admin-redeem-page-sub">
               {usingDefault
                 ? "Built-in defaults (not in DB yet). Save to publish your list."
-                : "Saved DB content for /pubg-mobile-lite-redeem-code."}
+                : "Saved DB content for /pubg-mobile-flash-redeem-code."}
             </p>
           </div>
           <a

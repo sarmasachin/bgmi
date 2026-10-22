@@ -8,7 +8,7 @@ const fallbackTitle =
   "BGMI Air Sensitivity Calculator | Camera ADS Gyro for Low-End Phones";
 const fallbackDescription =
   "Free BGMI Air sensitivity calculator for 2GB–4GB phones. Get Camera, ADS, and Gyroscope settings tuned for 30–60 FPS entry devices.";
-const canonical = toCanonicalUrl("/bgmi-lite");
+const canonical = toCanonicalUrl("/bgmi-air");
 
 export async function generateMetadata(): Promise<Metadata> {
   const cards = await getFfPageCards("bgmi-lite");

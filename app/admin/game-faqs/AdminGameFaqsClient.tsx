@@ -32,9 +32,9 @@ function newId() {
 
 function previewHref(game: GameFaqGame) {
   if (game === "bgmi") return "/bgmi";
-  if (game === "bgmi-lite") return "/bgmi-lite";
+  if (game === "bgmi-lite") return "/bgmi-air";
   if (game === "pubg") return "/pubg";
-  if (game === "pubg-mobile-lite") return "/pubg-mobile-lite";
+  if (game === "pubg-mobile-lite") return "/pubg-mobile-flash";
   if (game === "freefire") return "/";
   if (game === "freefire-max") return "/free-fire-max-sensitivity-settings-calculator";
   return "/";

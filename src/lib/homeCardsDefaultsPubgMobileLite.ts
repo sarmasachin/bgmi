@@ -9,7 +9,7 @@ import { PUBG_MOBILE_LITE_PATH } from "@/src/lib/pubgMobileLite";
 export function getDefaultPubgMobileLiteCards(): FfHomeCards {
   const raw = JSON.stringify(getDefaultBgmiLiteCards())
     .replaceAll("BGMI Air", "PUBG Mobile Flash")
-    .replaceAll("/bgmi-lite", PUBG_MOBILE_LITE_PATH)
+    .replaceAll("/bgmi-air", PUBG_MOBILE_LITE_PATH)
     .replaceAll("bgmi-lite", "pubg-mobile-lite")
     .replaceAll("full BGMI", "full PUBG Mobile")
     .replaceAll("Full BGMI", "Full PUBG Mobile")

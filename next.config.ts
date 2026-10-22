@@ -1,5 +1,6 @@
 import type { NextConfig } from "next";
 import path from "path";
+import { legacyPublicRedirects } from "./src/lib/legacyPublicRedirects";
 
 const securityHeaders = [
   { key: "X-Frame-Options", value: "SAMEORIGIN" },
@@ -75,6 +76,11 @@ const nextConfig: NextConfig = {
         destination: "https://sensitivitysettings.com/:path*",
         permanent: true,
       },
+      ...legacyPublicRedirects.map((item) => ({
+        source: item.source,
+        destination: item.destination,
+        permanent: true,
+      })),
     ];
   },
 };

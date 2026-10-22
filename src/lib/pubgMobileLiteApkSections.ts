@@ -41,7 +41,7 @@ export const PUBG_MOBILE_LITE_APK_FACTS: PubgMobileLiteApkFactsBlock = {
     },
     { label: "Install path", value: "Android · Google Play (official only)" },
     { label: "Developer", value: "PUBG / Krafton (confirm on store)" },
-    { label: "Sensitivity", value: "Use /pubg-mobile-lite calculator on this site" },
+    { label: "Sensitivity", value: "Use /pubg-mobile-flash calculator on this site" },
   ],
   note:
     "The 12 November 2026 date is this site’s shared PUBG Mobile Flash countdown target (same as BGMI Air). Exact store availability can change — always confirm on Google Play before you install.",

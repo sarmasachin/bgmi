@@ -148,7 +148,7 @@ export default async function GamesLayout({ children }: { children: React.ReactN
     description:
       bgmiLiteCards.seo.description.trim() ||
       "Free BGMI Air sensitivity calculator for 2GB–4GB phones. Camera, ADS, and Gyroscope settings for 30–60 FPS devices.",
-    url: toCanonicalUrl("/bgmi-lite"),
+    url: toCanonicalUrl("/bgmi-air"),
     reviews: mapReviews(bgmiLiteTestimonials),
   });
   const pubgToolLd = toolAppReviewSchema({
@@ -166,7 +166,7 @@ export default async function GamesLayout({ children }: { children: React.ReactN
     description:
       pubgMobileLiteCards.seo.description.trim() ||
       "Free PUBG Mobile Flash sensitivity calculator for 2GB–4GB phones. Camera, ADS, and Gyroscope settings for 30–60 FPS devices.",
-    url: toCanonicalUrl("/pubg-mobile-lite"),
+    url: toCanonicalUrl("/pubg-mobile-flash"),
     reviews: mapReviews(pubgMobileLiteTestimonials),
   });
   const freefireToolLd = toolAppReviewSchema({

@@ -51,7 +51,7 @@ export function HomeHeader({ siteTitle, navigation }: HomeHeaderProps) {
       return { ...item, href: "/pubg" };
     }
     if (/^bgmi\s*(lite|air)$/i.test(label)) {
-      return { ...item, href: "/bgmi-lite" };
+      return { ...item, href: "/bgmi-air" };
     }
     if (/pubg\s*mobile\s*(lite|flash)/i.test(label)) {
       return { ...item, href: PUBG_MOBILE_LITE_PATH };

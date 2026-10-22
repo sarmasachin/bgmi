@@ -95,7 +95,7 @@ export default function AdminBgmiLiteRedeemClient({ initialData }: Props) {
             <p className="admin-redeem-page-sub">
               {usingDefault
                 ? "Built-in defaults (not in DB yet). Save to publish your list."
-                : "Saved DB content for /bgmi-lite-redeem-code."}
+                : "Saved DB content for /bgmi-air-redeem-code."}
             </p>
           </div>
           <a

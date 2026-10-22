@@ -328,7 +328,7 @@ export const DEFAULT_BGMI_APK_PAGE: BgmiApkPageContent = {
         "Don’t mix BGMI Air and full BGMI sensitivity codes",
       ],
       ctaLabel: "Open BGMI Air APK page",
-      ctaHref: "/bgmi-lite-apk",
+      ctaHref: "/bgmi-air-apk",
     },
     {
       id: "sensi-ready",

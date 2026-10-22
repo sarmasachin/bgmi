@@ -2,7 +2,7 @@
 
 import { usePathname } from "next/navigation";
 import { ArticleFaqContent } from "@/src/components/ArticleFaqContent";
-import { isPubgMobileLitePath } from "@/src/lib/gamePagePath";
+import { isBgmiLitePath, isPubgMobileLitePath } from "@/src/lib/gamePagePath";
 import type { HomeFaqItem } from "@/src/server/repositories/homeFaqRepository";
 
 type Props = {
@@ -39,7 +39,7 @@ export function GameArticleFaq({
         ? "pubg-mobile-lite"
         : pathname === "/pubg" || pathname.startsWith("/pubg/")
           ? "pubg"
-          : pathname === "/bgmi-lite" || pathname.startsWith("/bgmi-lite/")
+          : isBgmiLitePath(pathname)
             ? "bgmi-lite"
             : "bgmi";
 

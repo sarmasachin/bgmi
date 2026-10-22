@@ -128,7 +128,6 @@ export async function NewsDetailView({ item: itemProp }: { item: NewsDetailItem 
     dateModified: item.updatedAt,
     image: meta.ogImageUrl?.trim() || item.featureImage || `${baseUrl}${DEFAULT_OG_IMAGE_PATH}`,
     mainEntityOfPage: articleUrl,
-    ratingSummary,
   });
 
   return (

@@ -9,7 +9,7 @@ export const PUBG_REDEEM_ARTICLE_HTML = `
 <p>
   Always redeem inside the official <strong>PUBG Mobile</strong> client or the publisher’s
   official redeem page. We never ask for your password, OTP, UC payment, or account takeover
-  links. This page is for full PUBG Mobile — not <a href="/pubg-mobile-lite-redeem-code">PUBG Mobile Flash</a>
+  links. This page is for full PUBG Mobile — not <a href="/pubg-mobile-flash-redeem-code">PUBG Mobile Flash</a>
   and not <a href="/bgmi-redeem-code">BGMI</a>.
 </p>
 

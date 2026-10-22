@@ -2,15 +2,15 @@
 
 import { renameLiteDisplayLabel } from "@/src/lib/renameLiteDisplayNames";
 
-export const PUBG_MOBILE_LITE_PATH = "/pubg-mobile-lite";
+export const PUBG_MOBILE_LITE_PATH = "/pubg-mobile-flash";
 export const PUBG_MOBILE_LITE_LABEL = "PUBG Mobile Flash";
 export const BGMI_AIR_LABEL = "BGMI Air";
-export const BGMI_LITE_PATH = "/bgmi-lite";
+export const BGMI_LITE_PATH = "/bgmi-air";
 
 /** Lite-family routes (header menu on these pages). */
-export const PUBG_MOBILE_LITE_APK_PATH = "/pubg-mobile-lite-apk";
-export const PUBG_MOBILE_LITE_REDEEM_CODE_PATH = "/pubg-mobile-lite-redeem-code";
-export const PUBG_MOBILE_LITE_NAME_PATH = "/pubg-mobile-lite-name";
+export const PUBG_MOBILE_LITE_APK_PATH = "/pubg-mobile-flash-apk";
+export const PUBG_MOBILE_LITE_REDEEM_CODE_PATH = "/pubg-mobile-flash-redeem-code";
+export const PUBG_MOBILE_LITE_NAME_PATH = "/pubg-mobile-flash-name";
 
 export const PUBG_MOBILE_LITE_FAMILY_PATHS = [
   PUBG_MOBILE_LITE_PATH,
@@ -22,7 +22,7 @@ export const PUBG_MOBILE_LITE_FAMILY_PATHS = [
 export function isPubgMobileLiteFamilyPath(pathname: string): boolean {
   const raw = typeof pathname === "string" ? pathname.trim() : "";
   const p = raw.replace(/\/+$/, "") || "/";
-  if (p === "/news/pubg-mobile-lite" || p.startsWith("/news/pubg-mobile-lite/")) {
+  if (p === "/news/pubg-mobile-flash" || p.startsWith("/news/pubg-mobile-flash/")) {
     return true;
   }
   return PUBG_MOBILE_LITE_FAMILY_PATHS.some(
@@ -36,7 +36,7 @@ export const PUBG_MOBILE_LITE_NAV: Array<{ label: string; href: string }> = [
   { label: "PUBG Flash APK", href: PUBG_MOBILE_LITE_APK_PATH },
   { label: "Redeem Code", href: PUBG_MOBILE_LITE_REDEEM_CODE_PATH },
   { label: "PUBG Flash Name", href: PUBG_MOBILE_LITE_NAME_PATH },
-  { label: "News", href: "/news/pubg-mobile-lite" },
+  { label: "News", href: "/news/pubg-mobile-flash" },
 ];
 
 function normHref(href: string): string {

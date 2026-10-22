@@ -89,7 +89,7 @@ export default function AdminPubgMobileLiteNameClient({ initialData }: Props) {
       <p style={{ color: "#94a3b8", marginBottom: 16 }}>
         {usingDefault
           ? "Using built-in defaults (not saved in DB yet). Edit title, article, FAQ — then Save."
-          : "Showing saved DB content for /pubg-mobile-lite-name. Name generator stays code-based."}
+          : "Showing saved DB content for /pubg-mobile-flash-name. Name generator stays code-based."}
       </p>
 
       <form onSubmit={onSave}>

@@ -49,7 +49,7 @@ export const PUBG_MOBILE_LITE_APK_ARTICLE_HTML = `
   Full PUBG Mobile targets mid-to-strong phones and often runs 60 / 90 / 120 FPS. PUBG Mobile Flash is aimed at
   entry devices that need a smaller download and smoother play at lower hardware cost. Do not
   paste flagship claw sensitivity codes from full PUBG Mobile into PUBG Mobile Flash — use the
-  <a href="/pubg-mobile-lite">PUBG Mobile Flash sensitivity calculator</a> for Camera, ADS, and
+  <a href="/pubg-mobile-flash">PUBG Mobile Flash sensitivity calculator</a> for Camera, ADS, and
   Gyroscope baselines on 2GB–4GB / 30–60 FPS setups.
 </p>
 

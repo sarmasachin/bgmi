@@ -37,9 +37,9 @@ export const PUBG_MOBILE_LITE_REDEEM_ARTICLE_HTML = `
 <h3>Related PUBG Mobile Flash pages</h3>
 <p>
   After redeeming, tune aim with the
-  <a href="/pubg-mobile-lite">PUBG Mobile Flash sensitivity calculator</a>
+  <a href="/pubg-mobile-flash">PUBG Mobile Flash sensitivity calculator</a>
   and read the
-  <a href="/pubg-mobile-lite-apk">PUBG Flash APK launch guide</a>
+  <a href="/pubg-mobile-flash-apk">PUBG Flash APK launch guide</a>
   for safe install notes.
 </p>
 `.trim();

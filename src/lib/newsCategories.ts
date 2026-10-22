@@ -12,11 +12,28 @@ export const DEFAULT_NEWS_CATEGORIES: readonly NewsCategoryDef[] = [
   { slug: "pubg-mobile-lite", label: "PUBG Mobile Flash" },
 ] as const;
 
-/** Category used for /bgmi-lite calculator news hub. */
+/** Category used for /bgmi-air calculator news hub. */
 export const BGMI_LITE_NEWS_CATEGORY = "bgmi-lite";
 
-/** Category used for /pubg-mobile-lite calculator news hub. */
+/** Category used for /pubg-mobile-flash calculator news hub. */
 export const PUBG_MOBILE_LITE_NEWS_CATEGORY = "pubg-mobile-lite";
+
+/** Public listing slug when it differs from the stored category slug. */
+const NEWS_CATEGORY_PUBLIC_SLUG: Record<string, string> = {
+  "bgmi-lite": "bgmi-air",
+  "pubg-mobile-lite": "pubg-mobile-flash",
+};
+
+const NEWS_CATEGORY_FROM_PUBLIC_SLUG: Record<string, string> = {
+  "bgmi-air": "bgmi-lite",
+  "pubg-mobile-flash": "pubg-mobile-lite",
+};
+
+/** Map a public /news/{slug} segment back to the stored category slug. */
+export function canonicalNewsCategorySlug(slug: string): string {
+  const trimmed = slug.trim().toLowerCase();
+  return NEWS_CATEGORY_FROM_PUBLIC_SLUG[trimmed] ?? trimmed;
+}
 
 
 /** @deprecated Prefer DB-loaded list; alias of defaults for offline UI. */
@@ -165,7 +182,7 @@ export function newsCategoryListingDescription(
 }
 
 /**
- * Category listing URL. Calculator routes (`/bgmi-lite`, `/pubg-mobile-lite`, …)
+ * Category listing URL. Calculator routes (`/bgmi-air`, `/pubg-mobile-flash`, …)
  * shadow `/${category}`, so those hubs live under `/news/{category}`.
  */
 const NEWS_LISTING_UNDER_NEWS_PREFIX = new Set([
@@ -186,6 +203,7 @@ export function categoryListingOccupiesTopSlug(slug: string): boolean {
 export function newsCategoryListingPath(slug: string): string {
   const cat = slug.trim().toLowerCase();
   if (!cat) return `/${DEFAULT_NEWS_CATEGORY}`;
-  if (NEWS_LISTING_UNDER_NEWS_PREFIX.has(cat)) return `/news/${cat}`;
-  return `/${cat}`;
+  const publicSlug = NEWS_CATEGORY_PUBLIC_SLUG[cat] ?? cat;
+  if (NEWS_LISTING_UNDER_NEWS_PREFIX.has(cat)) return `/news/${publicSlug}`;
+  return `/${publicSlug}`;
 }

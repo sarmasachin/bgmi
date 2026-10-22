@@ -40,7 +40,7 @@ export async function SiteFooter({ settings: settingsProp }: SiteFooterProps = {
             return { ...item, href: "/pubg" };
           }
           if (/^bgmi\s*(lite|air)$/i.test(label)) {
-            return { ...item, href: "/bgmi-lite" };
+            return { ...item, href: "/bgmi-air" };
           }
           if (/^bgmi$/i.test(label)) {
             return { ...item, href: "/bgmi" };

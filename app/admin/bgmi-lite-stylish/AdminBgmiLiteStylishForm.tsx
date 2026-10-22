@@ -122,7 +122,7 @@ export function AdminBgmiLiteStylishForm({ page, openIds, onToggle, onPatch }: P
     <>
       <Section id="seo" title="SEO" open={openIds.has("seo")} onToggle={onToggle}>
         <p style={{ margin: "0 0 10px", fontSize: 12, color: "#94a3b8" }}>
-          URL path stays locked to <code>/bgmi-lite-stylish-name</code>.
+          URL path stays locked to <code>/bgmi-air-stylish-name</code>.
         </p>
         <Field
           label="SEO title"

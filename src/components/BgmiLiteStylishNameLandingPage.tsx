@@ -28,7 +28,7 @@ export async function BgmiLiteStylishNameLandingPage() {
   ]);
   const canonical = toCanonicalUrl(BGMI_LITE_STYLISH_NAME_PATH);
   const homeUrl = toCanonicalUrl("/");
-  const liteCalcUrl = toCanonicalUrl("/bgmi-lite");
+  const liteCalcUrl = toCanonicalUrl("/bgmi-air");
   const crumbCurrent = (page.title || "BGMI Air Stylish Name").trim();
   const faqItems = page.faqs.map((f) => ({
     id: f.id,
@@ -60,7 +60,7 @@ export async function BgmiLiteStylishNameLandingPage() {
             <Link href="/">Home</Link>
           </li>
           <li>
-            <Link href="/bgmi-lite">BGMI Air</Link>
+            <Link href="/bgmi-air">BGMI Air</Link>
           </li>
           <li aria-current="page">{crumbCurrent}</li>
         </ol>

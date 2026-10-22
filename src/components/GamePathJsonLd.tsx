@@ -1,7 +1,7 @@
 "use client";
 
 import { usePathname } from "next/navigation";
-import { isPubgMobileLitePath } from "@/src/lib/gamePagePath";
+import { isBgmiLitePath, isPubgMobileLitePath } from "@/src/lib/gamePagePath";
 
 type JsonLd = Record<string, unknown> | null;
 
@@ -35,8 +35,7 @@ export function GamePathJsonLd({
   const isHome = pathname === "/" || pathname === "";
   const isPubgMobileLite = isPubgMobileLitePath(pathname);
   const isPubg = pathname === "/pubg" || pathname.startsWith("/pubg/");
-  const isLite =
-    pathname === "/bgmi-lite" || pathname.startsWith("/bgmi-lite/");
+  const isLite = isBgmiLitePath(pathname);
 
   const faqSchema = isHome
     ? freefireFaqSchema

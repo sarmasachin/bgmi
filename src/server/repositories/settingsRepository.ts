@@ -63,7 +63,7 @@ const defaultSettings = {
   navigation: [
     ...FREE_FIRE_NAV.map((item) => ({ label: item.label, href: item.href })),
     { label: "BGMI", href: "/bgmi" },
-    { label: "BGMI Air", href: "/bgmi-lite" },
+    { label: "BGMI Air", href: "/bgmi-air" },
     { label: "PUBG Mobile", href: "/pubg" },
     { label: PUBG_MOBILE_LITE_LABEL, href: PUBG_MOBILE_LITE_PATH },
     { label: PUBG_MOBILE_CODES_LABEL, href: PUBG_MOBILE_CODES_PATH },

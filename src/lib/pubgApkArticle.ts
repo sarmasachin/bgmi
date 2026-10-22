@@ -33,7 +33,7 @@ export const PUBG_APK_ARTICLE_HTML = `
 <h3>PUBG Mobile vs PUBG Mobile Flash</h3>
 <p>
   Full PUBG Mobile targets mid-to-strong phones and higher FPS modes where supported.
-  <a href="/pubg-mobile-lite-apk">PUBG Mobile Flash</a> is the lighter client for budget phones.
+  <a href="/pubg-mobile-flash-apk">PUBG Mobile Flash</a> is the lighter client for budget phones.
   Do not paste PUBG Mobile Flash codes into full PUBG Mobile, or flagship claw codes from a 120 FPS device
   into a 40 FPS phone.
 </p>

@@ -43,19 +43,19 @@ export const BGMI_REDEEM_CODE_PATH = "/bgmi-redeem-code";
 export const PUBG_REDEEM_CODE_PATH = "/pubg-redeem-code";
 
 /** Planned Lite-family routes (menu + pages). */
-export const BGMI_LITE_APK_PATH = "/bgmi-lite-apk";
-export const BGMI_LITE_REDEEM_CODE_PATH = "/bgmi-lite-redeem-code";
-export const BGMI_LITE_STYLISH_NAME_PATH = "/bgmi-lite-stylish-name";
+export const BGMI_LITE_APK_PATH = "/bgmi-air-apk";
+export const BGMI_LITE_REDEEM_CODE_PATH = "/bgmi-air-redeem-code";
+export const BGMI_LITE_STYLISH_NAME_PATH = "/bgmi-air-stylish-name";
 
 const BGMI_LITE_FAMILY_PATHS = [
-  "/bgmi-lite",
+  "/bgmi-air",
   BGMI_LITE_APK_PATH,
   BGMI_LITE_REDEEM_CODE_PATH,
   BGMI_LITE_STYLISH_NAME_PATH,
 ] as const;
 
 function isBgmiLiteFamilyPath(p: string): boolean {
-  if (p === "/news/bgmi-lite" || p.startsWith("/news/bgmi-lite/")) return true;
+  if (p === "/news/bgmi-air" || p.startsWith("/news/bgmi-air/")) return true;
   return BGMI_LITE_FAMILY_PATHS.some(
     (base) => p === base || p.startsWith(`${base}/`),
   );
@@ -111,7 +111,7 @@ export function isPubgFamilyPath(pathname: string): boolean {
 
 /** Header menu when the user is on /bgmi-lite (and related Lite pages). */
 export const BGMI_LITE_NAV: NavLink[] = [
-  { label: "Home", href: "/bgmi-lite" },
+  { label: "Home", href: "/bgmi-air" },
   { label: "BGMI Air APK", href: BGMI_LITE_APK_PATH },
   { label: "Redeem Code", href: BGMI_LITE_REDEEM_CODE_PATH },
   { label: "BGMI Air Stylish Name", href: BGMI_LITE_STYLISH_NAME_PATH },
@@ -193,8 +193,8 @@ function linkFamily(link: NavLink): "freefire" | "pubg" | "other" {
     href.startsWith(`${BGMI_APK_PATH}/`) ||
     href === BGMI_REDEEM_CODE_PATH ||
     href.startsWith(`${BGMI_REDEEM_CODE_PATH}/`) ||
-    href === "/bgmi-lite" ||
-    href.startsWith("/bgmi-lite/") ||
+    href === "/bgmi-air" ||
+    href.startsWith("/bgmi-air/") ||
     href === BGMI_LITE_APK_PATH ||
     href.startsWith(`${BGMI_LITE_APK_PATH}/`) ||
     href === BGMI_LITE_REDEEM_CODE_PATH ||

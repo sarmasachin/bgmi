@@ -34,9 +34,9 @@ export type SiteNavItem = {
   children?: readonly SiteNavChild[];
 };
 
-const BGMI_LITE_APK_PATH = "/bgmi-lite-apk";
-const BGMI_LITE_REDEEM_CODE_PATH = "/bgmi-lite-redeem-code";
-const BGMI_LITE_STYLISH_NAME_PATH = "/bgmi-lite-stylish-name";
+const BGMI_LITE_APK_PATH = "/bgmi-air-apk";
+const BGMI_LITE_REDEEM_CODE_PATH = "/bgmi-air-redeem-code";
+const BGMI_LITE_STYLISH_NAME_PATH = "/bgmi-air-stylish-name";
 
 /** Fixed top nav for every page (not filtered by current game). */
 export const SITE_GAME_NAV: readonly SiteNavItem[] = [
@@ -74,7 +74,7 @@ export const SITE_GAME_NAV: readonly SiteNavItem[] = [
   {
     id: "bgmi-lite",
     label: "BGMI Air",
-    href: "/bgmi-lite",
+    href: "/bgmi-air",
     children: [...BGMI_LITE_NAV],
   },
 ];
@@ -94,10 +94,10 @@ function pathMatches(pathname: string, href: string): boolean {
 function isBgmiLiteFamilyPath(pathname: string): boolean {
   const p = normalizePathname(pathname);
   return (
-    p === "/bgmi-lite" ||
-    p.startsWith("/bgmi-lite/") ||
-    p === "/news/bgmi-lite" ||
-    p.startsWith("/news/bgmi-lite/") ||
+    p === "/bgmi-air" ||
+    p.startsWith("/bgmi-air/") ||
+    p === "/news/bgmi-air" ||
+    p.startsWith("/news/bgmi-air/") ||
     p === BGMI_LITE_APK_PATH ||
     p.startsWith(`${BGMI_LITE_APK_PATH}/`) ||
     p === BGMI_LITE_REDEEM_CODE_PATH ||

@@ -44,7 +44,7 @@ export async function saveBgmiLiteApkPage(
     return true;
   });
   if (saved === null && process.env.DATABASE_URL) throw new Error("DB_UNAVAILABLE");
-  bumpSitemapLastmod(["/bgmi-lite-apk"]);
+  bumpSitemapLastmod(["/bgmi-air-apk"]);
   return { page, usingDefault: false };
 }
 
@@ -57,6 +57,6 @@ export async function clearBgmiLiteApkPage(): Promise<{
     return true;
   });
   if (deleted === null && process.env.DATABASE_URL) throw new Error("DB_UNAVAILABLE");
-  bumpSitemapLastmod(["/bgmi-lite-apk"]);
+  bumpSitemapLastmod(["/bgmi-air-apk"]);
   return { page: DEFAULT_BGMI_LITE_APK_PAGE, usingDefault: true };
 }

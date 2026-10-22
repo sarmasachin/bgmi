@@ -327,7 +327,7 @@ export const DEFAULT_PUBG_APK_PAGE: PubgApkPageContent = {
         "Don’t mix PUBG Mobile Flash and full PUBG Mobile sensitivity codes",
       ],
       ctaLabel: "Open PUBG Flash APK page",
-      ctaHref: "/pubg-mobile-lite-apk",
+      ctaHref: "/pubg-mobile-flash-apk",
     },
     {
       id: "sensi-ready",

@@ -38,7 +38,7 @@ export function AdminBgmiLiteRedeemUiFields({ ui, onPatchUi }: Props) {
   return (
     <>
       <p style={{ margin: "0 0 12px", fontSize: 12, color: "#94a3b8", lineHeight: 1.45 }}>
-        URL path stays locked to <code>/bgmi-lite-redeem-code</code>. Comment approve/delete stays in{" "}
+        URL path stays locked to <code>/bgmi-air-redeem-code</code>. Comment approve/delete stays in{" "}
         <code>/admin/comments</code>.
       </p>
       {FIELDS.map((field) => (
