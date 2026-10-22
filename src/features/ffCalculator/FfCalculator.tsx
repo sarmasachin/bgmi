@@ -16,6 +16,7 @@ import {
   type FfTrustBarItem,
 } from "@/src/lib/ffTrustBar";
 import { FF_SET_ROLE_EVENT } from "@/src/lib/ffPlayModes";
+import { FfCalculatorHeader } from "./FfCalculatorHeader";
 import "./ffCalculator.css";
 
 type Props = {
@@ -100,15 +101,7 @@ export function FfCalculator({ isMax: _isMax = false, trustBar }: Props) {
 
   return (
     <div className="ffc-root">
-      <header className="ffc-header">
-        <h2 className="ffc-title">
-          <i className="fa-solid fa-crosshairs ffc-title-icon"></i>Best Sensi
-          Calculator 2026
-        </h2>
-        <p className="ffc-subtitle">
-          Device Engine &amp; Smart Hardware Recognition
-        </p>
-      </header>
+      <FfCalculatorHeader />
 
       <div className="ffc-card">
         <div className="ffc-form-col">
