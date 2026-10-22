@@ -20,10 +20,7 @@ function isAdReady(ins: HTMLElement): boolean {
   return Boolean(ins.querySelector("iframe"));
 }
 
-/** Stable slot floor — prevents CLS from 0→ad. Still hugs taller creatives. */
-const AD_SLOT_MIN_PX = 90;
-
-/** Actual creative height — ignore AdSense's oversized empty reserve. */
+/** Actual creative height — never the tall empty reserve AdSense leaves behind. */
 function measureCreativeHeight(ins: HTMLElement): number {
   const iframe = ins.querySelector("iframe");
   if (iframe instanceof HTMLElement && iframe.offsetHeight > 20) {
@@ -44,19 +41,18 @@ function measureCreativeHeight(ins: HTMLElement): number {
 function fitWrapToAd(el: HTMLElement, ins: HTMLElement) {
   if (!isAdReady(ins)) return;
 
+  // Drop AdSense reserved min-height so we can hug the creative.
+  ins.style.minHeight = "0px";
+  el.style.minHeight = "0px";
+
   const creativeH = measureCreativeHeight(ins);
   if (creativeH < 20) return;
 
-  // Never collapse below the reserved floor (big CLS source was 0 → N px).
-  const target = Math.max(creativeH, AD_SLOT_MIN_PX);
-  const h = `${target}px`;
-  const minH = `${AD_SLOT_MIN_PX}px`;
+  const h = `${creativeH}px`;
   if (el.style.height === h && ins.style.height === h) return;
 
-  ins.style.minHeight = minH;
   ins.style.height = h;
   ins.style.maxHeight = h;
-  el.style.minHeight = minH;
   el.style.height = h;
   el.style.maxHeight = h;
   el.style.overflow = "hidden";
@@ -64,7 +60,7 @@ function fitWrapToAd(el: HTMLElement, ins: HTMLElement) {
 
   const shell = el.closest(".ff-home-ad, .ff-public-ad");
   if (shell instanceof HTMLElement) {
-    shell.style.minHeight = minH;
+    shell.style.minHeight = "0px";
     shell.style.height = "auto";
     shell.style.display = "block";
   }
@@ -189,7 +185,7 @@ export function AdSlotClient({ html, slotKey }: Props) {
           width: 100%;
           max-width: 100%;
           min-width: 0;
-          min-height: 90px;
+          min-height: 0;
           height: auto;
           box-sizing: border-box;
           background: transparent !important;
@@ -199,18 +195,16 @@ export function AdSlotClient({ html, slotKey }: Props) {
           box-shadow: none !important;
           padding: 0 !important;
           margin: 0 !important;
-          contain: layout;
         }
         .ad-slot.ad-slot--flush:empty {
           display: none;
-          min-height: 0;
         }
         .ad-slot.ad-slot--flush ins.adsbygoogle {
           display: block;
           width: 100% !important;
           max-width: 100%;
           min-width: 0;
-          min-height: 90px;
+          min-height: 0;
           box-sizing: border-box;
           margin: 0 !important;
           padding: 0 !important;
