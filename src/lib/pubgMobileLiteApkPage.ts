@@ -12,6 +12,9 @@ import {
   type PubgMobileLiteApkInstallBlock,
 } from "@/src/lib/pubgMobileLiteApkSections";
 
+/** Re-export for admin APK CMS imports. */
+export { PUBG_MOBILE_LITE_APK_PATH };
+
 export const PUBG_MOBILE_LITE_APK_PAGE_KEY = "pubg-mobile-lite-apk";
 
 /** Same site-tracked launch target as BGMI Air APK (IST). */
