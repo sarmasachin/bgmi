@@ -22,9 +22,15 @@ import "./ffCalculator.css";
 type Props = {
   isMax?: boolean;
   trustBar?: FfTrustBarItem[];
+  /** Play Store CTA — home + FF Max calculator */
+  showPlayStoreCta?: boolean;
 };
 
-export function FfCalculator({ isMax: _isMax = false, trustBar }: Props) {
+export function FfCalculator({
+  isMax: _isMax = false,
+  trustBar,
+  showPlayStoreCta = false,
+}: Props) {
   const items =
     trustBar && trustBar.length
       ? DEFAULT_FF_TRUST_BAR.map((fallback, index) => ({
@@ -101,7 +107,7 @@ export function FfCalculator({ isMax: _isMax = false, trustBar }: Props) {
 
   return (
     <div className="ffc-root">
-      <FfCalculatorHeader />
+      <FfCalculatorHeader showPlayStoreCta={showPlayStoreCta} />
 
       <div className="ffc-card">
         <div className="ffc-form-col">

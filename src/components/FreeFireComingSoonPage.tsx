@@ -156,7 +156,11 @@ export async function FreeFireComingSoonPage({ variant }: { variant: FreeFireVar
       <main className="page-container">
         {variant === "freefire-max" && maxCards ? <FfPatchStrip homeContent={maxCards.patchStrip} /> : null}
         <div id="ff-calculator" className="ff-calculator-anchor">
-          <FfCalculator isMax={variant === "freefire-max"} trustBar={settings.ffTrustBar} />
+          <FfCalculator
+            isMax={variant === "freefire-max"}
+            trustBar={settings.ffTrustBar}
+            showPlayStoreCta={variant === "freefire-max"}
+          />
         </div>
         <TestimonialsMarquee game={testimonialGame} initialItems={testimonials} />
         <TestimonialForm game={testimonialGame} />

@@ -3,41 +3,77 @@ import "./ffCalculatorAppLink.css";
 const PLAY_STORE_URL =
   "https://play.google.com/store/apps/details?id=com.ffsensitivity.app";
 
-function PlayStoreIcon() {
+/** Official-style badge mark — transparent (no black plate / border). */
+function GooglePlayBadge() {
   return (
-    <svg width="28" height="28" viewBox="0 0 24 24" aria-hidden="true">
+    <svg
+      className="ffc-play-badge"
+      viewBox="0 0 180 54"
+      role="img"
+      aria-label="Get it on Google Play"
+    >
       <path
         fill="#4285F4"
-        d="M3.6 1.8c-.4.3-.6.8-.6 1.5v17.4c0 .7.2 1.2.6 1.5l.1.1 9.7-9.8v-.2L3.7 1.7l-.1.1z"
+        d="M9.2 3.4c-.9.5-1.5 1.5-1.5 2.8v41.6c0 1.3.6 2.3 1.5 2.8l.2.1 23.4-23.4v-.5L9.4 3.3l-.2.1z"
       />
       <path
         fill="#34A853"
-        d="M16.6 15.4 13.4 12.2 3.6 22.2c.4.4 1.1.5 1.9.1l11.1-6.4v-.5z"
+        d="M40.8 35.8 33 28 9.4 51.6c1 .9 2.6 1.1 4.5.1l26.9-15.4v-.5z"
       />
       <path
         fill="#FBBC04"
-        d="M20.4 10.7 16.7 8.6l-3.3 3.4 3.3 3.4 3.8-2.2c1-.6 1-1.9-.1-2.5z"
+        d="M50.2 24.6 41.2 19.5 33.2 27.5l8 8 9-5.2c2.5-1.4 2.5-4.5 0-5.7z"
       />
       <path
         fill="#EA4335"
-        d="M3.6 1.8 13.4 11.6l3.2-3.2L5.5 1.6c-.8-.4-1.5-.3-1.9.2z"
+        d="M9.2 3.4 33.2 27.4l8-8L13.7 2.9c-1.9-1.1-3.5-.8-4.5.5z"
       />
+      <text
+        x="62"
+        y="20"
+        fill="#ffffff"
+        fontFamily="Arial, Helvetica, sans-serif"
+        fontSize="11"
+        fontWeight="600"
+        letterSpacing="0.6"
+      >
+        GET IT ON
+      </text>
+      <text
+        x="62"
+        y="42"
+        fill="#ffffff"
+        fontFamily="Arial, Helvetica, sans-serif"
+        fontSize="20"
+        fontWeight="700"
+      >
+        Google Play
+      </text>
     </svg>
   );
 }
 
-export function FfCalculatorHeader() {
+type Props = {
+  showPlayStoreCta?: boolean;
+};
+
+export function FfCalculatorHeader({ showPlayStoreCta = false }: Props) {
   return (
     <header className="ffc-header">
-      <a
-        className="ffc-play-app"
-        href={PLAY_STORE_URL}
-        target="_blank"
-        rel="noopener noreferrer"
-      >
-        <PlayStoreIcon />
-        <span>100% accurate sensi use mobile app</span>
-      </a>
+      {showPlayStoreCta ? (
+        <a
+          className="ffc-play-app"
+          href={PLAY_STORE_URL}
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          <GooglePlayBadge />
+          <span className="ffc-play-copy">
+            <span>100% accurate sensi use mobile app</span>
+            <span>Get more one tap auto headshot apk</span>
+          </span>
+        </a>
+      ) : null}
       <h2 className="ffc-title">
         <i className="fa-solid fa-crosshairs ffc-title-icon"></i>Best Sensi
         Calculator 2026

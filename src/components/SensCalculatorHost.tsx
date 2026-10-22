@@ -27,7 +27,7 @@ export function SensCalculatorHost({
   if (pathname === "/" || pathname === "") {
     return (
       <div id="ff-calculator" className="ff-calculator-anchor">
-        <FfCalculator key="freefire" trustBar={ffTrustBar} />
+        <FfCalculator key="freefire" trustBar={ffTrustBar} showPlayStoreCta />
       </div>
     );
   }
