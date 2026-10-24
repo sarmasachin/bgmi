@@ -16,6 +16,7 @@ import {
   playerRoleOptions,
   ramOptions,
 } from "./constants";
+import { resolveLockedPhone, searchPhones } from "@/src/lib/calculatorPhoneBrand";
 
 type FormState = {
   modelSearch: string;
@@ -48,23 +49,29 @@ type Props = {
   phoneModels: string[];
   /** Display text only — calculator math stays the same. */
   game?: "bgmi" | "pubg";
+  /** When set, suggestions and calculate stay on this brand. */
+  phoneBrand?: string;
 };
 
-export function SensCalculator({ phoneModels, game = "bgmi" }: Props) {
+export function SensCalculator({ phoneModels, game = "bgmi", phoneBrand }: Props) {
   const gameLabel = game === "pubg" ? "PUBG Mobile" : "BGMI";
   const [form, setForm] = useState<FormState>(initialForm);
   const [results, setResults] = useState<ScopeResult[] | null>(null);
   const [showSuggestions, setShowSuggestions] = useState(false);
+  const [brandError, setBrandError] = useState<string | null>(null);
 
   const suggestions = useMemo(() => {
-    const value = form.modelSearch.toLowerCase().trim();
-    if (!value) return [];
-    const matched = phoneModels.filter((phone) => phone.toLowerCase().includes(value));
-    // Keep dropdown usable when hundreds of models match.
-    return matched.slice(0, 80);
-  }, [form.modelSearch, phoneModels]);
+    return searchPhones(phoneModels, phoneBrand, form.modelSearch, false);
+  }, [form.modelSearch, phoneModels, phoneBrand]);
 
   function runCalculate() {
+    const locked = resolveLockedPhone(phoneModels, phoneBrand, form.modelSearch);
+    if (!locked.ok) {
+      setBrandError(locked.message);
+      setResults(null);
+      return;
+    }
+    setBrandError(null);
     const response = calculateSensitivity({
       baseValue: form.baseValue || 120,
       ramMultiplier: form.ramSize,
@@ -75,7 +82,7 @@ export function SensCalculator({ phoneModels, game = "bgmi" }: Props) {
       fpsMultiplier: form.fpsMode,
       attachmentMultiplier: form.attachment,
       playerRole: form.playerRole,
-      modelName: form.modelSearch,
+      modelName: locked.name,
     });
     setResults(response);
   }
@@ -84,6 +91,7 @@ export function SensCalculator({ phoneModels, game = "bgmi" }: Props) {
     setForm(initialForm);
     setResults(null);
     setShowSuggestions(false);
+    setBrandError(null);
   }
 
   return (
@@ -127,12 +135,18 @@ export function SensCalculator({ phoneModels, game = "bgmi" }: Props) {
                 onClick={() => {
                   setForm((prev) => ({ ...prev, modelSearch: item }));
                   setShowSuggestions(false);
+                  setBrandError(null);
                 }}
               >
                 {item}
               </button>
             ))}
           </div>
+          {brandError ? (
+            <p className="calc-brand-error" role="alert">
+              {brandError}
+            </p>
+          ) : null}
         </div>
 
         <div className="grid-half">

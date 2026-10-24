@@ -22,6 +22,7 @@ import {
   slugifyFromTitle,
   mapApiItemToPageRow,
 } from "./adminPagesHelpers";
+import { AdminPagesPhoneBrandSelect } from "./AdminPagesPhoneBrandSelect";
 
 const RichTextEditor = dynamic(
   () => import("@/src/components/admin/RichTextEditor").then((mod) => mod.RichTextEditor),
@@ -30,6 +31,7 @@ const RichTextEditor = dynamic(
 
 type Props = {
   initialRows?: PageRow[];
+  phoneModels?: string[];
 };
 
 const PAGE_SIZE = 10;
@@ -48,7 +50,7 @@ function clearPagesEditorDraft() {
   window.localStorage.removeItem(PAGES_EDITOR_DRAFT_KEY);
 }
 
-export default function AdminPagesClient({ initialRows }: Props) {
+export default function AdminPagesClient({ initialRows, phoneModels = [] }: Props) {
   const setMessage = useAdminFlash();
   const [title, setTitle] = useState("");
   const [slug, setSlug] = useState("");
@@ -66,6 +68,7 @@ export default function AdminPagesClient({ initialRows }: Props) {
   const [showMetaKeywords, setShowMetaKeywords] = useState(false);
   const [templateType, setTemplateType] = useState<TemplateType>("home");
   const [game, setGame] = useState<CloneGame>("bgmi");
+  const [phoneBrand, setPhoneBrand] = useState("");
   const [content, setContent] = useState("");
   const [publishAsNews, setPublishAsNews] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -128,6 +131,7 @@ export default function AdminPagesClient({ initialRows }: Props) {
     setShowMetaKeywords(false);
     setTemplateType("home");
     setGame("bgmi");
+    setPhoneBrand("");
     setContent("");
     setPublishAsNews(false);
     clearPagesEditorDraft();
@@ -294,6 +298,7 @@ export default function AdminPagesClient({ initialRows }: Props) {
       ogImageUrl,
       templateType,
       game,
+      phoneBrand,
       socialTitle,
       socialDescription,
       socialImageAlt,
@@ -322,6 +327,7 @@ export default function AdminPagesClient({ initialRows }: Props) {
                 ogImageUrl,
                 templateType,
                 game,
+                phoneBrand,
                 socialTitle,
                 socialDescription,
                 socialImageAlt,
@@ -560,6 +566,7 @@ export default function AdminPagesClient({ initialRows }: Props) {
                           setShowMetaKeywords(Boolean((row.metaKeywords ?? "").trim()));
                           setTemplateType(row.templateType ?? "home");
                           setGame(coerceCloneGame(row.game));
+                          setPhoneBrand(row.phoneBrand ?? "");
                           setContent(row.contentHtml ?? "");
                           setPublishAsNews(Boolean(row.publishAsNews));
                           setEditorNonce((n) => n + 1);
@@ -698,6 +705,14 @@ export default function AdminPagesClient({ initialRows }: Props) {
             <option value="freefire">Free Fire</option>
             <option value="freefire-max">Free Fire Max</option>
           </select>
+          {templateType === "home" ? (
+            <AdminPagesPhoneBrandSelect
+              game={game}
+              phoneModels={phoneModels}
+              value={phoneBrand}
+              onChange={setPhoneBrand}
+            />
+          ) : null}
           <label className="admin-pages-publish-toggle">
             <input
               type="checkbox"

@@ -13,7 +13,12 @@ import {
 } from "@/src/lib/freeFirePages";
 import { PUBG_MOBILE_CODES_PATH } from "@/src/lib/pubgMobileCodes";
 import { PUBG_MOBILE_LITE_PATH } from "@/src/lib/pubgMobileLite";
-import { resolveNavForPath } from "@/src/lib/resolveNavForPath";
+import {
+  detectNavGameContext,
+  navForCloneGame,
+  resolveNavForPath,
+  sideNavIdForCloneGame,
+} from "@/src/lib/resolveNavForPath";
 import {
   isSiteNavItemActive,
   SITE_GAME_NAV,
@@ -27,6 +32,8 @@ type HomeHeaderProps = {
   siteTitle: string;
   /** Same list as footer; used to resolve mobile chip (family) menu. */
   navigation: NavLink[];
+  /** Clone page game. Unknown slugs use this game's own menu. */
+  menuGame?: string;
 };
 
 function normalizePath(path: string | null | undefined) {
@@ -38,7 +45,7 @@ function isChipActive(href: string, activePath: string) {
   return activePath === href || activePath.startsWith(`${href}/`);
 }
 
-export function HomeHeader({ siteTitle, navigation }: HomeHeaderProps) {
+export function HomeHeader({ siteTitle, navigation, menuGame }: HomeHeaderProps) {
   const pathname = normalizePath(usePathname());
   const router = useRouter();
   const [, startTransition] = useTransition();
@@ -68,7 +75,10 @@ export function HomeHeader({ siteTitle, navigation }: HomeHeaderProps) {
     return item;
   });
   /** Mobile chip row: path family menu (FF page → FF links, Max → Max, …). */
-  const familyLinks = resolveNavForPath(pathname, normalized);
+  const pathMenu = resolveNavForPath(pathname, normalized);
+  const cloneMenu =
+    detectNavGameContext(pathname) === "default" ? navForCloneGame(menuGame) : null;
+  const familyLinks = cloneMenu ?? pathMenu;
   const [scrollHidden, setScrollHidden] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const [desktopOpenId, setDesktopOpenId] = useState<string | null>(null);
@@ -151,8 +161,15 @@ export function HomeHeader({ siteTitle, navigation }: HomeHeaderProps) {
   useEffect(() => {
     if (!menuOpen) return;
     const active = SITE_GAME_NAV.find((item) => isSiteNavItemActive(item, pathname));
-    if (active?.children?.length) setSideOpenId(active.id);
-  }, [menuOpen, pathname]);
+    if (active?.children?.length) {
+      setSideOpenId(active.id);
+      return;
+    }
+    if (detectNavGameContext(pathname) === "default") {
+      const cloneId = sideNavIdForCloneGame(menuGame);
+      if (cloneId) setSideOpenId(cloneId);
+    }
+  }, [menuOpen, pathname, menuGame]);
 
   function releaseSideMenuFocus() {
     const side = sideMenuRef.current;

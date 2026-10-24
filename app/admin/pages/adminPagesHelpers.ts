@@ -1,3 +1,4 @@
+import { coercePhoneBrand } from "@/src/lib/calculatorPhoneBrand";
 import type { AdminPageRow } from "@/src/server/admin/mapAdminPageRows";
 
 export type TemplateType = "home" | "article" | "landing";
@@ -17,6 +18,7 @@ export type PageMeta = {
   socialDescription?: string;
   socialImageAlt?: string;
   keywords?: string;
+  phoneBrand?: string;
 };
 
 export function coerceTemplateType(value: unknown): TemplateType {
@@ -81,6 +83,7 @@ export function parseContent(content: unknown) {
             socialDescription?: unknown;
             socialImageAlt?: unknown;
             keywords?: unknown;
+            phoneBrand?: unknown;
           })
         : {};
     return {
@@ -106,6 +109,7 @@ export function parseContent(content: unknown) {
           typeof metaObj.socialDescription === "string" ? metaObj.socialDescription : undefined,
         socialImageAlt: typeof metaObj.socialImageAlt === "string" ? metaObj.socialImageAlt : undefined,
         keywords: typeof metaObj.keywords === "string" ? metaObj.keywords : undefined,
+        phoneBrand: coercePhoneBrand(metaObj.phoneBrand),
       },
     };
   }
@@ -149,6 +153,7 @@ export function mapApiItemToPageRow(item: {
     socialDescription: parsed.meta.socialDescription ?? "",
     socialImageAlt: parsed.meta.socialImageAlt ?? "",
     metaKeywords: parsed.meta.keywords ?? "",
+    phoneBrand: parsed.meta.phoneBrand ?? "",
     publishAsNews: Boolean(item.publishAsNews),
   };
 }

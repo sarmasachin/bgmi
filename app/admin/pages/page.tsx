@@ -1,4 +1,5 @@
 import { mapAdminPageRows } from "@/src/server/admin/mapAdminPageRows";
+import { getCalculatorPhoneModels } from "@/src/server/repositories/calculatorPhoneModelsRepository";
 import { listPages } from "@/src/server/repositories/pagesRepository";
 import { requireAdminPageAccess } from "@/src/server/rbac/requireAdminPage";
 import { AdminAccessDenied } from "@/src/components/admin/AdminAccessDenied";
@@ -10,7 +11,7 @@ export default async function AdminPagesPage() {
   const access = await requireAdminPageAccess("pages.view");
   if (!access.ok) return <AdminAccessDenied />;
 
-  const pages = await listPages();
+  const [pages, phoneModels] = await Promise.all([listPages(), getCalculatorPhoneModels()]);
   const initialRows = mapAdminPageRows(pages);
-  return <AdminPagesClient initialRows={initialRows} />;
+  return <AdminPagesClient initialRows={initialRows} phoneModels={phoneModels} />;
 }

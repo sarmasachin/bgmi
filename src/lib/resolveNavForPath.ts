@@ -284,3 +284,45 @@ export function resolveNavForPath(pathname: string, navigation: NavLink[]): NavL
 
   return filtered.length ? filtered : navigation;
 }
+
+/** Mobile chips for a clone page whose slug is not already a game route. */
+export function navForCloneGame(game: string | undefined): NavLink[] | null {
+  switch ((game ?? "").trim()) {
+    case "freefire":
+      return [...FREE_FIRE_FAMILY_NAV];
+    case "freefire-max":
+      return [...FREE_FIRE_MAX_FAMILY_NAV];
+    case "bgmi":
+      return [...BGMI_FAMILY_NAV];
+    case "bgmi-lite":
+      return [...BGMI_LITE_NAV];
+    case "pubg":
+    case "pubg-mobile-codes":
+      return [...PUBG_FAMILY_NAV];
+    case "pubg-mobile-lite":
+      return [...PUBG_MOBILE_LITE_NAV];
+    default:
+      return null;
+  }
+}
+
+/** Side-menu row to open for that same clone game. */
+export function sideNavIdForCloneGame(game: string | undefined): string | null {
+  switch ((game ?? "").trim()) {
+    case "freefire":
+      return "free-fire";
+    case "freefire-max":
+      return "free-fire-max";
+    case "bgmi":
+      return "bgmi";
+    case "bgmi-lite":
+      return "bgmi-lite";
+    case "pubg":
+    case "pubg-mobile-codes":
+      return "pubg";
+    case "pubg-mobile-lite":
+      return "pubg-lite";
+    default:
+      return null;
+  }
+}

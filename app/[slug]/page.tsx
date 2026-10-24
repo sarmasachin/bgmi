@@ -24,6 +24,7 @@ import { getPublishedNewsBySlug } from "@/src/server/repositories/newsRepository
 import { getPageBySlug, getPublishedPageBySlug } from "@/src/server/repositories/pagesRepository";
 import { getSettings } from "@/src/server/repositories/settingsRepository";
 import { toCanonicalUrl } from "@/src/lib/siteUrl";
+import { coercePhoneBrand } from "@/src/lib/calculatorPhoneBrand";
 import { buildSocialMetadata } from "@/src/lib/socialMeta";
 
 export const dynamic = "force-dynamic";
@@ -52,6 +53,7 @@ function extractContentData(content: unknown) {
       socialDescription: "",
       socialImageAlt: "",
       keywords: "",
+      phoneBrand: "",
     };
   }
   if (typeof content === "string") {
@@ -63,6 +65,7 @@ function extractContentData(content: unknown) {
       socialDescription: "",
       socialImageAlt: "",
       keywords: "",
+      phoneBrand: "",
     };
   }
   if (typeof content === "object" && content) {
@@ -89,6 +92,7 @@ function extractContentData(content: unknown) {
       socialDescription: typeof meta.socialDescription === "string" ? meta.socialDescription : "",
       socialImageAlt: typeof meta.socialImageAlt === "string" ? meta.socialImageAlt : "",
       keywords: typeof meta.keywords === "string" ? meta.keywords : "",
+      phoneBrand: coercePhoneBrand(meta.phoneBrand) ?? "",
     };
   }
   return {
@@ -99,6 +103,7 @@ function extractContentData(content: unknown) {
     socialDescription: "",
     socialImageAlt: "",
     keywords: "",
+    phoneBrand: "",
   };
 }
 
@@ -212,7 +217,11 @@ export default async function DynamicTemplatePage({ params, searchParams }: Prop
     ? "main-title ff-gradient-title"
     : "main-title";
   const header = (
-    <HomeHeader siteTitle={settings.homeDisplay.headerTitle} navigation={settings.navigation} />
+    <HomeHeader
+      siteTitle={settings.homeDisplay.headerTitle}
+      navigation={settings.navigation}
+      menuGame={calculatorGame}
+    />
   );
 
   if (templateType === "article") {
@@ -266,20 +275,30 @@ export default async function DynamicTemplatePage({ params, searchParams }: Prop
       <main className="page-container">
         <AdSlot slotKey="home_above_calculator" />
         {calculatorGame === "pubg-mobile-codes" ? (
-          <PubgMobileCodesPanel key="pubg-mobile-codes" phoneModels={phoneModels} />
+          <PubgMobileCodesPanel
+            key="pubg-mobile-codes"
+            phoneModels={phoneModels}
+            phoneBrand={extracted.phoneBrand || undefined}
+          />
         ) : calculatorGame === "freefire" || calculatorGame === "freefire-max" ? (
           <FfCalculator
             key={calculatorGame}
             isMax={calculatorGame === "freefire-max"}
             trustBar={settings.ffTrustBar}
+            phoneBrand={extracted.phoneBrand || undefined}
           />
         ) : calculatorGame === "bgmi-lite" ? (
-          <LiteSensCalculator key="bgmi-lite" phoneModels={phoneModels} />
+          <LiteSensCalculator
+            key="bgmi-lite"
+            phoneModels={phoneModels}
+            phoneBrand={extracted.phoneBrand || undefined}
+          />
         ) : (
           <SensCalculator
             key={calculatorGame}
             phoneModels={phoneModels}
             game={calculatorGame === "pubg" ? "pubg" : "bgmi"}
+            phoneBrand={extracted.phoneBrand || undefined}
           />
         )}
         <AdSlot slotKey="home_between_tool_and_article" />

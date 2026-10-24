@@ -346,7 +346,7 @@ h1.main-title.ff-gradient-title {
 
 .home-header-nav {
   display: flex;
-  flex-wrap: nowrap;
+  flex-wrap: wrap;
   align-items: center;
   justify-content: flex-start;
   gap: 10px;
@@ -358,13 +358,7 @@ h1.main-title.ff-gradient-title {
   box-sizing: border-box;
   border-top: 0;
   position: relative;
-  overflow-x: auto;
-  overflow-y: hidden;
-  -webkit-overflow-scrolling: touch;
-  overscroll-behavior-x: contain;
-  touch-action: pan-x;
-  scroll-snap-type: x proximity;
-  scrollbar-width: none;
+  overflow: visible;
 }
 
 .home-header-nav::before {
@@ -706,6 +700,14 @@ h1.main-title.ff-gradient-title {
 .form-group {
   position: relative;
   margin-bottom: 15px;
+}
+
+.calc-brand-error {
+  color: #ef4444;
+  font-size: 12px;
+  margin-top: 6px;
+  font-weight: 600;
+  line-height: 1.35;
 }
 
 label {
@@ -1303,6 +1305,10 @@ button {
 .article strong,
 .article b {
   font-weight: 600 !important;
+}
+
+.article h3 strong {
+  font-weight: 800 !important;
 }
 
 .article h2,

@@ -6,6 +6,7 @@ import type { Prisma } from "@prisma/client";
 import { sanitizeHtml } from "@/src/lib/sanitizeHtml";
 import { newsArticlePath, newsCategoryFromCloneGame } from "@/src/lib/newsCategories";
 import { isReservedPublicSlug } from "@/src/lib/reservedPublicSlugs";
+import { coercePhoneBrand } from "@/src/lib/calculatorPhoneBrand";
 import { toCanonicalUrl } from "@/src/lib/siteUrl";
 
 type TemplateType = "home" | "article" | "landing";
@@ -32,6 +33,8 @@ type PageInput = {
   socialImageAlt?: string;
   /** Comma-separated meta keywords. */
   metaKeywords?: string;
+  /** Home-style clone: device list locked to this brand. Empty = all phones. */
+  phoneBrand?: string;
   content?: string;
   status: "draft" | "published";
   publishAsNews?: boolean;
@@ -44,6 +47,7 @@ type PageMeta = {
   socialDescription?: string;
   socialImageAlt?: string;
   keywords?: string;
+  phoneBrand?: string;
 };
 
 function isRecord(value: unknown): value is Record<string, unknown> {
@@ -178,6 +182,7 @@ function extractMeta(content: unknown): PageMeta {
     socialDescription: typeof rawMeta.socialDescription === "string" ? rawMeta.socialDescription : undefined,
     socialImageAlt: typeof rawMeta.socialImageAlt === "string" ? rawMeta.socialImageAlt : undefined,
     keywords: typeof rawMeta.keywords === "string" ? rawMeta.keywords : undefined,
+    phoneBrand: coercePhoneBrand(rawMeta.phoneBrand),
   };
 }
 
@@ -196,6 +201,10 @@ function buildContent(input: { html?: string; existing?: unknown; metaPatch?: Pa
       input.metaPatch && Object.prototype.hasOwnProperty.call(input.metaPatch, "keywords")
         ? input.metaPatch.keywords
         : currentMeta.keywords,
+    phoneBrand:
+      input.metaPatch && Object.prototype.hasOwnProperty.call(input.metaPatch, "phoneBrand")
+        ? (coercePhoneBrand(input.metaPatch.phoneBrand) ?? "")
+        : currentMeta.phoneBrand,
   };
 
   if (input.html !== undefined) {
@@ -210,7 +219,8 @@ function buildContent(input: { html?: string; existing?: unknown; metaPatch?: Pa
     nextMeta.socialTitle ||
     nextMeta.socialDescription ||
     nextMeta.socialImageAlt ||
-    nextMeta.keywords?.trim()
+    nextMeta.keywords?.trim() ||
+    (typeof nextMeta.phoneBrand === "string" && nextMeta.phoneBrand.trim())
   ) {
     const metaJson: Record<string, unknown> = {};
     if (nextMeta.templateType) metaJson.templateType = nextMeta.templateType;
@@ -219,6 +229,9 @@ function buildContent(input: { html?: string; existing?: unknown; metaPatch?: Pa
     if (nextMeta.socialDescription) metaJson.socialDescription = nextMeta.socialDescription;
     if (nextMeta.socialImageAlt) metaJson.socialImageAlt = nextMeta.socialImageAlt;
     if (nextMeta.keywords?.trim()) metaJson.keywords = nextMeta.keywords.trim();
+    if (typeof nextMeta.phoneBrand === "string" && nextMeta.phoneBrand.trim()) {
+      metaJson.phoneBrand = nextMeta.phoneBrand.trim();
+    }
     base.meta = metaJson;
   } else {
     delete base.meta;
@@ -532,6 +545,7 @@ export async function createPage(input: PageInput) {
         socialDescription: input.socialDescription,
         socialImageAlt: input.socialImageAlt,
         keywords: input.metaKeywords ?? "",
+        phoneBrand: input.phoneBrand ?? "",
       },
     });
 
@@ -590,6 +604,7 @@ export async function createPage(input: PageInput) {
       socialDescription: input.socialDescription,
       socialImageAlt: input.socialImageAlt,
       keywords: input.metaKeywords ?? "",
+      phoneBrand: input.phoneBrand ?? "",
     },
   });
 
@@ -663,7 +678,8 @@ export async function updatePage(id: string, payload: Partial<PageInput>) {
       nextPayload.socialTitle !== undefined ||
       nextPayload.socialDescription !== undefined ||
       nextPayload.socialImageAlt !== undefined ||
-      nextPayload.metaKeywords !== undefined;
+      nextPayload.metaKeywords !== undefined ||
+      nextPayload.phoneBrand !== undefined;
 
     const resolvedCanonical =
       nextPayload.canonicalUrl !== undefined
@@ -681,6 +697,7 @@ export async function updatePage(id: string, payload: Partial<PageInput>) {
             socialDescription: nextPayload.socialDescription,
             socialImageAlt: nextPayload.socialImageAlt,
             keywords: nextPayload.metaKeywords,
+            ...(nextPayload.phoneBrand !== undefined ? { phoneBrand: nextPayload.phoneBrand } : {}),
           },
         })
       : undefined;
@@ -785,7 +802,8 @@ export async function updatePage(id: string, payload: Partial<PageInput>) {
     nextPayload.socialTitle !== undefined ||
     nextPayload.socialDescription !== undefined ||
     nextPayload.socialImageAlt !== undefined ||
-    nextPayload.metaKeywords !== undefined;
+    nextPayload.metaKeywords !== undefined ||
+    nextPayload.phoneBrand !== undefined;
 
   if (shouldPatchContentMock) {
     page.content = buildContent({
@@ -798,6 +816,7 @@ export async function updatePage(id: string, payload: Partial<PageInput>) {
         socialDescription: nextPayload.socialDescription,
         socialImageAlt: nextPayload.socialImageAlt,
         keywords: nextPayload.metaKeywords,
+        ...(nextPayload.phoneBrand !== undefined ? { phoneBrand: nextPayload.phoneBrand } : {}),
       },
     });
   }

@@ -2,7 +2,7 @@ import { Prisma } from "@prisma/client";
 import { prisma } from "@/src/db/client";
 
 /** Fail fast when DB host/credentials are wrong instead of hanging every page. */
-const PRISMA_TIMEOUT_MS = process.env.NODE_ENV === "production" ? 2_000 : 400;
+const PRISMA_TIMEOUT_MS = process.env.NODE_ENV === "production" ? 2_000 : 8_000;
 /** Admin writes (approve, etc.) need more headroom than public page loads. */
 const PRISMA_LONG_TIMEOUT_MS = process.env.NODE_ENV === "production" ? 15_000 : 5_000;
 /** After first DB failure, skip Prisma briefly so every page does not pay the penalty. */

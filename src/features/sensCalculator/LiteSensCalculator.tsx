@@ -17,6 +17,7 @@ import {
   liteRamOptions,
 } from "./liteConstants";
 import type { LiteCalcBrand } from "@/src/lib/gamePagePath";
+import { resolveLockedPhone, searchPhones } from "@/src/lib/calculatorPhoneBrand";
 import {
   LITE_SET_PLAY_STYLE_EVENT,
   type LiteSetPlayStyleDetail,
@@ -51,9 +52,11 @@ type Props = {
   phoneModels?: string[];
   brand?: LiteCalcBrand;
   banner?: { strong?: string; rest?: string };
+  /** When set, suggestions and calculate stay on this phone brand. */
+  phoneBrand?: string;
 };
 
-export function LiteSensCalculator({ phoneModels, brand = "bgmi-lite", banner }: Props) {
+export function LiteSensCalculator({ phoneModels, brand = "bgmi-lite", banner, phoneBrand }: Props) {
   const copy = liteBrandCopy(brand);
   const bannerStrong = banner?.strong?.trim() || copy.bannerStrong;
   const bannerRest = banner?.rest?.trim() || copy.bannerRest;
@@ -63,6 +66,7 @@ export function LiteSensCalculator({ phoneModels, brand = "bgmi-lite", banner }:
   const [form, setForm] = useState<FormState>(initialForm);
   const [results, setResults] = useState<LiteScopeResult[] | null>(null);
   const [showSuggestions, setShowSuggestions] = useState(false);
+  const [brandError, setBrandError] = useState<string | null>(null);
   const [copyState, setCopyState] = useState<"idle" | "copied" | "failed">("idle");
 
   useEffect(() => {
@@ -77,14 +81,18 @@ export function LiteSensCalculator({ phoneModels, brand = "bgmi-lite", banner }:
   }, []);
 
   const suggestions = useMemo(() => {
-    const value = form.modelSearch.toLowerCase().trim();
-    if (!value) return [];
-    return models
-      .filter((phone) => phone.toLowerCase().includes(value))
-      .slice(0, 80);
-  }, [form.modelSearch, models]);
+    return searchPhones(models, phoneBrand, form.modelSearch, false);
+  }, [form.modelSearch, models, phoneBrand]);
 
   function runCalculate() {
+    const locked = resolveLockedPhone(models, phoneBrand, form.modelSearch);
+    if (!locked.ok) {
+      setBrandError(locked.message);
+      setResults(null);
+      setCopyState("idle");
+      return;
+    }
+    setBrandError(null);
     const gyroType = form.gyroMode === "off" ? "non-gyro" : "gyro";
     setResults(
       calculateLiteSensitivity({
@@ -95,7 +103,7 @@ export function LiteSensCalculator({ phoneModels, brand = "bgmi-lite", banner }:
         fingerMultiplier: form.fingers,
         fpsMultiplier: form.fpsMode,
         playerRole: form.playerRole,
-        modelName: form.modelSearch,
+        modelName: locked.name,
         gyroMode: form.gyroMode,
       }),
     );
@@ -106,6 +114,7 @@ export function LiteSensCalculator({ phoneModels, brand = "bgmi-lite", banner }:
     setForm(initialForm);
     setResults(null);
     setShowSuggestions(false);
+    setBrandError(null);
     setCopyState("idle");
   }
 
@@ -166,12 +175,18 @@ export function LiteSensCalculator({ phoneModels, brand = "bgmi-lite", banner }:
                     event.preventDefault();
                     setForm((prev) => ({ ...prev, modelSearch: phone }));
                     setShowSuggestions(false);
+                    setBrandError(null);
                   }}
                 >
                   {phone}
                 </button>
               ))}
             </div>
+            {brandError ? (
+              <p className="calc-brand-error" role="alert">
+                {brandError}
+              </p>
+            ) : null}
           </div>
 
           <div className="grid-half">

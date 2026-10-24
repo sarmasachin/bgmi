@@ -17,6 +17,8 @@ import {
 } from "@/src/lib/ffTrustBar";
 import { FF_SET_ROLE_EVENT } from "@/src/lib/ffPlayModes";
 import { FfCalculatorHeader } from "./FfCalculatorHeader";
+import { FfDeviceField } from "./FfDeviceField";
+import { resolveLockedPhone, searchPhones } from "@/src/lib/calculatorPhoneBrand";
 import "./ffCalculator.css";
 
 type Props = {
@@ -24,12 +26,15 @@ type Props = {
   trustBar?: FfTrustBarItem[];
   /** Play Store CTA — home + FF Max calculator */
   showPlayStoreCta?: boolean;
+  /** When set, the device list and calculate action stay on this brand. */
+  phoneBrand?: string;
 };
 
 export function FfCalculator({
   isMax: _isMax = false,
   trustBar,
   showPlayStoreCta = false,
+  phoneBrand,
 }: Props) {
   const items =
     trustBar && trustBar.length
@@ -38,6 +43,14 @@ export function FfCalculator({
           sublabel: trustBar[index]?.sublabel?.trim() || fallback.sublabel,
         }))
       : DEFAULT_FF_TRUST_BAR;
+  const trustItems =
+    phoneBrand?.trim().toLowerCase() === "samsung"
+      ? items.map((item, index) =>
+          index === 0
+            ? { label: "Samsung mobile sensitivity", sublabel: "" }
+            : item,
+        )
+      : items;
   const [deviceName, setDeviceName] = useState("");
   const [profile, setProfile] = useState<CalcInputs["profile"]>("custom");
   const [deviceAge, setDeviceAge] = useState("0.5");
@@ -49,6 +62,7 @@ export function FfCalculator({
   const [grip, setGrip] = useState<CalcInputs["grip"]>("foregrip3");
 
   const [ageError, setAgeError] = useState(false);
+  const [brandError, setBrandError] = useState<string | null>(null);
   const [results, setResults] = useState<CalcResults | null>(null);
   const [showDeviceList, setShowDeviceList] = useState(false);
 
@@ -69,11 +83,7 @@ export function FfCalculator({
   }, []);
 
   const detectedTier = detectHardwareTier(deviceName);
-
-  const deviceQuery = deviceName.trim().toLowerCase();
-  const deviceSuggestions = deviceQuery
-    ? deviceNames.filter((name) => name.toLowerCase().includes(deviceQuery))
-    : deviceNames;
+  const deviceSuggestions = searchPhones(deviceNames, phoneBrand, deviceName, true);
 
   // Visual fire button (display only — reads the already-calculated value).
   // Fire button % is always 35–65; map it to 70–130px and a subtle hue shift.
@@ -83,6 +93,15 @@ export function FfCalculator({
   const fireHue = firePct === null ? 10 : Math.round((firePct - 35) * 1.2);
 
   function runCalc() {
+    const locked = resolveLockedPhone(deviceNames, phoneBrand, deviceName);
+    if (!locked.ok) {
+      setBrandError(locked.message);
+      setAgeError(false);
+      setResults(null);
+      return;
+    }
+    setBrandError(null);
+
     const ageVal = validateAge(deviceAge);
     if (ageVal === null) {
       setAgeError(true);
@@ -92,7 +111,7 @@ export function FfCalculator({
 
     setResults(
       calculateSensitivity({
-        deviceName,
+        deviceName: locked.name,
         profile,
         deviceAge: ageVal,
         ram: parseInt(ram),
@@ -113,48 +132,21 @@ export function FfCalculator({
         <div className="ffc-form-col">
         <div className="ffc-grid">
           {/* 1. Smart Device Selection */}
-          <div className="ffc-span-2">
-            <label className="ffc-label" htmlFor="ffc-device">
-              <i className="fa-solid fa-mobile-screen"></i> Device Name (Top 30
-              or type)
-            </label>
-            <div className="ffc-device-wrap">
-              <input
-                id="ffc-device"
-                className="ffc-field"
-                placeholder="e.g. iPhone 15 Pro, Poco X6 Pro, iQOO Neo 9..."
-                value={deviceName}
-                autoComplete="off"
-                onChange={(e) => setDeviceName(e.target.value)}
-                onFocus={() => setShowDeviceList(true)}
-                onBlur={() => setShowDeviceList(false)}
-              />
-              {showDeviceList && deviceSuggestions.length > 0 ? (
-                <ul className="ffc-device-list" role="listbox">
-                  {deviceSuggestions.map((name) => (
-                    <li
-                      key={name}
-                      role="option"
-                      aria-selected={name === deviceName}
-                      onMouseDown={(e) => {
-                        e.preventDefault();
-                        setDeviceName(name);
-                        setShowDeviceList(false);
-                      }}
-                    >
-                      {name}
-                    </li>
-                  ))}
-                </ul>
-              ) : null}
-            </div>
-            {detectedTier ? (
-              <span className="ffc-detect-badge">
-                <i className="fa-solid fa-microchip"></i>
-                {detectedTier}
-              </span>
-            ) : null}
-          </div>
+          <FfDeviceField
+            deviceName={deviceName}
+            suggestions={deviceSuggestions}
+            showDeviceList={showDeviceList}
+            detectedTier={detectedTier}
+            brandError={brandError}
+            onDeviceName={setDeviceName}
+            onFocus={() => setShowDeviceList(true)}
+            onBlur={() => setShowDeviceList(false)}
+            onPick={(name) => {
+              setDeviceName(name);
+              setShowDeviceList(false);
+              setBrandError(null);
+            }}
+          />
 
           {/* 2. Profile Base */}
           <div>
@@ -389,12 +381,12 @@ export function FfCalculator({
       </div>
 
       <ul className="ffc-trust-bar" aria-label="Calculator highlights">
-        {items.map((item, index) => (
+        {trustItems.map((item, index) => (
           <li key={`ff-trust-${index}`} className="ffc-trust-item">
             <i className={`fa-solid ${FF_TRUST_BAR_ICONS[index] ?? "fa-star"}`} aria-hidden />
             <span className="ffc-trust-text">
               <strong>{item.label}</strong>
-              <span>{item.sublabel}</span>
+              {item.sublabel ? <span>{item.sublabel}</span> : null}
             </span>
           </li>
         ))}
