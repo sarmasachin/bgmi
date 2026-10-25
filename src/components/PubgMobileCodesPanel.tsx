@@ -20,6 +20,8 @@ import {
   buildFreshPresetCodes,
   generateYourMobileCode,
 } from "@/src/lib/pubgMobileCodes";
+import { resolveLockedPhone, searchPhones } from "@/src/lib/calculatorPhoneBrand";
+import { PubgMobileCodesResults } from "@/src/components/PubgMobileCodesResults";
 
 type FormState = {
   modelSearch: string;
@@ -49,25 +51,13 @@ const initialForm: FormState = {
 
 type Props = {
   phoneModels: string[];
+  /** When set, suggestions and calculate stay on this brand. */
+  phoneBrand?: string;
 };
 
 type ViewMode = "code" | "settings";
 
-function CopyIcon() {
-  return (
-    <svg width="26" height="26" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-      <rect x="9" y="9" width="11" height="11" rx="2" stroke="currentColor" strokeWidth="1.9" />
-      <path
-        d="M6 15H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v1"
-        stroke="currentColor"
-        strokeWidth="1.9"
-        strokeLinecap="round"
-      />
-    </svg>
-  );
-}
-
-export function PubgMobileCodesPanel({ phoneModels }: Props) {
+export function PubgMobileCodesPanel({ phoneModels, phoneBrand }: Props) {
   const [form, setForm] = useState<FormState>(initialForm);
   const [results, setResults] = useState<ScopeResult[] | null>(null);
   const [showSuggestions, setShowSuggestions] = useState(false);
@@ -77,6 +67,7 @@ export function PubgMobileCodesPanel({ phoneModels }: Props) {
     Array<{ id: string; codeName: string; code: string }>
   >([]);
   const [copiedId, setCopiedId] = useState<string | null>(null);
+  const [brandError, setBrandError] = useState<string | null>(null);
 
   function refreshAllCodes() {
     setMobileCode(generateYourMobileCode());
@@ -90,13 +81,17 @@ export function PubgMobileCodesPanel({ phoneModels }: Props) {
   const phoneName = form.modelSearch.trim() || "Your mobile";
 
   const suggestions = useMemo(() => {
-    const value = form.modelSearch.toLowerCase().trim();
-    if (!value) return [];
-    const matched = phoneModels.filter((phone) => phone.toLowerCase().includes(value));
-    return matched.slice(0, 80);
-  }, [form.modelSearch, phoneModels]);
+    return searchPhones(phoneModels, phoneBrand, form.modelSearch, false);
+  }, [form.modelSearch, phoneModels, phoneBrand]);
 
   function runCalculate() {
+    const locked = resolveLockedPhone(phoneModels, phoneBrand, form.modelSearch);
+    if (!locked.ok) {
+      setBrandError(locked.message);
+      setResults(null);
+      return;
+    }
+    setBrandError(null);
     const response = calculateSensitivity({
       baseValue: form.baseValue || 120,
       ramMultiplier: form.ramSize,
@@ -107,7 +102,7 @@ export function PubgMobileCodesPanel({ phoneModels }: Props) {
       fpsMultiplier: form.fpsMode,
       attachmentMultiplier: form.attachment,
       playerRole: form.playerRole,
-      modelName: form.modelSearch,
+      modelName: locked.name,
     });
     setResults(response);
     refreshAllCodes();
@@ -121,6 +116,7 @@ export function PubgMobileCodesPanel({ phoneModels }: Props) {
     setViewMode("code");
     setShowSuggestions(false);
     setCopiedId(null);
+    setBrandError(null);
     refreshAllCodes();
   }
 
@@ -174,12 +170,18 @@ export function PubgMobileCodesPanel({ phoneModels }: Props) {
                 onClick={() => {
                   setForm((prev) => ({ ...prev, modelSearch: item }));
                   setShowSuggestions(false);
+                  setBrandError(null);
                 }}
               >
                 {item}
               </button>
             ))}
           </div>
+          {brandError ? (
+            <p className="calc-brand-error" role="alert">
+              {brandError}
+            </p>
+          ) : null}
         </div>
 
         <div className="grid-half">
@@ -360,109 +362,16 @@ export function PubgMobileCodesPanel({ phoneModels }: Props) {
         </div>
       </form>
 
-      <section className={`result-card${results ? " result-card--has-results" : ""}`}>
-        {results ? (
-          <div id="pmc_res_section">
-            {viewMode === "code" ? (
-              <div className="pmc-code-table-wrap">
-                <table className="pmc-code-table">
-                  <thead>
-                    <tr>
-                      <th>Code Name</th>
-                      <th>Code</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <tr>
-                      <td>{phoneName}</td>
-                      <td>
-                        <div className="pmc-code-cell">
-                          <code className="pmc-code-value">{mobileCode}</code>
-                          <button
-                            type="button"
-                            className="pmc-copy-btn"
-                            onClick={() => copyCode("phone", mobileCode)}
-                            aria-label={`Copy ${phoneName} code`}
-                            title="Copy code"
-                          >
-                            <CopyIcon />
-                          </button>
-                          {copiedId === "phone" ? (
-                            <span className="pmc-copy-hint">Copied!</span>
-                          ) : null}
-                        </div>
-                      </td>
-                    </tr>
-                    {presetRows.map((row) => (
-                      <tr key={row.id}>
-                        <td>{row.codeName}</td>
-                        <td>
-                          <div className="pmc-code-cell">
-                            <code className="pmc-code-value">{row.code}</code>
-                            <button
-                              type="button"
-                              className="pmc-copy-btn"
-                              onClick={() => copyCode(row.id, row.code)}
-                              aria-label={`Copy ${row.codeName} code`}
-                              title="Copy code"
-                            >
-                              <CopyIcon />
-                            </button>
-                            {copiedId === row.id ? (
-                              <span className="pmc-copy-hint">Copied!</span>
-                            ) : null}
-                          </div>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            ) : (
-              <div className="tabs">
-                <div className="tab-box">
-                  <div className="tab-title">CAMERA</div>
-                  {results.map((item) => (
-                    <div className="res-item" key={`camera-${item.name}`}>
-                      <span>{item.name}</span>
-                      <b>{item.camera}%</b>
-                    </div>
-                  ))}
-                </div>
-                <div className="tab-box">
-                  <div className="tab-title ads">ADS / GYRO</div>
-                  {results.map((item) => (
-                    <div className="res-item" key={`ads-${item.name}`}>
-                      <span>{item.name}</span>
-                      <b>{item.ads}%</b>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            <div className="pmc-result-actions">
-              {viewMode === "code" ? (
-                <button
-                  type="button"
-                  className="pmc-btn"
-                  onClick={() => setViewMode("settings")}
-                >
-                  Show sensitivity settings
-                </button>
-              ) : (
-                <button type="button" className="pmc-btn" onClick={() => setViewMode("code")}>
-                  Show code
-                </button>
-              )}
-            </div>
-          </div>
-        ) : (
-          <div className="result-pre-msg">
-            Fill in the details and tap Calculate for PUBG Mobile Code
-          </div>
-        )}
-      </section>
+      <PubgMobileCodesResults
+        results={results}
+        viewMode={viewMode}
+        phoneName={phoneName}
+        mobileCode={mobileCode}
+        presetRows={presetRows}
+        copiedId={copiedId}
+        onCopy={(id, code) => void copyCode(id, code)}
+        onViewMode={setViewMode}
+      />
     </div>
   );
 }

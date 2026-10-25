@@ -8,6 +8,7 @@ export const DEFAULT_AD_SLOTS = [
   { slotKey: "apk_below_title", title: "APK pages — below title" },
   { slotKey: "apk_below_actions", title: "APK pages — below countdown / APK buttons" },
   { slotKey: "home_above_calculator", title: "Home — above calculator" },
+  { slotKey: "home_above_trust", title: "Home — above trust bar (mobile only)" },
   { slotKey: "home_between_tool_and_article", title: "Home — between tool & article" },
   { slotKey: "news_list_top", title: "News list — top" },
   { slotKey: "news_list_bottom", title: "News list — bottom" },

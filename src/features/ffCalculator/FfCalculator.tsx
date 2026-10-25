@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 import {
   AGE_ERROR_MESSAGE,
   calculateSensitivity,
@@ -28,6 +28,8 @@ type Props = {
   showPlayStoreCta?: boolean;
   /** When set, the device list and calculate action stay on this brand. */
   phoneBrand?: string;
+  /** Optional ad above the trust bar (e.g. mobile-only home slot). */
+  aboveTrustAd?: ReactNode;
 };
 
 export function FfCalculator({
@@ -35,6 +37,7 @@ export function FfCalculator({
   trustBar,
   showPlayStoreCta = false,
   phoneBrand,
+  aboveTrustAd,
 }: Props) {
   const items =
     trustBar && trustBar.length
@@ -380,6 +383,7 @@ export function FfCalculator({
         </div>
       </div>
 
+      {aboveTrustAd}
       <ul className="ffc-trust-bar" aria-label="Calculator highlights">
         {trustItems.map((item, index) => (
           <li key={`ff-trust-${index}`} className="ffc-trust-item">

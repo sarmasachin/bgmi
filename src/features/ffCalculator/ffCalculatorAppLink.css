@@ -53,21 +53,21 @@
   transform: scale(0.98);
 }
 
-/* Desktop: nudge Play Store box slightly upward */
+/* Desktop: keep Play Store box aligned with home section rhythm */
 @media (min-width: 721px) {
   .ffc-root:has(.ffc-play-app) {
-    padding-top: 16px;
+    padding-top: 0;
   }
 
   .ffc-header:has(.ffc-play-app) {
-    margin-top: 12px;
+    margin-top: 0;
   }
 }
 
 @media (max-width: 720px) {
-  /* Mobile only: tighter gap above Play Store box */
+  /* Mobile: match section rhythm above Play Store box */
   .ffc-root:has(.ffc-play-app) {
-    padding-top: 4px;
+    padding-top: 0;
   }
 
   .ffc-header:has(.ffc-play-app) {

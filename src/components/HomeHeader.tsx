@@ -100,6 +100,10 @@ export function HomeHeader({ siteTitle, navigation, menuGame }: HomeHeaderProps)
   useEffect(() => {
     setPendingPath(null);
     setDesktopOpenId(null);
+    // Soft-nav from the drawer: always close + unlock page scroll (mobile).
+    setMenuOpen(false);
+    document.body.style.overflow = "";
+    document.documentElement.style.overflow = "";
   }, [pathname]);
 
   // Mouse wheel is vertical by default — map it to horizontal chip scroll.
@@ -159,11 +163,13 @@ export function HomeHeader({ siteTitle, navigation, menuGame }: HomeHeaderProps)
       if (event.key === "Escape") closeMenu();
     };
     document.addEventListener("keydown", onKey);
-    const prevOverflow = document.body.style.overflow;
+    // Never restore a prior "hidden" (ads/menu race) — that sticks page scroll on mobile.
     document.body.style.overflow = "hidden";
+    document.documentElement.style.overflow = "hidden";
     return () => {
       document.removeEventListener("keydown", onKey);
-      document.body.style.overflow = prevOverflow;
+      document.body.style.overflow = "";
+      document.documentElement.style.overflow = "";
     };
   }, [menuOpen]);
 
@@ -199,15 +205,20 @@ export function HomeHeader({ siteTitle, navigation, menuGame }: HomeHeaderProps)
     }
   }
 
-  function closeMenu() {
+  function closeMenu(restoreFocus = true) {
     releaseSideMenuFocus();
     setMenuOpen(false);
+    document.body.style.overflow = "";
+    document.documentElement.style.overflow = "";
     // Return focus to the hamburger so aria-hidden is not applied over a focused descendant.
-    queueMicrotask(() => menuBtnRef.current?.focus({ preventScroll: true }));
+    if (restoreFocus) {
+      queueMicrotask(() => menuBtnRef.current?.focus({ preventScroll: true }));
+    }
   }
 
   function onNavClick(event: MouseEvent<HTMLAnchorElement>, href: string) {
-    closeMenu();
+    // Navigating away: unlock scroll immediately; don't steal focus onto the hamburger.
+    closeMenu(false);
     setDesktopOpenId(null);
     if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey || event.button !== 0) {
       return;

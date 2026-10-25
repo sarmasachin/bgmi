@@ -10,6 +10,7 @@ export type AdPlacementVisibility = {
     apk_below_title: boolean;
     apk_below_actions: boolean;
     home_above_calculator: boolean;
+    home_above_trust: boolean;
     home_between_tool_and_article: boolean;
   };
   newsArticle: {
@@ -26,6 +27,7 @@ export const DEFAULT_AD_PLACEMENT_VISIBILITY: AdPlacementVisibility = {
     apk_below_title: true,
     apk_below_actions: true,
     home_above_calculator: true,
+    home_above_trust: true,
     home_between_tool_and_article: true,
   },
   newsArticle: {
@@ -57,6 +59,9 @@ function mergeVisibility(raw: unknown): AdPlacementVisibility {
     }
     if (typeof h.home_above_calculator === "boolean") {
       out.home.home_above_calculator = h.home_above_calculator;
+    }
+    if (typeof h.home_above_trust === "boolean") {
+      out.home.home_above_trust = h.home_above_trust;
     }
     if (typeof h.home_between_tool_and_article === "boolean") {
       out.home.home_between_tool_and_article = h.home_between_tool_and_article;

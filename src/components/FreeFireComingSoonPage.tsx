@@ -1,4 +1,5 @@
 import { FaqAccordion } from "@/src/components/FaqAccordion";
+import { HomeAboveTrustAd } from "@/src/components/HomeAboveTrustAd";
 import { HomeTitleDummyAd } from "@/src/components/HomeTitleDummyAd";
 import { FfComparisonTables } from "@/src/components/FfComparisonTables";
 import { FfExploreCards } from "@/src/components/FfExploreCards";
@@ -160,6 +161,7 @@ export async function FreeFireComingSoonPage({ variant }: { variant: FreeFireVar
             isMax={variant === "freefire-max"}
             trustBar={settings.ffTrustBar}
             showPlayStoreCta={variant === "freefire-max"}
+            aboveTrustAd={<HomeAboveTrustAd />}
           />
         </div>
         <TestimonialsMarquee game={testimonialGame} initialItems={testimonials} />

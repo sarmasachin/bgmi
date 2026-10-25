@@ -1,5 +1,6 @@
 import { AdSlot } from "@/src/components/AdSlot";
 import { ClientErrorBoundary } from "@/src/components/ClientErrorBoundary";
+import { HomeAboveTrustAd } from "@/src/components/HomeAboveTrustAd";
 import { GameArticleFaq } from "@/src/components/GameArticleFaq";
 import { GamePathJsonLd } from "@/src/components/GamePathJsonLd";
 import { GameTestimonialsSection } from "@/src/components/GameTestimonialsSection";
@@ -205,6 +206,9 @@ export default async function GamesLayout({ children }: { children: React.ReactN
             ffTrustBar={settings.ffTrustBar}
             bgmiLiteBanner={bgmiLiteCards.calcBanner}
             pubgLiteBanner={pubgMobileLiteCards.calcBanner}
+            aboveTrustAd={
+              adPlaces.home.home_above_trust ? <HomeAboveTrustAd /> : null
+            }
           />
         </ClientErrorBoundary>
         {adPlaces.home.home_between_tool_and_article ? (

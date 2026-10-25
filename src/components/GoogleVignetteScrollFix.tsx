@@ -43,6 +43,17 @@ function unlockBodyScroll() {
   if (documentElement.style.overflow === "hidden") {
     documentElement.style.overflow = "";
   }
+  // AdSense vignette sometimes freezes scroll with position:fixed + top offset.
+  if (body.style.position === "fixed") {
+    const top = body.style.top;
+    body.style.position = "";
+    body.style.top = "";
+    body.style.left = "";
+    body.style.right = "";
+    body.style.width = "";
+    const y = top ? Math.abs(Number.parseInt(top, 10) || 0) : 0;
+    if (y > 0) window.scrollTo({ top: y, behavior: "instant" as ScrollBehavior });
+  }
 }
 
 function stripVignetteHash() {
@@ -63,7 +74,14 @@ export function GoogleVignetteScrollFix() {
     // Soft nav away: never keep vignette hash/lock on the next page.
     stripVignetteHash();
     unlockBodyScroll();
+    // Menu close may commit one frame later — unlock again after paint.
+    const t0 = window.setTimeout(() => unlockBodyScroll(), 0);
+    const t1 = window.setTimeout(() => unlockBodyScroll(), 120);
     hashSinceRef.current = null;
+    return () => {
+      window.clearTimeout(t0);
+      window.clearTimeout(t1);
+    };
   }, [pathname]);
 
   useEffect(() => {

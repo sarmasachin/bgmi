@@ -40,6 +40,18 @@
   font-size: 12px;
 }
 
+/* Mobile-only ad shell above trust bar (home) */
+.ffc-ad-above-trust {
+  width: 100%;
+  max-width: 768px;
+  margin: 0 auto 12px;
+  box-sizing: border-box;
+}
+.ffc-ad-above-trust .ff-public-ad {
+  margin: 0;
+  width: 100%;
+}
+
 /* Trust / features strip — directly under calculator cards */
 .ffc-trust-bar {
   list-style: none;

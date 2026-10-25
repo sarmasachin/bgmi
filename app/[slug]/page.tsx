@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import { notFound, permanentRedirect } from "next/navigation";
 import { AdSlot } from "@/src/components/AdSlot";
 import { HomeHeader } from "@/src/components/HomeHeader";
+import { HomeAboveTrustAd } from "@/src/components/HomeAboveTrustAd";
+import { HomeTitleDummyAd } from "@/src/components/HomeTitleDummyAd";
 import { PubgMobileCodesPanel } from "@/src/components/PubgMobileCodesPanel";
 import { SiteFooter } from "@/src/components/SiteFooter";
 import { FfCalculator } from "@/src/features/ffCalculator/FfCalculator";
@@ -269,9 +271,10 @@ export default async function DynamicTemplatePage({ params, searchParams }: Prop
   }
 
   return (
-    <div>
+    <div className={isFreeFireClone ? "ff-clone-calc" : undefined}>
       {header}
       <h1 className={titleClassName}>{page.title}</h1>
+      <HomeTitleDummyAd />
       <main className="page-container">
         <AdSlot slotKey="home_above_calculator" />
         {calculatorGame === "pubg-mobile-codes" ? (
@@ -286,20 +289,27 @@ export default async function DynamicTemplatePage({ params, searchParams }: Prop
             isMax={calculatorGame === "freefire-max"}
             trustBar={settings.ffTrustBar}
             phoneBrand={extracted.phoneBrand || undefined}
+            aboveTrustAd={<HomeAboveTrustAd />}
           />
         ) : calculatorGame === "bgmi-lite" ? (
-          <LiteSensCalculator
-            key="bgmi-lite"
-            phoneModels={phoneModels}
-            phoneBrand={extracted.phoneBrand || undefined}
-          />
+          <>
+            <LiteSensCalculator
+              key="bgmi-lite"
+              phoneModels={phoneModels}
+              phoneBrand={extracted.phoneBrand || undefined}
+            />
+            <HomeAboveTrustAd />
+          </>
         ) : (
-          <SensCalculator
-            key={calculatorGame}
-            phoneModels={phoneModels}
-            game={calculatorGame === "pubg" ? "pubg" : "bgmi"}
-            phoneBrand={extracted.phoneBrand || undefined}
-          />
+          <>
+            <SensCalculator
+              key={calculatorGame}
+              phoneModels={phoneModels}
+              game={calculatorGame === "pubg" ? "pubg" : "bgmi"}
+              phoneBrand={extracted.phoneBrand || undefined}
+            />
+            <HomeAboveTrustAd />
+          </>
         )}
         <AdSlot slotKey="home_between_tool_and_article" />
       </main>

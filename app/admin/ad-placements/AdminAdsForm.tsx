@@ -21,6 +21,7 @@ export type PlacementState = {
     apk_below_title: boolean;
     apk_below_actions: boolean;
     home_above_calculator: boolean;
+    home_above_trust: boolean;
     home_between_tool_and_article: boolean;
   };
   newsArticle: {
@@ -198,6 +199,19 @@ export function AdminAdsForm({ initialRows, initialPlacements }: Props) {
               }
             />
             Above calculator (before sensitivity tool)
+          </label>
+          <label className="admin-ads-enable" style={{ display: "block", marginBottom: 6 }}>
+            <input
+              type="checkbox"
+              checked={placements.home.home_above_trust}
+              onChange={(e) =>
+                setPlacements((p) => ({
+                  ...p,
+                  home: { ...p.home, home_above_trust: e.target.checked },
+                }))
+              }
+            />
+            Above trust bar (10,000+ Devices) — mobile only
           </label>
           <label className="admin-ads-enable" style={{ display: "block" }}>
             <input
