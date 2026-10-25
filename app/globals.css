@@ -346,7 +346,7 @@ h1.main-title.ff-gradient-title {
 
 .home-header-nav {
   display: flex;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
   align-items: center;
   justify-content: flex-start;
   gap: 10px;
@@ -358,7 +358,14 @@ h1.main-title.ff-gradient-title {
   box-sizing: border-box;
   border-top: 0;
   position: relative;
-  overflow: visible;
+  overflow-x: auto;
+  overflow-y: hidden;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior-x: contain;
+  /* pan-x = horizontal chip swipe; pan-y keeps page vertical scroll usable */
+  touch-action: pan-x pan-y;
+  scroll-snap-type: x proximity;
+  scrollbar-width: none;
 }
 
 .home-header-nav::before {
