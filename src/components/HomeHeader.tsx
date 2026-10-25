@@ -87,6 +87,7 @@ export function HomeHeader({ siteTitle, navigation, menuGame }: HomeHeaderProps)
   const lastScrollY = useRef(0);
   const sideMenuRef = useRef<HTMLElement>(null);
   const menuBtnRef = useRef<HTMLButtonElement>(null);
+  const chipNavRef = useRef<HTMLElement>(null);
   const menuId = useId();
   const activePath = pendingPath ?? pathname;
 
@@ -99,6 +100,25 @@ export function HomeHeader({ siteTitle, navigation, menuGame }: HomeHeaderProps)
   useEffect(() => {
     setPendingPath(null);
     setDesktopOpenId(null);
+  }, [pathname]);
+
+  // Mouse wheel is vertical by default — map it to horizontal chip scroll.
+  useEffect(() => {
+    const el = chipNavRef.current;
+    if (!el) return;
+    const onWheel = (event: WheelEvent) => {
+      if (el.scrollWidth <= el.clientWidth + 1) return;
+      const dominant =
+        Math.abs(event.deltaX) > Math.abs(event.deltaY) ? event.deltaX : event.deltaY;
+      if (dominant === 0) return;
+      const max = el.scrollWidth - el.clientWidth;
+      const next = Math.min(max, Math.max(0, el.scrollLeft + dominant));
+      if (next === el.scrollLeft) return;
+      event.preventDefault();
+      el.scrollLeft = next;
+    };
+    el.addEventListener("wheel", onWheel, { passive: false });
+    return () => el.removeEventListener("wheel", onWheel);
   }, [pathname]);
 
   useEffect(() => {
@@ -258,7 +278,7 @@ export function HomeHeader({ siteTitle, navigation, menuGame }: HomeHeaderProps)
             />
           </div>
 
-          <nav className="home-header-nav" aria-label="Games">
+          <nav ref={chipNavRef} className="home-header-nav" aria-label="Games">
             {familyLinks.map((item) => (
               <Link
                 key={`chip-${item.href}-${item.label}`}
