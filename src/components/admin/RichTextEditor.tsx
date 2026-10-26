@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useAdminToast } from "@/src/components/admin/AdminToast";
+import { removeEditorImageOnKey, selectEditorImage } from "@/src/components/admin/richTextImageEdit";
 
 type Props = {
   value: string;
@@ -619,8 +620,15 @@ export function RichTextEditor({
     syncHeadingFromSelection();
 
     const target = event.target as HTMLElement | null;
-    const link = target?.closest?.("a");
     const editor = editorRef.current;
+    const image = target?.closest?.("img");
+    if (image instanceof HTMLImageElement && editor?.contains(image)) {
+      event.preventDefault();
+      selectEditorImage(editor, image);
+      return;
+    }
+
+    const link = target?.closest?.("a");
     if (!link || !editor || !editor.contains(link)) return;
 
     // Ctrl/Cmd + click opens the real URL; normal click shows/edits the link.
@@ -2659,6 +2667,12 @@ export function RichTextEditor({
     }
 
     if (event.key === "Backspace" || event.key === "Delete") {
+      const editor = editorRef.current;
+      if (editor && removeEditorImageOnKey(editor, event.key)) {
+        event.preventDefault();
+        onEditorInput();
+        return;
+      }
       window.setTimeout(() => {
         onEditorInput();
       }, 0);
