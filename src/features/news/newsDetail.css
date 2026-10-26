@@ -52,6 +52,18 @@
   background: #e2e8f0;
 }
 
+/* Saved editor images carry width/height and object-fit:cover. Show the full picture. */
+.news-detail-page .news-detail-body img {
+  display: block !important;
+  width: 100% !important;
+  max-width: 100% !important;
+  height: auto !important;
+  aspect-ratio: auto !important;
+  object-fit: contain !important;
+  margin: 16px auto !important;
+  border-radius: 12px;
+}
+
 .news-detail-page .news-detail-card a {
   color: #0f766e;
   text-decoration: underline;
