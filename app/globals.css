@@ -1317,6 +1317,18 @@ button {
   margin-bottom: 20px;
 }
 
+/* Editor images save width/height plus object-fit:cover. Show the full picture. */
+.article img {
+  display: block !important;
+  width: 100% !important;
+  max-width: 100% !important;
+  height: auto !important;
+  aspect-ratio: auto !important;
+  object-fit: contain !important;
+  margin: 16px auto !important;
+  border-radius: 12px;
+}
+
 /* Pasted Google/Word markup was mixing a heavy face into body copy. */
 .article,
 .article *:not(code):not(pre):not(kbd) {
@@ -2697,6 +2709,17 @@ footer,
 
 .legal-document-card .legal-document-body a {
   color: var(--primary);
+}
+
+.legal-document-card .legal-document-body img {
+  display: block !important;
+  width: 100% !important;
+  max-width: 100% !important;
+  height: auto !important;
+  aspect-ratio: auto !important;
+  object-fit: contain !important;
+  margin: 16px auto !important;
+  border-radius: 12px;
 }
 
 .news-detail-card {
