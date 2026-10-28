@@ -98,6 +98,7 @@ const FREE_FIRE_INDIA_NEWS_PATH = newsCategoryListingPath(FREE_FIRE_INDIA_NEWS_C
 
 /** Desktop and mobile "Free Fire India" submenu. Not part of the Free Fire menu. */
 export const FREE_FIRE_INDIA_MENU = [
+  { label: "Home", href: FREE_FIRE_INDIA_PATH },
   { label: "APK", href: FREE_FIRE_INDIA_APK_PATH },
   { label: "Redeem Code", href: FREE_FIRE_INDIA_REDEEM_CODE_PATH },
   { label: "Name", href: FREE_FIRE_INDIA_STYLISH_NAME_PATH },

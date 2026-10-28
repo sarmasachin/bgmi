@@ -66,13 +66,10 @@ const INDIA_PAGE_CHIP_LABEL: Record<string, string> = {
   [FREE_FIRE_INDIA_STYLISH_NAME_PATH]: "FF India Name",
 };
 
-const FREE_FIRE_INDIA_CHIPS: NavLink[] = [
-  { label: "Home", href: FREE_FIRE_INDIA_PATH },
-  ...FREE_FIRE_INDIA_MENU.map((item) => ({
-    label: INDIA_PAGE_CHIP_LABEL[item.href] ?? item.label,
-    href: item.href,
-  })),
-];
+const FREE_FIRE_INDIA_CHIPS: NavLink[] = FREE_FIRE_INDIA_MENU.map((item) => ({
+  label: INDIA_PAGE_CHIP_LABEL[item.href] ?? item.label,
+  href: item.href,
+}));
 
 function isChipActive(href: string, activePath: string) {
   if (href === "/") return activePath === "/" || activePath === "";

@@ -599,6 +599,12 @@ h1.main-title.ff-gradient-title {
   flex-direction: column;
 }
 
+/* Last menus sit on the right edge. Open them inward so the label stays on screen. */
+.home-header-desktop-nav .home-nav-dd:nth-last-child(-n+2) .home-nav-dd-panel {
+  left: auto;
+  right: 0;
+}
+
 .home-nav-dd-panel-inner {
   display: flex;
   flex-direction: column;
