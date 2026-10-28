@@ -7,6 +7,7 @@ const GAME_LABEL: Record<AdminTestimonialItem["game"], string> = {
   pubg: "PUBG Mobile",
   "pubg-mobile-lite": "PUBG Mobile Flash",
   freefire: "Free Fire",
+  "freefire-india": "Free Fire India",
   "freefire-max": "Free Fire Max",
 };
 

@@ -1,8 +1,10 @@
 import { FREE_FIRE_INDIA_APK_PATH } from "@/src/lib/gamePagePath";
-import type { FreeFireApkPageContent } from "@/src/lib/freeFireApkPage";
+import { DEFAULT_FREE_FIRE_APK_PAGE, type FreeFireApkPageContent } from "@/src/lib/freeFireApkPage";
 
 export const FREE_FIRE_INDIA_APK_PAGE_KEY = "free-fire-india-apk";
 export const FREE_FIRE_INDIA_APK_GUIDE_ID = "free-fire-india-apk-guide";
+export const FREE_FIRE_INDIA_PLAY_STORE_URL =
+  "https://play.google.com/store/apps/details?id=com.garena.game.ffi&hl=en_IN";
 export { FREE_FIRE_INDIA_APK_PATH };
 
 /** Keep Free Fire MAX as its own game, then rename this page's game name to Free Fire India. */
@@ -92,3 +94,18 @@ export function toFreeFireIndiaApkPage(page: FreeFireApkPageContent): FreeFireAp
     commentsLead: toFreeFireIndiaText(page.commentsLead),
   };
 }
+
+/** Built-in India page. Not a live copy of the saved Free Fire APK row. */
+export const DEFAULT_FREE_FIRE_INDIA_APK_PAGE: FreeFireApkPageContent = (() => {
+  const page = toFreeFireIndiaApkPage(DEFAULT_FREE_FIRE_APK_PAGE);
+  return {
+    ...page,
+    heroButtons: {
+      ...page.heroButtons,
+      playStore: {
+        ...page.heroButtons.playStore,
+        href: FREE_FIRE_INDIA_PLAY_STORE_URL,
+      },
+    },
+  };
+})();

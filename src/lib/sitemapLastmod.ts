@@ -10,6 +10,8 @@ export function pageCardsVariantToSitemapPath(variant: string): string | null {
   switch (variant) {
     case "freefire":
       return "/";
+    case "freefire-india":
+      return "/free-fire-india";
     case "freefire-max":
       return "/free-fire-max-sensitivity-settings-calculator";
     case "bgmi":
@@ -80,6 +82,11 @@ export const SITEMAP_PATH_CONTENT_KEYS: Record<string, string[]> = {
     "settings:homeCards:pubg-mobile-codes",
     "settings:gameArticle:pubg-mobile-codes",
   ],
+  "/free-fire-india": [
+    "settings:homeCards:freefire-india",
+    "settings:gameArticle:freefire-india",
+    "settings:gameFaq:freefire-india",
+  ],
   "/free-fire-max-sensitivity-settings-calculator": [
     "settings:homeCards:freefire-max",
     "settings:gameArticle:freefire-max",
@@ -89,7 +96,7 @@ export const SITEMAP_PATH_CONTENT_KEYS: Record<string, string[]> = {
   "/bgmi-apk": ["settings:bgmiApkPage"],
   "/pubg-apk": ["settings:pubgApkPage"],
   "/free-fire-apk": ["settings:freeFireApkPage"],
-  "/free-fire-india-apk": ["settings:freeFireApkPage"],
+  "/free-fire-india-apk": ["settings:freeFireIndiaApkPage"],
   "/free-fire-max-apk": ["settings:freeFireMaxApkPage"],
   "/bgmi-redeem-code": ["settings:bgmiRedeemCodes"],
   "/pubg-redeem-code": ["settings:pubgRedeemCodes"],
@@ -99,9 +106,9 @@ export const SITEMAP_PATH_CONTENT_KEYS: Record<string, string[]> = {
   "/pubg-mobile-flash-redeem-code": ["settings:pubgMobileLiteRedeemCodes"],
   "/pubg-mobile-flash-name": ["settings:pubgMobileLiteName"],
   "/free-fire-redeem-code": ["settings:freeFireRedeemCodes"],
-  "/free-fire-india-redeem-code": ["settings:freeFireRedeemCodes"],
+  "/free-fire-india-redeem-code": ["settings:freeFireIndiaRedeemCodes"],
   "/free-fire-stylish-name": ["settings:freeFireStylishName"],
-  "/free-fire-india-stylish-name": ["settings:freeFireStylishName"],
+  "/free-fire-india-stylish-name": ["settings:freeFireIndiaStylishName"],
   "/free-fire-max-redeem-code": ["settings:freeFireMaxRedeemCodes"],
   "/free-fire-max-stylish-name": ["settings:freeFireMaxStylishName"],
   "/news": ["settings:newsListingSeo"],

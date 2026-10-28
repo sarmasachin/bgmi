@@ -1,12 +1,10 @@
 "use client";
 
 import { FormEvent, useId, useRef, useState } from "react";
-import { usePathname } from "next/navigation";
-import { isFreeFireIndiaPath } from "@/src/lib/gamePagePath";
 import { UserErrorBanner } from "@/src/components/ui/UserErrorBanner";
 import { messageFromUnknownError, readApiError } from "@/src/lib/userFacingError";
 
-type Game = "bgmi" | "bgmi-lite" | "pubg" | "pubg-mobile-lite" | "freefire" | "freefire-max";
+type Game = "bgmi" | "bgmi-lite" | "pubg" | "pubg-mobile-lite" | "freefire" | "freefire-india" | "freefire-max";
 
 type Props = {
   /** Locked to the current calculator page. */
@@ -19,13 +17,13 @@ const GAME_LABEL: Record<Game, string> = {
   pubg: "PUBG Mobile",
   "pubg-mobile-lite": "PUBG Mobile Flash",
   freefire: "Free Fire",
+  "freefire-india": "Free Fire India",
   "freefire-max": "Free Fire Max",
 };
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 export function TestimonialForm({ game }: Props) {
-  const pathname = usePathname() ?? "";
   const panelId = useId();
   const submittingRef = useRef(false);
   const [open, setOpen] = useState(false);
@@ -41,10 +39,7 @@ export function TestimonialForm({ game }: Props) {
   const [done, setDone] = useState(false);
 
   const displayStars = hoverRating || rating;
-  const gameLabel =
-    isFreeFireIndiaPath(pathname) && game === "freefire"
-      ? "Free Fire India"
-      : GAME_LABEL[game];
+  const gameLabel = GAME_LABEL[game];
 
   function pickStar(star: number) {
     if (submitting || submittingRef.current) return;

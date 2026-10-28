@@ -1,16 +1,15 @@
 import { FreeFireIndiaApkLandingPage } from "@/src/components/FreeFireApkLandingPage";
-import { toFreeFireIndiaApkPage } from "@/src/lib/freeFireIndiaApkPage";
 import { FREE_FIRE_INDIA_APK_PATH } from "@/src/lib/gamePagePath";
 import { buildSocialMetadata } from "@/src/lib/socialMeta";
 import { toCanonicalUrl } from "@/src/lib/siteUrl";
-import { getFreeFireApkPage } from "@/src/server/repositories/freeFireApkPageRepository";
+import { getFreeFireIndiaApkPage } from "@/src/server/repositories/freeFireIndiaApkPageRepository";
 import type { Metadata } from "next";
 
 export const dynamic = "force-dynamic";
 
 export async function generateMetadata(): Promise<Metadata> {
   try {
-    const page = toFreeFireIndiaApkPage(await getFreeFireApkPage());
+    const page = await getFreeFireIndiaApkPage();
     const canonical = toCanonicalUrl(page.path || FREE_FIRE_INDIA_APK_PATH);
 
     return {

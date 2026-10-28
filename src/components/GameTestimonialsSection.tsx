@@ -3,7 +3,7 @@
 import { usePathname } from "next/navigation";
 import { TestimonialForm } from "@/src/components/TestimonialForm";
 import { TestimonialsMarquee } from "@/src/components/TestimonialsMarquee";
-import { isBgmiLitePath, isHomeFfPath, isPubgMobileLitePath } from "@/src/lib/gamePagePath";
+import { isBgmiLitePath, isFreeFireIndiaPath, isHomeFfPath, isPubgMobileLitePath } from "@/src/lib/gamePagePath";
 import type { PublicTestimonial } from "@/src/server/repositories/testimonialsRepository";
 
 type Props = {
@@ -12,6 +12,7 @@ type Props = {
   pubgTestimonials?: PublicTestimonial[];
   pubgMobileLiteTestimonials?: PublicTestimonial[];
   freefireTestimonials?: PublicTestimonial[];
+  freefireIndiaTestimonials?: PublicTestimonial[];
 };
 
 export function GameTestimonialsSection({
@@ -20,12 +21,15 @@ export function GameTestimonialsSection({
   pubgTestimonials,
   pubgMobileLiteTestimonials,
   freefireTestimonials,
+  freefireIndiaTestimonials,
 }: Props) {
   const pathname = usePathname() ?? "";
   const game =
-    isHomeFfPath(pathname)
-      ? "freefire"
-      : isPubgMobileLitePath(pathname)
+    isFreeFireIndiaPath(pathname)
+      ? "freefire-india"
+      : isHomeFfPath(pathname)
+        ? "freefire"
+        : isPubgMobileLitePath(pathname)
         ? "pubg-mobile-lite"
         : pathname === "/pubg" || pathname.startsWith("/pubg/")
           ? "pubg"
@@ -34,8 +38,10 @@ export function GameTestimonialsSection({
             : "bgmi";
 
   const initialItems =
-    game === "freefire"
-      ? freefireTestimonials
+    game === "freefire-india"
+      ? freefireIndiaTestimonials
+      : game === "freefire"
+        ? freefireTestimonials
       : game === "pubg-mobile-lite"
         ? pubgMobileLiteTestimonials
         : game === "pubg"

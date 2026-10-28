@@ -1,13 +1,15 @@
 import { asFreeFireIndiaCopy } from "@/src/lib/freeFireIndiaCopy";
 import { FREE_FIRE_INDIA_PATH, FREE_FIRE_INDIA_REDEEM_CODE_PATH } from "@/src/lib/gamePagePath";
-import type {
-  FreeFireRedeemCodePageContent,
-  FreeFireRedeemUiLabels,
+import {
+  cloneFreeFireRedeemPage,
+  type FreeFireRedeemCodePageContent,
+  type FreeFireRedeemUiLabels,
 } from "@/src/lib/freeFireRedeemCodes";
 
 export { FREE_FIRE_INDIA_REDEEM_CODE_PATH };
 export const FREE_FIRE_INDIA_REDEEM_PAGE_KEY = "free-fire-india-redeem-code";
 export const FREE_FIRE_INDIA_REDEEM_GUIDE_ID = "free-fire-india-redeem-guide";
+export const FREE_FIRE_INDIA_REDEEM_SETTINGS_KEY = "settings:freeFireIndiaRedeemCodes";
 
 const UI_TEXT_KEYS = [
   "liveBadge",
@@ -82,3 +84,7 @@ export function toFreeFireIndiaRedeemPage(
     })),
   };
 }
+
+/** Built-in India page. Not a live copy of the saved Free Fire redeem row. */
+export const DEFAULT_FREE_FIRE_INDIA_REDEEM_PAGE: FreeFireRedeemCodePageContent =
+  toFreeFireIndiaRedeemPage(cloneFreeFireRedeemPage());

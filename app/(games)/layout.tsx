@@ -16,10 +16,12 @@ import { FfProTips } from "@/src/components/FfProTips";
 import { FfNewsHub } from "@/src/components/FfNewsHub";
 import { SensCalculatorHost } from "@/src/components/SensCalculatorHost";
 import { SiteFooter } from "@/src/components/SiteFooter";
+import { asFreeFireIndiaCopy } from "@/src/lib/freeFireIndiaCopy";
 import { FREE_FIRE_INDIA_PATH } from "@/src/lib/gamePagePath";
 import { freeFireConfig } from "@/src/lib/freeFirePages";
 import {
   BGMI_LITE_NEWS_CATEGORY,
+  FREE_FIRE_INDIA_NEWS_CATEGORY,
   PUBG_MOBILE_LITE_NEWS_CATEGORY,
   coerceNewsCategory,
   newsArticlePath,
@@ -57,20 +59,25 @@ export default async function GamesLayout({ children }: { children: React.ReactN
     pubgTestimonials,
     pubgMobileLiteTestimonials,
     freefireTestimonials,
+    indiaTestimonials,
     bgmiFaqItems,
     bgmiLiteFaqItems,
     pubgFaqItems,
     pubgMobileLiteFaqItems,
     freefireFaqItems,
+    indiaFaqItems,
     bgmiArticleHtml,
     bgmiLiteArticleHtml,
     pubgArticleHtml,
     pubgMobileLiteArticleHtml,
     freefireArticleHtml,
+    indiaArticleHtml,
     homeNews,
+    indiaNews,
     liteNews,
     pubgMobileLiteNews,
     homeCards,
+    indiaCards,
     bgmiCards,
     bgmiLiteCards,
     pubgMobileLiteCards,
@@ -84,20 +91,25 @@ export default async function GamesLayout({ children }: { children: React.ReactN
     listApprovedTestimonials({ game: "pubg" }),
     listApprovedTestimonials({ game: "pubg-mobile-lite" }),
     listApprovedTestimonials({ game: "freefire" }),
+    listApprovedTestimonials({ game: "freefire-india" }),
     getGameFaqItems("bgmi"),
     getGameFaqItems("bgmi-lite"),
     getGameFaqItems("pubg"),
     getGameFaqItems("pubg-mobile-lite"),
     getGameFaqItems("freefire"),
+    getGameFaqItems("freefire-india"),
     getGameArticleHtml("bgmi"),
     getGameArticleHtml("bgmi-lite"),
     getGameArticleHtml("pubg"),
     getGameArticleHtml("pubg-mobile-lite"),
     getGameArticleHtml("freefire"),
+    getGameArticleHtml("freefire-india"),
     listPublishedNews(1, 5),
+    listPublishedNewsByCategory(FREE_FIRE_INDIA_NEWS_CATEGORY, 1, 5),
     listPublishedNewsByCategory(BGMI_LITE_NEWS_CATEGORY, 1, 5),
     listPublishedNewsByCategory(PUBG_MOBILE_LITE_NEWS_CATEGORY, 1, 5),
     getFfHomeCards(),
+    getFfPageCards("freefire-india"),
     getFfPageCards("bgmi"),
     getFfPageCards("bgmi-lite"),
     getFfPageCards("pubg-mobile-lite"),
@@ -125,6 +137,7 @@ export default async function GamesLayout({ children }: { children: React.ReactN
       };
     });
   const homeNewsItems = mapNewsItems(homeNews.data);
+  const indiaNewsItems = mapNewsItems(indiaNews.data);
   const liteNewsItems = mapNewsItems(liteNews.data);
   const pubgMobileLiteNewsItems = mapNewsItems(pubgMobileLiteNews.data);
   const baseUrl = getSiteUrl();
@@ -180,11 +193,12 @@ export default async function GamesLayout({ children }: { children: React.ReactN
   });
   const freefireIndiaToolLd = toolAppReviewSchema({
     baseUrl,
-    name: "Free Fire India Sensitivity Calculator",
+    name: indiaCards.hero.title.trim() || "Free Fire India Sensitivity Calculator",
     description:
+      indiaCards.seo.description.trim() ||
       "Free Fire India sensitivity calculator for General, Red Dot, 2x, 4x, sniper scope, and free look. RAM and DPI based settings for your phone.",
     url: toCanonicalUrl(FREE_FIRE_INDIA_PATH),
-    reviews: mapReviews(freefireTestimonials),
+    reviews: mapReviews(indiaTestimonials),
   });
 
   return (
@@ -197,6 +211,7 @@ export default async function GamesLayout({ children }: { children: React.ReactN
         <ClientErrorBoundary label="Patch strip">
           <FfPatchStrip
             homeContent={homeCards.patchStrip}
+            indiaContent={indiaCards.patchStrip}
             liteContent={bgmiLiteCards.patchStrip}
             pubgLiteContent={pubgMobileLiteCards.patchStrip}
           />
@@ -204,6 +219,7 @@ export default async function GamesLayout({ children }: { children: React.ReactN
         <ClientErrorBoundary label="Play modes">
           <FfPlayModeChips
             homeContent={homeCards.playModes}
+            indiaContent={indiaCards.playModes}
             liteContent={bgmiLiteCards.playModes}
             pubgLiteContent={pubgMobileLiteCards.playModes}
           />
@@ -230,11 +246,13 @@ export default async function GamesLayout({ children }: { children: React.ReactN
             pubgTestimonials={pubgTestimonials}
             pubgMobileLiteTestimonials={pubgMobileLiteTestimonials}
             freefireTestimonials={freefireTestimonials}
+            freefireIndiaTestimonials={indiaTestimonials}
           />
         </ClientErrorBoundary>
         <ClientErrorBoundary label="Role tips">
           <FfRoleTips
             homeContent={homeCards.roleTips}
+            indiaContent={indiaCards.roleTips}
             liteContent={bgmiLiteCards.roleTips}
             pubgLiteContent={pubgMobileLiteCards.roleTips}
           />
@@ -242,6 +260,7 @@ export default async function GamesLayout({ children }: { children: React.ReactN
         <ClientErrorBoundary label="Season event">
           <FfSeasonBanner
             homeContent={homeCards.season}
+            indiaContent={indiaCards.season}
             liteContent={bgmiLiteCards.season}
             pubgLiteContent={pubgMobileLiteCards.season}
           />
@@ -249,6 +268,7 @@ export default async function GamesLayout({ children }: { children: React.ReactN
         <ClientErrorBoundary label="Pro tips">
           <FfProTips
             homeContent={homeCards.proTips}
+            indiaContent={indiaCards.proTips}
             liteContent={bgmiLiteCards.proTips}
             pubgLiteContent={pubgMobileLiteCards.proTips}
           />
@@ -257,6 +277,8 @@ export default async function GamesLayout({ children }: { children: React.ReactN
           <FfNewsHub
             items={homeNewsItems}
             total={homeNews.total}
+            indiaItems={indiaNewsItems}
+            indiaTotal={indiaNews.total}
             liteItems={liteNewsItems}
             liteTotal={liteNews.total}
             pubgMobileLiteItems={pubgMobileLiteNewsItems}
@@ -266,6 +288,7 @@ export default async function GamesLayout({ children }: { children: React.ReactN
         <ClientErrorBoundary label="How it works">
           <HowItWorksSection
             homeContent={homeCards.howItWorks}
+            indiaContent={indiaCards.howItWorks}
             liteContent={bgmiLiteCards.howItWorks}
             pubgLiteContent={pubgMobileLiteCards.howItWorks}
           />
@@ -273,6 +296,7 @@ export default async function GamesLayout({ children }: { children: React.ReactN
         <ClientErrorBoundary label="Comparison tables">
           <FfComparisonTables
             homeContent={homeCards.comparison}
+            indiaContent={indiaCards.comparison}
             liteContent={bgmiLiteCards.comparison}
             pubgLiteContent={pubgMobileLiteCards.comparison}
           />
@@ -280,6 +304,7 @@ export default async function GamesLayout({ children }: { children: React.ReactN
         <ClientErrorBoundary label="Explore calculators">
           <FfExploreCards
             homeContent={homeCards.explore}
+            indiaContent={indiaCards.explore}
             liteContent={bgmiLiteCards.explore}
             pubgLiteContent={pubgMobileLiteCards.explore}
           />
@@ -305,11 +330,15 @@ export default async function GamesLayout({ children }: { children: React.ReactN
           pubgFaqItems={pubgFaqItems}
           pubgMobileLiteFaqItems={pubgMobileLiteFaqItems}
           freefireFaqItems={freefireFaqItems}
+          freefireIndiaFaqItems={indiaFaqItems}
           bgmiArticleHtml={bgmiArticleHtml}
           bgmiLiteArticleHtml={bgmiLiteArticleHtml}
           pubgArticleHtml={pubgArticleHtml}
           pubgMobileLiteArticleHtml={pubgMobileLiteArticleHtml}
           freefireArticleHtml={freefireArticleHtml ?? ffCfg.defaultArticleHtml}
+          freefireIndiaArticleHtml={
+            indiaArticleHtml ?? asFreeFireIndiaCopy(ffCfg.defaultArticleHtml)
+          }
         />
       </ClientErrorBoundary>
       <SiteFooter settings={settings} />

@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 import { FREE_FIRE_MAX_PATH } from "@/src/lib/freeFirePages";
 import {
   getLiteCalcBrand,
+  isFreeFireIndiaPath,
   isHomeFfPath,
   isLiteCalculatorPath,
 } from "@/src/lib/gamePagePath";
@@ -33,6 +34,8 @@ type Props = {
   /** When set, PUBG Mobile Flash calculator pages use these instead of BGMI Air news. */
   pubgMobileLiteItems?: FfNewsHubItem[];
   pubgMobileLiteTotal?: number;
+  indiaItems?: FfNewsHubItem[];
+  indiaTotal?: number;
 };
 
 /**
@@ -45,8 +48,11 @@ export function FfNewsHub({
   liteTotal,
   pubgMobileLiteItems,
   pubgMobileLiteTotal,
+  indiaItems,
+  indiaTotal,
 }: Props) {
   const pathname = usePathname() ?? "";
+  const isIndia = isFreeFireIndiaPath(pathname);
   const isHome = isHomeFfPath(pathname);
   const isMax = pathname === FREE_FIRE_MAX_PATH;
   const isLite = isLiteCalculatorPath(pathname);
@@ -54,13 +60,17 @@ export function FfNewsHub({
 
   const liteBrand = getLiteCalcBrand(pathname);
   const sourceItems =
-    liteBrand === "pubg-mobile-lite" && pubgMobileLiteItems
+    isIndia && indiaItems
+      ? indiaItems
+      : liteBrand === "pubg-mobile-lite" && pubgMobileLiteItems
       ? pubgMobileLiteItems
       : isLite && liteItems
         ? liteItems
         : items;
   const sourceTotal =
-    liteBrand === "pubg-mobile-lite" && typeof pubgMobileLiteTotal === "number"
+    isIndia && typeof indiaTotal === "number"
+      ? indiaTotal
+      : liteBrand === "pubg-mobile-lite" && typeof pubgMobileLiteTotal === "number"
       ? pubgMobileLiteTotal
       : isLite && typeof liteTotal === "number"
         ? liteTotal
@@ -69,14 +79,18 @@ export function FfNewsHub({
   if (!visible.length) return null;
 
   const shown = visible.length;
-  const title = isLite
+  const title = isIndia
+    ? "Latest Free Fire India news"
+    : isLite
     ? liteBrand === "pubg-mobile-lite"
       ? "Latest PUBG Mobile Flash news"
       : "Latest BGMI Air news"
     : isMax
       ? "Latest Free Fire Max news"
       : "Latest News";
-  const lead = isLite
+  const lead = isIndia
+    ? `Latest ${shown} Free Fire India ${shown === 1 ? "story" : "stories"} — swipe sideways to browse`
+    : isLite
     ? liteBrand === "pubg-mobile-lite"
       ? `Latest ${shown} PUBG Mobile Flash ${shown === 1 ? "story" : "stories"} — swipe sideways to browse`
       : `Latest ${shown} BGMI Air ${shown === 1 ? "story" : "stories"} — swipe sideways to browse`
@@ -84,14 +98,16 @@ export function FfNewsHub({
       ? `Updates & guides for Max players — latest ${shown} ${shown === 1 ? "post" : "posts"}`
       : `Latest ${shown} ${shown === 1 ? "story" : "stories"} from all games — swipe sideways to browse`;
 
-  const viewAllHref =
-    liteBrand === "pubg-mobile-lite"
+  const viewAllHref = isIndia
+    ? newsCategoryListingPath("free-fire-india")
+    : liteBrand === "pubg-mobile-lite"
       ? newsCategoryListingPath("pubg-mobile-lite")
       : liteBrand === "bgmi-lite"
         ? newsCategoryListingPath("bgmi-lite")
         : "/news";
-  const viewAllLabel =
-    liteBrand === "pubg-mobile-lite"
+  const viewAllLabel = isIndia
+    ? "View all Free Fire India news"
+    : liteBrand === "pubg-mobile-lite"
       ? "View all PUBG Mobile Flash news"
       : liteBrand === "bgmi-lite"
         ? "View all BGMI Air news"

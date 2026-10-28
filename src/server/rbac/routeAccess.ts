@@ -73,6 +73,12 @@ export const ADMIN_NAV_ACCESS: ReadonlyArray<{
     anyOf: ["freeFireApk.view"],
   },
   {
+    label: "FF India Apk",
+    href: "/admin/free-fire-india-apk",
+    icon: "freeFireApk",
+    anyOf: ["freeFireIndiaApk.view"],
+  },
+  {
     label: "FF Max Apk",
     href: "/admin/free-fire-max-apk",
     icon: "freeFireMaxApk",
@@ -103,6 +109,12 @@ export const ADMIN_NAV_ACCESS: ReadonlyArray<{
     anyOf: ["freeFireRedeem.view"],
   },
   {
+    label: "FF India Redeem",
+    href: "/admin/free-fire-india-redeem",
+    icon: "freeFireRedeem",
+    anyOf: ["freeFireIndiaRedeem.view"],
+  },
+  {
     label: "FF Max Redeem",
     href: "/admin/free-fire-max-redeem",
     icon: "freeFireMaxRedeem",
@@ -125,6 +137,12 @@ export const ADMIN_NAV_ACCESS: ReadonlyArray<{
     href: "/admin/free-fire-stylish",
     icon: "freeFireStylish",
     anyOf: ["freeFireStylish.view"],
+  },
+  {
+    label: "FF India Names",
+    href: "/admin/free-fire-india-stylish",
+    icon: "freeFireStylish",
+    anyOf: ["freeFireIndiaStylish.view"],
   },
   {
     label: "FF Max Names",
@@ -276,6 +294,11 @@ export function resolveAdminApiPermission(
     return { type: "permission", permission: "pubgApk.edit" };
   }
 
+  if (path.startsWith("/api/admin/free-fire-india-apk")) {
+    if (isRead) return { type: "permission", permission: "freeFireIndiaApk.view" };
+    return { type: "permission", permission: "freeFireIndiaApk.edit" };
+  }
+
   if (path.startsWith("/api/admin/free-fire-apk")) {
     if (isRead) return { type: "permission", permission: "freeFireApk.view" };
     return { type: "permission", permission: "freeFireApk.edit" };
@@ -301,6 +324,11 @@ export function resolveAdminApiPermission(
     return { type: "permission", permission: "pubgMobileLiteRedeem.edit" };
   }
 
+  if (path.startsWith("/api/admin/free-fire-india-redeem")) {
+    if (isRead) return { type: "permission", permission: "freeFireIndiaRedeem.view" };
+    return { type: "permission", permission: "freeFireIndiaRedeem.edit" };
+  }
+
   if (path.startsWith("/api/admin/free-fire-max-redeem")) {
     if (isRead) return { type: "permission", permission: "freeFireMaxRedeem.view" };
     return { type: "permission", permission: "freeFireMaxRedeem.edit" };
@@ -319,6 +347,11 @@ export function resolveAdminApiPermission(
   if (path.startsWith("/api/admin/pubg-mobile-lite-name")) {
     if (isRead) return { type: "permission", permission: "pubgMobileLiteName.view" };
     return { type: "permission", permission: "pubgMobileLiteName.edit" };
+  }
+
+  if (path.startsWith("/api/admin/free-fire-india-stylish")) {
+    if (isRead) return { type: "permission", permission: "freeFireIndiaStylish.view" };
+    return { type: "permission", permission: "freeFireIndiaStylish.edit" };
   }
 
   if (path.startsWith("/api/admin/free-fire-max-stylish")) {

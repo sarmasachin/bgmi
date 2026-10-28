@@ -13,6 +13,7 @@ const ALL_TESTIMONIAL_GAMES: TestimonialGame[] = [
   "pubg",
   "pubg-mobile-lite",
   "freefire",
+  "freefire-india",
   "freefire-max",
 ];
 
@@ -41,6 +42,7 @@ function isGame(value: string): value is TestimonialGame {
     value === "pubg" ||
     value === "pubg-mobile-lite" ||
     value === "freefire" ||
+    value === "freefire-india" ||
     value === "freefire-max"
   );
 }

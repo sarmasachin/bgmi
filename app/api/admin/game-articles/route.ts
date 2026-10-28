@@ -40,6 +40,7 @@ export async function POST(request: NextRequest) {
         "pubg",
         "pubg-mobile-lite",
         "freefire",
+        "freefire-india",
         "freefire-max",
         "pubg-mobile-codes",
       ]),

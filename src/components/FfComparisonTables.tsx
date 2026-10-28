@@ -3,7 +3,6 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { FREE_FIRE_MAX_PATH } from "@/src/lib/freeFirePages";
-import { asFreeFireIndiaCopy } from "@/src/lib/freeFireIndiaCopy";
 import {
   isFreeFireIndiaPath,
   isHomeFfPath,
@@ -192,10 +191,12 @@ const MAX_RAM_ROWS: Array<{
  */
 export function FfComparisonTables({
   homeContent,
+  indiaContent,
   liteContent,
   pubgLiteContent,
 }: {
   homeContent?: FfHomeComparison;
+  indiaContent?: FfHomeComparison;
   liteContent?: FfHomeComparison;
   pubgLiteContent?: FfHomeComparison;
 }) {
@@ -205,13 +206,15 @@ export function FfComparisonTables({
   const isLite = isLiteCalculatorPath(pathname);
   if (!isHome && !isMax && !isLite) return null;
 
+  const isIndia = isFreeFireIndiaPath(pathname);
   const pack = isLite
     ? pickLitePageContent(pathname, homeContent, liteContent, pubgLiteContent)
-    : homeContent;
+    : isIndia
+      ? (indiaContent ?? homeContent)
+      : homeContent;
   const vsRows = pack?.vsRows ?? (isMax ? MAX_VS_ROWS : VS_ROWS);
   const ramRows = pack?.ramRows ?? (isMax ? MAX_RAM_ROWS : RAM_ROWS);
-  const isIndia = isFreeFireIndiaPath(pathname);
-  const say = (value: string) => (isIndia ? asFreeFireIndiaCopy(value) : value);
+  const say = (value: string) => value;
   const title = say(
     pack?.title ?? (isMax ? "Free Fire Max vs Free Fire" : "Free Fire vs FF Max"),
   );

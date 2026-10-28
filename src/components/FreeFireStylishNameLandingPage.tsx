@@ -23,7 +23,7 @@ import {
   FREE_FIRE_INDIA_STYLISH_NAME_GUIDE_ID,
   FREE_FIRE_INDIA_STYLISH_NAME_PAGE_KEY,
   FREE_FIRE_INDIA_STYLISH_NAME_PATH,
-  toFreeFireIndiaNamePage,
+  DEFAULT_FREE_FIRE_INDIA_STYLISH_NAME_PAGE,
 } from "@/src/lib/freeFireIndiaNamePage";
 import { FREE_FIRE_INDIA_PATH } from "@/src/lib/gamePagePath";
 import { breadcrumbListSchema, faqSchema, webPageSchema } from "@/src/lib/schema";
@@ -33,6 +33,7 @@ import {
   type PublicPageComment,
 } from "@/src/server/repositories/pageCommentsRepository";
 import { getFreeFireStylishNamePage } from "@/src/server/repositories/freeFireStylishNameRepository";
+import { getFreeFireIndiaStylishNamePage } from "@/src/server/repositories/freeFireIndiaStylishNameRepository";
 import { getFreeFireMaxStylishNamePage } from "@/src/server/repositories/freeFireMaxStylishNameRepository";
 import {
   getRatingSummary,
@@ -67,10 +68,15 @@ function pageKeyFor(variant: StylishNameVariant): string {
 
 async function loadLandingData(variant: StylishNameVariant): Promise<LandingData> {
   const isMax = variant === "free-fire-max";
+  const isIndia = variant === "free-fire-india";
   const pageKey = pageKeyFor(variant);
   const [settingsResult, pageResult, commentsResult, ratingResult] = await Promise.allSettled([
     getSettings(),
-    isMax ? getFreeFireMaxStylishNamePage() : getFreeFireStylishNamePage(),
+    isIndia
+      ? getFreeFireIndiaStylishNamePage()
+      : isMax
+        ? getFreeFireMaxStylishNamePage()
+        : getFreeFireStylishNamePage(),
     listApprovedPageComments(pageKey),
     getRatingSummary("tool", pageKey),
   ]);
@@ -81,11 +87,15 @@ async function loadLandingData(variant: StylishNameVariant): Promise<LandingData
       : new Error("SETTINGS_UNAVAILABLE");
   }
 
-  const fallback = isMax ? cloneFreeFireMaxStylishNamePage() : cloneFreeFireStylishNamePage();
+  const fallback = isIndia
+    ? DEFAULT_FREE_FIRE_INDIA_STYLISH_NAME_PAGE
+    : isMax
+      ? cloneFreeFireMaxStylishNamePage()
+      : cloneFreeFireStylishNamePage();
   const source = pageResult.status === "fulfilled" ? pageResult.value : fallback;
   return {
     settings: settingsResult.value,
-    page: variant === "free-fire-india" ? toFreeFireIndiaNamePage(source) : source,
+    page: source,
     pageComments: commentsResult.status === "fulfilled" ? commentsResult.value : [],
     ratingSummary: ratingResult.status === "fulfilled" ? ratingResult.value : null,
   };

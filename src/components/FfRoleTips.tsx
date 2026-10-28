@@ -4,7 +4,6 @@ import { usePathname } from "next/navigation";
 import type { CalcInputs } from "@/src/features/ffCalculator/calculator";
 import { FF_SET_ROLE_EVENT } from "@/src/lib/ffPlayModes";
 import { FREE_FIRE_MAX_PATH } from "@/src/lib/freeFirePages";
-import { asFreeFireIndiaCopy } from "@/src/lib/freeFireIndiaCopy";
 import {
   isFreeFireIndiaPath,
   isHomeFfPath,
@@ -111,21 +110,25 @@ function defaultButtonLabel(item: RoleTip, isMax: boolean) {
 
 type Props = {
   homeContent?: FfHomeRoleTips;
+  indiaContent?: FfHomeRoleTips;
   liteContent?: FfHomeRoleTips;
   pubgLiteContent?: FfHomeRoleTips;
 };
 
 /** Tip cards under calculator — Free Fire / Max / Lite calculators. */
-export function FfRoleTips({ homeContent, liteContent, pubgLiteContent }: Props) {
+export function FfRoleTips({ homeContent, indiaContent, liteContent, pubgLiteContent }: Props) {
   const pathname = usePathname() ?? "";
   const isHome = isHomeFfPath(pathname);
   const isMax = pathname === FREE_FIRE_MAX_PATH;
   const isLite = isLiteCalculatorPath(pathname);
   if (!isHome && !isMax && !isLite) return null;
 
+  const isIndia = isFreeFireIndiaPath(pathname);
   const pack = isLite
     ? pickLitePageContent(pathname, homeContent, liteContent, pubgLiteContent)
-    : homeContent;
+    : isIndia
+      ? (indiaContent ?? homeContent)
+      : homeContent;
   const sectionTitle =
     pack?.title ??
     (isMax ? "Best Free Fire Max sensi tips by role" : "Best sensi tips by role");
@@ -134,17 +137,8 @@ export function FfRoleTips({ homeContent, liteContent, pubgLiteContent }: Props)
     ...item,
     buttonLabel: item.buttonLabel?.trim() || defaultButtonLabel(item, isMax),
   }));
-  const isIndia = isFreeFireIndiaPath(pathname);
-  const shownTitle = isIndia ? asFreeFireIndiaCopy(sectionTitle) : sectionTitle;
-  const shownTips: RoleTip[] = isIndia
-    ? tips.map((card) => ({
-        ...card,
-        title: asFreeFireIndiaCopy(card.title),
-        lead: card.lead ? asFreeFireIndiaCopy(card.lead) : card.lead,
-        tips: card.tips.map(asFreeFireIndiaCopy),
-        buttonLabel: asFreeFireIndiaCopy(card.buttonLabel),
-      }))
-    : tips;
+  const shownTitle = sectionTitle;
+  const shownTips = tips;
 
   function onCardCta(card: RoleTip) {
     if (isLite) {

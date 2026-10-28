@@ -32,6 +32,7 @@ type InitialData = {
   pubgHtml: string;
   pubgMobileLiteHtml: string;
   freefireHtml: string;
+  freefireIndiaHtml: string;
   freefireMaxHtml: string;
   pubgMobileCodesHtml: string;
   bgmiUsingDefault: boolean;
@@ -39,6 +40,7 @@ type InitialData = {
   pubgUsingDefault: boolean;
   pubgMobileLiteUsingDefault: boolean;
   freefireUsingDefault: boolean;
+  freefireIndiaUsingDefault: boolean;
   freefireMaxUsingDefault: boolean;
   pubgMobileCodesUsingDefault: boolean;
 };
@@ -75,6 +77,7 @@ export default function AdminGameArticlesClient({ initialData }: Props) {
     pubg: initialData?.pubgHtml ?? "",
     "pubg-mobile-lite": initialData?.pubgMobileLiteHtml ?? "",
     freefire: initialData?.freefireHtml ?? "",
+    "freefire-india": initialData?.freefireIndiaHtml ?? "",
     "freefire-max": initialData?.freefireMaxHtml ?? "",
     "pubg-mobile-codes": initialData?.pubgMobileCodesHtml ?? "",
   });
@@ -84,6 +87,7 @@ export default function AdminGameArticlesClient({ initialData }: Props) {
     pubg: initialData?.pubgUsingDefault ?? true,
     "pubg-mobile-lite": initialData?.pubgMobileLiteUsingDefault ?? true,
     freefire: initialData?.freefireUsingDefault ?? true,
+    "freefire-india": initialData?.freefireIndiaUsingDefault ?? true,
     "freefire-max": initialData?.freefireMaxUsingDefault ?? true,
     "pubg-mobile-codes": initialData?.pubgMobileCodesUsingDefault ?? true,
   });
@@ -115,6 +119,7 @@ export default function AdminGameArticlesClient({ initialData }: Props) {
       pubg: data.pubgHtml,
       "pubg-mobile-lite": data.pubgMobileLiteHtml,
       freefire: data.freefireHtml,
+      "freefire-india": data.freefireIndiaHtml,
       "freefire-max": data.freefireMaxHtml,
       "pubg-mobile-codes": data.pubgMobileCodesHtml,
     });
@@ -124,6 +129,7 @@ export default function AdminGameArticlesClient({ initialData }: Props) {
       pubg: data.pubgUsingDefault,
       "pubg-mobile-lite": data.pubgMobileLiteUsingDefault,
       freefire: data.freefireUsingDefault,
+      "freefire-india": data.freefireIndiaUsingDefault,
       "freefire-max": data.freefireMaxUsingDefault,
       "pubg-mobile-codes": data.pubgMobileCodesUsingDefault,
     });

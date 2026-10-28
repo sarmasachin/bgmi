@@ -1,4 +1,5 @@
 import { randomUUID } from "crypto";
+import { asFreeFireIndiaCopy } from "@/src/lib/freeFireIndiaCopy";
 import { renameLiteDisplayDeep } from "@/src/lib/renameLiteDisplayNames";
 import { gameContentToSitemapPath } from "@/src/lib/sitemapLastmod";
 import { prisma, tryPrisma, tryPrismaLong } from "@/src/server/dbSafe";
@@ -12,6 +13,7 @@ export type GameFaqGame =
   | "pubg"
   | "pubg-mobile-lite"
   | "freefire"
+  | "freefire-india"
   | "freefire-max";
 
 export const GAME_FAQ_GAMES: Array<{ id: GameFaqGame; label: string }> = [
@@ -20,6 +22,7 @@ export const GAME_FAQ_GAMES: Array<{ id: GameFaqGame; label: string }> = [
   { id: "pubg", label: "PUBG Mobile" },
   { id: "pubg-mobile-lite", label: "PUBG Mobile Flash" },
   { id: "freefire", label: "Free Fire" },
+  { id: "freefire-india", label: "Free Fire India" },
   { id: "freefire-max", label: "Free Fire Max" },
 ];
 
@@ -30,6 +33,7 @@ const KEYS: Record<GameFaqGame, string> = {
   pubg: "settings:gameFaq:pubg",
   "pubg-mobile-lite": "settings:gameFaq:pubg-mobile-lite",
   freefire: "settings:gameFaq:freefire",
+  "freefire-india": "settings:gameFaq:freefire-india",
   "freefire-max": "settings:gameFaq:freefire-max",
 };
 
@@ -132,6 +136,12 @@ export const DEFAULT_FREEFIRE_FAQ: HomeFaqItem[] = [
   },
 ];
 
+export const DEFAULT_FREEFIRE_INDIA_FAQ: HomeFaqItem[] = DEFAULT_FREEFIRE_FAQ.map((item) => ({
+  id: item.id.replace("ff-faq", "ffi-faq"),
+  question: asFreeFireIndiaCopy(item.question),
+  answer: asFreeFireIndiaCopy(item.answer),
+}));
+
 export const DEFAULT_FREEFIRE_MAX_FAQ: HomeFaqItem[] = [
   {
     id: "ffm-faq-1",
@@ -154,6 +164,7 @@ function defaultsFor(game: GameFaqGame): HomeFaqItem[] {
   if (game === "pubg") return DEFAULT_PUBG_FAQ;
   if (game === "pubg-mobile-lite") return DEFAULT_PUBG_MOBILE_LITE_FAQ;
   if (game === "freefire") return DEFAULT_FREEFIRE_FAQ;
+  if (game === "freefire-india") return DEFAULT_FREEFIRE_INDIA_FAQ;
   if (game === "freefire-max") return DEFAULT_FREEFIRE_MAX_FAQ;
   if (game === "bgmi-lite") return DEFAULT_BGMI_LITE_FAQ;
   return DEFAULT_BGMI_FAQ;

@@ -2,7 +2,6 @@
 
 import { usePathname } from "next/navigation";
 import { ArticleFaqContent } from "@/src/components/ArticleFaqContent";
-import { asFreeFireIndiaCopy } from "@/src/lib/freeFireIndiaCopy";
 import { isBgmiLitePath, isFreeFireIndiaPath, isHomeFfPath, isPubgMobileLitePath } from "@/src/lib/gamePagePath";
 import type { HomeFaqItem } from "@/src/server/repositories/homeFaqRepository";
 
@@ -12,11 +11,13 @@ type Props = {
   pubgFaqItems: HomeFaqItem[];
   pubgMobileLiteFaqItems?: HomeFaqItem[];
   freefireFaqItems?: HomeFaqItem[];
+  freefireIndiaFaqItems?: HomeFaqItem[];
   bgmiArticleHtml?: string | null;
   bgmiLiteArticleHtml?: string | null;
   pubgArticleHtml?: string | null;
   pubgMobileLiteArticleHtml?: string | null;
   freefireArticleHtml?: string | null;
+  freefireIndiaArticleHtml?: string | null;
 };
 
 /** Client FAQ wrapper so game label updates instantly with route changes. */
@@ -26,17 +27,22 @@ export function GameArticleFaq({
   pubgFaqItems,
   pubgMobileLiteFaqItems = [],
   freefireFaqItems = [],
+  freefireIndiaFaqItems = [],
   bgmiArticleHtml,
   bgmiLiteArticleHtml,
   pubgArticleHtml,
   pubgMobileLiteArticleHtml,
   freefireArticleHtml,
+  freefireIndiaArticleHtml,
 }: Props) {
   const pathname = usePathname() ?? "";
+  const isIndia = isFreeFireIndiaPath(pathname);
   const game =
-    isHomeFfPath(pathname)
-      ? "freefire"
-      : isPubgMobileLitePath(pathname)
+    isIndia
+      ? "freefire-india"
+      : isHomeFfPath(pathname)
+        ? "freefire"
+        : isPubgMobileLitePath(pathname)
         ? "pubg-mobile-lite"
         : pathname === "/pubg" || pathname.startsWith("/pubg/")
           ? "pubg"
@@ -45,8 +51,10 @@ export function GameArticleFaq({
             : "bgmi";
 
   const articleHtml =
-    game === "freefire"
-      ? freefireArticleHtml
+    game === "freefire-india"
+      ? freefireIndiaArticleHtml
+      : game === "freefire"
+        ? freefireArticleHtml
       : game === "pubg-mobile-lite"
         ? pubgMobileLiteArticleHtml
         : game === "pubg"
@@ -56,8 +64,10 @@ export function GameArticleFaq({
             : bgmiArticleHtml;
 
   const faqItems =
-    game === "freefire"
-      ? freefireFaqItems
+    game === "freefire-india"
+      ? freefireIndiaFaqItems
+      : game === "freefire"
+        ? freefireFaqItems
       : game === "pubg-mobile-lite"
         ? pubgMobileLiteFaqItems
         : game === "pubg"
@@ -75,22 +85,12 @@ export function GameArticleFaq({
           ? "bgmi-lite"
           : "bgmi";
 
-  const isIndia = isFreeFireIndiaPath(pathname);
-  const shownHtml = isIndia && articleHtml ? asFreeFireIndiaCopy(articleHtml) : articleHtml;
-  const shownFaq = isIndia
-    ? faqItems.map((item) => ({
-        ...item,
-        question: asFreeFireIndiaCopy(item.question),
-        answer: asFreeFireIndiaCopy(item.answer),
-      }))
-    : faqItems;
-
   return (
     <ArticleFaqContent
       wrapperClassName="light-content--after-home-calculator"
-      faqItems={shownFaq}
+      faqItems={faqItems}
       game={articleGame}
-      articleHtml={shownHtml}
+      articleHtml={articleHtml}
     />
   );
 }

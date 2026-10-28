@@ -17,6 +17,7 @@ const gameSchema = z.enum([
   "pubg",
   "pubg-mobile-lite",
   "freefire",
+  "freefire-india",
   "freefire-max",
 ]);
 

@@ -16,7 +16,23 @@ type InitialData = {
   usingDefault: boolean;
 };
 
-export default function AdminFreeFireApkClient({ initialData }: { initialData: InitialData }) {
+export default function AdminFreeFireApkClient({
+  initialData,
+  apiPath = "/api/admin/free-fire-apk",
+  title = "FF Apk",
+  previewPath = FREE_FIRE_APK_PATH,
+  savedMessage = "FF Apk page saved.",
+  saveError = "Could not save FF Apk page.",
+  boundaryLabel = "FF Apk admin",
+}: {
+  initialData: InitialData;
+  apiPath?: string;
+  title?: string;
+  previewPath?: string;
+  savedMessage?: string;
+  saveError?: string;
+  boundaryLabel?: string;
+}) {
   const [page, setPage] = useState(initialData.page);
   const [openIds, setOpenIds] = useState<Set<FreeFireApkPageSectionId>>(
     () => new Set(),
@@ -38,21 +54,21 @@ export default function AdminFreeFireApkClient({ initialData }: { initialData: I
     if (saving) return;
     setSaving(true);
     try {
-      const res = await fetch("/api/admin/free-fire-apk", {
+      const res = await fetch(apiPath, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
         body: JSON.stringify({ action: "save", page }),
       });
       if (!res.ok) {
-        setMessage(await readApiError(res, "Could not save FF Apk page."));
+        setMessage(await readApiError(res, saveError));
         return;
       }
       const json = (await res.json()) as {
         page?: FreeFireApkPageContent;
       };
       if (json.page) setPage(json.page);
-      setMessage("FF Apk page saved.");
+      setMessage(savedMessage);
     } catch {
       setMessage("Network error. Please retry.");
     } finally {
@@ -61,13 +77,13 @@ export default function AdminFreeFireApkClient({ initialData }: { initialData: I
   }
 
   return (
-    <ClientErrorBoundary label="FF Apk admin">
+    <ClientErrorBoundary label={boundaryLabel}>
     <section className="admin-section">
       <div className="admin-comments-head">
-        <h1>FF Apk</h1>
+        <h1>{title}</h1>
         <a
           className="admin-news-btn admin-news-btn-edit"
-          href={FREE_FIRE_APK_PATH}
+          href={previewPath}
           target="_blank"
           rel="noreferrer"
         >

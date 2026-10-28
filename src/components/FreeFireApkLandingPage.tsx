@@ -16,10 +16,10 @@ import {
   type FreeFireApkPageContent,
 } from "@/src/lib/freeFireApkPage";
 import {
+  DEFAULT_FREE_FIRE_INDIA_APK_PAGE,
   FREE_FIRE_INDIA_APK_GUIDE_ID,
   FREE_FIRE_INDIA_APK_PAGE_KEY,
   FREE_FIRE_INDIA_APK_PATH,
-  toFreeFireIndiaApkPage,
 } from "@/src/lib/freeFireIndiaApkPage";
 import { ratingWidgetRemountKey } from "@/src/lib/ratingWidgetKey";
 import {
@@ -30,6 +30,7 @@ import {
 } from "@/src/lib/schema";
 import { toCanonicalUrl } from "@/src/lib/siteUrl";
 import { getFreeFireApkPage } from "@/src/server/repositories/freeFireApkPageRepository";
+import { getFreeFireIndiaApkPage } from "@/src/server/repositories/freeFireIndiaApkPageRepository";
 import {
   getRatingSummary,
   type RatingSummary,
@@ -77,7 +78,7 @@ async function loadLandingData(variant: ApkLandingVariant): Promise<LandingData>
   const meta = LANDING_META[variant];
   const [settingsResult, pageResult, commentsResult, ratingResult] = await Promise.allSettled([
     getSettings(),
-    getFreeFireApkPage(),
+    variant === "india" ? getFreeFireIndiaApkPage() : getFreeFireApkPage(),
     listApprovedPageComments(meta.pageKey),
     getRatingSummary("tool", meta.pageKey),
   ]);
@@ -88,10 +89,11 @@ async function loadLandingData(variant: ApkLandingVariant): Promise<LandingData>
       : new Error("SETTINGS_UNAVAILABLE");
   }
 
-  const source = pageResult.status === "fulfilled" ? pageResult.value : DEFAULT_FREE_FIRE_APK_PAGE;
+  const fallback =
+    variant === "india" ? DEFAULT_FREE_FIRE_INDIA_APK_PAGE : DEFAULT_FREE_FIRE_APK_PAGE;
   return {
     settings: settingsResult.value,
-    page: variant === "india" ? toFreeFireIndiaApkPage(source) : source,
+    page: pageResult.status === "fulfilled" ? pageResult.value : fallback,
     pageComments: commentsResult.status === "fulfilled" ? commentsResult.value : [],
     ratingSummary: ratingResult.status === "fulfilled" ? ratingResult.value : null,
   };

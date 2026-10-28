@@ -2,17 +2,16 @@ import type { Metadata } from "next";
 import { FreeFireRedeemCodeLandingPage } from "@/src/components/FreeFireRedeemCodeLandingPage";
 import {
   FREE_FIRE_INDIA_REDEEM_CODE_PATH,
-  toFreeFireIndiaRedeemPage,
 } from "@/src/lib/freeFireIndiaRedeemPage";
 import { FREE_FIRE_INDIA_PATH } from "@/src/lib/gamePagePath";
 import { buildSocialMetadata } from "@/src/lib/socialMeta";
 import { toCanonicalUrl } from "@/src/lib/siteUrl";
-import { getFreeFireRedeemPage } from "@/src/server/repositories/freeFireRedeemCodesRepository";
+import { getFreeFireIndiaRedeemPage } from "@/src/server/repositories/freeFireIndiaRedeemCodesRepository";
 
 export const dynamic = "force-dynamic";
 
 export async function generateMetadata(): Promise<Metadata> {
-  const page = toFreeFireIndiaRedeemPage(await getFreeFireRedeemPage());
+  const page = await getFreeFireIndiaRedeemPage();
   const canonical = toCanonicalUrl(FREE_FIRE_INDIA_REDEEM_CODE_PATH);
   const image = page.ui.socialImage || "/icon.png?v=3";
   const imageAlt = page.ui.socialImageAlt || page.seoTitle;

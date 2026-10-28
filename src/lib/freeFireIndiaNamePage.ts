@@ -1,9 +1,13 @@
 import { FREE_FIRE_INDIA_STYLISH_NAME_PATH } from "@/src/lib/gamePagePath";
 import { toFreeFireIndiaText } from "@/src/lib/freeFireIndiaApkPage";
-import type { FreeFireStylishNamePageContent } from "@/src/lib/freeFireStylishNamePage";
+import {
+  cloneFreeFireStylishNamePage,
+  type FreeFireStylishNamePageContent,
+} from "@/src/lib/freeFireStylishNamePage";
 
 export const FREE_FIRE_INDIA_STYLISH_NAME_PAGE_KEY = "free-fire-india-stylish-name";
 export const FREE_FIRE_INDIA_STYLISH_NAME_GUIDE_ID = "free-fire-india-stylish-name-guide";
+export const FREE_FIRE_INDIA_STYLISH_NAME_SETTINGS_KEY = "settings:freeFireIndiaStylishName";
 export { FREE_FIRE_INDIA_STYLISH_NAME_PATH };
 
 /** Short FF name phrases on the stylish-name page, after the shared Free Fire India rename. */
@@ -50,3 +54,7 @@ export function toFreeFireIndiaNamePage(
     emptyStudioText: toIndiaNameText(page.emptyStudioText),
   };
 }
+
+/** Built-in India page. Nickname values are copied unchanged. Not a live Free Fire row. */
+export const DEFAULT_FREE_FIRE_INDIA_STYLISH_NAME_PAGE: FreeFireStylishNamePageContent =
+  toFreeFireIndiaNamePage(cloneFreeFireStylishNamePage());

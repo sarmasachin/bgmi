@@ -4,6 +4,7 @@ import { usePathname } from "next/navigation";
 import type { CalcInputs } from "@/src/features/ffCalculator/calculator";
 import { FF_SET_ROLE_EVENT } from "@/src/lib/ffPlayModes";
 import {
+  isFreeFireIndiaPath,
   isHomeFfPath,
   isLiteCalculatorPath,
   pickLitePageContent,
@@ -51,11 +52,12 @@ const DEFAULT_MODES: FfHomePlayModes = {
 
 type Props = {
   homeContent?: FfHomePlayModes;
+  indiaContent?: FfHomePlayModes;
   liteContent?: FfHomePlayModes;
   pubgLiteContent?: FfHomePlayModes;
 };
 
-export function FfPlayModeChips({ homeContent, liteContent, pubgLiteContent }: Props) {
+export function FfPlayModeChips({ homeContent, indiaContent, liteContent, pubgLiteContent }: Props) {
   const pathname = usePathname() ?? "";
   const isHome = isHomeFfPath(pathname);
   const isLite = isLiteCalculatorPath(pathname);
@@ -63,7 +65,9 @@ export function FfPlayModeChips({ homeContent, liteContent, pubgLiteContent }: P
 
   const content = isLite
     ? pickLitePageContent(pathname, homeContent, liteContent, pubgLiteContent)
-    : (homeContent ?? DEFAULT_MODES);
+    : isFreeFireIndiaPath(pathname)
+      ? (indiaContent ?? homeContent ?? DEFAULT_MODES)
+      : (homeContent ?? DEFAULT_MODES);
   if (!content) return null;
 
   function applyMode(mode: FfHomePlayModes["modes"][number]) {

@@ -4,7 +4,6 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { FF_MAX_SITE_PATCH, FF_SITE_PATCH } from "@/src/lib/ffOfficialPatch";
 import { FREE_FIRE_MAX_PATH } from "@/src/lib/freeFirePages";
-import { asFreeFireIndiaCopy } from "@/src/lib/freeFireIndiaCopy";
 import {
   getLiteCalcBrand,
   isFreeFireIndiaPath,
@@ -16,6 +15,7 @@ import type { FfHomePatchStrip } from "@/src/lib/homeCardsTypes";
 
 type Props = {
   homeContent?: FfHomePatchStrip;
+  indiaContent?: FfHomePatchStrip;
   liteContent?: FfHomePatchStrip;
   pubgLiteContent?: FfHomePatchStrip;
 };
@@ -24,21 +24,23 @@ type Props = {
  * Update strip — CTAs stay on this website (news).
  * Home = Free Fire; Max = Free Fire Max; Lite pages = BGMI Air / PUBG Mobile Flash.
  */
-export function FfPatchStrip({ homeContent, liteContent, pubgLiteContent }: Props) {
+export function FfPatchStrip({ homeContent, indiaContent, liteContent, pubgLiteContent }: Props) {
   const pathname = usePathname() ?? "";
   const isHome = isHomeFfPath(pathname);
   const isMax = pathname === FREE_FIRE_MAX_PATH;
   const isLite = isLiteCalculatorPath(pathname);
   if (!isHome && !isMax && !isLite) return null;
 
+  const isIndia = isFreeFireIndiaPath(pathname);
   const patch = isLite
     ? pickLitePageContent(pathname, homeContent, liteContent, pubgLiteContent)
-    : (homeContent ?? (isMax ? FF_MAX_SITE_PATCH : FF_SITE_PATCH));
+    : isIndia
+      ? (indiaContent ?? homeContent ?? FF_SITE_PATCH)
+      : (homeContent ?? (isMax ? FF_MAX_SITE_PATCH : FF_SITE_PATCH));
   if (!patch) return null;
 
   const brand = getLiteCalcBrand(pathname);
-  const isIndia = isFreeFireIndiaPath(pathname);
-  const say = (value: string) => (isIndia ? asFreeFireIndiaCopy(value) : value);
+  const say = (value: string) => value;
   const aria =
     brand === "pubg-mobile-lite"
       ? "PUBG Mobile Flash update news"

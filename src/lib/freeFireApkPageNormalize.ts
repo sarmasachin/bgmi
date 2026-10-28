@@ -186,8 +186,10 @@ function normalizeFacts(
   };
 }
 
-export function normalizeFreeFireApkPage(raw: unknown): FreeFireApkPageContent {
-  const defaults = DEFAULT_FREE_FIRE_APK_PAGE;
+export function normalizeFreeFireApkPage(
+  raw: unknown,
+  defaults: FreeFireApkPageContent = DEFAULT_FREE_FIRE_APK_PAGE,
+): FreeFireApkPageContent {
   if (!isPlainObject(raw)) return renameLiteDisplayDeep(defaults);
   const buttonsRaw = isPlainObject(raw.heroButtons) ? raw.heroButtons : {};
   const articleHtml =

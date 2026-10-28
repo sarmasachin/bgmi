@@ -3,7 +3,6 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { FREE_FIRE_MAX_PATH } from "@/src/lib/freeFirePages";
-import { asFreeFireIndiaCopy } from "@/src/lib/freeFireIndiaCopy";
 import {
   isFreeFireIndiaPath,
   isHomeFfPath,
@@ -14,6 +13,7 @@ import type { FfHomeExplore } from "@/src/lib/homeCardsTypes";
 
 type Props = {
   homeContent?: FfHomeExplore;
+  indiaContent?: FfHomeExplore;
   liteContent?: FfHomeExplore;
   pubgLiteContent?: FfHomeExplore;
 };
@@ -21,16 +21,19 @@ type Props = {
 /**
  * Explore cards — Free Fire home / Max / Lite calculators.
  */
-export function FfExploreCards({ homeContent, liteContent, pubgLiteContent }: Props) {
+export function FfExploreCards({ homeContent, indiaContent, liteContent, pubgLiteContent }: Props) {
   const pathname = usePathname() ?? "";
   const isHome = isHomeFfPath(pathname);
   const isMax = pathname === FREE_FIRE_MAX_PATH;
   const isLite = isLiteCalculatorPath(pathname);
   if (!isHome && !isMax && !isLite) return null;
 
+  const isIndia = isFreeFireIndiaPath(pathname);
   const content: FfHomeExplore | undefined = isLite
     ? pickLitePageContent(pathname, homeContent, liteContent, pubgLiteContent)
-    : homeContent ??
+    : isIndia
+      ? (indiaContent ?? homeContent)
+      : homeContent ??
       (isMax
         ? {
             title: "Switch between Max & Free Fire",
@@ -85,19 +88,7 @@ export function FfExploreCards({ homeContent, liteContent, pubgLiteContent }: Pr
 
   if (!content) return null;
 
-  const shown = isFreeFireIndiaPath(pathname)
-    ? {
-        ...content,
-        title: asFreeFireIndiaCopy(content.title),
-        freefire: {
-          ...content.freefire,
-          title: asFreeFireIndiaCopy(content.freefire.title),
-          text: asFreeFireIndiaCopy(content.freefire.text),
-          points: content.freefire.points.map(asFreeFireIndiaCopy),
-          buttonLabel: asFreeFireIndiaCopy(content.freefire.buttonLabel),
-        },
-      }
-    : content;
+  const shown = content;
 
   const icons = isLite
     ? (["fa-mobile-screen", "fa-download"] as const)

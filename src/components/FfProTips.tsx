@@ -2,7 +2,6 @@
 
 import { usePathname } from "next/navigation";
 import { FREE_FIRE_MAX_PATH } from "@/src/lib/freeFirePages";
-import { asFreeFireIndiaCopy } from "@/src/lib/freeFireIndiaCopy";
 import {
   isFreeFireIndiaPath,
   isHomeFfPath,
@@ -74,21 +73,25 @@ const MAX_PRO_TIPS: ProTip[] = [
 
 type Props = {
   homeContent?: FfHomeProTips;
+  indiaContent?: FfHomeProTips;
   liteContent?: FfHomeProTips;
   pubgLiteContent?: FfHomeProTips;
 };
 
 /** Pro tips — Free Fire home / Max / Lite calculators. */
-export function FfProTips({ homeContent, liteContent, pubgLiteContent }: Props) {
+export function FfProTips({ homeContent, indiaContent, liteContent, pubgLiteContent }: Props) {
   const pathname = usePathname() ?? "";
   const isHome = isHomeFfPath(pathname);
   const isMax = pathname === FREE_FIRE_MAX_PATH;
   const isLite = isLiteCalculatorPath(pathname);
   if (!isHome && !isMax && !isLite) return null;
 
+  const isIndia = isFreeFireIndiaPath(pathname);
   const pack = isLite
     ? pickLitePageContent(pathname, homeContent, liteContent, pubgLiteContent)
-    : homeContent;
+    : isIndia
+      ? (indiaContent ?? homeContent)
+      : homeContent;
   const title =
     pack?.title ??
     (isMax ? "Pro tips for Free Fire Max aim" : "Pro tips for better aim");
@@ -100,18 +103,7 @@ export function FfProTips({ homeContent, liteContent, pubgLiteContent }: Props) 
   const ctaLabel =
     pack?.ctaLabel ??
     (isMax ? "Apply Max sensi in calculator" : "Apply sensi in calculator");
-  const sourceTips = pack?.items ?? (isMax ? MAX_PRO_TIPS : PRO_TIPS);
-  const isIndia = isFreeFireIndiaPath(pathname);
-  const shownTitle = isIndia ? asFreeFireIndiaCopy(title) : title;
-  const shownLead = isIndia ? asFreeFireIndiaCopy(lead) : lead;
-  const shownCta = isIndia ? asFreeFireIndiaCopy(ctaLabel) : ctaLabel;
-  const tips = isIndia
-    ? sourceTips.map((card) => ({
-        ...card,
-        title: asFreeFireIndiaCopy(card.title),
-        tip: asFreeFireIndiaCopy(card.tip),
-      }))
-    : sourceTips;
+  const tips = pack?.items ?? (isMax ? MAX_PRO_TIPS : PRO_TIPS);
 
   function goToCalculator() {
     const id = isLite ? "bgmi-lite-calculator" : "ff-calculator";
@@ -124,9 +116,9 @@ export function FfProTips({ homeContent, liteContent, pubgLiteContent }: Props) 
   return (
     <section className="ff-pro-tips" aria-labelledby="ff-pro-tips-title">
       <h2 id="ff-pro-tips-title" className="ff-pro-tips-title">
-        {shownTitle}
+        {title}
       </h2>
-      <p className="ff-pro-tips-lead">{shownLead}</p>
+      <p className="ff-pro-tips-lead">{lead}</p>
       <div className="ff-pro-tips-grid">
         {tips.map((card) => (
           <article key={card.id} className="ff-pro-tip-card">
@@ -139,7 +131,7 @@ export function FfProTips({ homeContent, liteContent, pubgLiteContent }: Props) 
         ))}
       </div>
       <button type="button" className="ff-pro-tips-cta" onClick={goToCalculator}>
-        {shownCta}
+        {ctaLabel}
         <i className="fa-solid fa-arrow-up" aria-hidden />
       </button>
     </section>

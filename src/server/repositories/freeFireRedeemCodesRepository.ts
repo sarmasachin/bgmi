@@ -77,8 +77,10 @@ function normalizeFaq(raw: unknown, index: number): FreeFireRedeemFaqItem | null
   return { id, question, answer };
 }
 
-function normalizeUi(raw: unknown): FreeFireRedeemUiLabels {
-  const defaults = DEFAULT_FREE_FIRE_REDEEM_UI;
+function normalizeUi(
+  raw: unknown,
+  defaults: FreeFireRedeemUiLabels = DEFAULT_FREE_FIRE_REDEEM_UI,
+): FreeFireRedeemUiLabels {
   const src = isPlainObject(raw) ? raw : {};
   const pick = (key: keyof FreeFireRedeemUiLabels) =>
     sanitizeString(src[key], defaults[key]) || defaults[key];
@@ -108,8 +110,10 @@ function normalizeUi(raw: unknown): FreeFireRedeemUiLabels {
   };
 }
 
-export function normalizeFreeFireRedeemPage(raw: unknown): FreeFireRedeemCodePageContent {
-  const defaults = DEFAULT_FREE_FIRE_REDEEM_PAGE;
+export function normalizeFreeFireRedeemPage(
+  raw: unknown,
+  defaults: FreeFireRedeemCodePageContent = DEFAULT_FREE_FIRE_REDEEM_PAGE,
+): FreeFireRedeemCodePageContent {
   if (!isPlainObject(raw)) return cloneFreeFireRedeemPage(defaults);
 
   const hasServersField = Array.isArray(raw.servers);
@@ -141,7 +145,7 @@ export function normalizeFreeFireRedeemPage(raw: unknown): FreeFireRedeemCodePag
     articleHtml: sanitizeString(raw.articleHtml, defaults.articleHtml) || defaults.articleHtml,
     commentsLead:
       sanitizeString(raw.commentsLead, defaults.commentsLead) || defaults.commentsLead,
-    ui: normalizeUi(raw.ui),
+    ui: normalizeUi(raw.ui, defaults.ui),
     servers: hasServersField ? servers : defaults.servers.map((s) => ({ ...s })),
     faqs: hasFaqsField ? faqs : defaults.faqs.map((f) => ({ ...f })),
     // Allow saving an empty list — do not revive built-in dummy codes.

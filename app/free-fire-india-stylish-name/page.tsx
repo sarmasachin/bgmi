@@ -1,17 +1,17 @@
 import type { Metadata } from "next";
 import { FreeFireStylishNameLandingPage } from "@/src/components/FreeFireStylishNameLandingPage";
-import { toFreeFireIndiaNamePage } from "@/src/lib/freeFireIndiaNamePage";
-import { FREE_FIRE_INDIA_PATH, FREE_FIRE_INDIA_STYLISH_NAME_PATH } from "@/src/lib/gamePagePath";
+import { FREE_FIRE_INDIA_STYLISH_NAME_PATH } from "@/src/lib/freeFireIndiaNamePage";
+import { FREE_FIRE_INDIA_PATH } from "@/src/lib/gamePagePath";
 import { buildSocialMetadata } from "@/src/lib/socialMeta";
 import { toCanonicalUrl } from "@/src/lib/siteUrl";
-import { getFreeFireStylishNamePage } from "@/src/server/repositories/freeFireStylishNameRepository";
+import { getFreeFireIndiaStylishNamePage } from "@/src/server/repositories/freeFireIndiaStylishNameRepository";
 
 export const dynamic = "force-dynamic";
 
 export async function generateMetadata(): Promise<Metadata> {
   try {
-    const page = toFreeFireIndiaNamePage(await getFreeFireStylishNamePage());
-    const canonical = toCanonicalUrl(page.path || FREE_FIRE_INDIA_STYLISH_NAME_PATH);
+    const page = await getFreeFireIndiaStylishNamePage();
+    const canonical = toCanonicalUrl(FREE_FIRE_INDIA_STYLISH_NAME_PATH);
     const title = page.seoTitle;
     const description = page.seoDescription;
 

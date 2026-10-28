@@ -1,12 +1,10 @@
 import {
-  FREE_FIRE_STYLISH_NAME_PATH,
   cloneFreeFireStylishNamePage,
   DEFAULT_FREE_FIRE_STYLISH_NAME_PAGE,
   type FreeFireStylishNamePageContent,
 } from "@/src/lib/freeFireStylishNamePage";
 import {
   cloneFreeFireStylishIdeaGroups,
-  DEFAULT_FREE_FIRE_STYLISH_IDEA_GROUPS,
   type FreeFireStylishNameIdeaGroup,
   type FreeFireStylishNameIdeaItem,
 } from "@/src/lib/freeFireStylishNameIdeasDefaults";
@@ -73,8 +71,10 @@ function normalizeIdeaGroup(raw: unknown, index: number): FreeFireStylishNameIde
   return { tab, items };
 }
 
-export function normalizeFreeFireStylishNamePage(raw: unknown): FreeFireStylishNamePageContent {
-  const defaults = DEFAULT_FREE_FIRE_STYLISH_NAME_PAGE;
+export function normalizeFreeFireStylishNamePage(
+  raw: unknown,
+  defaults: FreeFireStylishNamePageContent = DEFAULT_FREE_FIRE_STYLISH_NAME_PAGE,
+): FreeFireStylishNamePageContent {
   if (!isPlainObject(raw)) return cloneFreeFireStylishNamePage(defaults);
 
   const faqsRaw = Array.isArray(raw.faqs) ? raw.faqs : defaults.faqs;
@@ -93,7 +93,7 @@ export function normalizeFreeFireStylishNamePage(raw: unknown): FreeFireStylishN
     .filter((row): row is FreeFireStylishNameIdeaGroup => Boolean(row));
 
   return {
-    path: FREE_FIRE_STYLISH_NAME_PATH,
+    path: defaults.path,
     seoTitle: sanitizeString(raw.seoTitle, defaults.seoTitle) || defaults.seoTitle,
     seoDescription:
       sanitizeString(raw.seoDescription, defaults.seoDescription) || defaults.seoDescription,
@@ -108,7 +108,7 @@ export function normalizeFreeFireStylishNamePage(raw: unknown): FreeFireStylishN
       sanitizeString(raw.ideasHeading, defaults.ideasHeading) || defaults.ideasHeading,
     ideaGroups: ideaGroups.length
       ? ideaGroups
-      : cloneFreeFireStylishIdeaGroups(DEFAULT_FREE_FIRE_STYLISH_IDEA_GROUPS),
+      : cloneFreeFireStylishIdeaGroups(defaults.ideaGroups),
     articleHtml: sanitizeString(raw.articleHtml, defaults.articleHtml) || defaults.articleHtml,
     commentsLead:
       sanitizeString(raw.commentsLead, defaults.commentsLead) || defaults.commentsLead,

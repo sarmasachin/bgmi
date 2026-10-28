@@ -6,7 +6,14 @@ export type AdminTestimonialItem = {
   email: string;
   rating: number;
   message: string;
-  game: "bgmi" | "bgmi-lite" | "pubg" | "pubg-mobile-lite" | "freefire" | "freefire-max";
+  game:
+    | "bgmi"
+    | "bgmi-lite"
+    | "pubg"
+    | "pubg-mobile-lite"
+    | "freefire"
+    | "freefire-india"
+    | "freefire-max";
   phoneModel: string;
   showName: boolean;
   status: "pending" | "approved" | "rejected";
@@ -37,6 +44,7 @@ export function parseAdminTestimonialJson(item: Record<string, unknown>): AdminT
     gameRaw === "pubg" ||
     gameRaw === "pubg-mobile-lite" ||
     gameRaw === "freefire" ||
+    gameRaw === "freefire-india" ||
     gameRaw === "freefire-max"
       ? gameRaw
       : "bgmi";

@@ -1,7 +1,6 @@
 "use client";
 
 import { usePathname } from "next/navigation";
-import { asFreeFireIndiaCopy } from "@/src/lib/freeFireIndiaCopy";
 import {
   isFreeFireIndiaPath,
   isLiteCalculatorPath,
@@ -134,12 +133,14 @@ const BGMI_LITE_STEPS: Step[] = [
 
 type Props = {
   homeContent?: FfHomeHowItWorks;
+  indiaContent?: FfHomeHowItWorks;
   liteContent?: FfHomeHowItWorks;
   pubgLiteContent?: FfHomeHowItWorks;
 };
 
 export function HowItWorksSection({
   homeContent,
+  indiaContent,
   liteContent,
   pubgLiteContent,
 }: Props) {
@@ -148,6 +149,7 @@ export function HowItWorksSection({
   const isLite = isLiteCalculatorPath(pathname);
   const isBgmi =
     !isLite && (pathname === "/bgmi" || pathname.startsWith("/bgmi/"));
+  const isIndia = isFreeFireIndiaPath(pathname);
   const isHomeFf = !isPubg && !isBgmi && !isLite;
 
   const litePack = pickLitePageContent(
@@ -160,29 +162,30 @@ export function HowItWorksSection({
     ? (litePack?.steps ?? BGMI_LITE_STEPS)
     : isPubg || isBgmi
       ? BGMI_STEPS
-      : (homeContent?.steps ?? FF_STEPS);
+      : isIndia
+        ? (indiaContent?.steps ?? homeContent?.steps ?? FF_STEPS)
+        : (homeContent?.steps ?? FF_STEPS);
   const title = isLite
     ? (litePack?.title ?? "How It Works")
-    : isHomeFf
-      ? (homeContent?.title ?? "How It Works")
-      : "How It Works";
+    : isIndia
+      ? (indiaContent?.title ?? homeContent?.title ?? "How It Works")
+      : isHomeFf
+        ? (homeContent?.title ?? "How It Works")
+        : "How It Works";
   const subtitle = isLite
     ? (litePack?.subtitle ??
       "Four steps to BGMI Air-ready Camera, ADS, and Gyroscope settings.")
-    : isPubg || isBgmi
-      ? "Get your pro sensitivity in just 4 simple steps."
-      : (homeContent?.subtitle ?? "Get your Free Fire pro settings in just 4 simple steps.");
+    : isIndia
+      ? (indiaContent?.subtitle ??
+        homeContent?.subtitle ??
+        "Get your Free Fire India pro settings in just 4 simple steps.")
+      : isPubg || isBgmi
+        ? "Get your pro sensitivity in just 4 simple steps."
+        : (homeContent?.subtitle ?? "Get your Free Fire pro settings in just 4 simple steps.");
 
-  const isIndia = isFreeFireIndiaPath(pathname);
-  const shownTitle = isIndia ? asFreeFireIndiaCopy(title) : title;
-  const shownSubtitle = isIndia ? asFreeFireIndiaCopy(subtitle) : subtitle;
-  const shownSteps = isIndia
-    ? steps.map((step) => ({
-        ...step,
-        title: asFreeFireIndiaCopy(step.title),
-        bullets: step.bullets.map(asFreeFireIndiaCopy),
-      }))
-    : steps;
+  const shownTitle = title;
+  const shownSubtitle = subtitle;
+  const shownSteps = steps;
 
   return (
     <section className="how-works" aria-labelledby="how-works-title">

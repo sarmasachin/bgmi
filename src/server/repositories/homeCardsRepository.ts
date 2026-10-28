@@ -7,6 +7,7 @@ import { bumpSitemapLastmod } from "@/src/server/repositories/sitemapLastmodRepo
 
 const KEY_BY_VARIANT: Record<PageCardsVariant, string> = {
   freefire: "settings:homeCards:freefire",
+  "freefire-india": "settings:homeCards:freefire-india",
   "freefire-max": "settings:homeCards:freefire-max",
   bgmi: "settings:homeCards:bgmi",
   "bgmi-lite": "settings:homeCards:bgmi-lite",
@@ -325,6 +326,7 @@ export function normalizeFfHomeCards(
 export function isPageCardsVariant(value: unknown): value is PageCardsVariant {
   return (
     value === "freefire" ||
+    value === "freefire-india" ||
     value === "freefire-max" ||
     value === "bgmi" ||
     value === "bgmi-lite" ||

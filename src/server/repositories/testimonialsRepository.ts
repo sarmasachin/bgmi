@@ -38,6 +38,7 @@ function isGame(value: string): value is TestimonialGame {
     value === "pubg" ||
     value === "pubg-mobile-lite" ||
     value === "freefire" ||
+    value === "freefire-india" ||
     value === "freefire-max"
   );
 }

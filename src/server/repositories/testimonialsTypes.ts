@@ -7,6 +7,7 @@ export type TestimonialGame =
   | "pubg"
   | "pubg-mobile-lite"
   | "freefire"
+  | "freefire-india"
   | "freefire-max";
 export type TestimonialStatus = "pending" | "approved" | "rejected";
 

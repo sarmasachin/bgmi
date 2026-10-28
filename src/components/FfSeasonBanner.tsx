@@ -4,7 +4,6 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { FF_MAX_SEASON_EVENT, FF_SEASON_EVENT } from "@/src/lib/ffSeasonEvent";
 import { FREE_FIRE_MAX_PATH } from "@/src/lib/freeFirePages";
-import { asFreeFireIndiaCopy } from "@/src/lib/freeFireIndiaCopy";
 import {
   isFreeFireIndiaPath,
   isHomeFfPath,
@@ -15,6 +14,7 @@ import type { FfHomeSeason } from "@/src/lib/homeCardsTypes";
 
 type Props = {
   homeContent?: FfHomeSeason;
+  indiaContent?: FfHomeSeason;
   liteContent?: FfHomeSeason;
   pubgLiteContent?: FfHomeSeason;
 };
@@ -23,20 +23,22 @@ type Props = {
  * Season / event banner.
  * Home = Free Fire; Max = Free Fire Max; Lite pages = BGMI Air / PUBG Mobile Flash.
  */
-export function FfSeasonBanner({ homeContent, liteContent, pubgLiteContent }: Props) {
+export function FfSeasonBanner({ homeContent, indiaContent, liteContent, pubgLiteContent }: Props) {
   const pathname = usePathname() ?? "";
   const isHome = isHomeFfPath(pathname);
   const isMax = pathname === FREE_FIRE_MAX_PATH;
   const isLite = isLiteCalculatorPath(pathname);
   if (!isHome && !isMax && !isLite) return null;
 
+  const isIndia = isFreeFireIndiaPath(pathname);
   const event = isLite
     ? pickLitePageContent(pathname, homeContent, liteContent, pubgLiteContent)
-    : (homeContent ?? (isMax ? FF_MAX_SEASON_EVENT : FF_SEASON_EVENT));
+    : isIndia
+      ? (indiaContent ?? homeContent ?? FF_SEASON_EVENT)
+      : (homeContent ?? (isMax ? FF_MAX_SEASON_EVENT : FF_SEASON_EVENT));
   if (!event) return null;
 
-  const isIndia = isFreeFireIndiaPath(pathname);
-  const say = (value: string) => (isIndia ? asFreeFireIndiaCopy(value) : value);
+  const say = (value: string) => value;
 
   return (
     <section className="ff-season" aria-labelledby="ff-season-title">

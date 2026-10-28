@@ -12,7 +12,6 @@ import {
   resolveRedeemFreshnessAt,
   resolveRedeemFreshnessBanner,
 } from "@/src/lib/bgmiLiteRedeemFreshness";
-import { coerceFreeFireRedeemServer } from "@/src/lib/freeFireRedeemServers";
 import {
   applyAutoExpireRedeemCode,
   isRedeemCodePubliclyLive,
@@ -32,7 +31,7 @@ import {
   FREE_FIRE_INDIA_REDEEM_CODE_PATH,
   FREE_FIRE_INDIA_REDEEM_GUIDE_ID,
   FREE_FIRE_INDIA_REDEEM_PAGE_KEY,
-  toFreeFireIndiaRedeemPage,
+  DEFAULT_FREE_FIRE_INDIA_REDEEM_PAGE,
 } from "@/src/lib/freeFireIndiaRedeemPage";
 import { FREE_FIRE_INDIA_PATH } from "@/src/lib/gamePagePath";
 import { FREE_FIRE_MAX_PATH } from "@/src/lib/freeFirePages";
@@ -46,6 +45,10 @@ import {
   getFreeFireRedeemPage,
   getFreeFireRedeemUpdatedAt,
 } from "@/src/server/repositories/freeFireRedeemCodesRepository";
+import {
+  getFreeFireIndiaRedeemPage,
+  getFreeFireIndiaRedeemUpdatedAt,
+} from "@/src/server/repositories/freeFireIndiaRedeemCodesRepository";
 import {
   getFreeFireMaxRedeemPage,
   getFreeFireMaxRedeemUpdatedAt,
@@ -89,8 +92,16 @@ async function loadLandingData(
   const [settingsResult, pageResult, updatedAtResult, commentsResult, ratingResult] =
     await Promise.allSettled([
       getSettings(),
-      isMax ? getFreeFireMaxRedeemPage() : getFreeFireRedeemPage(),
-      isMax ? getFreeFireMaxRedeemUpdatedAt() : getFreeFireRedeemUpdatedAt(),
+      isIndia
+        ? getFreeFireIndiaRedeemPage()
+        : isMax
+          ? getFreeFireMaxRedeemPage()
+          : getFreeFireRedeemPage(),
+      isIndia
+        ? getFreeFireIndiaRedeemUpdatedAt()
+        : isMax
+          ? getFreeFireMaxRedeemUpdatedAt()
+          : getFreeFireRedeemUpdatedAt(),
       listApprovedPageComments(pageKey),
       getRatingSummary("tool", pageKey),
     ]);
@@ -101,11 +112,15 @@ async function loadLandingData(
       : new Error("SETTINGS_UNAVAILABLE");
   }
 
-  const fallbackPage = isMax ? cloneFreeFireMaxRedeemPage() : cloneFreeFireRedeemPage();
+  const fallbackPage = isIndia
+    ? DEFAULT_FREE_FIRE_INDIA_REDEEM_PAGE
+    : isMax
+      ? cloneFreeFireMaxRedeemPage()
+      : cloneFreeFireRedeemPage();
   const loadedPage = pageResult.status === "fulfilled" ? pageResult.value : fallbackPage;
   return {
     settings: settingsResult.value,
-    page: isIndia ? toFreeFireIndiaRedeemPage(loadedPage) : loadedPage,
+    page: loadedPage,
     updatedAt: updatedAtResult.status === "fulfilled" ? updatedAtResult.value : null,
     pageComments: commentsResult.status === "fulfilled" ? commentsResult.value : [],
     ratingSummary: ratingResult.status === "fulfilled" ? ratingResult.value : null,
@@ -153,9 +168,7 @@ export async function FreeFireRedeemCodeLandingPage(
   const homeUrl = toCanonicalUrl("/");
   const parentUrl = toCanonicalUrl(parentHref);
   const crumbCurrent = ui.breadcrumbName.trim() || "Redeem Code";
-  const pageCodes = isIndia
-    ? page.codes.filter((code) => coerceFreeFireRedeemServer(code.server, page.servers) === "india")
-    : page.codes;
+  const pageCodes = page.codes;
   const live = pageCodes
     .map((c) => applyAutoExpireRedeemCode(c))
     .filter((c) => isRedeemCodePubliclyLive(c));

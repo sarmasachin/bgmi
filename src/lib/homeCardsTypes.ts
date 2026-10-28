@@ -8,6 +8,12 @@ export const PAGE_CARDS_VARIANTS = [
     hint: "Home page (/) sections",
   },
   {
+    id: "freefire-india",
+    label: "Free Fire India",
+    previewPath: "/free-fire-india",
+    hint: "Free Fire India calculator page — separate from Free Fire home",
+  },
+  {
     id: "freefire-max",
     label: "Free Fire Max",
     previewPath: "/free-fire-max-sensitivity-settings-calculator",

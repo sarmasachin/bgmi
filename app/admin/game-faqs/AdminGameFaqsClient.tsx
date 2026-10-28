@@ -36,6 +36,7 @@ function previewHref(game: GameFaqGame) {
   if (game === "pubg") return "/pubg";
   if (game === "pubg-mobile-lite") return "/pubg-mobile-flash";
   if (game === "freefire") return "/";
+  if (game === "freefire-india") return "/free-fire-india";
   if (game === "freefire-max") return "/free-fire-max-sensitivity-settings-calculator";
   return "/";
 }

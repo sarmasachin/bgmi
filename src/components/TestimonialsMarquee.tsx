@@ -1,8 +1,6 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { usePathname } from "next/navigation";
-import { isFreeFireIndiaPath } from "@/src/lib/gamePagePath";
 import type { PublicTestimonial, TestimonialGame } from "@/src/server/repositories/testimonialsRepository";
 
 type Props = {
@@ -17,6 +15,7 @@ const GAME_LABEL: Record<TestimonialGame, string> = {
   pubg: "PUBG Mobile",
   "pubg-mobile-lite": "PUBG Mobile Flash",
   freefire: "Free Fire",
+  "freefire-india": "Free Fire India",
   "freefire-max": "Free Fire Max",
 };
 
@@ -31,7 +30,6 @@ function Stars({ value }: { value: number }) {
 }
 
 export function TestimonialsMarquee({ game, initialItems }: Props) {
-  const pathname = usePathname() ?? "";
   const [items, setItems] = useState<PublicTestimonial[]>(initialItems ?? []);
   const [paused, setPaused] = useState(false);
   const [ready, setReady] = useState(initialItems !== undefined);
@@ -89,9 +87,7 @@ export function TestimonialsMarquee({ game, initialItems }: Props) {
   }, [items]);
 
   const durationSec = Math.max(28, items.length * 6);
-  const labelFor = (value: TestimonialGame) =>
-    isFreeFireIndiaPath(pathname) && value === "freefire" ? "Free Fire India" : GAME_LABEL[value];
-  const gameLabel = labelFor(game);
+  const gameLabel = GAME_LABEL[game];
   /** Auto-scroll only when there are 3 or more reviews. */
   const isStatic = items.length > 0 && items.length < 3;
 

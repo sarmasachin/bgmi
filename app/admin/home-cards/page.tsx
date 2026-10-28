@@ -19,9 +19,10 @@ export default async function AdminHomeCardsPage() {
   const access = await requireAdminPageAccess("homeCards.view");
   if (!access.ok) return <AdminAccessDenied />;
 
-  const [freefire, freefireMax, bgmi, bgmiLite, pubg, pubgMobileCodes, pubgMobileLite] =
+  const [freefire, freefireIndia, freefireMax, bgmi, bgmiLite, pubg, pubgMobileCodes, pubgMobileLite] =
     await Promise.all([
       loadVariant("freefire"),
+      loadVariant("freefire-india"),
       loadVariant("freefire-max"),
       loadVariant("bgmi"),
       loadVariant("bgmi-lite"),
@@ -34,6 +35,7 @@ export default async function AdminHomeCardsPage() {
     <AdminHomeCardsClient
       initialByVariant={{
         freefire,
+        "freefire-india": freefireIndia,
         "freefire-max": freefireMax,
         bgmi,
         "bgmi-lite": bgmiLite,
