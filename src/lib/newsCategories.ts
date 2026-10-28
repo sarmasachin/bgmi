@@ -6,6 +6,7 @@ export type NewsCategoryDef = { slug: string; label: string };
 export const DEFAULT_NEWS_CATEGORIES: readonly NewsCategoryDef[] = [
   { slug: "ff-max", label: "FF Max" },
   { slug: "free-fire", label: "Free Fire" },
+  { slug: "free-fire-india", label: "Free Fire India" },
   { slug: "bgmi", label: "BGMI" },
   { slug: "bgmi-lite", label: "BGMI Air" },
   { slug: "pubg", label: "PUBG Mobile" },
@@ -17,6 +18,9 @@ export const BGMI_LITE_NEWS_CATEGORY = "bgmi-lite";
 
 /** Category used for /pubg-mobile-flash calculator news hub. */
 export const PUBG_MOBILE_LITE_NEWS_CATEGORY = "pubg-mobile-lite";
+
+/** Free Fire India news hub. Listing stays under /news so it does not take the calculator URL. */
+export const FREE_FIRE_INDIA_NEWS_CATEGORY = "free-fire-india";
 
 /** Public listing slug when it differs from the stored category slug. */
 const NEWS_CATEGORY_PUBLIC_SLUG: Record<string, string> = {
@@ -145,6 +149,7 @@ export function newsCategoryListingTitle(
   const label = newsCategoryLabel(slug, categories);
   if (slug === "ff-max") return "Free Fire Max News";
   if (slug === "free-fire") return "Free Fire News";
+  if (slug === FREE_FIRE_INDIA_NEWS_CATEGORY) return "Free Fire India News";
   if (slug === "bgmi") return "BGMI News";
   if (slug === "pubg") return "PUBG Mobile News";
   if (slug === BGMI_LITE_NEWS_CATEGORY) return "BGMI Air News";
@@ -165,6 +170,9 @@ export function newsCategoryListingDescription(
   }
   if (slug === "free-fire") {
     return "Latest Free Fire news, redeem codes, updates, and guides.";
+  }
+  if (slug === FREE_FIRE_INDIA_NEWS_CATEGORY) {
+    return "Latest Free Fire India news, redeem codes, updates, and guides.";
   }
   if (slug === "bgmi") {
     return "Latest BGMI news, updates, redeem codes, and guides.";
@@ -191,6 +199,7 @@ const NEWS_LISTING_UNDER_NEWS_PREFIX = new Set([
   "pubg",
   "pubg-mobile-lite",
   "free-fire",
+  "free-fire-india",
   "ff-max",
 ]);
 

@@ -46,6 +46,12 @@ export const FREE_FIRE_INDIA_PATH = "/free-fire-india";
 /** Free Fire India APK guide — same layout as /free-fire-apk. */
 export const FREE_FIRE_INDIA_APK_PATH = "/free-fire-india-apk";
 
+/** Free Fire India redeem codes — same board as /free-fire-redeem-code. */
+export const FREE_FIRE_INDIA_REDEEM_CODE_PATH = "/free-fire-india-redeem-code";
+
+/** Free Fire India stylish names — same tool as /free-fire-stylish-name. */
+export const FREE_FIRE_INDIA_STYLISH_NAME_PATH = "/free-fire-india-stylish-name";
+
 export function isFreeFireIndiaPath(pathname: string | null | undefined): boolean {
   const raw = typeof pathname === "string" ? pathname.trim() : "";
   const p = raw.replace(/\/+$/, "") || "/";

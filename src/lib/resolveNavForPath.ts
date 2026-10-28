@@ -14,7 +14,10 @@ import {
   FREE_FIRE_STYLISH_NAME_PATH,
   isFreeFireFamilyPath,
 } from "@/src/lib/freeFirePages";
-import { FREE_FIRE_INDIA_APK_PATH } from "@/src/lib/gamePagePath";
+import {
+  FREE_FIRE_INDIA_APK_PATH,
+  FREE_FIRE_INDIA_STYLISH_NAME_PATH,
+} from "@/src/lib/gamePagePath";
 import { PUBG_MOBILE_CODES_PATH } from "@/src/lib/pubgMobileCodes";
 import { newsCategoryListingPath } from "@/src/lib/newsCategories";
 import {
@@ -158,8 +161,12 @@ export function detectNavGameContext(pathname: string): NavGameContext {
     p.startsWith(`${FREE_FIRE_ADVANCE_SERVER_PATH}/`) ||
     p === FREE_FIRE_REDEEM_CODE_PATH ||
     p.startsWith(`${FREE_FIRE_REDEEM_CODE_PATH}/`) ||
+    p === "/free-fire-india-redeem-code" ||
+    p.startsWith("/free-fire-india-redeem-code/") ||
     p === FREE_FIRE_STYLISH_NAME_PATH ||
     p.startsWith(`${FREE_FIRE_STYLISH_NAME_PATH}/`) ||
+    p === FREE_FIRE_INDIA_STYLISH_NAME_PATH ||
+    p.startsWith(`${FREE_FIRE_INDIA_STYLISH_NAME_PATH}/`) ||
     p === FREE_FIRE_MAX_REDEEM_CODE_PATH ||
     p.startsWith(`${FREE_FIRE_MAX_REDEEM_CODE_PATH}/`) ||
     p === FREE_FIRE_MAX_STYLISH_NAME_PATH ||

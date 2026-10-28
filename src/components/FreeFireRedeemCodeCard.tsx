@@ -13,6 +13,7 @@ import { RedeemScheduleMeta } from "@/src/components/RedeemScheduleMeta";
 type Props = {
   item: FreeFireRedeemCodeItem;
   servers: FreeFireRedeemServerConfig[];
+  hideServerBadge?: boolean;
   ui: Pick<
     FreeFireRedeemUiLabels,
     | "liveBadge"
@@ -36,7 +37,7 @@ async function copyText(value: string): Promise<void> {
   throw new Error("Clipboard unavailable");
 }
 
-export function FreeFireRedeemCodeCard({ item, ui, servers }: Props) {
+export function FreeFireRedeemCodeCard({ item, ui, servers, hideServerBadge = false }: Props) {
   const [copied, setCopied] = useState(false);
   const [copyError, setCopyError] = useState(false);
   const isLive = item.status === "live";
@@ -59,12 +60,14 @@ export function FreeFireRedeemCodeCard({ item, ui, servers }: Props) {
   return (
     <article
       className={`lite-redeem-card${isLive ? "" : " lite-redeem-card--expired"}`}
-      aria-label={`${item.title} (${serverBadge})`}
+      aria-label={hideServerBadge ? item.title : `${item.title} (${serverBadge})`}
     >
       <div className="lite-redeem-card-head">
         <h3 className="lite-redeem-card-title">{item.title}</h3>
         <div className="lite-redeem-badge-row">
-          <span className="lite-redeem-badge lite-redeem-badge--server">{serverBadge}</span>
+          {hideServerBadge ? null : (
+            <span className="lite-redeem-badge lite-redeem-badge--server">{serverBadge}</span>
+          )}
           <span
             className={`lite-redeem-badge${isLive ? " lite-redeem-badge--live" : " lite-redeem-badge--expired"}`}
           >

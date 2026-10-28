@@ -19,6 +19,13 @@ import {
   FREE_FIRE_MAX_STYLISH_NAME_PATH,
 } from "@/src/lib/freeFireMaxStylishNamePage";
 import { FREE_FIRE_MAX_PATH } from "@/src/lib/freeFirePages";
+import {
+  FREE_FIRE_INDIA_STYLISH_NAME_GUIDE_ID,
+  FREE_FIRE_INDIA_STYLISH_NAME_PAGE_KEY,
+  FREE_FIRE_INDIA_STYLISH_NAME_PATH,
+  toFreeFireIndiaNamePage,
+} from "@/src/lib/freeFireIndiaNamePage";
+import { FREE_FIRE_INDIA_PATH } from "@/src/lib/gamePagePath";
 import { breadcrumbListSchema, faqSchema, webPageSchema } from "@/src/lib/schema";
 import { toCanonicalUrl } from "@/src/lib/siteUrl";
 import {
@@ -36,8 +43,10 @@ import {
   type SiteSettings,
 } from "@/src/server/repositories/settingsRepository";
 
+type StylishNameVariant = "free-fire" | "free-fire-max" | "free-fire-india";
+
 type FreeFireStylishNameLandingOptions = {
-  variant?: "free-fire" | "free-fire-max";
+  variant?: StylishNameVariant;
   path?: string;
   parentLabel?: string;
   parentHref?: string;
@@ -50,11 +59,15 @@ type LandingData = {
   ratingSummary: RatingSummary | null;
 };
 
-async function loadLandingData(
-  variant: "free-fire" | "free-fire-max",
-): Promise<LandingData> {
+function pageKeyFor(variant: StylishNameVariant): string {
+  if (variant === "free-fire-max") return FREE_FIRE_MAX_STYLISH_NAME_PAGE_KEY;
+  if (variant === "free-fire-india") return FREE_FIRE_INDIA_STYLISH_NAME_PAGE_KEY;
+  return FREE_FIRE_STYLISH_NAME_PAGE_KEY;
+}
+
+async function loadLandingData(variant: StylishNameVariant): Promise<LandingData> {
   const isMax = variant === "free-fire-max";
-  const pageKey = isMax ? FREE_FIRE_MAX_STYLISH_NAME_PAGE_KEY : FREE_FIRE_STYLISH_NAME_PAGE_KEY;
+  const pageKey = pageKeyFor(variant);
   const [settingsResult, pageResult, commentsResult, ratingResult] = await Promise.allSettled([
     getSettings(),
     isMax ? getFreeFireMaxStylishNamePage() : getFreeFireStylishNamePage(),
@@ -69,9 +82,10 @@ async function loadLandingData(
   }
 
   const fallback = isMax ? cloneFreeFireMaxStylishNamePage() : cloneFreeFireStylishNamePage();
+  const source = pageResult.status === "fulfilled" ? pageResult.value : fallback;
   return {
     settings: settingsResult.value,
-    page: pageResult.status === "fulfilled" ? pageResult.value : fallback,
+    page: variant === "free-fire-india" ? toFreeFireIndiaNamePage(source) : source,
     pageComments: commentsResult.status === "fulfilled" ? commentsResult.value : [],
     ratingSummary: ratingResult.status === "fulfilled" ? ratingResult.value : null,
   };
@@ -83,18 +97,32 @@ export async function FreeFireStylishNameLandingPage(
 ) {
   const variant = options.variant ?? "free-fire";
   const isMax = variant === "free-fire-max";
+  const isIndia = variant === "free-fire-india";
   const { settings, page, pageComments, ratingSummary } = await loadLandingData(variant);
   const path =
     options.path?.trim() ||
-    (isMax ? FREE_FIRE_MAX_STYLISH_NAME_PATH : FREE_FIRE_STYLISH_NAME_PATH);
-  const parentLabel = options.parentLabel?.trim() || (isMax ? "FF Max" : "Free Fire");
+    (isMax
+      ? FREE_FIRE_MAX_STYLISH_NAME_PATH
+      : isIndia
+        ? FREE_FIRE_INDIA_STYLISH_NAME_PATH
+        : FREE_FIRE_STYLISH_NAME_PATH);
+  const parentLabel =
+    options.parentLabel?.trim() || (isMax ? "FF Max" : isIndia ? "Free Fire India" : "Free Fire");
   const parentHref =
-    options.parentHref?.trim() || (isMax ? FREE_FIRE_MAX_PATH : "/");
-  const pageKey = isMax ? FREE_FIRE_MAX_STYLISH_NAME_PAGE_KEY : FREE_FIRE_STYLISH_NAME_PAGE_KEY;
+    options.parentHref?.trim() || (isMax ? FREE_FIRE_MAX_PATH : isIndia ? FREE_FIRE_INDIA_PATH : "/");
+  const pageKey = pageKeyFor(variant);
+  const guideId = isMax
+    ? "free-fire-max-stylish-name-guide"
+    : isIndia
+      ? FREE_FIRE_INDIA_STYLISH_NAME_GUIDE_ID
+      : "free-fire-stylish-name-guide";
+  const ratingGame = isMax ? "FF Max" : isIndia ? "Free Fire India" : "Free Fire";
   const canonical = toCanonicalUrl(path);
   const homeUrl = toCanonicalUrl("/");
   const parentUrl = toCanonicalUrl(parentHref);
-  const crumbCurrent = (page.title || (isMax ? "FF Max Names" : "FF Names")).trim();
+  const crumbCurrent = (
+    page.title || (isMax ? "FF Max Names" : isIndia ? "FF India Names" : "FF Names")
+  ).trim();
   const faqItems = page.faqs.map((f) => ({
     id: f.id,
     question: f.question,
@@ -177,7 +205,7 @@ export async function FreeFireStylishNameLandingPage(
       {page.articleHtml?.trim() || faqItems.length ? (
         <ClientErrorBoundary label="Guide">
           <div
-            id={isMax ? "free-fire-max-stylish-name-guide" : "free-fire-stylish-name-guide"}
+            id={guideId}
             className="light-content-wrapper light-content--after-home-calculator"
           >
             <div className="content-inner">
@@ -196,7 +224,7 @@ export async function FreeFireStylishNameLandingPage(
 
       <ToolPageRatingBlock
         pageKey={pageKey}
-        lead={`Was this ${isMax ? "FF Max" : "Free Fire"} stylish name tool helpful? Tap a star to rate.`}
+        lead={`Was this ${ratingGame} stylish name tool helpful? Tap a star to rate.`}
         ratingSummary={ratingSummary}
         appName={page.seoTitle || crumbCurrent}
         appDescription={page.seoDescription}

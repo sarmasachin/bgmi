@@ -45,6 +45,9 @@ type Props = {
   loadMoreExpired: string;
   ui: CardUi;
   freshness?: ReactNode;
+  serverTabsLabel?: string;
+  /** India page: no region tabs, codes are already India-only. */
+  showServerTabs?: boolean;
 };
 
 function CodeList({
@@ -53,12 +56,14 @@ function CodeList({
   loadMoreLabel,
   ui,
   servers,
+  hideServerBadge = false,
 }: {
   items: FreeFireRedeemCodeItem[];
   emptyMessage: string;
   loadMoreLabel: string;
   ui: CardUi;
   servers: FreeFireRedeemServerConfig[];
+  hideServerBadge?: boolean;
 }) {
   const [visible, setVisible] = useState(INITIAL_VISIBLE);
 
@@ -74,7 +79,12 @@ function CodeList({
       <div className="lite-redeem-stack" role="list">
         {shown.map((item) => (
           <div key={item.id} role="listitem">
-            <FreeFireRedeemCodeCard item={item} ui={ui} servers={servers} />
+            <FreeFireRedeemCodeCard
+              item={item}
+              ui={ui}
+              servers={servers}
+              hideServerBadge={hideServerBadge}
+            />
           </div>
         ))}
       </div>
@@ -108,6 +118,8 @@ export function FreeFireRedeemCodeBoard({
   loadMoreExpired,
   ui,
   freshness,
+  serverTabsLabel = "Free Fire server",
+  showServerTabs = true,
 }: Props) {
   const [tab, setTab] = useState<FreeFireRedeemServerTabId>("all");
   const [nowMs, setNowMs] = useState(() => Date.now());
@@ -154,27 +166,31 @@ export function FreeFireRedeemCodeBoard({
   const expired = sortExpiredRedeemCodesNewestFirst(
     filtered.filter((c) => c.status === "expired"),
   );
-  const heading = sectionHeadingForTab(sectionHeading, tab, tabs);
+  const heading = showServerTabs
+    ? sectionHeadingForTab(sectionHeading, tab, tabs)
+    : sectionHeading.trim().replace(/\s*[–—-]\s+[^–—-]+$/u, "").trim() || sectionHeading;
 
   return (
     <>
-      <div className="ff-redeem-server-tabs" role="tablist" aria-label="Free Fire server">
-        {tabs.map((item) => {
-          const active = tab === item.id;
-          return (
-            <button
-              key={item.id}
-              type="button"
-              role="tab"
-              aria-selected={active}
-              className={`ff-redeem-server-tab${active ? " is-active" : ""}`}
-              onClick={() => setTab(item.id)}
-            >
-              {item.label}
-            </button>
-          );
-        })}
-      </div>
+      {showServerTabs ? (
+        <div className="ff-redeem-server-tabs" role="tablist" aria-label={serverTabsLabel}>
+          {tabs.map((item) => {
+            const active = tab === item.id;
+            return (
+              <button
+                key={item.id}
+                type="button"
+                role="tab"
+                aria-selected={active}
+                className={`ff-redeem-server-tab${active ? " is-active" : ""}`}
+                onClick={() => setTab(item.id)}
+              >
+                {item.label}
+              </button>
+            );
+          })}
+        </div>
+      ) : null}
 
       <h2 className="lite-redeem-h2">{heading}</h2>
       {freshness}
@@ -186,6 +202,7 @@ export function FreeFireRedeemCodeBoard({
         loadMoreLabel={loadMoreLive}
         ui={ui}
         servers={serverList}
+        hideServerBadge={!showServerTabs}
       />
 
       {expired.length ? (
@@ -201,6 +218,7 @@ export function FreeFireRedeemCodeBoard({
             loadMoreLabel={loadMoreExpired}
             ui={ui}
             servers={serverList}
+            hideServerBadge={!showServerTabs}
           />
         </>
       ) : null}

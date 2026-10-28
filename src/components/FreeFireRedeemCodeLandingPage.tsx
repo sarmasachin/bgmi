@@ -12,6 +12,7 @@ import {
   resolveRedeemFreshnessAt,
   resolveRedeemFreshnessBanner,
 } from "@/src/lib/bgmiLiteRedeemFreshness";
+import { coerceFreeFireRedeemServer } from "@/src/lib/freeFireRedeemServers";
 import {
   applyAutoExpireRedeemCode,
   isRedeemCodePubliclyLive,
@@ -27,6 +28,13 @@ import {
   FREE_FIRE_MAX_REDEEM_CODE_PATH,
   FREE_FIRE_MAX_REDEEM_PAGE_KEY,
 } from "@/src/lib/freeFireMaxRedeemCodes";
+import {
+  FREE_FIRE_INDIA_REDEEM_CODE_PATH,
+  FREE_FIRE_INDIA_REDEEM_GUIDE_ID,
+  FREE_FIRE_INDIA_REDEEM_PAGE_KEY,
+  toFreeFireIndiaRedeemPage,
+} from "@/src/lib/freeFireIndiaRedeemPage";
+import { FREE_FIRE_INDIA_PATH } from "@/src/lib/gamePagePath";
 import { FREE_FIRE_MAX_PATH } from "@/src/lib/freeFirePages";
 import { breadcrumbListSchema, faqSchema, webPageSchema } from "@/src/lib/schema";
 import { toCanonicalUrl } from "@/src/lib/siteUrl";
@@ -52,8 +60,8 @@ import {
 } from "@/src/server/repositories/settingsRepository";
 
 type FreeFireRedeemLandingOptions = {
-  /** Classic Free Fire vs separate Free Fire Max CMS. */
-  variant?: "free-fire" | "free-fire-max";
+  /** Classic Free Fire, India copy of those codes, or separate Free Fire Max CMS. */
+  variant?: "free-fire" | "free-fire-india" | "free-fire-max";
   path?: string;
   parentLabel?: string;
   parentHref?: string;
@@ -69,10 +77,15 @@ type LandingData = {
 
 /** Isolate data failures so one soft-fail source cannot blank the whole page. */
 async function loadLandingData(
-  variant: "free-fire" | "free-fire-max",
+  variant: "free-fire" | "free-fire-india" | "free-fire-max",
 ): Promise<LandingData> {
   const isMax = variant === "free-fire-max";
-  const pageKey = isMax ? FREE_FIRE_MAX_REDEEM_PAGE_KEY : FREE_FIRE_REDEEM_PAGE_KEY;
+  const isIndia = variant === "free-fire-india";
+  const pageKey = isIndia
+    ? FREE_FIRE_INDIA_REDEEM_PAGE_KEY
+    : isMax
+      ? FREE_FIRE_MAX_REDEEM_PAGE_KEY
+      : FREE_FIRE_REDEEM_PAGE_KEY;
   const [settingsResult, pageResult, updatedAtResult, commentsResult, ratingResult] =
     await Promise.allSettled([
       getSettings(),
@@ -89,9 +102,10 @@ async function loadLandingData(
   }
 
   const fallbackPage = isMax ? cloneFreeFireMaxRedeemPage() : cloneFreeFireRedeemPage();
+  const loadedPage = pageResult.status === "fulfilled" ? pageResult.value : fallbackPage;
   return {
     settings: settingsResult.value,
-    page: pageResult.status === "fulfilled" ? pageResult.value : fallbackPage,
+    page: isIndia ? toFreeFireIndiaRedeemPage(loadedPage) : loadedPage,
     updatedAt: updatedAtResult.status === "fulfilled" ? updatedAtResult.value : null,
     pageComments: commentsResult.status === "fulfilled" ? commentsResult.value : [],
     ratingSummary: ratingResult.status === "fulfilled" ? ratingResult.value : null,
@@ -104,21 +118,45 @@ export async function FreeFireRedeemCodeLandingPage(
 ) {
   const variant = options.variant ?? "free-fire";
   const isMax = variant === "free-fire-max";
+  const isIndia = variant === "free-fire-india";
   const { settings, page, updatedAt, pageComments, ratingSummary } = await loadLandingData(variant);
   const ui = page.ui;
   const path =
     options.path?.trim() ||
-    (isMax ? FREE_FIRE_MAX_REDEEM_CODE_PATH : FREE_FIRE_REDEEM_CODE_PATH);
-  const parentLabel = options.parentLabel?.trim() || (isMax ? "FF Max" : "Free Fire");
+    (isIndia
+      ? FREE_FIRE_INDIA_REDEEM_CODE_PATH
+      : isMax
+        ? FREE_FIRE_MAX_REDEEM_CODE_PATH
+        : FREE_FIRE_REDEEM_CODE_PATH);
+  const parentLabel =
+    options.parentLabel?.trim() ||
+    (isIndia ? "Free Fire India" : isMax ? "FF Max" : "Free Fire");
   const parentHref =
-    options.parentHref?.trim() || (isMax ? FREE_FIRE_MAX_PATH : "/");
-  const pageKey = isMax ? FREE_FIRE_MAX_REDEEM_PAGE_KEY : FREE_FIRE_REDEEM_PAGE_KEY;
-  const codeLabel = isMax ? "Free Fire Max redeem code" : "Free Fire redeem code";
+    options.parentHref?.trim() ||
+    (isIndia ? FREE_FIRE_INDIA_PATH : isMax ? FREE_FIRE_MAX_PATH : "/");
+  const pageKey = isIndia
+    ? FREE_FIRE_INDIA_REDEEM_PAGE_KEY
+    : isMax
+      ? FREE_FIRE_MAX_REDEEM_PAGE_KEY
+      : FREE_FIRE_REDEEM_PAGE_KEY;
+  const codeLabel = isIndia
+    ? "Free Fire India redeem code"
+    : isMax
+      ? "Free Fire Max redeem code"
+      : "Free Fire redeem code";
+  const guideId = isIndia
+    ? FREE_FIRE_INDIA_REDEEM_GUIDE_ID
+    : isMax
+      ? "free-fire-max-redeem-guide"
+      : "free-fire-redeem-guide";
   const canonical = toCanonicalUrl(path);
   const homeUrl = toCanonicalUrl("/");
   const parentUrl = toCanonicalUrl(parentHref);
   const crumbCurrent = ui.breadcrumbName.trim() || "Redeem Code";
-  const live = page.codes
+  const pageCodes = isIndia
+    ? page.codes.filter((code) => coerceFreeFireRedeemServer(code.server, page.servers) === "india")
+    : page.codes;
+  const live = pageCodes
     .map((c) => applyAutoExpireRedeemCode(c))
     .filter((c) => isRedeemCodePubliclyLive(c));
   const freshnessAt = resolveRedeemFreshnessAt(
@@ -207,8 +245,9 @@ export async function FreeFireRedeemCodeLandingPage(
 
           <ClientErrorBoundary label="Redeem codes">
             <FreeFireRedeemCodeBoard
-              codes={page.codes}
+              codes={pageCodes}
               servers={page.servers}
+              showServerTabs={!isIndia}
               sectionHeading={page.sectionHeading}
               archiveHeading={page.archiveHeading}
               emptyLive={emptyLive}
@@ -216,6 +255,7 @@ export async function FreeFireRedeemCodeLandingPage(
               loadMoreLive={ui.loadMoreLive}
               loadMoreExpired={ui.loadMoreExpired}
               ui={cardUi}
+              serverTabsLabel={isIndia ? "Free Fire India server" : undefined}
               freshness={
                 freshnessBanner === "idle" ? (
                   <div className="lite-redeem-freshness lite-redeem-freshness--idle" role="status">
@@ -239,7 +279,7 @@ export async function FreeFireRedeemCodeLandingPage(
       {page.articleHtml?.trim() || faqItems.length ? (
         <ClientErrorBoundary label="Guide">
           <div
-            id={isMax ? "free-fire-max-redeem-guide" : "free-fire-redeem-guide"}
+            id={guideId}
             className="light-content-wrapper light-content--after-home-calculator"
           >
             <div className="content-inner">

@@ -5,6 +5,7 @@ import {
   BGMI_LITE_NEWS_CATEGORY,
   DEFAULT_NEWS_CATEGORIES,
   DEFAULT_NEWS_CATEGORY,
+  FREE_FIRE_INDIA_NEWS_CATEGORY,
   isValidCategorySlugFormat,
   normalizeCategorySlugInput,
   PUBG_MOBILE_LITE_NEWS_CATEGORY,
@@ -65,6 +66,7 @@ async function ensureBgmiHubs() {
     { slug: "pubg", label: "PUBG Mobile" },
     { slug: BGMI_LITE_NEWS_CATEGORY, label: "BGMI Air" },
     { slug: PUBG_MOBILE_LITE_NEWS_CATEGORY, label: "PUBG Mobile Flash" },
+    { slug: FREE_FIRE_INDIA_NEWS_CATEGORY, label: "Free Fire India" },
   ] as const;
   for (const hub of required) {
     const existing = await prisma.newsCategory.findUnique({ where: { slug: hub.slug } });

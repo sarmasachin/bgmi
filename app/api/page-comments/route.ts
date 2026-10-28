@@ -4,6 +4,7 @@ import { FREE_FIRE_ADVANCE_SERVER_PATH } from "@/src/lib/ffAdvanceServerPage";
 import { BGMI_APK_PAGE_KEY } from "@/src/lib/bgmiApkPage";
 import { PUBG_APK_PAGE_KEY } from "@/src/lib/pubgApkPage";
 import { FREE_FIRE_APK_PAGE_KEY } from "@/src/lib/freeFireApkPage";
+import { FREE_FIRE_INDIA_APK_PAGE_KEY } from "@/src/lib/freeFireIndiaApkPage";
 import { FREE_FIRE_MAX_APK_PAGE_KEY } from "@/src/lib/freeFireMaxApkPage";
 import { BGMI_LITE_APK_PAGE_KEY } from "@/src/lib/bgmiLiteBetaApkPage";
 import { BGMI_REDEEM_PAGE_KEY } from "@/src/lib/bgmiRedeemCodes";
@@ -14,8 +15,10 @@ import { PUBG_MOBILE_LITE_APK_PAGE_KEY } from "@/src/lib/pubgMobileLiteApkPage";
 import { PUBG_MOBILE_LITE_REDEEM_PAGE_KEY } from "@/src/lib/pubgMobileLiteRedeemCodes";
 import { PUBG_MOBILE_LITE_NAME_PAGE_KEY } from "@/src/lib/pubgMobileLiteNamePage";
 import { FREE_FIRE_REDEEM_PAGE_KEY } from "@/src/lib/freeFireRedeemCodes";
+import { FREE_FIRE_INDIA_REDEEM_PAGE_KEY } from "@/src/lib/freeFireIndiaRedeemPage";
 import { FREE_FIRE_MAX_REDEEM_PAGE_KEY } from "@/src/lib/freeFireMaxRedeemCodes";
 import { FREE_FIRE_STYLISH_NAME_PAGE_KEY } from "@/src/lib/freeFireStylishNamePage";
+import { FREE_FIRE_INDIA_STYLISH_NAME_PAGE_KEY } from "@/src/lib/freeFireIndiaNamePage";
 import { FREE_FIRE_MAX_STYLISH_NAME_PAGE_KEY } from "@/src/lib/freeFireMaxStylishNamePage";
 import { checkRateLimit } from "@/src/server/rateLimit";
 import { getRequestIp } from "@/src/server/requestIp";
@@ -32,6 +35,7 @@ const ALLOWED_PAGE_KEYS = new Set([
   BGMI_APK_PAGE_KEY,
   PUBG_APK_PAGE_KEY,
   FREE_FIRE_APK_PAGE_KEY,
+  FREE_FIRE_INDIA_APK_PAGE_KEY,
   FREE_FIRE_MAX_APK_PAGE_KEY,
   BGMI_LITE_APK_PAGE_KEY,
   BGMI_REDEEM_PAGE_KEY,
@@ -42,8 +46,10 @@ const ALLOWED_PAGE_KEYS = new Set([
   PUBG_MOBILE_LITE_REDEEM_PAGE_KEY,
   PUBG_MOBILE_LITE_NAME_PAGE_KEY,
   FREE_FIRE_REDEEM_PAGE_KEY,
+  FREE_FIRE_INDIA_REDEEM_PAGE_KEY,
   FREE_FIRE_MAX_REDEEM_PAGE_KEY,
   FREE_FIRE_STYLISH_NAME_PAGE_KEY,
+  FREE_FIRE_INDIA_STYLISH_NAME_PAGE_KEY,
   FREE_FIRE_MAX_STYLISH_NAME_PAGE_KEY,
 ]);
 

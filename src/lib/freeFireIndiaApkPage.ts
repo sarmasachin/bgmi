@@ -5,14 +5,22 @@ export const FREE_FIRE_INDIA_APK_PAGE_KEY = "free-fire-india-apk";
 export const FREE_FIRE_INDIA_APK_GUIDE_ID = "free-fire-india-apk-guide";
 export { FREE_FIRE_INDIA_APK_PATH };
 
-/** Keep Free Fire MAX as its own game, then rename Free Fire → Free Fire India. */
+/** Keep Free Fire MAX as its own game, then rename this page's game name to Free Fire India. */
 export function toFreeFireIndiaText(input: string): string {
   return input
     .replaceAll("Free Fire MAX", "\uE000")
     .replaceAll("Free Fire Max", "\uE001")
+    .replaceAll("FF MAX", "\uE002")
+    .replaceAll("FF Max", "\uE003")
     .replaceAll("Free Fire", "Free Fire India")
+    .replaceAll("FF MOD APK", "Free Fire India MOD APK")
+    .replaceAll("FF APK", "Free Fire India APK")
+    .replaceAll("FF Apk", "Free Fire India APK")
+    .replaceAll("FF apk", "Free Fire India APK")
     .replaceAll("\uE000", "Free Fire MAX")
-    .replaceAll("\uE001", "Free Fire Max");
+    .replaceAll("\uE001", "Free Fire Max")
+    .replaceAll("\uE002", "FF MAX")
+    .replaceAll("\uE003", "FF Max");
 }
 
 function toIndiaGuideHref(href: string): string {

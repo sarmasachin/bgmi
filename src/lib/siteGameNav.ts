@@ -5,6 +5,16 @@ import {
   isFreeFireMaxFamilyPath,
 } from "@/src/lib/freeFireMaxPages";
 import {
+  FREE_FIRE_INDIA_APK_PATH,
+  FREE_FIRE_INDIA_PATH,
+  FREE_FIRE_INDIA_REDEEM_CODE_PATH,
+  FREE_FIRE_INDIA_STYLISH_NAME_PATH,
+} from "@/src/lib/gamePagePath";
+import {
+  FREE_FIRE_INDIA_NEWS_CATEGORY,
+  newsCategoryListingPath,
+} from "@/src/lib/newsCategories";
+import {
   FREE_FIRE_FAMILY_NAV,
   FREE_FIRE_MAX_PATH,
   isFreeFireFamilyPath,
@@ -84,6 +94,33 @@ function normalizePathname(pathname: string): string {
   return raw.replace(/\/+$/, "") || "/";
 }
 
+const FREE_FIRE_INDIA_NEWS_PATH = newsCategoryListingPath(FREE_FIRE_INDIA_NEWS_CATEGORY);
+
+/** Desktop and mobile "Free Fire India" submenu. Not part of the Free Fire menu. */
+export const FREE_FIRE_INDIA_MENU = [
+  { label: "APK", href: FREE_FIRE_INDIA_APK_PATH },
+  { label: "Redeem Code", href: FREE_FIRE_INDIA_REDEEM_CODE_PATH },
+  { label: "Name", href: FREE_FIRE_INDIA_STYLISH_NAME_PATH },
+  { label: "News", href: FREE_FIRE_INDIA_NEWS_PATH },
+] as const;
+
+/** Desktop "Free Fire India" menu: calculator pages, APK, redeem, names, and news. */
+export function isFreeFireIndiaDesktopPath(pathname: string): boolean {
+  const p = normalizePathname(pathname);
+  return (
+    p === FREE_FIRE_INDIA_PATH ||
+    p.startsWith(`${FREE_FIRE_INDIA_PATH}/`) ||
+    p === FREE_FIRE_INDIA_APK_PATH ||
+    p.startsWith(`${FREE_FIRE_INDIA_APK_PATH}/`) ||
+    p === FREE_FIRE_INDIA_REDEEM_CODE_PATH ||
+    p.startsWith(`${FREE_FIRE_INDIA_REDEEM_CODE_PATH}/`) ||
+    p === FREE_FIRE_INDIA_STYLISH_NAME_PATH ||
+    p.startsWith(`${FREE_FIRE_INDIA_STYLISH_NAME_PATH}/`) ||
+    p === FREE_FIRE_INDIA_NEWS_PATH ||
+    p.startsWith(`${FREE_FIRE_INDIA_NEWS_PATH}/`)
+  );
+}
+
 function pathMatches(pathname: string, href: string): boolean {
   const p = normalizePathname(pathname);
   const h = normalizePathname(href);
@@ -114,6 +151,7 @@ export function isSiteNavItemActive(item: SiteNavItem, pathname: string): boolea
   if (item.id === "free-fire") {
     // Site home (`/`) is also FF calculator — highlight top "Home", not Free Fire.
     if (p === "/") return false;
+    if (isFreeFireIndiaDesktopPath(p)) return false;
     return isFreeFireFamilyPath(p) && !isFreeFireMaxFamilyPath(p);
   }
   if (item.id === "free-fire-max") return isFreeFireMaxFamilyPath(p);

@@ -34,7 +34,7 @@ export async function HomeTitleDummyAd({
           max-width: 100%;
           min-height: 0;
           height: auto;
-          margin: 0 auto 12px;
+          margin: 0 auto 16px;
           padding: 0;
           box-sizing: border-box;
           background: transparent;
@@ -45,7 +45,7 @@ export async function HomeTitleDummyAd({
         .ff-as-article-head .ff-home-ad {
           width: 100%;
           max-width: 100%;
-          margin: 12px 0 14px;
+          margin: 0 0 16px;
         }
       `}</style>
     </div>

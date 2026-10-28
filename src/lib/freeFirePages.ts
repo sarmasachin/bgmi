@@ -1,7 +1,12 @@
 /** Free Fire / Free Fire Max coming-soon game pages. */
 
 import { FREE_FIRE_ADVANCE_SERVER_PATH } from "@/src/lib/ffAdvanceServerPage";
-import { FREE_FIRE_INDIA_APK_PATH, FREE_FIRE_INDIA_PATH } from "@/src/lib/gamePagePath";
+import {
+  FREE_FIRE_INDIA_APK_PATH,
+  FREE_FIRE_INDIA_PATH,
+  FREE_FIRE_INDIA_REDEEM_CODE_PATH,
+  FREE_FIRE_INDIA_STYLISH_NAME_PATH,
+} from "@/src/lib/gamePagePath";
 
 export const FREE_FIRE_SLUG = "free-fire-sensitivity-settings-calculator";
 export const FREE_FIRE_MAX_SLUG = "free-fire-max-sensitivity-settings-calculator";
@@ -17,9 +22,7 @@ export const FREE_FIRE_APK_MENU_PATH = "/free-fire-apk";
 
 export const FREE_FIRE_FAMILY_NAV = [
   { label: "Home", href: "/" },
-  { label: "Free Fire India", href: FREE_FIRE_INDIA_PATH },
   { label: "FF Apk", href: FREE_FIRE_APK_MENU_PATH },
-  { label: "FF India APK", href: FREE_FIRE_INDIA_APK_PATH },
   { label: "Redeem Code", href: FREE_FIRE_REDEEM_CODE_PATH },
   { label: "Advance Server", href: FREE_FIRE_ADVANCE_SERVER_PATH },
   { label: "FF Names", href: FREE_FIRE_STYLISH_NAME_PATH },
@@ -34,7 +37,9 @@ export const FREE_FIRE_FAMILY_PATHS = [
   FREE_FIRE_PATH,
   FREE_FIRE_ADVANCE_SERVER_PATH,
   FREE_FIRE_REDEEM_CODE_PATH,
+  FREE_FIRE_INDIA_REDEEM_CODE_PATH,
   FREE_FIRE_STYLISH_NAME_PATH,
+  FREE_FIRE_INDIA_STYLISH_NAME_PATH,
 ] as const;
 
 export function isFreeFireFamilyPath(pathname: string): boolean {

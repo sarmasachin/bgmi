@@ -7,9 +7,18 @@ import { useEffect, useId, useRef, useState, useTransition } from "react";
 import type { MouseEvent } from "react";
 import { HomeHeaderDesktopNav } from "@/src/components/HomeHeaderDesktopNav";
 import { HomeHeaderSideNav } from "@/src/components/HomeHeaderSideNav";
+import { FreeFireIndiaMenuLabel } from "@/src/components/FreeFireIndiaMenuLabel";
 import {
+  FREE_FIRE_INDIA_APK_PATH,
+  FREE_FIRE_INDIA_PATH,
+  FREE_FIRE_INDIA_STYLISH_NAME_PATH,
+} from "@/src/lib/gamePagePath";
+import { FREE_FIRE_MAX_APK_MENU_PATH, isFreeFireMaxFamilyPath } from "@/src/lib/freeFireMaxPages";
+import {
+  FREE_FIRE_APK_MENU_PATH,
   FREE_FIRE_MAX_PATH,
   FREE_FIRE_PATH,
+  isFreeFireFamilyPath,
 } from "@/src/lib/freeFirePages";
 import { PUBG_MOBILE_CODES_PATH } from "@/src/lib/pubgMobileCodes";
 import { PUBG_MOBILE_LITE_PATH } from "@/src/lib/pubgMobileLite";
@@ -20,6 +29,8 @@ import {
   sideNavIdForCloneGame,
 } from "@/src/lib/resolveNavForPath";
 import {
+  FREE_FIRE_INDIA_MENU,
+  isFreeFireIndiaDesktopPath,
   isSiteNavItemActive,
   SITE_GAME_NAV,
   SITE_GAME_NAV_PREFETCH_HREFS,
@@ -40,9 +51,48 @@ function normalizePath(path: string | null | undefined) {
   return typeof path === "string" ? path : "";
 }
 
+const FREE_FIRE_INDIA_CHIP: NavLink = {
+  label: "Free Fire India",
+  href: FREE_FIRE_INDIA_PATH,
+};
+
+const FREE_FIRE_INDIA_APK_CHIP: NavLink = {
+  label: "FF India Apk",
+  href: FREE_FIRE_INDIA_APK_PATH,
+};
+
+const INDIA_PAGE_CHIP_LABEL: Record<string, string> = {
+  [FREE_FIRE_INDIA_APK_PATH]: "FF India Apk",
+  [FREE_FIRE_INDIA_STYLISH_NAME_PATH]: "FF India Name",
+};
+
+const FREE_FIRE_INDIA_CHIPS: NavLink[] = [
+  { label: "Home", href: FREE_FIRE_INDIA_PATH },
+  ...FREE_FIRE_INDIA_MENU.map((item) => ({
+    label: INDIA_PAGE_CHIP_LABEL[item.href] ?? item.label,
+    href: item.href,
+  })),
+];
+
 function isChipActive(href: string, activePath: string) {
   if (href === "/") return activePath === "/" || activePath === "";
-  return activePath === href || activePath.startsWith(`${href}/`);
+  const path = activePath.replace(/\/+$/, "") || "/";
+  if (href === FREE_FIRE_INDIA_PATH) return path === FREE_FIRE_INDIA_PATH;
+  return path === href || path.startsWith(`${href}/`);
+}
+
+/** Mobile chip row only. Desktop and the Free Fire / Max hamburger stay unchanged. */
+function withFreeFireIndiaChip(links: NavLink[]): NavLink[] {
+  const onFreeFireChips = links.some((item) => item.href === FREE_FIRE_APK_MENU_PATH);
+  const onMaxChips = links.some((item) => item.href === FREE_FIRE_MAX_APK_MENU_PATH);
+  if (!onFreeFireChips && !onMaxChips) return links;
+  const extras = [FREE_FIRE_INDIA_CHIP, FREE_FIRE_INDIA_APK_CHIP].filter(
+    (chip) => !links.some((item) => item.href === chip.href),
+  );
+  if (extras.length === 0) return links;
+  const homeIndex = links.findIndex((item) => item.label.trim().toLowerCase() === "home");
+  const at = homeIndex >= 0 ? homeIndex + 1 : 0;
+  return [...links.slice(0, at), ...extras, ...links.slice(at)];
 }
 
 export function HomeHeader({ siteTitle, navigation, menuGame }: HomeHeaderProps) {
@@ -74,11 +124,6 @@ export function HomeHeader({ siteTitle, navigation, menuGame }: HomeHeaderProps)
     }
     return item;
   });
-  /** Mobile chip row: path family menu (FF page → FF links, Max → Max, …). */
-  const pathMenu = resolveNavForPath(pathname, normalized);
-  const cloneMenu =
-    detectNavGameContext(pathname) === "default" ? navForCloneGame(menuGame) : null;
-  const familyLinks = cloneMenu ?? pathMenu;
   const [scrollHidden, setScrollHidden] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const [desktopOpenId, setDesktopOpenId] = useState<string | null>(null);
@@ -90,6 +135,13 @@ export function HomeHeader({ siteTitle, navigation, menuGame }: HomeHeaderProps)
   const chipNavRef = useRef<HTMLElement>(null);
   const menuId = useId();
   const activePath = pendingPath ?? pathname;
+  /** Mobile chip row: India pages use the India menu; FF / Max keep their own, with an India chip after Home. */
+  const pathMenu = resolveNavForPath(activePath, normalized);
+  const cloneMenu =
+    detectNavGameContext(activePath) === "default" ? navForCloneGame(menuGame) : null;
+  const familyLinks = isFreeFireIndiaDesktopPath(activePath)
+    ? FREE_FIRE_INDIA_CHIPS
+    : withFreeFireIndiaChip(cloneMenu ?? pathMenu);
 
   useEffect(() => {
     for (const href of SITE_GAME_NAV_PREFETCH_HREFS) {
@@ -186,6 +238,10 @@ export function HomeHeader({ siteTitle, navigation, menuGame }: HomeHeaderProps)
 
   useEffect(() => {
     if (!menuOpen) return;
+    if (isFreeFireIndiaDesktopPath(pathname)) {
+      setSideOpenId("free-fire-india");
+      return;
+    }
     const active = SITE_GAME_NAV.find((item) => isSiteNavItemActive(item, pathname));
     if (active?.children?.length) {
       setSideOpenId(active.id);
@@ -286,21 +342,43 @@ export function HomeHeader({ siteTitle, navigation, menuGame }: HomeHeaderProps)
               openId={desktopOpenId}
               onOpenIdChange={setDesktopOpenId}
               onNavigate={onNavClick}
+              showIndiaLive={
+                isFreeFireIndiaDesktopPath(activePath) ||
+                isFreeFireFamilyPath(activePath) ||
+                isFreeFireMaxFamilyPath(activePath)
+              }
             />
           </div>
 
           <nav ref={chipNavRef} className="home-header-nav" aria-label="Games">
-            {familyLinks.map((item) => (
-              <Link
-                key={`chip-${item.href}-${item.label}`}
-                href={item.href}
-                prefetch
-                className={isChipActive(item.href, activePath) ? "is-active" : undefined}
-                onClick={(event) => onNavClick(event, item.href)}
-              >
-                {item.label}
-              </Link>
-            ))}
+            {familyLinks.map((item) => {
+              const liveChip = item.label === "Free Fire India" && item.href === FREE_FIRE_INDIA_PATH;
+              const indiaApkChip = item.href === FREE_FIRE_INDIA_APK_PATH;
+              const showLive = liveChip || (indiaApkChip && isFreeFireIndiaDesktopPath(activePath));
+              const active = isChipActive(item.href, activePath);
+              return (
+                <Link
+                  key={`chip-${item.href}-${item.label}`}
+                  href={item.href}
+                  prefetch
+                  className={`${active ? "is-active" : ""}${showLive ? " has-live" : ""}`.trim() || undefined}
+                  onClick={(event) => onNavClick(event, item.href)}
+                >
+                  {showLive ? (
+                    <span className="home-nav-live" aria-hidden>
+                      LIVE
+                    </span>
+                  ) : null}
+                  {indiaApkChip ? (
+                    <FreeFireIndiaMenuLabel apk />
+                  ) : liveChip ? (
+                    <FreeFireIndiaMenuLabel />
+                  ) : (
+                    item.label
+                  )}
+                </Link>
+              );
+            })}
           </nav>
         </div>
       </header>
