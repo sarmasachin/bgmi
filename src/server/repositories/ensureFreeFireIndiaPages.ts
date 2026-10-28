@@ -1,5 +1,9 @@
-import { getDefaultPageCards } from "@/src/lib/homeCardsDefaults";
-import { DEFAULT_FREE_FIRE_INDIA_APK_PAGE } from "@/src/lib/freeFireIndiaApkPage";
+import { asFreeFireIndiaCopy } from "@/src/lib/freeFireIndiaCopy";
+import {
+  DEFAULT_FREE_FIRE_INDIA_APK_PAGE,
+  FREE_FIRE_INDIA_PLAY_STORE_URL,
+  toFreeFireIndiaApkPage,
+} from "@/src/lib/freeFireIndiaApkPage";
 import {
   DEFAULT_FREE_FIRE_INDIA_REDEEM_PAGE,
   FREE_FIRE_INDIA_REDEEM_SETTINGS_KEY,
@@ -12,17 +16,22 @@ import {
 } from "@/src/lib/freeFireIndiaNamePage";
 import { coerceFreeFireRedeemServer } from "@/src/lib/freeFireRedeemServers";
 import { prisma, tryPrismaLong } from "@/src/server/dbSafe";
-import { builtInDefaultHtml, saveGameArticleHtml } from "@/src/server/repositories/gameArticlesRepository";
+import {
+  builtInDefaultHtml,
+  getGameArticleHtml,
+  saveGameArticleHtml,
+} from "@/src/server/repositories/gameArticlesRepository";
 import {
   FREE_FIRE_INDIA_APK_SETTING_KEY,
   saveFreeFireIndiaApkPage,
 } from "@/src/server/repositories/freeFireIndiaApkPageRepository";
+import { getFreeFireApkPageForAdmin } from "@/src/server/repositories/freeFireApkPageRepository";
 import { saveFreeFireIndiaRedeemPage } from "@/src/server/repositories/freeFireIndiaRedeemCodesRepository";
 import { saveFreeFireIndiaStylishNamePage } from "@/src/server/repositories/freeFireIndiaStylishNameRepository";
 import { getFreeFireRedeemPageForAdmin } from "@/src/server/repositories/freeFireRedeemCodesRepository";
 import { getFreeFireStylishNamePageForAdmin } from "@/src/server/repositories/freeFireStylishNameRepository";
-import { DEFAULT_FREEFIRE_INDIA_FAQ, saveGameFaqItems } from "@/src/server/repositories/homeFaqRepository";
-import { saveFfPageCards } from "@/src/server/repositories/homeCardsRepository";
+import { getGameFaqItems, saveGameFaqItems } from "@/src/server/repositories/homeFaqRepository";
+import { getFfPageCards, saveFfPageCards } from "@/src/server/repositories/homeCardsRepository";
 import { listNewsCategories } from "@/src/server/repositories/newsCategoryRepository";
 
 const ARTICLE_KEY = "settings:gameArticle:freefire-india";
@@ -30,6 +39,17 @@ const CARDS_KEY = "settings:homeCards:freefire-india";
 const FAQ_KEY = "settings:gameFaq:freefire-india";
 const REDEEM_READY_KEY = "settings:freeFireIndiaRedeemCodesReady";
 const NAME_READY_KEY = "settings:freeFireIndiaStylishNameReady";
+
+function indiaTextTree(value: unknown): unknown {
+  if (typeof value === "string") return asFreeFireIndiaCopy(value);
+  if (Array.isArray(value)) return value.map(indiaTextTree);
+  if (value && typeof value === "object") {
+    const out: Record<string, unknown> = {};
+    for (const [key, child] of Object.entries(value)) out[key] = indiaTextTree(child);
+    return out;
+  }
+  return value;
+}
 
 /** True when the row is absent. null means the database could not be read. */
 async function rowMissing(key: string): Promise<boolean | null> {
@@ -61,18 +81,42 @@ async function storeIfMissing(key: string, write: () => Promise<unknown>): Promi
  * An existing row is left as the admin saved it.
  */
 export async function ensureFreeFireIndiaPagesStored(): Promise<boolean> {
-  const cards = await storeIfMissing(CARDS_KEY, () =>
-    saveFfPageCards("freefire-india", getDefaultPageCards("freefire-india")),
-  );
-  const article = await storeIfMissing(ARTICLE_KEY, () =>
-    saveGameArticleHtml("freefire-india", builtInDefaultHtml("freefire-india")),
-  );
-  const faq = await storeIfMissing(FAQ_KEY, () =>
-    saveGameFaqItems("freefire-india", DEFAULT_FREEFIRE_INDIA_FAQ.map((item) => ({ ...item }))),
-  );
-  const apk = await storeIfMissing(FREE_FIRE_INDIA_APK_SETTING_KEY, () =>
-    saveFreeFireIndiaApkPage(DEFAULT_FREE_FIRE_INDIA_APK_PAGE),
-  );
+  const cards = await storeIfMissing(CARDS_KEY, async () => {
+    const ff = await getFfPageCards("freefire");
+    await saveFfPageCards("freefire-india", indiaTextTree(ff));
+  });
+  const article = await storeIfMissing(ARTICLE_KEY, async () => {
+    const ff = await getGameArticleHtml("freefire");
+    const html = asFreeFireIndiaCopy(ff || builtInDefaultHtml("freefire"));
+    await saveGameArticleHtml("freefire-india", html);
+  });
+  const faq = await storeIfMissing(FAQ_KEY, async () => {
+    const ff = await getGameFaqItems("freefire");
+    await saveGameFaqItems(
+      "freefire-india",
+      ff.map((item) => ({
+        ...item,
+        question: asFreeFireIndiaCopy(item.question),
+        answer: asFreeFireIndiaCopy(item.answer),
+      })),
+    );
+  });
+  const apk = await storeIfMissing(FREE_FIRE_INDIA_APK_SETTING_KEY, async () => {
+    const ff = await getFreeFireApkPageForAdmin();
+    const page = ff.usingDefault
+      ? DEFAULT_FREE_FIRE_INDIA_APK_PAGE
+      : toFreeFireIndiaApkPage(ff.page);
+    await saveFreeFireIndiaApkPage({
+      ...page,
+      heroButtons: {
+        ...page.heroButtons,
+        playStore: {
+          ...page.heroButtons.playStore,
+          href: FREE_FIRE_INDIA_PLAY_STORE_URL,
+        },
+      },
+    });
+  });
   const redeem = await storeIfMissing(FREE_FIRE_INDIA_REDEEM_SETTINGS_KEY, async () => {
     const readyMissing = await rowMissing(REDEEM_READY_KEY);
     if (readyMissing === null) throw new Error("DB_UNAVAILABLE");
