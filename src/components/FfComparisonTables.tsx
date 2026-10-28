@@ -3,7 +3,9 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { FREE_FIRE_MAX_PATH } from "@/src/lib/freeFirePages";
+import { asFreeFireIndiaCopy } from "@/src/lib/freeFireIndiaCopy";
 import {
+  isFreeFireIndiaPath,
   isHomeFfPath,
   isLiteCalculatorPath,
   pickLitePageContent,
@@ -208,24 +210,30 @@ export function FfComparisonTables({
     : homeContent;
   const vsRows = pack?.vsRows ?? (isMax ? MAX_VS_ROWS : VS_ROWS);
   const ramRows = pack?.ramRows ?? (isMax ? MAX_RAM_ROWS : RAM_ROWS);
-  const title =
-    pack?.title ?? (isMax ? "Free Fire Max vs Free Fire" : "Free Fire vs FF Max");
-  const ramTitle =
+  const isIndia = isFreeFireIndiaPath(pathname);
+  const say = (value: string) => (isIndia ? asFreeFireIndiaCopy(value) : value);
+  const title = say(
+    pack?.title ?? (isMax ? "Free Fire Max vs Free Fire" : "Free Fire vs FF Max"),
+  );
+  const ramTitle = say(
     pack?.ramTitle ??
-    (isMax ? "RAM-wise Free Fire Max sensitivity" : "RAM-wise Free Fire sensitivity");
-  const note =
+      (isMax ? "RAM-wise Free Fire Max sensitivity" : "RAM-wise Free Fire sensitivity"),
+  );
+  const note = say(
     pack?.note ??
-    (isMax
-      ? "Tip: On Max, if FPS dips in fights, keep General a bit higher — then fine-tune in Training Ground."
-      : "Tip: Lower RAM → keep sensitivity a bit higher. High-end phones usually need slightly lower values.");
-  const ctaBeforeLink =
-    pack?.ctaBeforeLink ??
-    (isMax ? "Still on classic Free Fire?" : "Playing Max?");
-  const ctaLinkLabel =
+      (isMax
+        ? "Tip: On Max, if FPS dips in fights, keep General a bit higher — then fine-tune in Training Ground."
+        : "Tip: Lower RAM → keep sensitivity a bit higher. High-end phones usually need slightly lower values."),
+  );
+  const ctaBeforeLink = say(
+    pack?.ctaBeforeLink ?? (isMax ? "Still on classic Free Fire?" : "Playing Max?"),
+  );
+  const ctaLinkLabel = say(
     pack?.ctaLinkLabel ??
-    (isMax ? "Open Free Fire calculator" : "Open Free Fire Max calculator");
+      (isMax ? "Open Free Fire calculator" : "Open Free Fire Max calculator"),
+  );
   const ctaHref = pack?.ctaHref ?? (isMax ? "/#ff-calculator" : FREE_FIRE_MAX_PATH);
-  const leftCol = pack?.leftColLabel ?? "Free Fire";
+  const leftCol = say(pack?.leftColLabel ?? "Free Fire");
   const rightCol = pack?.rightColLabel ?? "Free Fire Max";
   const ramCols = pack?.ramColLabels ?? {
     general: "General",
@@ -263,7 +271,7 @@ export function FfComparisonTables({
                 <th scope="row">
                   <i className={`fa-solid ${row.icon}`} aria-hidden /> {row.point}
                 </th>
-                <td>{row.freefire}</td>
+                <td>{say(row.freefire)}</td>
                 <td>{row.freefireMax}</td>
               </tr>
             ))}

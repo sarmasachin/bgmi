@@ -15,6 +15,12 @@ import {
   isUsableFreeFireHeroImageSrc,
   type FreeFireApkPageContent,
 } from "@/src/lib/freeFireApkPage";
+import {
+  FREE_FIRE_INDIA_APK_GUIDE_ID,
+  FREE_FIRE_INDIA_APK_PAGE_KEY,
+  FREE_FIRE_INDIA_APK_PATH,
+  toFreeFireIndiaApkPage,
+} from "@/src/lib/freeFireIndiaApkPage";
 import { ratingWidgetRemountKey } from "@/src/lib/ratingWidgetKey";
 import {
   androidApkAppSchema,
@@ -34,6 +40,8 @@ import {
 } from "@/src/server/repositories/pageCommentsRepository";
 import { getSettings, type SiteSettings } from "@/src/server/repositories/settingsRepository";
 
+type ApkLandingVariant = "freefire" | "india";
+
 type LandingData = {
   settings: SiteSettings;
   page: FreeFireApkPageContent;
@@ -41,13 +49,37 @@ type LandingData = {
   ratingSummary: RatingSummary | null;
 };
 
+const LANDING_META = {
+  freefire: {
+    path: FREE_FIRE_APK_PATH,
+    pageKey: FREE_FIRE_APK_PAGE_KEY,
+    breadcrumb: "FF Apk",
+    guideId: "free-fire-apk-guide",
+    heroTitleId: "free-fire-apk-hero-title",
+    pillsLabel: "Free Fire details",
+    ratingLead: "Was this Free Fire APK guide helpful? Tap a star to rate.",
+    downloadLabel: "Free Fire download options",
+  },
+  india: {
+    path: FREE_FIRE_INDIA_APK_PATH,
+    pageKey: FREE_FIRE_INDIA_APK_PAGE_KEY,
+    breadcrumb: "FF India APK",
+    guideId: FREE_FIRE_INDIA_APK_GUIDE_ID,
+    heroTitleId: "free-fire-india-apk-hero-title",
+    pillsLabel: "Free Fire India details",
+    ratingLead: "Was this Free Fire India APK guide helpful? Tap a star to rate.",
+    downloadLabel: "Free Fire India download options",
+  },
+} as const;
+
 /** Isolate data failures so comments/CMS cannot blank the whole page. */
-async function loadLandingData(): Promise<LandingData> {
+async function loadLandingData(variant: ApkLandingVariant): Promise<LandingData> {
+  const meta = LANDING_META[variant];
   const [settingsResult, pageResult, commentsResult, ratingResult] = await Promise.allSettled([
     getSettings(),
     getFreeFireApkPage(),
-    listApprovedPageComments(FREE_FIRE_APK_PAGE_KEY),
-    getRatingSummary("tool", FREE_FIRE_APK_PAGE_KEY),
+    listApprovedPageComments(meta.pageKey),
+    getRatingSummary("tool", meta.pageKey),
   ]);
 
   if (settingsResult.status === "rejected") {
@@ -56,17 +88,19 @@ async function loadLandingData(): Promise<LandingData> {
       : new Error("SETTINGS_UNAVAILABLE");
   }
 
+  const source = pageResult.status === "fulfilled" ? pageResult.value : DEFAULT_FREE_FIRE_APK_PAGE;
   return {
     settings: settingsResult.value,
-    page: pageResult.status === "fulfilled" ? pageResult.value : DEFAULT_FREE_FIRE_APK_PAGE,
+    page: variant === "india" ? toFreeFireIndiaApkPage(source) : source,
     pageComments: commentsResult.status === "fulfilled" ? commentsResult.value : [],
     ratingSummary: ratingResult.status === "fulfilled" ? ratingResult.value : null,
   };
 }
 
-export async function FreeFireApkLandingPage() {
-  const { settings, pageComments, page, ratingSummary } = await loadLandingData();
-  const canonical = toCanonicalUrl(FREE_FIRE_APK_PATH);
+async function FreeFireStyleApkLanding({ variant }: { variant: ApkLandingVariant }) {
+  const meta = LANDING_META[variant];
+  const { settings, pageComments, page, ratingSummary } = await loadLandingData(variant);
+  const canonical = toCanonicalUrl(page.path || meta.path);
   const homeUrl = toCanonicalUrl("/");
   const ogImageAbs = toCanonicalUrl(page.heroImage || "/icon.png?v=3");
   const faqItems = page.faqs.map((item) => ({
@@ -78,7 +112,7 @@ export async function FreeFireApkLandingPage() {
   const faqLd = faqSchema(faqItems);
   const breadcrumbLd = breadcrumbListSchema([
     { name: "Home", url: homeUrl },
-    { name: "FF Apk", url: canonical },
+    { name: meta.breadcrumb, url: canonical },
   ]);
   const appLd = androidApkAppSchema({
     name: page.heroTitle,
@@ -87,6 +121,7 @@ export async function FreeFireApkLandingPage() {
     image: ogImageAbs,
     ratingSummary,
   });
+  const cardPrefix = meta.guideId.replace(/-guide$/, "");
   const webPageLd = webPageSchema({
     name: page.seoTitle,
     description: page.seoDescription,
@@ -108,18 +143,18 @@ export async function FreeFireApkLandingPage() {
           <li>
             <Link href="/">Home</Link>
           </li>
-          <li aria-current="page">FF Apk</li>
+          <li aria-current="page">{meta.breadcrumb}</li>
         </ol>
       </nav>
 
-      <header className="ff-as-article-head" aria-labelledby="free-fire-apk-hero-title">
-        <h1 id="free-fire-apk-hero-title" className="ff-as-article-title">
+      <header className="ff-as-article-head" aria-labelledby={meta.heroTitleId}>
+        <h1 id={meta.heroTitleId} className="ff-as-article-title">
           {page.heroTitle}
         </h1>
         <HomeTitleDummyAd slotKey="apk_below_title" />
         <p className="ff-as-article-sub">{page.subtitleEn}</p>
 
-        <ul className="ff-as-pills" aria-label="Free Fire details">
+        <ul className="ff-as-pills" aria-label={meta.pillsLabel}>
           {page.pills.map((pill, index) => (
             <li key={`pill-${index}`} className="ff-as-pill">
               {pill.label}
@@ -131,6 +166,7 @@ export async function FreeFireApkLandingPage() {
           countdown={page.countdown}
           playStore={page.heroButtons.playStore}
           apk={page.heroButtons.apk}
+          groupLabel={meta.downloadLabel}
         />
         <HomeTitleDummyAd slotKey="apk_below_actions" />
 
@@ -151,7 +187,7 @@ export async function FreeFireApkLandingPage() {
             <article
               key={card.id}
               className={`ff-as-card${card.ctaHref ? " ff-as-card--cta" : ""}`}
-              aria-labelledby={`free-fire-apk-card-${card.id}`}
+              aria-labelledby={`${cardPrefix}-card-${card.id}`}
             >
               <div className="ff-as-card-top">
                 <span className="ff-as-card-badge">
@@ -159,7 +195,7 @@ export async function FreeFireApkLandingPage() {
                   {card.badge}
                 </span>
               </div>
-              <h2 id={`free-fire-apk-card-${card.id}`} className="ff-as-card-title">
+              <h2 id={`${cardPrefix}-card-${card.id}`} className="ff-as-card-title">
                 {card.title}
               </h2>
               <p className="ff-as-card-summary">{card.summary}</p>
@@ -187,7 +223,7 @@ export async function FreeFireApkLandingPage() {
       </main>
 
       <div
-        id="free-fire-apk-guide"
+        id={meta.guideId}
         className="light-content-wrapper light-content--after-home-calculator"
       >
         <div className="content-inner">
@@ -208,14 +244,14 @@ export async function FreeFireApkLandingPage() {
         <div className="ff-as-rating-inner">
           <h2 className="ff-as-rating-title">Rate this page</h2>
           <p className="ff-as-rating-lead">
-            Was this Free Fire APK guide helpful? Tap a star to rate.
+            {meta.ratingLead}
           </p>
           <ClientErrorBoundary label="Rating">
             <RatingWidget
-              key={ratingWidgetRemountKey("tool", FREE_FIRE_APK_PAGE_KEY)}
+              key={ratingWidgetRemountKey("tool", meta.pageKey)}
               title=""
               targetType="tool"
-              targetId={FREE_FIRE_APK_PAGE_KEY}
+              targetId={meta.pageKey}
               initialSummary={ratingSummary}
             />
           </ClientErrorBoundary>
@@ -224,7 +260,7 @@ export async function FreeFireApkLandingPage() {
 
       <ClientErrorBoundary label="Comments">
         <PageCommentSection
-          pageKey={FREE_FIRE_APK_PAGE_KEY}
+          pageKey={meta.pageKey}
           initialComments={pageComments}
           lead={page.commentsLead}
         />
@@ -254,4 +290,12 @@ export async function FreeFireApkLandingPage() {
       </ClientErrorBoundary>
     </div>
   );
+}
+
+export async function FreeFireApkLandingPage() {
+  return <FreeFireStyleApkLanding variant="freefire" />;
+}
+
+export async function FreeFireIndiaApkLandingPage() {
+  return <FreeFireStyleApkLanding variant="india" />;
 }

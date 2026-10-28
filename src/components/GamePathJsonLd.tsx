@@ -1,7 +1,12 @@
 "use client";
 
 import { usePathname } from "next/navigation";
-import { isBgmiLitePath, isPubgMobileLitePath } from "@/src/lib/gamePagePath";
+import {
+  isBgmiLitePath,
+  isFreeFireIndiaPath,
+  isHomeFfPath,
+  isPubgMobileLitePath,
+} from "@/src/lib/gamePagePath";
 
 type JsonLd = Record<string, unknown> | null;
 
@@ -16,6 +21,7 @@ type Props = {
   pubgToolSchema: JsonLd;
   pubgMobileLiteToolSchema?: JsonLd;
   freefireToolSchema?: JsonLd;
+  freefireIndiaToolSchema?: JsonLd;
 };
 
 /** Emits FAQ + tool WebApplication JSON-LD for the active game route only. */
@@ -30,14 +36,16 @@ export function GamePathJsonLd({
   pubgToolSchema,
   pubgMobileLiteToolSchema = null,
   freefireToolSchema = null,
+  freefireIndiaToolSchema = null,
 }: Props) {
   const pathname = usePathname() ?? "";
-  const isHome = pathname === "/" || pathname === "";
+  const isIndia = isFreeFireIndiaPath(pathname);
+  const isHome = !isIndia && isHomeFfPath(pathname);
   const isPubgMobileLite = isPubgMobileLitePath(pathname);
   const isPubg = pathname === "/pubg" || pathname.startsWith("/pubg/");
   const isLite = isBgmiLitePath(pathname);
 
-  const faqSchema = isHome
+  const faqSchema = isHome || isIndia
     ? freefireFaqSchema
     : isPubgMobileLite
       ? pubgMobileLiteFaqSchema
@@ -46,7 +54,9 @@ export function GamePathJsonLd({
         : isLite
           ? bgmiLiteFaqSchema
           : bgmiFaqSchema;
-  const toolSchema = isHome
+  const toolSchema = isIndia
+    ? freefireIndiaToolSchema
+    : isHome
     ? freefireToolSchema
     : isPubgMobileLite
       ? pubgMobileLiteToolSchema

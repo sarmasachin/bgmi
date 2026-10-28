@@ -40,8 +40,21 @@ export function pickLitePageContent<T>(
   return home;
 }
 
+/** Free Fire India calculator — same tool as home, own URL. */
+export const FREE_FIRE_INDIA_PATH = "/free-fire-india";
+
+/** Free Fire India APK guide — same layout as /free-fire-apk. */
+export const FREE_FIRE_INDIA_APK_PATH = "/free-fire-india-apk";
+
+export function isFreeFireIndiaPath(pathname: string | null | undefined): boolean {
+  const raw = typeof pathname === "string" ? pathname.trim() : "";
+  const p = raw.replace(/\/+$/, "") || "/";
+  return p === FREE_FIRE_INDIA_PATH || p.startsWith(`${FREE_FIRE_INDIA_PATH}/`);
+}
+
+/** Home (`/`) and Free Fire India share the Free Fire calculator page. */
 export function isHomeFfPath(pathname: string | null | undefined): boolean {
   const raw = typeof pathname === "string" ? pathname.trim() : "";
   const p = raw.replace(/\/+$/, "") || "/";
-  return p === "/" || p === "";
+  return p === "/" || isFreeFireIndiaPath(pathname);
 }

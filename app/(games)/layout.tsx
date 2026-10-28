@@ -16,6 +16,7 @@ import { FfProTips } from "@/src/components/FfProTips";
 import { FfNewsHub } from "@/src/components/FfNewsHub";
 import { SensCalculatorHost } from "@/src/components/SensCalculatorHost";
 import { SiteFooter } from "@/src/components/SiteFooter";
+import { FREE_FIRE_INDIA_PATH } from "@/src/lib/gamePagePath";
 import { freeFireConfig } from "@/src/lib/freeFirePages";
 import {
   BGMI_LITE_NEWS_CATEGORY,
@@ -177,6 +178,14 @@ export default async function GamesLayout({ children }: { children: React.ReactN
     url: toCanonicalUrl("/"),
     reviews: mapReviews(freefireTestimonials),
   });
+  const freefireIndiaToolLd = toolAppReviewSchema({
+    baseUrl,
+    name: "Free Fire India Sensitivity Calculator",
+    description:
+      "Free Fire India sensitivity calculator for General, Red Dot, 2x, 4x, sniper scope, and free look. RAM and DPI based settings for your phone.",
+    url: toCanonicalUrl(FREE_FIRE_INDIA_PATH),
+    reviews: mapReviews(freefireTestimonials),
+  });
 
   return (
     <div>
@@ -287,6 +296,7 @@ export default async function GamesLayout({ children }: { children: React.ReactN
         pubgToolSchema={pubgToolLd}
         pubgMobileLiteToolSchema={pubgMobileLiteToolLd}
         freefireToolSchema={freefireToolLd}
+        freefireIndiaToolSchema={freefireIndiaToolLd}
       />
       <ClientErrorBoundary label="Guide">
         <GameArticleFaq

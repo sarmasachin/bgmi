@@ -4,7 +4,9 @@ import { usePathname } from "next/navigation";
 import type { CalcInputs } from "@/src/features/ffCalculator/calculator";
 import { FF_SET_ROLE_EVENT } from "@/src/lib/ffPlayModes";
 import { FREE_FIRE_MAX_PATH } from "@/src/lib/freeFirePages";
+import { asFreeFireIndiaCopy } from "@/src/lib/freeFireIndiaCopy";
 import {
+  isFreeFireIndiaPath,
   isHomeFfPath,
   isLiteCalculatorPath,
   pickLitePageContent,
@@ -132,6 +134,17 @@ export function FfRoleTips({ homeContent, liteContent, pubgLiteContent }: Props)
     ...item,
     buttonLabel: item.buttonLabel?.trim() || defaultButtonLabel(item, isMax),
   }));
+  const isIndia = isFreeFireIndiaPath(pathname);
+  const shownTitle = isIndia ? asFreeFireIndiaCopy(sectionTitle) : sectionTitle;
+  const shownTips: RoleTip[] = isIndia
+    ? tips.map((card) => ({
+        ...card,
+        title: asFreeFireIndiaCopy(card.title),
+        lead: card.lead ? asFreeFireIndiaCopy(card.lead) : card.lead,
+        tips: card.tips.map(asFreeFireIndiaCopy),
+        buttonLabel: asFreeFireIndiaCopy(card.buttonLabel),
+      }))
+    : tips;
 
   function onCardCta(card: RoleTip) {
     if (isLite) {
@@ -173,10 +186,10 @@ export function FfRoleTips({ homeContent, liteContent, pubgLiteContent }: Props)
   return (
     <section className="ff-role-tips" aria-labelledby="ff-role-tips-title">
       <h2 id="ff-role-tips-title" className="ff-role-tips-title">
-        {sectionTitle}
+        {shownTitle}
       </h2>
       <div className="ff-role-tips-grid">
-        {tips.map((card, index) => (
+        {shownTips.map((card, index) => (
           <article key={`${card.role}-${index}`} className="ff-role-tip-card">
             <div className="ff-role-tip-head">
               <span className="ff-role-tip-icon" aria-hidden>

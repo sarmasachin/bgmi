@@ -46,6 +46,7 @@ type Props = {
   countdown: FreeFireApkCountdown;
   playStore: FreeFireApkHeroButton;
   apk: FreeFireApkHeroButton;
+  groupLabel?: string;
 };
 
 /**
@@ -53,7 +54,12 @@ type Props = {
  * When the timer is off or the target time has passed, Play/APK buttons show
  * automatically (if Show + label + URL are set).
  */
-export function FreeFireApkHeroActions({ countdown, playStore, apk }: Props) {
+export function FreeFireApkHeroActions({
+  countdown,
+  playStore,
+  apk,
+  groupLabel = "Free Fire download options",
+}: Props) {
   const showCountdown = Boolean(countdown.visible && countdown.targetIso.trim());
   const [ticking, setTicking] = useState(() => isFreeFireApkCountdownTicking(countdown));
 
@@ -82,7 +88,7 @@ export function FreeFireApkHeroActions({ countdown, playStore, apk }: Props) {
       ) : null}
 
       {showPlay || showApk ? (
-        <div className="ff-as-hero-btns" role="group" aria-label="Free Fire download options">
+        <div className="ff-as-hero-btns" role="group" aria-label={groupLabel}>
           {showPlay ? (
             <HeroCtaLink btn={playStore} className="ff-as-apk-btn" icon="fa-store" />
           ) : null}

@@ -44,7 +44,7 @@ export async function saveFreeFireApkPage(
     return true;
   });
   if (saved === null && process.env.DATABASE_URL) throw new Error("DB_UNAVAILABLE");
-  bumpSitemapLastmod(["/free-fire-apk"]);
+  bumpSitemapLastmod(["/free-fire-apk", "/free-fire-india-apk"]);
   return { page, usingDefault: false };
 }
 
@@ -57,6 +57,6 @@ export async function clearFreeFireApkPage(): Promise<{
     return true;
   });
   if (deleted === null && process.env.DATABASE_URL) throw new Error("DB_UNAVAILABLE");
-  bumpSitemapLastmod(["/free-fire-apk"]);
+  bumpSitemapLastmod(["/free-fire-apk", "/free-fire-india-apk"]);
   return { page: DEFAULT_FREE_FIRE_APK_PAGE, usingDefault: true };
 }

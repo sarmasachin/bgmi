@@ -2,7 +2,9 @@
 
 import { usePathname } from "next/navigation";
 import { FREE_FIRE_MAX_PATH } from "@/src/lib/freeFirePages";
+import { asFreeFireIndiaCopy } from "@/src/lib/freeFireIndiaCopy";
 import {
+  isFreeFireIndiaPath,
   isHomeFfPath,
   isLiteCalculatorPath,
   pickLitePageContent,
@@ -98,7 +100,18 @@ export function FfProTips({ homeContent, liteContent, pubgLiteContent }: Props) 
   const ctaLabel =
     pack?.ctaLabel ??
     (isMax ? "Apply Max sensi in calculator" : "Apply sensi in calculator");
-  const tips = pack?.items ?? (isMax ? MAX_PRO_TIPS : PRO_TIPS);
+  const sourceTips = pack?.items ?? (isMax ? MAX_PRO_TIPS : PRO_TIPS);
+  const isIndia = isFreeFireIndiaPath(pathname);
+  const shownTitle = isIndia ? asFreeFireIndiaCopy(title) : title;
+  const shownLead = isIndia ? asFreeFireIndiaCopy(lead) : lead;
+  const shownCta = isIndia ? asFreeFireIndiaCopy(ctaLabel) : ctaLabel;
+  const tips = isIndia
+    ? sourceTips.map((card) => ({
+        ...card,
+        title: asFreeFireIndiaCopy(card.title),
+        tip: asFreeFireIndiaCopy(card.tip),
+      }))
+    : sourceTips;
 
   function goToCalculator() {
     const id = isLite ? "bgmi-lite-calculator" : "ff-calculator";
@@ -111,9 +124,9 @@ export function FfProTips({ homeContent, liteContent, pubgLiteContent }: Props) 
   return (
     <section className="ff-pro-tips" aria-labelledby="ff-pro-tips-title">
       <h2 id="ff-pro-tips-title" className="ff-pro-tips-title">
-        {title}
+        {shownTitle}
       </h2>
-      <p className="ff-pro-tips-lead">{lead}</p>
+      <p className="ff-pro-tips-lead">{shownLead}</p>
       <div className="ff-pro-tips-grid">
         {tips.map((card) => (
           <article key={card.id} className="ff-pro-tip-card">
@@ -126,7 +139,7 @@ export function FfProTips({ homeContent, liteContent, pubgLiteContent }: Props) 
         ))}
       </div>
       <button type="button" className="ff-pro-tips-cta" onClick={goToCalculator}>
-        {ctaLabel}
+        {shownCta}
         <i className="fa-solid fa-arrow-up" aria-hidden />
       </button>
     </section>

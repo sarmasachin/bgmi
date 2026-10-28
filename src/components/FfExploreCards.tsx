@@ -3,7 +3,9 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { FREE_FIRE_MAX_PATH } from "@/src/lib/freeFirePages";
+import { asFreeFireIndiaCopy } from "@/src/lib/freeFireIndiaCopy";
 import {
+  isFreeFireIndiaPath,
   isHomeFfPath,
   isLiteCalculatorPath,
   pickLitePageContent,
@@ -83,6 +85,20 @@ export function FfExploreCards({ homeContent, liteContent, pubgLiteContent }: Pr
 
   if (!content) return null;
 
+  const shown = isFreeFireIndiaPath(pathname)
+    ? {
+        ...content,
+        title: asFreeFireIndiaCopy(content.title),
+        freefire: {
+          ...content.freefire,
+          title: asFreeFireIndiaCopy(content.freefire.title),
+          text: asFreeFireIndiaCopy(content.freefire.text),
+          points: content.freefire.points.map(asFreeFireIndiaCopy),
+          buttonLabel: asFreeFireIndiaCopy(content.freefire.buttonLabel),
+        },
+      }
+    : content;
+
   const icons = isLite
     ? (["fa-mobile-screen", "fa-download"] as const)
     : (["fa-fire", "fa-fire-flame-curved"] as const);
@@ -90,10 +106,10 @@ export function FfExploreCards({ homeContent, liteContent, pubgLiteContent }: Pr
   return (
     <section className="ff-explore" aria-labelledby="ff-explore-title">
       <h2 id="ff-explore-title" className="ff-explore-title">
-        {content.title}
+        {shown.title}
       </h2>
       <div className="ff-explore-grid">
-        {([content.freefire, content.freefireMax] as const).map((card, index) => (
+        {([shown.freefire, shown.freefireMax] as const).map((card, index) => (
           <article
             key={card.title}
             className={`ff-explore-card ${index === 0 ? "ff-explore-card--ff" : "ff-explore-card--max"}`}

@@ -6,7 +6,7 @@ import { FfCalculator } from "@/src/features/ffCalculator/FfCalculator";
 import "@/src/features/ffCalculator/ffCalculator.css";
 import { LiteSensCalculator } from "@/src/features/sensCalculator/LiteSensCalculator";
 import { SensCalculator } from "@/src/features/sensCalculator/SensCalculator";
-import { isBgmiLitePath, isPubgMobileLitePath } from "@/src/lib/gamePagePath";
+import { isBgmiLitePath, isHomeFfPath, isPubgMobileLitePath } from "@/src/lib/gamePagePath";
 import type { FfTrustBarItem } from "@/src/lib/ffTrustBar";
 import type { FfHomeCalcBanner } from "@/src/lib/homeCardsTypes";
 
@@ -28,7 +28,7 @@ export function SensCalculatorHost({
 }: Props) {
   const pathname = usePathname() ?? "";
 
-  if (pathname === "/" || pathname === "") {
+  if (isHomeFfPath(pathname)) {
     return (
       <div id="ff-calculator" className="ff-calculator-anchor">
         <FfCalculator

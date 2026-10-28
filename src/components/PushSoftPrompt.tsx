@@ -1,6 +1,8 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { usePathname } from "next/navigation";
+import { isFreeFireIndiaPath } from "@/src/lib/gamePagePath";
 import { isPushSupported, subscribeWebPush } from "@/src/lib/webPushClient";
 import styles from "./PushSoftPrompt.module.css";
 
@@ -39,6 +41,7 @@ function clearDismissed() {
  * If permission already granted (e.g. after DB wipe), silently re-sync subscription to server.
  */
 export function PushSoftPrompt() {
+  const pathname = usePathname() ?? "";
   const [visible, setVisible] = useState(false);
   const shownRef = useRef(false);
   const busyRef = useRef(false);
@@ -124,7 +127,9 @@ export function PushSoftPrompt() {
         <div className={styles.copy}>
           <p className={styles.title}>Get Update Alerts for Pro Sensi Setting</p>
           <p className={styles.text}>
-            Get Update News, Calculator Update, Pro Free Fire &amp; FF Max Sensitivity Settings
+            {isFreeFireIndiaPath(pathname)
+              ? "Get Update News, Calculator Update, Pro Free Fire India & FF Max Sensitivity Settings"
+              : "Get Update News, Calculator Update, Pro Free Fire & FF Max Sensitivity Settings"}
           </p>
         </div>
         <div className={styles.actions}>

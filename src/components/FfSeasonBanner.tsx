@@ -4,7 +4,9 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { FF_MAX_SEASON_EVENT, FF_SEASON_EVENT } from "@/src/lib/ffSeasonEvent";
 import { FREE_FIRE_MAX_PATH } from "@/src/lib/freeFirePages";
+import { asFreeFireIndiaCopy } from "@/src/lib/freeFireIndiaCopy";
 import {
+  isFreeFireIndiaPath,
   isHomeFfPath,
   isLiteCalculatorPath,
   pickLitePageContent,
@@ -33,31 +35,34 @@ export function FfSeasonBanner({ homeContent, liteContent, pubgLiteContent }: Pr
     : (homeContent ?? (isMax ? FF_MAX_SEASON_EVENT : FF_SEASON_EVENT));
   if (!event) return null;
 
+  const isIndia = isFreeFireIndiaPath(pathname);
+  const say = (value: string) => (isIndia ? asFreeFireIndiaCopy(value) : value);
+
   return (
     <section className="ff-season" aria-labelledby="ff-season-title">
       <div className="ff-season-card">
         <div className="ff-season-main">
           <span className="ff-season-badge">
             <i className="fa-solid fa-gift" aria-hidden />
-            {event.badge}
+            {say(event.badge)}
           </span>
           <div className="ff-season-copy">
             <p className="ff-season-meta">
               <time dateTime={event.dateIso}>{event.dateLabel}</time>
             </p>
             <h2 id="ff-season-title" className="ff-season-title">
-              {event.title}
+              {say(event.title)}
             </h2>
-            <p className="ff-season-summary">{event.summary}</p>
+            <p className="ff-season-summary">{say(event.summary)}</p>
           </div>
         </div>
         <div className="ff-season-actions">
           <Link className="ff-season-btn ff-season-btn--primary" href={event.ctaPath}>
-            {event.ctaLabel}
+            {say(event.ctaLabel)}
             <i className="fa-solid fa-arrow-right" aria-hidden />
           </Link>
           <Link className="ff-season-btn ff-season-btn--ghost" href={event.secondaryPath}>
-            {event.secondaryLabel}
+            {say(event.secondaryLabel)}
           </Link>
         </div>
       </div>

@@ -1,7 +1,9 @@
 "use client";
 
 import { usePathname } from "next/navigation";
+import { asFreeFireIndiaCopy } from "@/src/lib/freeFireIndiaCopy";
 import {
+  isFreeFireIndiaPath,
   isLiteCalculatorPath,
   pickLitePageContent,
 } from "@/src/lib/gamePagePath";
@@ -171,14 +173,25 @@ export function HowItWorksSection({
       ? "Get your pro sensitivity in just 4 simple steps."
       : (homeContent?.subtitle ?? "Get your Free Fire pro settings in just 4 simple steps.");
 
+  const isIndia = isFreeFireIndiaPath(pathname);
+  const shownTitle = isIndia ? asFreeFireIndiaCopy(title) : title;
+  const shownSubtitle = isIndia ? asFreeFireIndiaCopy(subtitle) : subtitle;
+  const shownSteps = isIndia
+    ? steps.map((step) => ({
+        ...step,
+        title: asFreeFireIndiaCopy(step.title),
+        bullets: step.bullets.map(asFreeFireIndiaCopy),
+      }))
+    : steps;
+
   return (
     <section className="how-works" aria-labelledby="how-works-title">
       <h2 id="how-works-title" className="how-works-title">
-        {title}
+        {shownTitle}
       </h2>
-      <p className="how-works-subtitle">{subtitle}</p>
+      <p className="how-works-subtitle">{shownSubtitle}</p>
       <ol className="how-works-grid">
-        {steps.map((step, index) => (
+        {shownSteps.map((step, index) => (
           <li key={`${step.title}-${index}`} className="how-works-card">
             <span className="how-works-num" aria-hidden>
               {index + 1}

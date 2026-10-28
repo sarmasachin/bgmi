@@ -3,7 +3,7 @@
 import { usePathname } from "next/navigation";
 import { TestimonialForm } from "@/src/components/TestimonialForm";
 import { TestimonialsMarquee } from "@/src/components/TestimonialsMarquee";
-import { isBgmiLitePath, isPubgMobileLitePath } from "@/src/lib/gamePagePath";
+import { isBgmiLitePath, isHomeFfPath, isPubgMobileLitePath } from "@/src/lib/gamePagePath";
 import type { PublicTestimonial } from "@/src/server/repositories/testimonialsRepository";
 
 type Props = {
@@ -23,7 +23,7 @@ export function GameTestimonialsSection({
 }: Props) {
   const pathname = usePathname() ?? "";
   const game =
-    pathname === "/" || pathname === ""
+    isHomeFfPath(pathname)
       ? "freefire"
       : isPubgMobileLitePath(pathname)
         ? "pubg-mobile-lite"

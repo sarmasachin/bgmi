@@ -1,6 +1,8 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import { usePathname } from "next/navigation";
+import { isFreeFireIndiaPath } from "@/src/lib/gamePagePath";
 import type { PublicTestimonial, TestimonialGame } from "@/src/server/repositories/testimonialsRepository";
 
 type Props = {
@@ -29,6 +31,7 @@ function Stars({ value }: { value: number }) {
 }
 
 export function TestimonialsMarquee({ game, initialItems }: Props) {
+  const pathname = usePathname() ?? "";
   const [items, setItems] = useState<PublicTestimonial[]>(initialItems ?? []);
   const [paused, setPaused] = useState(false);
   const [ready, setReady] = useState(initialItems !== undefined);
@@ -86,7 +89,9 @@ export function TestimonialsMarquee({ game, initialItems }: Props) {
   }, [items]);
 
   const durationSec = Math.max(28, items.length * 6);
-  const gameLabel = GAME_LABEL[game];
+  const labelFor = (value: TestimonialGame) =>
+    isFreeFireIndiaPath(pathname) && value === "freefire" ? "Free Fire India" : GAME_LABEL[value];
+  const gameLabel = labelFor(game);
   /** Auto-scroll only when there are 3 or more reviews. */
   const isStatic = items.length > 0 && items.length < 3;
 
@@ -119,7 +124,7 @@ export function TestimonialsMarquee({ game, initialItems }: Props) {
               <div className="testimonials-marquee-card-top">
                 <Stars value={item.rating} />
                 <span className="testimonials-marquee-game">
-                  {GAME_LABEL[item.game]}
+                  {labelFor(item.game)}
                 </span>
               </div>
               <p className="testimonials-marquee-message">{item.message}</p>

@@ -2,7 +2,8 @@
 
 import { usePathname } from "next/navigation";
 import { ArticleFaqContent } from "@/src/components/ArticleFaqContent";
-import { isBgmiLitePath, isPubgMobileLitePath } from "@/src/lib/gamePagePath";
+import { asFreeFireIndiaCopy } from "@/src/lib/freeFireIndiaCopy";
+import { isBgmiLitePath, isFreeFireIndiaPath, isHomeFfPath, isPubgMobileLitePath } from "@/src/lib/gamePagePath";
 import type { HomeFaqItem } from "@/src/server/repositories/homeFaqRepository";
 
 type Props = {
@@ -33,7 +34,7 @@ export function GameArticleFaq({
 }: Props) {
   const pathname = usePathname() ?? "";
   const game =
-    pathname === "/" || pathname === ""
+    isHomeFfPath(pathname)
       ? "freefire"
       : isPubgMobileLitePath(pathname)
         ? "pubg-mobile-lite"
@@ -74,12 +75,22 @@ export function GameArticleFaq({
           ? "bgmi-lite"
           : "bgmi";
 
+  const isIndia = isFreeFireIndiaPath(pathname);
+  const shownHtml = isIndia && articleHtml ? asFreeFireIndiaCopy(articleHtml) : articleHtml;
+  const shownFaq = isIndia
+    ? faqItems.map((item) => ({
+        ...item,
+        question: asFreeFireIndiaCopy(item.question),
+        answer: asFreeFireIndiaCopy(item.answer),
+      }))
+    : faqItems;
+
   return (
     <ArticleFaqContent
       wrapperClassName="light-content--after-home-calculator"
-      faqItems={faqItems}
+      faqItems={shownFaq}
       game={articleGame}
-      articleHtml={articleHtml}
+      articleHtml={shownHtml}
     />
   );
 }

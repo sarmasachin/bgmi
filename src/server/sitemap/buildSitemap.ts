@@ -43,6 +43,7 @@ export async function buildPageSitemapEntries(): Promise<SitemapUrlEntry[]> {
 
   const staticEntries: SitemapUrlEntry[] = [
     row(baseUrl, "/", lastmod("/")),
+    row(baseUrl, "/free-fire-india", lastmod("/free-fire-india")),
     row(baseUrl, "/bgmi", lastmod("/bgmi")),
     row(baseUrl, "/bgmi-apk", lastmod("/bgmi-apk")),
     row(baseUrl, "/bgmi-redeem-code", lastmod("/bgmi-redeem-code")),
@@ -61,6 +62,7 @@ export async function buildPageSitemapEntries(): Promise<SitemapUrlEntry[]> {
     row(baseUrl, "/pubg", lastmod("/pubg")),
     row(baseUrl, "/pubg-apk", lastmod("/pubg-apk")),
     row(baseUrl, "/free-fire-apk", lastmod("/free-fire-apk")),
+    row(baseUrl, "/free-fire-india-apk", lastmod("/free-fire-india-apk")),
     row(baseUrl, "/free-fire-max-apk", lastmod("/free-fire-max-apk")),
     row(baseUrl, "/pubg-redeem-code", lastmod("/pubg-redeem-code")),
     row(baseUrl, "/pubg-mobile-codes", lastmod("/pubg-mobile-codes")),
