@@ -37,6 +37,7 @@ import { getGameFaqItems } from "@/src/server/repositories/homeFaqRepository";
 import { getGameArticleHtml } from "@/src/server/repositories/gameArticlesRepository";
 import { getFfHomeCards, getFfPageCards } from "@/src/server/repositories/homeCardsRepository";
 import { listPublishedNews, listPublishedNewsByCategory } from "@/src/server/repositories/newsRepository";
+import { ensureFreeFireIndiaPagesOnce } from "@/src/server/repositories/ensureFreeFireIndiaPages";
 import { getSettings } from "@/src/server/repositories/settingsRepository";
 import { listApprovedTestimonials } from "@/src/server/repositories/testimonialsRepository";
 
@@ -49,6 +50,7 @@ export const dynamic = "force-dynamic";
  * Calculator feature/math code is not modified here.
  */
 export default async function GamesLayout({ children }: { children: React.ReactNode }) {
+  await ensureFreeFireIndiaPagesOnce();
   const ffCfg = freeFireConfig("freefire");
   const [
     settings,
