@@ -16,6 +16,7 @@ import {
   type FfTrustBarItem,
 } from "@/src/lib/ffTrustBar";
 import { FF_SET_ROLE_EVENT } from "@/src/lib/ffPlayModes";
+import { DiwaliCardDiyas, withDiwaliClass } from "@/src/components/DiwaliCardDiyas";
 import { FfCalculatorHeader } from "./FfCalculatorHeader";
 import { FfDeviceField } from "./FfDeviceField";
 import { resolveLockedPhone, searchPhones } from "@/src/lib/calculatorPhoneBrand";
@@ -131,8 +132,9 @@ export function FfCalculator({
     <div className="ffc-root">
       <FfCalculatorHeader showPlayStoreCta={showPlayStoreCta} />
 
-      <div className="ffc-card">
-        <div className="ffc-form-col">
+      <div className={withDiwaliClass("ffc-card", "ffc-card--diwali")}>
+        <div className={withDiwaliClass("ffc-form-col", "ffc-form-col--diwali")}>
+        <DiwaliCardDiyas />
         <div className="ffc-grid">
           {/* 1. Smart Device Selection */}
           <FfDeviceField

@@ -18,8 +18,6 @@ type Props = {
   openId: string | null;
   onOpenIdChange: (id: string | null) => void;
   onNavigate: (event: MouseEvent<HTMLAnchorElement>, href: string) => void;
-  /** Red LIVE mark above Free Fire India. Only on Free Fire and Free Fire Max pages. */
-  showIndiaLive?: boolean;
 };
 
 function hasChildren(
@@ -36,7 +34,6 @@ export function HomeHeaderDesktopNav({
   openId,
   onOpenIdChange,
   onNavigate,
-  showIndiaLive = false,
 }: Props) {
   const closeTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const indiaActive = isFreeFireIndiaDesktopPath(pathname);
@@ -127,7 +124,7 @@ export function HomeHeaderDesktopNav({
           <Fragment key="home-and-india">
             {node}
             <div
-              className={`home-nav-dd${indiaOpen ? " is-open" : ""}${indiaActive ? " is-active" : ""}${showIndiaLive ? " has-live" : ""}`}
+              className={`home-nav-dd${indiaOpen ? " is-open" : ""}${indiaActive ? " is-active" : ""}`}
               onMouseEnter={() => openMenu("free-fire-india")}
               onMouseLeave={scheduleClose}
             >
@@ -138,11 +135,6 @@ export function HomeHeaderDesktopNav({
                 aria-haspopup="true"
                 onClick={() => (indiaOpen ? scheduleClose() : openMenu("free-fire-india"))}
               >
-                {showIndiaLive ? (
-                  <span className="home-nav-live" aria-hidden>
-                    LIVE
-                  </span>
-                ) : null}
                 <span>
                   <FreeFireIndiaMenuLabel />
                 </span>

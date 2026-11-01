@@ -1,8 +1,10 @@
+import { ApkDownloadCountStat } from "@/src/components/ApkDownloadCountStat";
 import styles from "@/src/components/FreeFireIndiaApkIntro.module.css";
 import {
   isUsableFreeFireHeroImageSrc,
   type FreeFireApkPageContent,
 } from "@/src/lib/freeFireApkPage";
+import { FREE_FIRE_INDIA_APK_PAGE_KEY } from "@/src/lib/freeFireIndiaApkPage";
 import type { RatingSummary } from "@/src/server/repositories/ratingSummaryRepository";
 
 const SITE_ART = "/ff/free-fire-india-icon.png";
@@ -17,9 +19,12 @@ function factValue(
 export function FreeFireIndiaApkIntro({
   page,
   ratingSummary,
+  downloadCount = 0,
 }: {
   page: FreeFireApkPageContent;
   ratingSummary: RatingSummary | null;
+  /** Real APK-button click count from the server. */
+  downloadCount?: number;
 }) {
   const imageSrc = isUsableFreeFireHeroImageSrc(page.heroImage) ? page.heroImage : SITE_ART;
   const title =
@@ -31,8 +36,6 @@ export function FreeFireIndiaApkIntro({
   const rawDate = page.countdown.dateText.trim();
   // Hide the old admin-instruction placeholder if it was saved as page content.
   const dateText = /set the official update date in admin/i.test(rawDate) ? "" : rawDate;
-  const downloadCount =
-    factValue(page.facts.rows, /^downloads?$|download\s*count/i) || "3K+";
   const fileSize = factValue(page.facts.rows, /file\s*size/i) || "389.7 MB";
   const androidOs =
     factValue(page.facts.rows, /android\s*os|^android$/i) || "Android 5.0+";
@@ -68,13 +71,15 @@ export function FreeFireIndiaApkIntro({
             <span className={styles.label}>{rating.label}</span>
           </li>
         ) : null}
-        <li className={styles.detail}>
-          <span className={`${styles.value} ${styles.downloadValue}`}>
-            <i className={`fa-solid fa-download ${styles.downloadIcon}`} aria-hidden />
-            {downloadCount}
-          </span>
-          <span className={styles.label}>Download</span>
-        </li>
+        <ApkDownloadCountStat
+          pageKey={FREE_FIRE_INDIA_APK_PAGE_KEY}
+          initialCount={downloadCount}
+          detailClassName={styles.detail}
+          valueClassName={styles.value}
+          labelClassName={styles.label}
+          downloadValueClassName={styles.downloadValue}
+          downloadIconClassName={styles.downloadIcon}
+        />
         <li className={styles.detail}>
           <span className={styles.value}>{fileSize}</span>
           <span className={styles.label}>File Size</span>

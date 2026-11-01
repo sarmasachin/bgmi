@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { DiwaliCardDiyas, withDiwaliClass } from "@/src/components/DiwaliCardDiyas";
 import { FF_MAX_NEXT_UPDATE, FF_NEXT_UPDATE } from "@/src/lib/ffNextUpdate";
 import { FREE_FIRE_MAX_PATH } from "@/src/lib/freeFirePages";
 import type { FfHomeFeatureCard } from "@/src/lib/homeCardsTypes";
@@ -27,8 +28,12 @@ export function FfNextUpdateCard({ homeContent }: Props) {
       : { ...FF_NEXT_UPDATE, features: [...FF_NEXT_UPDATE.features] });
 
   return (
-    <section className="ff-next" aria-labelledby="ff-next-title">
+    <section
+      className={withDiwaliClass("ff-next", "ff-next--diwali")}
+      aria-labelledby="ff-next-title"
+    >
       <article className="ff-next-card">
+        <DiwaliCardDiyas />
         <div className="ff-next-top">
           <span className="ff-next-badge">
             <i className="fa-solid fa-rocket" aria-hidden />

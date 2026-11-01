@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { DiwaliCardDiyas, withDiwaliClass } from "@/src/components/DiwaliCardDiyas";
 import { FF_MAX_SITE_PATCH, FF_SITE_PATCH } from "@/src/lib/ffOfficialPatch";
 import { FREE_FIRE_MAX_PATH } from "@/src/lib/freeFirePages";
 import {
@@ -53,8 +54,9 @@ export function FfPatchStrip({ homeContent, indiaContent, liteContent, pubgLiteC
             : "Free Fire update news";
 
   return (
-    <aside className="ff-patch-strip" aria-label={aria}>
+    <aside className={withDiwaliClass("ff-patch-strip", "ff-patch-strip--diwali")} aria-label={aria}>
       <div className="ff-patch-strip-inner">
+        <DiwaliCardDiyas />
         <div className="ff-patch-strip-main">
           <span className="ff-patch-badge">
             <i className="fa-solid fa-bolt" aria-hidden />
@@ -66,9 +68,7 @@ export function FfPatchStrip({ homeContent, indiaContent, liteContent, pubgLiteC
               <span aria-hidden>·</span>
               <time dateTime={patch.dateIso}>{patch.dateLabel}</time>
             </p>
-            <p className="ff-patch-summary">
-              {say(patch.summary)}
-            </p>
+            <p className="ff-patch-summary">{say(patch.summary)}</p>
           </div>
         </div>
         <div className="ff-patch-actions">

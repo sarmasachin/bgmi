@@ -13,12 +13,11 @@ import {
   FREE_FIRE_INDIA_PATH,
   FREE_FIRE_INDIA_STYLISH_NAME_PATH,
 } from "@/src/lib/gamePagePath";
-import { FREE_FIRE_MAX_APK_MENU_PATH, isFreeFireMaxFamilyPath } from "@/src/lib/freeFireMaxPages";
+import { FREE_FIRE_MAX_APK_MENU_PATH } from "@/src/lib/freeFireMaxPages";
 import {
   FREE_FIRE_APK_MENU_PATH,
   FREE_FIRE_MAX_PATH,
   FREE_FIRE_PATH,
-  isFreeFireFamilyPath,
 } from "@/src/lib/freeFirePages";
 import { PUBG_MOBILE_CODES_PATH } from "@/src/lib/pubgMobileCodes";
 import { PUBG_MOBILE_LITE_PATH } from "@/src/lib/pubgMobileLite";
@@ -339,36 +338,26 @@ export function HomeHeader({ siteTitle, navigation, menuGame }: HomeHeaderProps)
               openId={desktopOpenId}
               onOpenIdChange={setDesktopOpenId}
               onNavigate={onNavClick}
-              showIndiaLive={
-                isFreeFireIndiaDesktopPath(activePath) ||
-                isFreeFireFamilyPath(activePath) ||
-                isFreeFireMaxFamilyPath(activePath)
-              }
             />
           </div>
 
           <nav ref={chipNavRef} className="home-header-nav" aria-label="Games">
             {familyLinks.map((item) => {
-              const liveChip = item.label === "Free Fire India" && item.href === FREE_FIRE_INDIA_PATH;
+              const indiaHomeChip =
+                item.label === "Free Fire India" && item.href === FREE_FIRE_INDIA_PATH;
               const indiaApkChip = item.href === FREE_FIRE_INDIA_APK_PATH;
-              const showLive = liveChip || (indiaApkChip && isFreeFireIndiaDesktopPath(activePath));
               const active = isChipActive(item.href, activePath);
               return (
                 <Link
                   key={`chip-${item.href}-${item.label}`}
                   href={item.href}
                   prefetch
-                  className={`${active ? "is-active" : ""}${showLive ? " has-live" : ""}`.trim() || undefined}
+                  className={active ? "is-active" : undefined}
                   onClick={(event) => onNavClick(event, item.href)}
                 >
-                  {showLive ? (
-                    <span className="home-nav-live" aria-hidden>
-                      LIVE
-                    </span>
-                  ) : null}
                   {indiaApkChip ? (
                     <FreeFireIndiaMenuLabel apk />
-                  ) : liveChip ? (
+                  ) : indiaHomeChip ? (
                     <FreeFireIndiaMenuLabel />
                   ) : (
                     item.label

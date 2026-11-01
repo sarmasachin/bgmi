@@ -7502,6 +7502,8 @@ footer,
   box-sizing: border-box;
 }
 
+/* Diwali host spacing lives in src/components/diwaliDiya.css (SHOW_DIWALI_DIYAS). */
+
 /* Next update card (OB55 teaser) */
 .ff-next {
   width: 95%;
@@ -7865,6 +7867,7 @@ footer,
 }
 
 .ff-patch-strip-inner {
+  position: relative;
   display: flex;
   flex-direction: column;
   gap: 14px;
@@ -7874,6 +7877,7 @@ footer,
   background:
     linear-gradient(120deg, rgba(249, 115, 22, 0.14) 0%, transparent 42%),
     #121820;
+  overflow: visible;
 }
 
 .ff-patch-strip-main {

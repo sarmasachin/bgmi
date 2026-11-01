@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useEffect, useState, type ReactNode } from "react";
 import { ClientErrorBoundary } from "@/src/components/ClientErrorBoundary";
 import { FfAdvanceServerCountdown } from "@/src/components/FfAdvanceServerCountdown";
+import { trackApkDownloadClick } from "@/src/lib/apkDownloadCountClient";
 import { isHostedApkFileHref } from "@/src/lib/apkHeroCta";
 import {
   isFreeFireApkCountdownTicking,
@@ -16,10 +17,12 @@ function HeroCtaLink({
   btn,
   className,
   icon,
+  onNavigate,
 }: {
   btn: FreeFireApkHeroButton;
   className: string;
   icon: string;
+  onNavigate?: () => void;
 }) {
   const href = btn.href.trim();
   const external = /^https?:\/\//i.test(href);
@@ -32,20 +35,26 @@ function HeroCtaLink({
   );
   if (hostedFile) {
     return (
-      <a className={className} href={href} download>
+      <a className={className} href={href} download onClick={onNavigate}>
         {inner}
       </a>
     );
   }
   if (external) {
     return (
-      <a className={className} href={href} target="_blank" rel="noopener noreferrer">
+      <a
+        className={className}
+        href={href}
+        target="_blank"
+        rel="noopener noreferrer"
+        onClick={onNavigate}
+      >
         {inner}
       </a>
     );
   }
   return (
-    <Link className={className} href={href}>
+    <Link className={className} href={href} onClick={onNavigate}>
       {inner}
     </Link>
   );
@@ -56,6 +65,8 @@ type Props = {
   playStore: FreeFireApkHeroButton;
   apk: FreeFireApkHeroButton;
   groupLabel?: string;
+  /** When set, APK button clicks increment this page’s download counter. */
+  downloadCountPageKey?: string;
 };
 
 /**
@@ -68,6 +79,7 @@ export function FreeFireApkHeroActions({
   playStore,
   apk,
   groupLabel = "Free Fire download options",
+  downloadCountPageKey,
 }: Props) {
   const showCountdown = Boolean(countdown.visible && countdown.targetIso.trim());
   // Start false so SSR + first client paint match; sync after mount (avoids React #418).
@@ -83,6 +95,9 @@ export function FreeFireApkHeroActions({
 
   const showPlay = !ticking && isFreeFireApkHeroButtonPublic(playStore);
   const showApk = !ticking && isFreeFireApkHeroButtonPublic(apk);
+  const onApkClick = downloadCountPageKey
+    ? () => trackApkDownloadClick(downloadCountPageKey)
+    : undefined;
 
   return (
     <>
@@ -107,6 +122,7 @@ export function FreeFireApkHeroActions({
               btn={apk}
               className="ff-as-apk-btn ff-as-apk-btn--alt"
               icon="fa-download"
+              onNavigate={onApkClick}
             />
           ) : null}
         </div>

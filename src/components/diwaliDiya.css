@@ -1,0 +1,140 @@
+/* Shared Diwali diya — rests on a card top border; click toggles flame */
+
+.diya {
+  position: absolute;
+  top: 0;
+  width: 48px;
+  height: 54px;
+  z-index: 5;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  appearance: none;
+  -webkit-appearance: none;
+  cursor: pointer;
+  touch-action: manipulation;
+  pointer-events: auto;
+  /* Soft even aura — same feel top + bottom, dim, slight spread */
+  filter:
+    drop-shadow(0 -6px 10px rgba(255, 248, 220, 0.16))
+    drop-shadow(0 6px 10px rgba(255, 248, 220, 0.16))
+    drop-shadow(0 0 18px rgba(253, 230, 138, 0.14))
+    drop-shadow(0 0 28px rgba(251, 191, 36, 0.1));
+  transition: filter 0.35s ease, opacity 0.35s ease;
+}
+
+.diya:focus-visible {
+  outline: 2px solid rgba(251, 191, 36, 0.85);
+  outline-offset: 3px;
+}
+
+.diya svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+
+/* Base of the bowl sits on the top border; flame sticks above */
+.diya--left {
+  left: 2px;
+  transform: translateY(-88%);
+}
+
+.diya--right {
+  right: 2px;
+  transform: translateY(-88%) scaleX(-1);
+}
+
+.diya-flame,
+.diya-flame-core,
+.diya-glow {
+  transform-origin: 32px 40px;
+  animation: diya-flicker 1.35s ease-in-out infinite;
+  transition: opacity 0.35s ease;
+}
+
+.diya--right .diya-flame,
+.diya--right .diya-flame-core,
+.diya--right .diya-glow {
+  animation-delay: 0.45s;
+}
+
+/* Extinguished — bowl stays, flame + aura go out */
+.diya.is-out {
+  filter: drop-shadow(0 1px 3px rgba(0, 0, 0, 0.45));
+  opacity: 0.92;
+}
+
+.diya.is-out .diya-flame,
+.diya.is-out .diya-flame-core,
+.diya.is-out .diya-glow {
+  opacity: 0 !important;
+  animation: none;
+}
+
+@keyframes diya-flicker {
+  0%,
+  100% {
+    transform: scale(1) translateY(0);
+    opacity: 1;
+  }
+  40% {
+    transform: scale(1.06, 0.94) translateY(-1px);
+    opacity: 0.92;
+  }
+  70% {
+    transform: scale(0.96, 1.05) translateY(0.5px);
+    opacity: 1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .diya-flame,
+  .diya-flame-core,
+  .diya-glow {
+    animation: none;
+  }
+}
+
+@media (min-width: 768px) {
+  .diya {
+    width: 56px;
+    height: 64px;
+  }
+
+  .diya--left {
+    left: 4px;
+  }
+
+  .diya--right {
+    right: 4px;
+  }
+}
+
+/* Host cards — extra top space only while diyas are on (flag off = normal layout) */
+.ff-patch-strip--diwali,
+.ffc-card--diwali,
+.calc-card--diwali,
+.ff-next--diwali,
+.gta6-form--diwali {
+  margin-top: 28px;
+  overflow: visible;
+}
+
+.ff-patch-strip--diwali .ff-patch-strip-inner,
+.ffc-form-col--diwali,
+.calc-card--diwali,
+.ff-next--diwali .ff-next-card,
+.gta6-form--diwali {
+  position: relative;
+  overflow: visible;
+}
+
+.gta6-form--diwali {
+  padding: 18px 16px;
+  border: 1px solid rgba(255, 178, 198, 0.45);
+  border-radius: 14px;
+  box-sizing: border-box;
+}

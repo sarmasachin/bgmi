@@ -16,6 +16,7 @@ import {
   playerRoleOptions,
   ramOptions,
 } from "./constants";
+import { DiwaliCardDiyas, withDiwaliClass } from "@/src/components/DiwaliCardDiyas";
 import { resolveLockedPhone, searchPhones } from "@/src/lib/calculatorPhoneBrand";
 
 type FormState = {
@@ -97,12 +98,13 @@ export function SensCalculator({ phoneModels, game = "bgmi", phoneBrand }: Props
   return (
     <div className="main-wrapper">
       <form
-        className="calc-card"
+        className={withDiwaliClass("calc-card", "calc-card--diwali")}
         onSubmit={(e) => {
           e.preventDefault();
           runCalculate();
         }}
       >
+        <DiwaliCardDiyas />
         <div className="form-group">
           <label htmlFor="modelSearch">Search phone model</label>
           <input

@@ -32,6 +32,7 @@ import {
 import { toCanonicalUrl } from "@/src/lib/siteUrl";
 import { getFreeFireApkPage } from "@/src/server/repositories/freeFireApkPageRepository";
 import { getFreeFireIndiaApkPage } from "@/src/server/repositories/freeFireIndiaApkPageRepository";
+import { getApkDownloadCount } from "@/src/server/repositories/apkDownloadCountRepository";
 import {
   getRatingSummary,
   type RatingSummary,
@@ -49,6 +50,7 @@ type LandingData = {
   page: FreeFireApkPageContent;
   pageComments: PublicPageComment[];
   ratingSummary: RatingSummary | null;
+  downloadCount: number;
 };
 
 const LANDING_META = {
@@ -77,12 +79,14 @@ const LANDING_META = {
 /** Isolate data failures so comments/CMS cannot blank the whole page. */
 async function loadLandingData(variant: ApkLandingVariant): Promise<LandingData> {
   const meta = LANDING_META[variant];
-  const [settingsResult, pageResult, commentsResult, ratingResult] = await Promise.allSettled([
-    getSettings(),
-    variant === "india" ? getFreeFireIndiaApkPage() : getFreeFireApkPage(),
-    listApprovedPageComments(meta.pageKey),
-    getRatingSummary("tool", meta.pageKey),
-  ]);
+  const [settingsResult, pageResult, commentsResult, ratingResult, downloadResult] =
+    await Promise.allSettled([
+      getSettings(),
+      variant === "india" ? getFreeFireIndiaApkPage() : getFreeFireApkPage(),
+      listApprovedPageComments(meta.pageKey),
+      getRatingSummary("tool", meta.pageKey),
+      variant === "india" ? getApkDownloadCount(meta.pageKey) : Promise.resolve(0),
+    ]);
 
   if (settingsResult.status === "rejected") {
     throw settingsResult.reason instanceof Error
@@ -97,12 +101,14 @@ async function loadLandingData(variant: ApkLandingVariant): Promise<LandingData>
     page: pageResult.status === "fulfilled" ? pageResult.value : fallback,
     pageComments: commentsResult.status === "fulfilled" ? commentsResult.value : [],
     ratingSummary: ratingResult.status === "fulfilled" ? ratingResult.value : null,
+    downloadCount: downloadResult.status === "fulfilled" ? downloadResult.value : 0,
   };
 }
 
 async function FreeFireStyleApkLanding({ variant }: { variant: ApkLandingVariant }) {
   const meta = LANDING_META[variant];
-  const { settings, pageComments, page, ratingSummary } = await loadLandingData(variant);
+  const { settings, pageComments, page, ratingSummary, downloadCount } =
+    await loadLandingData(variant);
   const canonical = toCanonicalUrl(page.path || meta.path);
   const homeUrl = toCanonicalUrl("/");
   const ogImageAbs = toCanonicalUrl(page.heroImage || "/icon.png?v=3");
@@ -166,7 +172,11 @@ async function FreeFireStyleApkLanding({ variant }: { variant: ApkLandingVariant
         </ul>
 
         {variant === "india" ? (
-          <FreeFireIndiaApkIntro page={page} ratingSummary={ratingSummary} />
+          <FreeFireIndiaApkIntro
+            page={page}
+            ratingSummary={ratingSummary}
+            downloadCount={downloadCount}
+          />
         ) : null}
 
         <FreeFireApkHeroActions
@@ -174,6 +184,7 @@ async function FreeFireStyleApkLanding({ variant }: { variant: ApkLandingVariant
           playStore={page.heroButtons.playStore}
           apk={page.heroButtons.apk}
           groupLabel={meta.downloadLabel}
+          downloadCountPageKey={variant === "india" ? meta.pageKey : undefined}
         />
         <HomeTitleDummyAd slotKey="apk_below_actions" />
 

@@ -1,0 +1,32 @@
+---
+description: Diwali diyas — remove after festival without breaking site layout
+alwaysApply: true
+---
+
+# Diwali decorations (layout-safe)
+
+Diyas sit on **top border corners** of:
+
+**Update boxes**
+- `FfPatchStrip` (OB update strip — home / Max / lite pages via games layout)
+- `FfNextUpdateCard` (next-update teaser card)
+
+**Calculators**
+- `FfCalculator` (Free Fire / Max form card)
+- `SensCalculator` (BGMI / PUBG calc-card)
+- `LiteSensCalculator` (BGMI Air / PUBG Flash calc-card)
+- `Gta6Calculator` (GTA 6 form shell)
+
+Shared UI: `DiwaliCardDiyas` + `SHOW_DIWALI_DIYAS` in `src/lib/diwaliDecor.ts`.
+
+## After Diwali — same website layout
+
+1. Set `SHOW_DIWALI_DIYAS = false` in `src/lib/diwaliDecor.ts`.
+2. That turns off **all** diyas and drops `--diwali` extra top margin everywhere.
+3. Do **not** bake Diwali-only spacing into default card/strip rules.
+4. Optional cleanup: delete `DiwaliDiya.tsx`, `DiwaliCardDiyas.tsx`, `diwaliDiya.css`, `diwaliDecor.ts`, and `--diwali` CSS.
+
+## Never
+
+- Put diyas on only one calculator/update box while leaving others bare (unless user asks).
+- Leave permanent margin after turning the flag off.

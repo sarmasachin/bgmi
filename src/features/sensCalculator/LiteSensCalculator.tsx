@@ -17,6 +17,7 @@ import {
   liteRamOptions,
 } from "./liteConstants";
 import type { LiteCalcBrand } from "@/src/lib/gamePagePath";
+import { DiwaliCardDiyas, withDiwaliClass } from "@/src/components/DiwaliCardDiyas";
 import { resolveLockedPhone, searchPhones } from "@/src/lib/calculatorPhoneBrand";
 import {
   LITE_SET_PLAY_STYLE_EVENT,
@@ -137,12 +138,13 @@ export function LiteSensCalculator({ phoneModels, brand = "bgmi-lite", banner, p
 
       <div className="main-wrapper">
         <form
-          className="calc-card"
+          className={withDiwaliClass("calc-card", "calc-card--diwali")}
           onSubmit={(e) => {
             e.preventDefault();
             runCalculate();
           }}
         >
+          <DiwaliCardDiyas />
           <div className="form-group">
             <label htmlFor="liteModelSearch">Phone model</label>
             <input
