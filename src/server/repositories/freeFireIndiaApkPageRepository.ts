@@ -2,6 +2,7 @@ import { type FreeFireApkPageContent } from "@/src/lib/freeFireApkPage";
 import { DEFAULT_FREE_FIRE_INDIA_APK_PAGE } from "@/src/lib/freeFireIndiaApkPage";
 import { normalizeFreeFireApkPage } from "@/src/lib/freeFireApkPageNormalize";
 import { prisma, tryPrismaLong } from "@/src/server/dbSafe";
+import { releaseReplacedApkFiles } from "@/src/server/media/apkPublishedFiles";
 import { bumpSitemapLastmod } from "@/src/server/repositories/sitemapLastmodRepository";
 
 export const FREE_FIRE_INDIA_APK_SETTING_KEY = "settings:freeFireIndiaApkPage";
@@ -43,6 +44,7 @@ export async function getFreeFireIndiaApkPageForAdmin(): Promise<{
 export async function saveFreeFireIndiaApkPage(
   raw: unknown,
 ): Promise<{ page: FreeFireApkPageContent; usingDefault: boolean }> {
+  const previous = await getFreeFireIndiaApkPage();
   const page = normalizeIndia(raw);
   const saved = await tryPrismaLong(async () => {
     await prisma.siteSetting.upsert({
@@ -54,6 +56,7 @@ export async function saveFreeFireIndiaApkPage(
   });
   if (saved === null && process.env.DATABASE_URL) throw new Error("DB_UNAVAILABLE");
   bumpSitemapLastmod(["/free-fire-india-apk"]);
+  await releaseReplacedApkFiles(previous, page);
   return { page, usingDefault: false };
 }
 
@@ -61,11 +64,13 @@ export async function clearFreeFireIndiaApkPage(): Promise<{
   page: FreeFireApkPageContent;
   usingDefault: boolean;
 }> {
+  const previous = await getFreeFireIndiaApkPage();
   const deleted = await tryPrismaLong(async () => {
     await prisma.siteSetting.deleteMany({ where: { key: FREE_FIRE_INDIA_APK_SETTING_KEY } });
     return true;
   });
   if (deleted === null && process.env.DATABASE_URL) throw new Error("DB_UNAVAILABLE");
   bumpSitemapLastmod(["/free-fire-india-apk"]);
+  await releaseReplacedApkFiles(previous, DEFAULT_FREE_FIRE_INDIA_APK_PAGE);
   return { page: DEFAULT_FREE_FIRE_INDIA_APK_PAGE, usingDefault: true };
 }

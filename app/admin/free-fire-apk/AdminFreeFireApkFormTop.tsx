@@ -1,5 +1,6 @@
 "use client";
 
+import { AdminApkFileUpload } from "@/src/components/admin/AdminApkFileUpload";
 import {
   freeFireApkHeroButtonPublicStatus,
   type FreeFireApkPageContent,
@@ -89,6 +90,13 @@ export function AdminFreeFireApkFormTop({ page, openIds, onToggle, onPatch }: Pr
           value={page.heroImageAlt}
           onChange={(heroImageAlt) => onPatch((p) => ({ ...p, heroImageAlt }))}
         />
+        <AdminField
+          label="Listing date line (under app name — e.g. Oct 28, 2026)"
+          value={page.countdown.dateText}
+          onChange={(dateText) =>
+            onPatch((p) => ({ ...p, countdown: { ...p.countdown, dateText } }))
+          }
+        />
       </AdminAccordionSection>
 
       <AdminAccordionSection
@@ -99,8 +107,8 @@ export function AdminFreeFireApkFormTop({ page, openIds, onToggle, onPatch }: Pr
       >
         <p style={{ margin: "0 0 12px", fontSize: 12, color: "#94a3b8", lineHeight: 1.45 }}>
           Public page shows a button only if Show is on, label is filled, and URL is filled.
-          We do not host APK files — paste the link you want. Check the yellow/green status under
-          each button before saving.
+          Upload an APK file (max 1GB) and the URL fills in, or paste your own link. Check the
+          yellow/green status under each button before saving.
         </p>
         <strong style={{ display: "block", color: "#e2e8f0", marginBottom: 8 }}>Play Store</strong>
         <HeroButtonStatus btn={page.heroButtons.playStore} countdown={page.countdown} />
@@ -166,6 +174,14 @@ export function AdminFreeFireApkFormTop({ page, openIds, onToggle, onPatch }: Pr
             }))
           }
         />
+        <AdminApkFileUpload
+          onUploaded={(href) =>
+            onPatch((p) => ({
+              ...p,
+              heroButtons: { ...p.heroButtons, apk: { ...p.heroButtons.apk, href } },
+            }))
+          }
+        />
       </AdminAccordionSection>
 
       <AdminAccordionSection
@@ -199,9 +215,8 @@ export function AdminFreeFireApkFormTop({ page, openIds, onToggle, onPatch }: Pr
           }
         />
         <AdminField
-          label="Date line under countdown"
+          label="Date line (same as Hero listing date — also under countdown)"
           value={page.countdown.dateText}
-          multiline
           onChange={(dateText) =>
             onPatch((p) => ({ ...p, countdown: { ...p.countdown, dateText } }))
           }

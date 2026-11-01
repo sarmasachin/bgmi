@@ -134,11 +134,11 @@ export async function middleware(request: NextRequest) {
 export const config = {
   matcher: [
     "/admin/:path*",
-    "/api/admin/:path*",
+    "/api/admin/:path((?!apk-file$).*)",
     /*
      * Public pages: attach X-Robots-Tag on ?preview=1 so draft preview URLs stay unindexed.
      * Skip Next internals and static files.
      */
-    "/((?!_next/static|_next/image|favicon.ico|.*\\..*).*)",
+    "/((?!_next/static|_next/image|favicon.ico|api/admin/apk-file|.*\\..*).*)",
   ],
 };

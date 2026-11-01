@@ -46,3 +46,5 @@ next-env.d.ts
 # user uploads (keep folder locally, do not commit media)
 /public/uploads/*
 !/public/uploads/.gitkeep
+/storage/apk-files/*
+!/storage/apk-files/.gitkeep

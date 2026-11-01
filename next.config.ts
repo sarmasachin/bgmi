@@ -23,7 +23,7 @@ if (process.env.NODE_ENV === "production") {
 }
 
 const nextConfig: NextConfig = {
-  distDir: ".next",
+  distDir: process.env.NEXT_DIST_DIR || ".next",
   // Production deploys must not fail/stall on lint warnings.
   eslint: { ignoreDuringBuilds: true },
   typescript: { ignoreBuildErrors: true },

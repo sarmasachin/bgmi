@@ -100,6 +100,11 @@ export const DEFAULT_FREE_FIRE_INDIA_APK_PAGE: FreeFireApkPageContent = (() => {
   const page = toFreeFireIndiaApkPage(DEFAULT_FREE_FIRE_APK_PAGE);
   return {
     ...page,
+    countdown: {
+      ...page.countdown,
+      // Public listing shows this under the app name; set from admin Hero.
+      dateText: "",
+    },
     heroButtons: {
       ...page.heroButtons,
       playStore: {

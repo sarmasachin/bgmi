@@ -75,3 +75,13 @@ export function isAdminMutationOriginAllowed(request: NextRequest): boolean {
 
   return false;
 }
+
+/** True when the browser says the click came from this site. Direct links have no Referer. */
+export function isOwnSiteReferer(referer: string | null, requestHost: string | null): boolean {
+  if (!referer) return false;
+  const refererHost = hostFromUrl(referer);
+  if (!refererHost) return false;
+  const expected = expectedSiteHosts();
+  if (requestHost) expected.push(requestHost);
+  return expected.some((host) => hostsMatch(refererHost, host));
+}

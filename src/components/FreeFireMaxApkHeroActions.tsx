@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useEffect, useState, type ReactNode } from "react";
 import { ClientErrorBoundary } from "@/src/components/ClientErrorBoundary";
 import { FfAdvanceServerCountdown } from "@/src/components/FfAdvanceServerCountdown";
+import { isHostedApkFileHref } from "@/src/lib/apkHeroCta";
 import {
   isFreeFireMaxApkCountdownTicking,
   isFreeFireMaxApkHeroButtonPublic,
@@ -22,12 +23,20 @@ function HeroCtaLink({
 }) {
   const href = btn.href.trim();
   const external = /^https?:\/\//i.test(href);
+  const hostedFile = isHostedApkFileHref(href);
   const inner: ReactNode = (
     <>
       <i className={`fa-solid ${icon}`} aria-hidden />
       <span>{btn.label}</span>
     </>
   );
+  if (hostedFile) {
+    return (
+      <a className={className} href={href} download>
+        {inner}
+      </a>
+    );
+  }
   if (external) {
     return (
       <a className={className} href={href} target="_blank" rel="noopener noreferrer">

@@ -14,6 +14,11 @@ export type ApkHeroCountdown = {
   liveMessage: string;
 };
 
+/** Uploaded APK/XAPK/APKS/ZIP served from /apk-files/. */
+export function isHostedApkFileHref(href: string): boolean {
+  return /\/apk-files\/[^/?#]+\.(apk|xapk|apks|zip)(?:$|[?#])/i.test(href.trim());
+}
+
 /** Public page shows a hero CTA only when Show is on, label and URL are both set. */
 export function isApkHeroButtonPublic(btn: ApkHeroButton): boolean {
   return btn.visible && Boolean(btn.label.trim()) && Boolean(btn.href.trim());

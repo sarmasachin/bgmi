@@ -7,6 +7,7 @@ import { HomeTitleDummyAd } from "@/src/components/HomeTitleDummyAd";
 import { PageCommentSection } from "@/src/components/PageCommentSection";
 import { RatingWidget } from "@/src/components/RatingWidget";
 import { FreeFireApkHeroActions } from "@/src/components/FreeFireApkHeroActions";
+import { FreeFireIndiaApkIntro } from "@/src/components/FreeFireIndiaApkIntro";
 import { SiteFooter } from "@/src/components/SiteFooter";
 import {
   DEFAULT_FREE_FIRE_APK_PAGE,
@@ -163,6 +164,10 @@ async function FreeFireStyleApkLanding({ variant }: { variant: ApkLandingVariant
             </li>
           ))}
         </ul>
+
+        {variant === "india" ? (
+          <FreeFireIndiaApkIntro page={page} ratingSummary={ratingSummary} />
+        ) : null}
 
         <FreeFireApkHeroActions
           countdown={page.countdown}

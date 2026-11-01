@@ -405,6 +405,13 @@ export function resolveAdminApiPermission(
     return { type: "permission", permission: "ads.edit" };
   }
 
+  if (path.startsWith("/api/admin/apk-file")) {
+    return {
+      type: "any",
+      permissions: ["freeFireApk.edit", "freeFireIndiaApk.edit", "freeFireMaxApk.edit"],
+    };
+  }
+
   if (path.startsWith("/api/admin/media")) {
     if (isRead) return { type: "permission", permission: "media.view" };
     if (isDelete) return { type: "permission", permission: "media.delete" };

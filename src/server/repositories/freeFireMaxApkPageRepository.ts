@@ -1,6 +1,7 @@
 import { DEFAULT_FREE_FIRE_MAX_APK_PAGE, type FreeFireMaxApkPageContent } from "@/src/lib/freeFireMaxApkPage";
 import { normalizeFreeFireMaxApkPage } from "@/src/lib/freeFireMaxApkPageNormalize";
 import { prisma, tryPrismaLong } from "@/src/server/dbSafe";
+import { releaseReplacedApkFiles } from "@/src/server/media/apkPublishedFiles";
 import { bumpSitemapLastmod } from "@/src/server/repositories/sitemapLastmodRepository";
 
 export const FREE_FIRE_MAX_APK_SETTING_KEY = "settings:freeFireMaxApkPage";
@@ -34,6 +35,7 @@ export async function getFreeFireMaxApkPageForAdmin(): Promise<{
 export async function saveFreeFireMaxApkPage(
   raw: unknown,
 ): Promise<{ page: FreeFireMaxApkPageContent; usingDefault: boolean }> {
+  const previous = await getFreeFireMaxApkPage();
   const page = normalizeFreeFireMaxApkPage(raw);
   const saved = await tryPrismaLong(async () => {
     await prisma.siteSetting.upsert({
@@ -45,6 +47,7 @@ export async function saveFreeFireMaxApkPage(
   });
   if (saved === null && process.env.DATABASE_URL) throw new Error("DB_UNAVAILABLE");
   bumpSitemapLastmod(["/free-fire-max-apk"]);
+  await releaseReplacedApkFiles(previous, page);
   return { page, usingDefault: false };
 }
 
@@ -52,11 +55,13 @@ export async function clearFreeFireMaxApkPage(): Promise<{
   page: FreeFireMaxApkPageContent;
   usingDefault: boolean;
 }> {
+  const previous = await getFreeFireMaxApkPage();
   const deleted = await tryPrismaLong(async () => {
     await prisma.siteSetting.deleteMany({ where: { key: FREE_FIRE_MAX_APK_SETTING_KEY } });
     return true;
   });
   if (deleted === null && process.env.DATABASE_URL) throw new Error("DB_UNAVAILABLE");
   bumpSitemapLastmod(["/free-fire-max-apk"]);
+  await releaseReplacedApkFiles(previous, DEFAULT_FREE_FIRE_MAX_APK_PAGE);
   return { page: DEFAULT_FREE_FIRE_MAX_APK_PAGE, usingDefault: true };
 }
