@@ -56,7 +56,8 @@ type Props = {
  */
 export function ApkHeroDownloadActions({ countdown, playStore, apk, groupLabel }: Props) {
   const showCountdown = Boolean(countdown.visible && countdown.targetIso.trim());
-  const [ticking, setTicking] = useState(() => isApkCountdownTicking(countdown));
+  // Start false so SSR + first client paint match; sync after mount (avoids React #418).
+  const [ticking, setTicking] = useState(false);
 
   useEffect(() => {
     const sync = () => setTicking(isApkCountdownTicking(countdown));

@@ -38,14 +38,15 @@ export function FfAdvanceServerCountdown({
   liveMessage = "Advance Server is open — check the publisher portal",
 }: Props) {
   const targetMs = Date.parse(targetIso);
-  const [parts, setParts] = useState<Parts | null>(() =>
-    Number.isFinite(targetMs) ? splitRemaining(targetMs - Date.now()) : null,
-  );
+  // null until mount so SSR HTML matches the first client paint (avoids React #418).
+  const [parts, setParts] = useState<Parts | null>(null);
+  const [ready, setReady] = useState(false);
 
   useEffect(() => {
     if (!Number.isFinite(targetMs)) return;
     const tick = () => setParts(splitRemaining(targetMs - Date.now()));
     tick();
+    setReady(true);
     const id = window.setInterval(tick, 1000);
     return () => window.clearInterval(id);
   }, [targetMs]);
@@ -55,29 +56,36 @@ export function FfAdvanceServerCountdown({
   return (
     <div className="ff-as-countdown">
       <p className="ff-as-countdown-label">{label}</p>
-      {parts ? (
-        <div className="ff-as-countdown-units">
-          <span className="ff-as-countdown-unit">
-            <strong suppressHydrationWarning>{pad(parts.days)}</strong>
-            <span>Days</span>
-          </span>
-          <span className="ff-as-countdown-unit">
-            <strong suppressHydrationWarning>{pad(parts.hours)}</strong>
-            <span>Hours</span>
-          </span>
-          <span className="ff-as-countdown-unit">
-            <strong suppressHydrationWarning>{pad(parts.minutes)}</strong>
-            <span>Mins</span>
-          </span>
-          <span className="ff-as-countdown-unit">
-            <strong suppressHydrationWarning>{pad(parts.seconds)}</strong>
-            <span>Secs</span>
-          </span>
-        </div>
+      {!ready ? (
+        <p className="ff-as-countdown-date">{dateText}</p>
+      ) : parts ? (
+        <>
+          <div className="ff-as-countdown-units">
+            <span className="ff-as-countdown-unit">
+              <strong>{pad(parts.days)}</strong>
+              <span>Days</span>
+            </span>
+            <span className="ff-as-countdown-unit">
+              <strong>{pad(parts.hours)}</strong>
+              <span>Hours</span>
+            </span>
+            <span className="ff-as-countdown-unit">
+              <strong>{pad(parts.minutes)}</strong>
+              <span>Mins</span>
+            </span>
+            <span className="ff-as-countdown-unit">
+              <strong>{pad(parts.seconds)}</strong>
+              <span>Secs</span>
+            </span>
+          </div>
+          <p className="ff-as-countdown-date">{dateText}</p>
+        </>
       ) : (
-        <p className="ff-as-countdown-live">{liveMessage}</p>
+        <>
+          <p className="ff-as-countdown-live">{liveMessage}</p>
+          <p className="ff-as-countdown-date">{dateText}</p>
+        </>
       )}
-      <p className="ff-as-countdown-date">{dateText}</p>
     </div>
   );
 }

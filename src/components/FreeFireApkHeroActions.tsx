@@ -70,7 +70,8 @@ export function FreeFireApkHeroActions({
   groupLabel = "Free Fire download options",
 }: Props) {
   const showCountdown = Boolean(countdown.visible && countdown.targetIso.trim());
-  const [ticking, setTicking] = useState(() => isFreeFireApkCountdownTicking(countdown));
+  // Start false so SSR + first client paint match; sync after mount (avoids React #418).
+  const [ticking, setTicking] = useState(false);
 
   useEffect(() => {
     const sync = () => setTicking(isFreeFireApkCountdownTicking(countdown));

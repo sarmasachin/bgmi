@@ -13,7 +13,8 @@ module.exports = {
       exec_mode: "fork",
       autorestart: true,
       watch: false,
-      max_memory_restart: "512M",
+      // APK admin upload buffers into Node; 512M killed the process mid-upload (502 / reset).
+      max_memory_restart: "2G",
       env: {
         NODE_ENV: "production",
         PORT: "3001",

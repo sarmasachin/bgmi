@@ -27,10 +27,12 @@ export function FreeFireIndiaApkIntro({
     page.heroTitle.replace(/\s+APK$/i, "").trim() ||
     "Free Fire India";
   const publisher =
-    factValue(page.facts.rows, /publisher/i) || "Garena International III";
+    factValue(page.facts.rows, /publisher/i) || "Garena International I Private Limited";
   const rawDate = page.countdown.dateText.trim();
   // Hide the old admin-instruction placeholder if it was saved as page content.
   const dateText = /set the official update date in admin/i.test(rawDate) ? "" : rawDate;
+  const downloadCount =
+    factValue(page.facts.rows, /^downloads?$|download\s*count/i) || "3K+";
   const fileSize = factValue(page.facts.rows, /file\s*size/i) || "389.7 MB";
   const androidOs =
     factValue(page.facts.rows, /android\s*os|^android$/i) || "Android 5.0+";
@@ -51,6 +53,7 @@ export function FreeFireIndiaApkIntro({
         <div className={styles.copy}>
           <p className={styles.title}>{title}</p>
           {publisher ? <p className={styles.publisher}>{publisher}</p> : null}
+          <p className={styles.lastUpdateLabel}>Last update</p>
           {dateText ? <p className={styles.date}>{dateText}</p> : null}
         </div>
       </div>
@@ -65,6 +68,13 @@ export function FreeFireIndiaApkIntro({
             <span className={styles.label}>{rating.label}</span>
           </li>
         ) : null}
+        <li className={styles.detail}>
+          <span className={`${styles.value} ${styles.downloadValue}`}>
+            <i className={`fa-solid fa-download ${styles.downloadIcon}`} aria-hidden />
+            {downloadCount}
+          </span>
+          <span className={styles.label}>Download</span>
+        </li>
         <li className={styles.detail}>
           <span className={styles.value}>{fileSize}</span>
           <span className={styles.label}>File Size</span>
