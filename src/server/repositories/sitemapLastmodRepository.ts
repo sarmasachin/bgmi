@@ -81,7 +81,7 @@ export async function getSitemapLastmodMap(): Promise<Map<string, Date>> {
     ),
     tryPrismaLong(async () =>
       prisma.legalPage.findMany({
-        where: { slug: { in: ["privacy", "terms", "disclaimer"] } },
+        where: { slug: { in: ["privacy", "terms", "disclaimer", "dmca", "about-us"] } },
         select: { slug: true, updatedAt: true },
       }),
     ),

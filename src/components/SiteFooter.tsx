@@ -18,9 +18,11 @@ const FALLBACK_COPYRIGHT = "© 2026 Sensitivity Settings. All rights reserved.";
 type SiteFooterProps = {
   /** When provided (e.g. homepage), skips a duplicate getSettings() round-trip. */
   settings?: SiteSettings;
+  /** Copyright bar only. Brand, Explore, and Resources stay off. */
+  bottomOnly?: boolean;
 };
 
-export async function SiteFooter({ settings: settingsProp }: SiteFooterProps = {}) {
+export async function SiteFooter({ settings: settingsProp, bottomOnly = false }: SiteFooterProps = {}) {
   const settings = settingsProp ?? (await getSettings());
   const copyrightLine = (settings.footerCopyright || "").trim() || FALLBACK_COPYRIGHT;
   const { brandTitle, tagline } = settings.footerBranding;
@@ -77,11 +79,29 @@ export async function SiteFooter({ settings: settingsProp }: SiteFooterProps = {
   })();
 
   const bottomLinks = resourceLinks.filter((item) =>
-    /^(privacy|terms|disclaimer|contact|news|sitemap)$/i.test(item.label.trim()),
+    /^(privacy|terms|disclaimer|dmca|about\s*us|contact|news|sitemap)$/i.test(item.label.trim()),
   );
 
+  if (bottomOnly) {
+    return (
+      <footer className="site-footer-bottom">
+        <div className="site-footer-bottom-inner">
+          <p className="site-footer-copyright">{copyrightLine}</p>
+          <div className="site-footer-bottom-links">
+            {bottomLinks.map((page) => (
+              <Link key={page.href} href={page.href} className="site-footer-bottom-link">
+                {page.label}
+              </Link>
+            ))}
+          </div>
+        </div>
+      </footer>
+    );
+  }
+
   const resourcesColumnLinks = resourceLinks.filter(
-    (item) => !/^(privacy|terms|disclaimer|contact|sitemap)$/i.test(item.label.trim()),
+    (item) =>
+      !/^(privacy|terms|disclaimer|dmca|about\s*us|contact|sitemap)$/i.test(item.label.trim()),
   );
 
   return (

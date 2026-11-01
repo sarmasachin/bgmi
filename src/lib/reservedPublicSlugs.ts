@@ -3,6 +3,7 @@
 export const RESERVED_PUBLIC_SLUGS = new Set([
   "admin",
   "api",
+  "apk-files",
   "contact",
   "news",
   "bgmi",
@@ -40,6 +41,8 @@ export const RESERVED_PUBLIC_SLUGS = new Set([
   "privacy",
   "terms",
   "disclaimer",
+  "dmca",
+  "about-us",
   "legal",
   "sitemap",
   "robots",
@@ -49,6 +52,7 @@ export const RESERVED_PUBLIC_SLUGS = new Set([
   "free-fire-sensitivity-settings-calculator",
   "free-fire-max-sensitivity-settings-calculator",
   "free-fire-advance-server",
+  "gta-6-sensitivity-settings-calculator",
 ]);
 
 export function firstPublicSlugSegment(slug: string): string {

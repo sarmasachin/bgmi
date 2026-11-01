@@ -36,7 +36,13 @@ export function gameContentToSitemapPath(game: string): string | null {
 
 export function legalSlugToSitemapPath(slug: string): string | null {
   const cleaned = slug.trim().replace(/^\/+|\/+$/g, "").toLowerCase();
-  if (cleaned === "privacy" || cleaned === "terms" || cleaned === "disclaimer") {
+  if (
+    cleaned === "privacy" ||
+    cleaned === "terms" ||
+    cleaned === "disclaimer" ||
+    cleaned === "dmca" ||
+    cleaned === "about-us"
+  ) {
     return `/${cleaned}`;
   }
   if (!cleaned) return null;
@@ -143,11 +149,14 @@ export const SITEMAP_STATIC_PATHS = [
   "/pubg-mobile-codes",
   "/free-fire-max-sensitivity-settings-calculator",
   "/free-fire-advance-server",
+  "/gta-6-sensitivity-settings-calculator",
   "/news",
   "/privacy",
   "/terms",
   "/contact",
   "/disclaimer",
+  "/dmca",
+  "/about-us",
 ] as const;
 
 /** Sitemap lastmod in IST so Google/GSC date matches India (not UTC yesterday). */

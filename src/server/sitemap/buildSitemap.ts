@@ -74,6 +74,8 @@ export async function buildPageSitemapEntries(): Promise<SitemapUrlEntry[]> {
     row(baseUrl, "/terms", lastmod("/terms")),
     row(baseUrl, "/contact", lastmod("/contact")),
     row(baseUrl, "/disclaimer", lastmod("/disclaimer")),
+    row(baseUrl, "/dmca", lastmod("/dmca")),
+    row(baseUrl, "/about-us", lastmod("/about-us")),
   ];
 
   const seen = new Set(staticEntries.map((e) => e.loc));
@@ -85,7 +87,16 @@ export async function buildPageSitemapEntries(): Promise<SitemapUrlEntry[]> {
   const extraLegal: SitemapUrlEntry[] = [];
   for (const item of legalRows) {
     const path = legalSlugToSitemapPath(item.slug);
-    if (!path || path === "/privacy" || path === "/terms" || path === "/disclaimer") continue;
+    if (
+      !path ||
+      path === "/privacy" ||
+      path === "/terms" ||
+      path === "/disclaimer" ||
+      path === "/dmca" ||
+      path === "/about-us"
+    ) {
+      continue;
+    }
     const loc = `${baseUrl}${path}`;
     if (seen.has(loc)) continue;
     seen.add(loc);

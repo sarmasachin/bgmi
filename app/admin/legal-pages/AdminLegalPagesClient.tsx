@@ -382,6 +382,8 @@ export default function AdminLegalPagesClient({ initialRows }: Props) {
                 <option value="privacy">privacy</option>
                 <option value="terms">terms</option>
                 <option value="disclaimer">disclaimer</option>
+                <option value="dmca">dmca</option>
+                <option value="about-us">about-us</option>
                 <option value="__custom__">Custom slug…</option>
               </select>
             </label>

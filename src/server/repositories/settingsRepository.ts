@@ -72,6 +72,8 @@ const defaultSettings = {
     { label: "Privacy", href: "/privacy" },
     { label: "Terms", href: "/terms" },
     { label: "Disclaimer", href: "/disclaimer" },
+    { label: "DMCA", href: "/dmca" },
+    { label: "About Us", href: "/about-us" },
     { label: "Contact", href: "/contact" },
     { label: "News", href: "/news" },
     { label: "Sitemap", href: "/sitemap.xml" },
@@ -157,6 +159,31 @@ function parseLinkList(
   return out.length ? out : fallback;
 }
 
+/** Keep DMCA + About Us visible even when an older footerLinks list is saved in DB. */
+function ensureFooterLegalLinks(
+  links: Array<{ label: string; href: string }>,
+): Array<{ label: string; href: string }> {
+  const extras = [
+    { label: "DMCA", href: "/dmca" },
+    { label: "About Us", href: "/about-us" },
+  ];
+  let out = [...links];
+  for (const extra of extras) {
+    const exists = out.some(
+      (item) =>
+        item.href.replace(/\/+$/, "") === extra.href ||
+        new RegExp(`^${extra.label.replace(/\s+/g, "\\s+")}$`, "i").test(item.label.trim()),
+    );
+    if (exists) continue;
+    const contactIdx = out.findIndex(
+      (item) => /^contact$/i.test(item.label.trim()) || item.href.replace(/\/+$/, "") === "/contact",
+    );
+    const at = contactIdx >= 0 ? contactIdx : out.length;
+    out = [...out.slice(0, at), extra, ...out.slice(at)];
+  }
+  return out;
+}
+
 function parseFooterBrandingValue(raw: unknown): { brandTitle: string; tagline: string } {
   const obj = raw && typeof raw === "object" ? (raw as Record<string, unknown>) : {};
   return {
@@ -201,13 +228,15 @@ export const getSettings = cache(async function getSettings() {
         ),
       ),
     ),
-    footerLinks: parseLinkList(map[SETTINGS_KEYS.footerLinks], defaultSettings.footerLinks).filter(
-      (item) =>
-        !/report\s*issue/i.test(item.label) &&
-        !/^feedback$/i.test(item.label) &&
-        !/topic=report/i.test(item.href) &&
-        !/topic=feedback/i.test(item.href) &&
-        !/report-issue/i.test(item.href),
+    footerLinks: ensureFooterLegalLinks(
+      parseLinkList(map[SETTINGS_KEYS.footerLinks], defaultSettings.footerLinks).filter(
+        (item) =>
+          !/report\s*issue/i.test(item.label) &&
+          !/^feedback$/i.test(item.label) &&
+          !/topic=report/i.test(item.href) &&
+          !/topic=feedback/i.test(item.href) &&
+          !/report-issue/i.test(item.href),
+      ),
     ),
     footerCopyright: parseFooterCopyright(map[SETTINGS_KEYS.footerCopyright]),
     footerBranding: {
