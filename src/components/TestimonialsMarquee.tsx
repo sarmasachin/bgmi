@@ -120,7 +120,7 @@ export function TestimonialsMarquee({ game, initialItems }: Props) {
               <div className="testimonials-marquee-card-top">
                 <Stars value={item.rating} />
                 <span className="testimonials-marquee-game">
-                  {labelFor(item.game)}
+                  {GAME_LABEL[item.game] ?? item.game}
                 </span>
               </div>
               <p className="testimonials-marquee-message">{item.message}</p>
