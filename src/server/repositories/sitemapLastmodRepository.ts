@@ -93,7 +93,11 @@ export async function getSitemapLastmodMap(): Promise<Map<string, Date>> {
   }
 
   const out = new Map<string, Date>();
-  for (const path of SITEMAP_STATIC_PATHS) {
+  // Union so paths in CONTENT_KEYS but missing from STATIC_PATHS still get lastmod.
+  const paths = [
+    ...new Set<string>([...SITEMAP_STATIC_PATHS, ...Object.keys(SITEMAP_PATH_CONTENT_KEYS)]),
+  ];
+  for (const path of paths) {
     const keys = SITEMAP_PATH_CONTENT_KEYS[path] ?? [];
     const dates = keys
       .map((key) => keyToDate.get(key))

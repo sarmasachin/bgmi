@@ -1,4 +1,9 @@
-import { newsArticlePath, newsCategoryListingPath } from "@/src/lib/newsCategories";
+import {
+  canonicalNewsCategorySlug,
+  newsArticlePath,
+  newsCategoryListingPath,
+  newsCategoryRelatedContentPath,
+} from "@/src/lib/newsCategories";
 import { getSiteUrl, toCanonicalUrl } from "@/src/lib/siteUrl";
 import { legalSlugToSitemapPath, pickLatestDate, toSitemapLastmodIst } from "@/src/lib/sitemapLastmod";
 import { listPublishedLegalForSitemap } from "@/src/server/repositories/legalPagesRepository";
@@ -121,12 +126,11 @@ export async function buildNewsSitemapEntries(): Promise<SitemapUrlEntry[]> {
   const lastmodMap = await getSitemapLastmodMap();
   const categorySlugs = await listNewsCategorySlugs();
   const newsRows = await listPublishedNewsForSitemap();
-  const listingLastmod = toSitemapLastmodIst(
-    pickLatestDate(
-      resolveSitemapLastmod(lastmodMap, "/news"),
-      ...newsRows.map((item) => item.updatedAt),
-    ),
+  const listingStamp = pickLatestDate(
+    resolveSitemapLastmod(lastmodMap, "/news"),
+    ...newsRows.map((item) => item.updatedAt),
   );
+  const listingLastmod = toSitemapLastmodIst(listingStamp);
 
   const seen = new Set<string>();
   const categoryStamp = new Map<string, Date>();
@@ -137,8 +141,9 @@ export async function buildNewsSitemapEntries(): Promise<SitemapUrlEntry[]> {
     if (stamp && !Number.isNaN(stamp.getTime())) {
       const cats = new Set<string>([item.primaryCategory, ...(item.extraCategories ?? [])]);
       for (const cat of cats) {
-        const key = (cat || "").trim().toLowerCase();
-        if (!key) continue;
+        const raw = (cat || "").trim().toLowerCase();
+        if (!raw) continue;
+        const key = canonicalNewsCategorySlug(raw);
         const prev = categoryStamp.get(key);
         if (!prev || stamp.getTime() > prev.getTime()) categoryStamp.set(key, stamp);
       }
@@ -167,7 +172,15 @@ export async function buildNewsSitemapEntries(): Promise<SitemapUrlEntry[]> {
     const loc = `${baseUrl}${path}`;
     if (seen.has(loc)) continue;
     seen.add(loc);
-    hubs.push(row(baseUrl, path, toSitemapLastmodIst(categoryStamp.get(cat))));
+    const canonical = canonicalNewsCategorySlug(cat);
+    const related = newsCategoryRelatedContentPath(canonical);
+    const hubStamp = pickLatestDate(
+      categoryStamp.get(canonical),
+      categoryStamp.get(cat),
+      related ? resolveSitemapLastmod(lastmodMap, related) : undefined,
+      listingStamp,
+    );
+    hubs.push(row(baseUrl, path, toSitemapLastmodIst(hubStamp)));
   }
 
   return [...hubs, ...articles];

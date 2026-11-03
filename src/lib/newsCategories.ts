@@ -216,3 +216,17 @@ export function newsCategoryListingPath(slug: string): string {
   if (NEWS_LISTING_UNDER_NEWS_PREFIX.has(cat)) return `/news/${publicSlug}`;
   return `/${publicSlug}`;
 }
+
+/** Calculator / content page whose SiteSetting lastmod can stamp an empty news hub. */
+export function newsCategoryRelatedContentPath(slug: string): string | null {
+  const cat = canonicalNewsCategorySlug(slug);
+  if (NEWS_CATEGORY_PUBLIC_SLUG[cat]) {
+    return `/${NEWS_CATEGORY_PUBLIC_SLUG[cat]}`;
+  }
+  if (cat === "free-fire-india") return "/free-fire-india";
+  if (cat === "bgmi") return "/bgmi";
+  if (cat === "pubg") return "/pubg";
+  if (cat === "ff-max") return "/free-fire-max-sensitivity-settings-calculator";
+  if (cat === "free-fire") return "/";
+  return null;
+}

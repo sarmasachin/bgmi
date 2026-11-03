@@ -78,7 +78,7 @@ export const SITEMAP_PATH_CONTENT_KEYS: Record<string, string[]> = {
     "settings:gameFaq:pubg-mobile-lite",
     "settings:gameArticle:pubg-mobile-lite",
   ],
-  "/pubg-mobile-flash-apk": [],
+  "/pubg-mobile-flash-apk": ["settings:pubgMobileLiteApkPage"],
   "/pubg": [
     "settings:homeCards:pubg",
     "settings:gameArticle:pubg",
@@ -108,7 +108,7 @@ export const SITEMAP_PATH_CONTENT_KEYS: Record<string, string[]> = {
   "/pubg-redeem-code": ["settings:pubgRedeemCodes"],
   "/bgmi-air-redeem-code": ["settings:bgmiLiteRedeemCodes"],
   "/bgmi-air-stylish-name": ["settings:bgmiLiteStylishName"],
-  "/bgmi-air-apk": [],
+  "/bgmi-air-apk": ["settings:bgmiLiteApkPage"],
   "/pubg-mobile-flash-redeem-code": ["settings:pubgMobileLiteRedeemCodes"],
   "/pubg-mobile-flash-name": ["settings:pubgMobileLiteName"],
   "/free-fire-redeem-code": ["settings:freeFireRedeemCodes"],
@@ -123,6 +123,7 @@ export const SITEMAP_PATH_CONTENT_KEYS: Record<string, string[]> = {
 
 export const SITEMAP_STATIC_PATHS = [
   "/",
+  "/free-fire-india",
   "/bgmi",
   "/bgmi-apk",
   "/bgmi-redeem-code",
