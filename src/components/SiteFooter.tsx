@@ -7,6 +7,7 @@ import {
   ensurePubgMobileLiteNavigation,
   PUBG_MOBILE_LITE_PATH,
 } from "@/src/lib/pubgMobileLite";
+import { GTA6_PATH } from "@/src/features/gta6Calculator/gta6-seo";
 import {
   getSettings,
   isShareRailEnabled,
@@ -70,6 +71,16 @@ export async function SiteFooter({ settings: settingsProp, bottomOnly = false }:
     };
     ensure("Contact", "/contact", (item) => /^contact$/i.test(item.label) || item.href === "/contact");
     ensure("News", "/news", (item) => /^news$/i.test(item.label) || item.href === "/news");
+    const isGta6 = (item: { label: string; href: string }) =>
+      /^gta\s*6$/i.test(item.label.trim()) || item.href === GTA6_PATH;
+    if (!links.some(isGta6)) {
+      const newsIdx = links.findIndex(
+        (item) => /^news$/i.test(item.label) || item.href === "/news",
+      );
+      const gtaLink = { label: "GTA 6", href: GTA6_PATH };
+      if (newsIdx >= 0) links.splice(newsIdx + 1, 0, gtaLink);
+      else links.push(gtaLink);
+    }
     ensure(
       "Sitemap",
       "/sitemap.xml",
