@@ -151,6 +151,7 @@ export const SITEMAP_STATIC_PATHS = [
   "/free-fire-max-sensitivity-settings-calculator",
   "/free-fire-advance-server",
   "/gta-6-sensitivity-settings-calculator",
+  "/gta-6-cheat-code",
   "/news",
   "/privacy",
   "/terms",

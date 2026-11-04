@@ -1,0 +1,11 @@
+/*
+  Tailwind utilities for GTA 6 feature only — Preflight OFF.
+  Sources use project-root-relative paths (bundler-safe).
+*/
+@layer theme, base, components, utilities;
+@import "tailwindcss/theme.css" layer(theme);
+@import "tailwindcss/utilities.css" layer(utilities);
+
+@source "src/features/gta6Calculator";
+@source "app/gta-6-sensitivity-settings-calculator";
+@source "app/gta-6-cheat-code";

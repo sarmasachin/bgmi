@@ -87,6 +87,15 @@ export const SITE_GAME_NAV: readonly SiteNavItem[] = [
     href: "/bgmi-air",
     children: [...BGMI_LITE_NAV],
   },
+  {
+    id: "gta6",
+    label: "GTA 6",
+    href: "/gta-6-sensitivity-settings-calculator",
+    children: [
+      { label: "Home", href: "/gta-6-sensitivity-settings-calculator" },
+      { label: "News", href: "/gta-6-sensitivity-settings-calculator#news" },
+    ],
+  },
 ];
 
 function normalizePathname(pathname: string): string {
@@ -172,6 +181,9 @@ export function isSiteNavItemActive(item: SiteNavItem, pathname: string): boolea
       p === "/news/pubg" ||
       p.startsWith("/news/pubg/")
     );
+  }
+  if (item.id === "gta6") {
+    return p === "/gta-6-sensitivity-settings-calculator";
   }
   if (item.id === "bgmi") {
     return (

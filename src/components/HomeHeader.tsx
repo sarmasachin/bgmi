@@ -5,30 +5,17 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useId, useRef, useState, useTransition } from "react";
 import type { MouseEvent } from "react";
+import { HomeHeaderChipNav } from "@/src/components/HomeHeaderChipNav";
 import { HomeHeaderDesktopNav } from "@/src/components/HomeHeaderDesktopNav";
 import { HomeHeaderSideNav } from "@/src/components/HomeHeaderSideNav";
-import { FreeFireIndiaMenuLabel } from "@/src/components/FreeFireIndiaMenuLabel";
-import {
-  FREE_FIRE_INDIA_APK_PATH,
-  FREE_FIRE_INDIA_PATH,
-  FREE_FIRE_INDIA_STYLISH_NAME_PATH,
-} from "@/src/lib/gamePagePath";
-import { FREE_FIRE_MAX_APK_MENU_PATH } from "@/src/lib/freeFireMaxPages";
-import {
-  FREE_FIRE_APK_MENU_PATH,
-  FREE_FIRE_MAX_PATH,
-  FREE_FIRE_PATH,
-} from "@/src/lib/freeFirePages";
+import { FREE_FIRE_MAX_PATH } from "@/src/lib/freeFirePages";
 import { PUBG_MOBILE_CODES_PATH } from "@/src/lib/pubgMobileCodes";
 import { PUBG_MOBILE_LITE_PATH } from "@/src/lib/pubgMobileLite";
 import {
   detectNavGameContext,
-  navForCloneGame,
-  resolveNavForPath,
   sideNavIdForCloneGame,
 } from "@/src/lib/resolveNavForPath";
 import {
-  FREE_FIRE_INDIA_MENU,
   isFreeFireIndiaDesktopPath,
   isSiteNavItemActive,
   SITE_GAME_NAV,
@@ -48,47 +35,6 @@ type HomeHeaderProps = {
 
 function normalizePath(path: string | null | undefined) {
   return typeof path === "string" ? path : "";
-}
-
-const FREE_FIRE_INDIA_CHIP: NavLink = {
-  label: "Free Fire India",
-  href: FREE_FIRE_INDIA_PATH,
-};
-
-const FREE_FIRE_INDIA_APK_CHIP: NavLink = {
-  label: "FF India Apk",
-  href: FREE_FIRE_INDIA_APK_PATH,
-};
-
-const INDIA_PAGE_CHIP_LABEL: Record<string, string> = {
-  [FREE_FIRE_INDIA_APK_PATH]: "FF India Apk",
-  [FREE_FIRE_INDIA_STYLISH_NAME_PATH]: "FF India Name",
-};
-
-const FREE_FIRE_INDIA_CHIPS: NavLink[] = FREE_FIRE_INDIA_MENU.map((item) => ({
-  label: INDIA_PAGE_CHIP_LABEL[item.href] ?? item.label,
-  href: item.href,
-}));
-
-function isChipActive(href: string, activePath: string) {
-  if (href === "/") return activePath === "/" || activePath === "";
-  const path = activePath.replace(/\/+$/, "") || "/";
-  if (href === FREE_FIRE_INDIA_PATH) return path === FREE_FIRE_INDIA_PATH;
-  return path === href || path.startsWith(`${href}/`);
-}
-
-/** Mobile chip row only. Desktop and the Free Fire / Max hamburger stay unchanged. */
-function withFreeFireIndiaChip(links: NavLink[]): NavLink[] {
-  const onFreeFireChips = links.some((item) => item.href === FREE_FIRE_APK_MENU_PATH);
-  const onMaxChips = links.some((item) => item.href === FREE_FIRE_MAX_APK_MENU_PATH);
-  if (!onFreeFireChips && !onMaxChips) return links;
-  const extras = [FREE_FIRE_INDIA_CHIP, FREE_FIRE_INDIA_APK_CHIP].filter(
-    (chip) => !links.some((item) => item.href === chip.href),
-  );
-  if (extras.length === 0) return links;
-  const homeIndex = links.findIndex((item) => item.label.trim().toLowerCase() === "home");
-  const at = homeIndex >= 0 ? homeIndex + 1 : 0;
-  return [...links.slice(0, at), ...extras, ...links.slice(at)];
 }
 
 export function HomeHeader({ siteTitle, navigation, menuGame }: HomeHeaderProps) {
@@ -128,16 +74,8 @@ export function HomeHeader({ siteTitle, navigation, menuGame }: HomeHeaderProps)
   const lastScrollY = useRef(0);
   const sideMenuRef = useRef<HTMLElement>(null);
   const menuBtnRef = useRef<HTMLButtonElement>(null);
-  const chipNavRef = useRef<HTMLElement>(null);
   const menuId = useId();
   const activePath = pendingPath ?? pathname;
-  /** Mobile chip row: India pages use the India menu; FF / Max keep their own, with an India chip after Home. */
-  const pathMenu = resolveNavForPath(activePath, normalized);
-  const cloneMenu =
-    detectNavGameContext(activePath) === "default" ? navForCloneGame(menuGame) : null;
-  const familyLinks = isFreeFireIndiaDesktopPath(activePath)
-    ? FREE_FIRE_INDIA_CHIPS
-    : withFreeFireIndiaChip(cloneMenu ?? pathMenu);
 
   useEffect(() => {
     for (const href of SITE_GAME_NAV_PREFETCH_HREFS) {
@@ -152,25 +90,6 @@ export function HomeHeader({ siteTitle, navigation, menuGame }: HomeHeaderProps)
     setMenuOpen(false);
     document.body.style.overflow = "";
     document.documentElement.style.overflow = "";
-  }, [pathname]);
-
-  // Mouse wheel is vertical by default — map it to horizontal chip scroll.
-  useEffect(() => {
-    const el = chipNavRef.current;
-    if (!el) return;
-    const onWheel = (event: WheelEvent) => {
-      if (el.scrollWidth <= el.clientWidth + 1) return;
-      const dominant =
-        Math.abs(event.deltaX) > Math.abs(event.deltaY) ? event.deltaX : event.deltaY;
-      if (dominant === 0) return;
-      const max = el.scrollWidth - el.clientWidth;
-      const next = Math.min(max, Math.max(0, el.scrollLeft + dominant));
-      if (next === el.scrollLeft) return;
-      event.preventDefault();
-      el.scrollLeft = next;
-    };
-    el.addEventListener("wheel", onWheel, { passive: false });
-    return () => el.removeEventListener("wheel", onWheel);
   }, [pathname]);
 
   useEffect(() => {
@@ -341,31 +260,13 @@ export function HomeHeader({ siteTitle, navigation, menuGame }: HomeHeaderProps)
             />
           </div>
 
-          <nav ref={chipNavRef} className="home-header-nav" aria-label="Games">
-            {familyLinks.map((item) => {
-              const indiaHomeChip =
-                item.label === "Free Fire India" && item.href === FREE_FIRE_INDIA_PATH;
-              const indiaApkChip = item.href === FREE_FIRE_INDIA_APK_PATH;
-              const active = isChipActive(item.href, activePath);
-              return (
-                <Link
-                  key={`chip-${item.href}-${item.label}`}
-                  href={item.href}
-                  prefetch
-                  className={active ? "is-active" : undefined}
-                  onClick={(event) => onNavClick(event, item.href)}
-                >
-                  {indiaApkChip ? (
-                    <FreeFireIndiaMenuLabel apk />
-                  ) : indiaHomeChip ? (
-                    <FreeFireIndiaMenuLabel />
-                  ) : (
-                    item.label
-                  )}
-                </Link>
-              );
-            })}
-          </nav>
+          <HomeHeaderChipNav
+            activePath={activePath}
+            pathname={pathname}
+            normalizedNav={normalized}
+            menuGame={menuGame}
+            onNavigate={onNavClick}
+          />
         </div>
       </header>
 

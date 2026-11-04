@@ -53,6 +53,7 @@ export const RESERVED_PUBLIC_SLUGS = new Set([
   "free-fire-max-sensitivity-settings-calculator",
   "free-fire-advance-server",
   "gta-6-sensitivity-settings-calculator",
+  "gta-6-cheat-code",
 ]);
 
 export function firstPublicSlugSegment(slug: string): string {

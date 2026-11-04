@@ -1,0 +1,345 @@
+/* Content sections — same tokens as gta6Calculator.css */
+
+.gta6-details,
+.gta6-map,
+.gta6-specs,
+.gta6-editions,
+.gta6-platforms,
+.gta6-tba,
+.gta6-howto {
+  background: var(--gta6-bg, #0b0b10);
+}
+
+.gta6-details h2,
+.gta6-map h2,
+.gta6-specs h2,
+.gta6-editions h2,
+.gta6-platforms h2,
+.gta6-tba h2,
+.gta6-howto h2 {
+  width: min(100%, var(--gta6-wrap, 1080px));
+  margin: 0 auto 20px;
+  color: #fff;
+  font-size: clamp(22px, 3vw, 30px);
+  font-weight: 700;
+  letter-spacing: 0.01em;
+  line-height: 1.25;
+  text-transform: none;
+}
+
+.gta6-details-panel {
+  width: min(100%, var(--gta6-wrap, 1080px));
+  margin-inline: auto;
+  padding: 22px 20px;
+  border: 1px solid var(--gta6-line, rgba(255, 178, 198, 0.28));
+  border-radius: 16px;
+  background: var(--gta6-panel, #14141c);
+}
+
+.gta6-details-lead {
+  margin: 0 0 14px;
+  color: #fff;
+  font-size: 18px;
+  font-weight: 600;
+  line-height: 1.55;
+}
+
+.gta6-details-copy {
+  margin: 0 0 12px;
+  color: var(--gta6-muted, #c8c8d0);
+  font-size: 15px;
+  font-weight: 500;
+  line-height: 1.65;
+}
+
+.gta6-details-copy:last-child {
+  margin-bottom: 0;
+}
+
+.gta6-spec-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 10px;
+  width: min(100%, var(--gta6-wrap, 1080px));
+  margin: 0 auto;
+}
+
+.gta6-spec-card {
+  display: grid;
+  grid-template-columns: minmax(120px, 38%) 1fr;
+  gap: 10px 16px;
+  align-items: start;
+  margin: 0;
+  padding: 14px 16px;
+  border: 1px solid var(--gta6-line, rgba(255, 178, 198, 0.28));
+  border-radius: 12px;
+  background: var(--gta6-panel, #14141c);
+}
+
+.gta6-spec-card dt {
+  margin: 0;
+  color: var(--gta6-pink, #ffb2c6);
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 1.4;
+}
+
+.gta6-spec-card dd {
+  margin: 0;
+  color: #fff;
+  font-size: 15px;
+  font-weight: 600;
+  line-height: 1.45;
+  word-break: break-word;
+}
+
+.gta6-platform-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 12px;
+  width: min(100%, var(--gta6-wrap, 1080px));
+  margin-inline: auto;
+}
+
+.gta6-platform-card {
+  padding: 18px 16px;
+  border: 1px solid var(--gta6-line, rgba(255, 178, 198, 0.28));
+  border-radius: 14px;
+  background: var(--gta6-panel, #14141c);
+}
+
+.gta6-platform-card h3 {
+  margin: 0 0 8px;
+  color: #fff;
+  font-size: 17px;
+  font-weight: 700;
+  line-height: 1.3;
+  text-transform: none;
+}
+
+.gta6-platform-card p {
+  margin: 0;
+  color: var(--gta6-muted, #c8c8d0);
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 1.6;
+}
+
+.gta6-tba-intro {
+  width: min(100%, var(--gta6-wrap, 1080px));
+  margin: -8px auto 18px;
+  color: var(--gta6-muted, #c8c8d0);
+  font-size: 15px;
+  font-weight: 500;
+  line-height: 1.55;
+}
+
+.gta6-editions-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 12px;
+  width: min(100%, var(--gta6-wrap, 1080px));
+  margin-inline: auto;
+}
+
+.gta6-editions-list {
+  margin: 0;
+  padding-left: 18px;
+  color: var(--gta6-muted, #c8c8d0);
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 1.55;
+}
+
+.gta6-editions-list li {
+  margin: 0 0 8px;
+}
+
+.gta6-editions-list li:last-child {
+  margin-bottom: 0;
+}
+
+.gta6-howto-list {
+  list-style: none;
+  display: grid;
+  gap: 10px;
+  width: min(100%, var(--gta6-wrap, 1080px));
+  margin: 0 auto;
+  padding: 0;
+}
+
+.gta6-howto-list li {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 14px 16px;
+  border: 1px solid var(--gta6-line, rgba(255, 178, 198, 0.28));
+  border-radius: 12px;
+  background: var(--gta6-panel, #14141c);
+  color: #fff;
+  font-size: 15px;
+  font-weight: 500;
+  line-height: 1.55;
+}
+
+.gta6-howto-num {
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 999px;
+  background: var(--gta6-pink, #ffb2c6);
+  color: #0b0b10;
+  font-size: 13px;
+  font-weight: 800;
+}
+
+@media (min-width: 800px) {
+  .gta6-spec-grid,
+  .gta6-news-grid,
+  .gta6-editions-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .gta6-platform-grid {
+    grid-template-columns: 1fr 1fr 1fr;
+  }
+}
+
+.gta6-news {
+  background: var(--gta6-bg, #0b0b10);
+}
+
+/* Dark FAQ accordion — same layout as site FAQ, GTA page colors (no white block) */
+.gta6-faq {
+  background: var(--gta6-bg, #0b0b10);
+  color: #f5f5f7;
+  padding-top: 48px;
+  padding-bottom: 64px;
+  border-top: 1px solid var(--gta6-line, rgba(255, 178, 198, 0.28));
+}
+
+.gta6-faq-panel {
+  width: min(100%, var(--gta6-wrap, 1080px));
+  margin-inline: auto;
+  padding: 0;
+  background: transparent;
+  border: 0;
+  box-shadow: none;
+}
+
+.gta6-faq .faq-section {
+  margin: 0;
+  padding: 0;
+}
+
+.gta6-faq .faq-section h2 {
+  margin: 0 0 16px;
+  color: #ffffff;
+  border-left: 6px solid var(--gta6-pink, #ffb2c6);
+  padding-left: 15px;
+  font-size: clamp(22px, 3vw, 28px);
+  font-weight: 700;
+  letter-spacing: 0;
+  text-transform: none;
+  line-height: 1.25;
+}
+
+.gta6-faq .faq-accordion-list {
+  margin-top: 0;
+  border-top: 1px solid rgba(255, 178, 198, 0.28);
+}
+
+.gta6-faq .faq-accordion-item {
+  border-bottom: 1px solid rgba(255, 178, 198, 0.28);
+}
+
+.gta6-faq .faq-accordion-trigger {
+  color: #ffffff;
+  padding: 18px 2px;
+}
+
+.gta6-faq .faq-accordion-question {
+  color: #ffffff;
+  font-size: 1.05rem;
+  font-weight: 700;
+}
+
+.gta6-faq .faq-accordion-icon {
+  color: var(--gta6-pink, #ffb2c6);
+}
+
+.gta6-faq .faq-accordion-panel {
+  padding: 0 2px 18px;
+}
+
+.gta6-faq .faq-accordion-answer {
+  color: #c8c8d0;
+  font-size: 0.98rem;
+  line-height: 1.65;
+}
+
+.gta6-news-grid {
+  display: grid;
+  gap: 12px;
+  width: min(100%, var(--gta6-wrap, 1080px));
+  margin-inline: auto;
+}
+
+.gta6-card {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 16px;
+  border: 1px solid var(--gta6-line, rgba(255, 178, 198, 0.28));
+  border-radius: 14px;
+  background: var(--gta6-panel, #14141c);
+}
+
+.gta6-card-image {
+  width: 132px;
+  height: 78px;
+  flex: 0 0 auto;
+  object-fit: cover;
+  border-radius: 10px;
+}
+
+.gta6-card-copy {
+  min-width: 0;
+}
+
+.gta6-card p {
+  margin: 6px 0 0;
+  color: var(--gta6-muted, #c8c8d0);
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 1.55;
+}
+
+.gta6-card h3 {
+  margin: 0;
+  color: #fff;
+  font-size: 17px;
+  font-weight: 700;
+  line-height: 1.3;
+  text-transform: none;
+}
+
+@media (max-width: 560px) {
+  .gta6-spec-card {
+    grid-template-columns: 1fr;
+    gap: 4px;
+  }
+
+  .gta6-card {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .gta6-card-image {
+    width: 100%;
+    height: 140px;
+  }
+}

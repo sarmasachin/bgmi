@@ -1,0 +1,306 @@
+/* GTA VI page shell — Rockstar-inspired dark + pink, readable body type */
+
+body:has(.gta6-root) {
+  background: #0b0b10 !important;
+  color: #ffffff !important;
+}
+
+.gta6-root {
+  --gta6-bg: #0b0b10;
+  --gta6-panel: #14141c;
+  --gta6-panel-2: #1a1a24;
+  --gta6-line: rgba(255, 178, 198, 0.28);
+  --gta6-pink: #ffb2c6;
+  --gta6-pink-soft: #fee8ea;
+  --gta6-text: #f5f5f7;
+  --gta6-muted: #c8c8d0;
+  --gta6-wrap: 1080px;
+  min-height: 100vh;
+  background: var(--gta6-bg);
+  color: var(--gta6-text);
+  font-family: var(--gta6-body), system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+  font-weight: 500;
+  line-height: 1.5;
+  letter-spacing: 0;
+}
+
+.gta6-wrap {
+  width: min(100%, var(--gta6-wrap));
+  margin-inline: auto;
+}
+
+.gta6-hero {
+  padding: 48px 24px 44px;
+  background:
+    radial-gradient(640px 300px at 100% 0%, rgba(255, 178, 198, 0.14), transparent 55%),
+    radial-gradient(520px 280px at 0% 100%, rgba(75, 47, 84, 0.4), transparent 55%),
+    var(--gta6-bg);
+}
+
+.gta6-hero-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 28px;
+  align-items: center;
+}
+
+.gta6-hero-copy {
+  min-width: 0;
+}
+
+.gta6-eyebrow {
+  margin: 0 0 12px;
+  color: var(--gta6-pink);
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.gta6-hero h1 {
+  margin: 0;
+  max-width: none;
+  color: #fff;
+  font-family: var(--gta6-display), system-ui, sans-serif;
+  font-size: clamp(36px, 6.5vw, 64px);
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  line-height: 1.02;
+  text-transform: uppercase;
+}
+
+.gta6-lead {
+  max-width: 36rem;
+  margin: 16px 0 0;
+  color: var(--gta6-muted);
+  font-size: 16px;
+  font-weight: 500;
+  line-height: 1.6;
+}
+
+.gta6-banner {
+  margin: 18px 0 0;
+  max-width: 36rem;
+  padding: 12px 14px;
+  border: 1px solid var(--gta6-line);
+  border-radius: 12px;
+  background: rgba(20, 20, 28, 0.92);
+  color: var(--gta6-pink-soft);
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 1.55;
+}
+
+.gta6-hero-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 22px;
+}
+
+.gta6-hero-actions a {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 12px 18px;
+  border-radius: 999px;
+  font-size: 14px;
+  font-weight: 700;
+  text-decoration: none;
+  line-height: 1;
+}
+
+.gta6-hero-actions a.primary {
+  background: var(--gta6-pink);
+  color: #0b0b10;
+}
+
+.gta6-hero-actions a.ghost {
+  border: 1px solid var(--gta6-line);
+  color: #fff;
+  background: transparent;
+}
+
+.gta6-hero-media {
+  position: relative;
+  min-width: 0;
+  border-radius: 16px;
+  overflow: hidden;
+  border: 1px solid var(--gta6-line);
+  background: #12121a;
+  box-shadow: 0 24px 48px rgba(0, 0, 0, 0.35);
+  aspect-ratio: 16 / 11;
+}
+
+.gta6-hero-media img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+@media (min-width: 900px) {
+  .gta6-hero-grid {
+    grid-template-columns: minmax(0, 1.05fr) minmax(0, 0.95fr);
+    gap: 36px;
+  }
+}
+
+.gta6-band {
+  padding: 48px 24px 56px;
+}
+
+.gta6-band-calc {
+  background: var(--gta6-panel);
+  border-block: 1px solid var(--gta6-line);
+}
+
+.gta6-band h2,
+.gta6-news h2 {
+  width: min(100%, var(--gta6-wrap));
+  margin: 0 auto 22px;
+  color: #fff;
+  font-size: clamp(22px, 3vw, 30px);
+  font-weight: 700;
+  letter-spacing: 0.01em;
+  line-height: 1.25;
+  text-transform: none;
+}
+
+.gta6-band-calc h2 {
+  text-align: left;
+  margin-bottom: 36px;
+}
+
+.gta6-band-calc .gta6-form--diwali {
+  margin-top: 12px;
+}
+
+.gta6-form {
+  display: grid;
+  gap: 20px;
+  width: min(100%, var(--gta6-wrap));
+  margin-inline: auto;
+  padding: 22px 20px;
+  border: 1px solid var(--gta6-line);
+  border-radius: 16px;
+  background: var(--gta6-panel-2);
+}
+
+.gta6-picks,
+.gta6-sources {
+  display: grid;
+  gap: 16px;
+}
+
+@media (min-width: 800px) {
+  .gta6-picks,
+  .gta6-sources,
+  .gta6-sliders,
+  .gta6-console {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+.gta6-kicker,
+.gta6-field span,
+.gta6-slider-top span:first-child {
+  display: block;
+  margin-bottom: 8px;
+  color: var(--gta6-pink);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.gta6-pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.gta6-pills button,
+.gta6-copy {
+  border: 0;
+  cursor: pointer;
+  background: transparent;
+  color: #fff;
+  font: inherit;
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: 0;
+  text-transform: none;
+}
+
+.gta6-pills button {
+  padding: 10px 14px;
+  border: 1px solid var(--gta6-line);
+  border-radius: 999px;
+  background: #0f0f16;
+}
+
+.gta6-pills button.is-on,
+.gta6-copy {
+  background: var(--gta6-pink);
+  color: #0b0b10;
+  border-color: var(--gta6-pink);
+}
+
+.gta6-blurb,
+.gta6-note {
+  margin: 10px 0 0;
+  color: var(--gta6-muted);
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 1.55;
+}
+
+.gta6-field input,
+.gta6-field select {
+  width: 100%;
+  padding: 12px 14px;
+  border: 1px solid var(--gta6-line);
+  border-radius: 10px;
+  background: #0f0f16;
+  color: #fff;
+  font: inherit;
+  font-size: 15px;
+}
+
+.gta6-sliders,
+.gta6-console {
+  display: grid;
+  gap: 14px;
+}
+
+.gta6-slider-top {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.gta6-slider-value {
+  color: var(--gta6-pink);
+  font-weight: 700;
+}
+
+.gta6-slider input[type="range"] {
+  width: 100%;
+  accent-color: var(--gta6-pink);
+}
+
+.gta6-copy {
+  justify-self: start;
+  padding: 12px 22px;
+  border-radius: 999px;
+  font-size: 15px;
+}
+
+@media (max-width: 640px) {
+  .gta6-hero,
+  .gta6-band {
+    padding-left: 16px;
+    padding-right: 16px;
+  }
+}
