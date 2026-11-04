@@ -120,12 +120,47 @@ export function AdminAdsForm({ initialRows, initialPlacements }: Props) {
     }
   }
 
+  /** Persist Enabled immediately — checkbox alone used to stay as a local draft. */
+  async function saveEnabled(id: string, enabled: boolean) {
+    const prev = drafts[id] ?? { code: "", enabled: false };
+    setDrafts((d) => ({
+      ...d,
+      [id]: { ...(d[id] ?? { code: "", enabled: false }), enabled },
+    }));
+    setMessage("");
+    try {
+      const res = await fetch(AD_UNITS_API, {
+        method: "PATCH",
+        credentials: "include",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id, enabled, code: prev.code }),
+      });
+      if (!res.ok) {
+        const j = (await res.json().catch(() => ({}))) as { error?: string };
+        setDrafts((d) => ({
+          ...d,
+          [id]: { ...(d[id] ?? { code: "", enabled: false }), enabled: prev.enabled },
+        }));
+        setMessage(j.error ?? "Could not update Enabled.");
+        return;
+      }
+      setMessage(enabled ? "Slot enabled." : "Slot disabled.");
+      await reloadFromServer();
+    } catch {
+      setDrafts((d) => ({
+        ...d,
+        [id]: { ...(d[id] ?? { code: "", enabled: false }), enabled: prev.enabled },
+      }));
+      setMessage("Network error. Please retry.");
+    }
+  }
+
   return (
     <section className="admin-section">
       <h1>Ad placements</h1>
       <p className="admin-dashboard-subtitle">
-        Choose where slots may appear on the home page and news articles, then paste HTML per slot below. Only trusted admins should add snippets (they run as HTML/JS on the
-        site). The sensitivity calculator layout is not changed.
+        Choose where slots may appear, paste HTML, then use Enabled (saves immediately) and Save slot for code.
+        Logged-in admin browsers hide public ads — check the live site in Incognito / logged-out to verify.
       </p>
 
       <div className="admin-card" style={{ marginBottom: 20, padding: 16 }}>
@@ -288,12 +323,9 @@ export function AdminAdsForm({ initialRows, initialPlacements }: Props) {
               <input
                 type="checkbox"
                 checked={drafts[r.id]?.enabled ?? false}
-                onChange={(e) =>
-                  setDrafts((prev) => ({
-                    ...prev,
-                    [r.id]: { ...(prev[r.id] ?? { code: "", enabled: false }), enabled: e.target.checked },
-                  }))
-                }
+                onChange={(e) => {
+                  void saveEnabled(r.id, e.target.checked);
+                }}
               />
               Enabled
             </label>

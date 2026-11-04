@@ -1,8 +1,9 @@
-"use client";
+import type { ReactNode } from "react";
 
-import { useEffect, useState, type ReactNode } from "react";
-
-/** Mount children only on mobile viewports — avoids desktop ad requests. */
+/**
+ * Keeps children in the HTML (so enabled slots actually mount).
+ * Desktop is CSS-hidden; AdSlotClient skips AdSense push off mobile.
+ */
 export function MobileOnlyAd({
   children,
   maxWidthPx = 720,
@@ -10,16 +11,20 @@ export function MobileOnlyAd({
   children: ReactNode;
   maxWidthPx?: number;
 }) {
-  const [show, setShow] = useState(false);
-
-  useEffect(() => {
-    const mq = window.matchMedia(`(max-width: ${maxWidthPx}px)`);
-    const apply = () => setShow(mq.matches);
-    apply();
-    mq.addEventListener("change", apply);
-    return () => mq.removeEventListener("change", apply);
-  }, [maxWidthPx]);
-
-  if (!show) return null;
-  return <div className="ffc-ad-above-trust">{children}</div>;
+  return (
+    <div
+      className="ffc-ad-above-trust"
+      data-mobile-only-ad=""
+      data-mobile-max={maxWidthPx}
+    >
+      {children}
+      <style>{`
+        @media (min-width: ${maxWidthPx + 1}px) {
+          .ffc-ad-above-trust[data-mobile-only-ad] {
+            display: none !important;
+          }
+        }
+      `}</style>
+    </div>
+  );
 }

@@ -83,6 +83,14 @@ export function AdSlotClient({ html, slotKey }: Props) {
       el.innerHTML = "";
       return;
     }
+    const mobileOnly = el.closest("[data-mobile-only-ad]");
+    if (mobileOnly instanceof HTMLElement) {
+      const max = Number(mobileOnly.getAttribute("data-mobile-max") || 720);
+      if (!window.matchMedia(`(max-width: ${max}px)`).matches) {
+        el.innerHTML = "";
+        return;
+      }
+    }
     let cancelled = false;
 
     el.style.display = "";
