@@ -14,20 +14,12 @@ import {
   createGta6LeafletMap,
   type Gta6LeafletHandles,
 } from "@/src/features/gta6Calculator/gta6-map-leaflet";
-import {
-  buildPinShareUrl,
-  readPinIdFromLocation,
-  writePinIdToLocation,
-} from "@/src/features/gta6Calculator/gta6-map-url";
-
 export function Gta6InteractiveMap() {
   const mapElRef = useRef<HTMLDivElement | null>(null);
   const handlesRef = useRef<Gta6LeafletHandles | null>(null);
-  const didFlyFromUrl = useRef(false);
   const [ready, setReady] = useState(false);
   const [query, setQuery] = useState("");
   const [filter, setFilter] = useState<Gta6MapFilter>("all");
-  // Keep SSR/client first paint identical; URL `?pin=` applied after mount.
   const [activeId, setActiveId] = useState(GTA6_MAP_PINS[3]?.id ?? GTA6_MAP_PINS[0].id);
   const [fullscreen, setFullscreen] = useState(false);
   const [copied, setCopied] = useState(false);
@@ -91,26 +83,15 @@ export function Gta6InteractiveMap() {
     handlesRef.current?.setVisibleIds(visibleIds);
   }, [visibleIds, ready]);
 
-  // Bootstrap from `?pin=` once map is ready, then keep URL in sync.
+  // Strip legacy `?pin=` / `#map` so the address bar stays clean.
   useEffect(() => {
-    if (!ready) return;
-
-    if (!didFlyFromUrl.current) {
-      didFlyFromUrl.current = true;
-      const fromUrl = readPinIdFromLocation();
-      const pin = fromUrl ? GTA6_MAP_PINS.find((p) => p.id === fromUrl) : null;
-      if (pin) {
-        if (pin.id !== activeId) {
-          setActiveId(pin.id);
-          handlesRef.current?.flyToPin(pin);
-          return;
-        }
-        handlesRef.current?.flyToPin(pin);
-      }
-    }
-
-    writePinIdToLocation(activeId);
-  }, [ready, activeId]);
+    const url = new URL(window.location.href);
+    const dirty = url.searchParams.has("pin") || url.hash === "#map" || url.hash === "map";
+    if (!dirty) return;
+    url.searchParams.delete("pin");
+    url.hash = "";
+    window.history.replaceState(null, "", `${url.pathname}${url.search}`);
+  }, []);
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
@@ -133,13 +114,13 @@ export function Gta6InteractiveMap() {
   };
 
   const copyLink = async () => {
-    const url = buildPinShareUrl(active.id);
+    const url = `${window.location.origin}${window.location.pathname}`;
     try {
       await navigator.clipboard.writeText(url);
       setCopied(true);
       window.setTimeout(() => setCopied(false), 1600);
     } catch {
-      window.prompt("Copy map link:", url);
+      window.prompt("Copy page link:", url);
     }
   };
 
@@ -238,7 +219,7 @@ export function Gta6InteractiveMap() {
       <figcaption className="gta6-map-caption">
         <span>{GTA6_MAP_IMAGE.disclaimer}</span>
         <span>
-          Tip: pinch / double-tap to zoom · drag to pan · filters + Copy link share `?pin=` URL.
+          Tip: pinch / double-tap to zoom · drag to pan · use filters to jump places.
         </span>
       </figcaption>
     </figure>

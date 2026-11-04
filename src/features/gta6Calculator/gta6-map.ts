@@ -169,7 +169,7 @@ export const GTA6_MAP_PINS: Gta6MapPin[] = [
 export const GTA6_MAP = {
   title: "Map and cities — Leonida",
   lead:
-    "Explore Leonida on the interactive map — pinch / scroll to zoom, drag to pan, filter Cities / Regions / Landmarks, and share a pin with Copy link. Only Rockstar-named places are pinned. Rockstar has not published official GPS or square-mileage figures.",
+    "Explore Leonida on the interactive map — pinch / scroll to zoom, drag to pan, and filter Cities / Regions / Landmarks. Only Rockstar-named places are pinned. Rockstar has not published official GPS or square-mileage figures.",
   state: {
     name: "Leonida",
     summary:
