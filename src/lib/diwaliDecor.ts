@@ -1,9 +1,14 @@
 /**
- * Diwali festival decorations — diyas on:
- * - Update boxes: `FfPatchStrip`, `FfNextUpdateCard`
- * - Calculators: `FfCalculator`, `SensCalculator`, `LiteSensCalculator`, `Gta6Calculator`
- *
- * After Diwali: set to `false` — all diyas off + normal spacing (no leftover margin).
+ * Diwali festival decorations — diyas on update boxes + calculators.
+ * On/off is controlled in Admin → Website Settings (`integrations.showDiwaliDiyas`).
  * See `.cursor/rules/diwali-decor.mdc`
  */
-export const SHOW_DIWALI_DIYAS = true;
+
+/** Default when setting is missing (opt-in). */
+export const DIWALI_DIYAS_DEFAULT = false;
+
+export function isDiwaliDiyasEnabled(integrations: unknown): boolean {
+  if (!integrations || typeof integrations !== "object") return DIWALI_DIYAS_DEFAULT;
+  const obj = integrations as Record<string, unknown>;
+  return obj.showDiwaliDiyas === true;
+}

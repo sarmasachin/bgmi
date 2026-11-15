@@ -1,6 +1,8 @@
 /**
  * Server-safe HTML sanitizer for article/page body content.
  * Strips scripts, event handlers, dangerous URLs; allows limited iframes.
+ * Also strips editor/paste white-text traps (`<font color>`, inline color styles)
+ * that hide body text on the light article background.
  */
 export function sanitizeHtml(raw: string): string {
   if (!raw) return "";
@@ -19,12 +21,45 @@ export function sanitizeHtml(raw: string): string {
     ' $1=$2#blocked:',
   );
 
-  // Strip style expressions / javascript in style attrs.
-  html = html.replace(/\sstyle\s*=\s*(["'])[\s\S]*?\1/gi, (match) => {
-    if (/expression\s*\(|javascript\s*:|url\s*\(\s*['"]?\s*javascript/i.test(match)) {
+  // Unwrap <font>…</font> (keep children). Editor foreColor often wraps list text in
+  // <font color="#ffffff"> which is invisible on the white news reader.
+  for (let i = 0; i < 20; i++) {
+    const next = html.replace(/<font\b[^>]*>([\s\S]*?)<\/font>/gi, "$1");
+    if (next === html) break;
+    html = next;
+  }
+  html = html.replace(/<\/?font\b[^>]*>/gi, "");
+
+  // Strip leftover color attrs from any tag.
+  html = html.replace(/\s(?:color|bgcolor|face|size)\s*=\s*("[^"]*"|'[^']*'|[^\s>]+)/gi, "");
+
+  // Strip style expressions / javascript in style attrs, and drop text color styles
+  // that hide content on the light article page (keep bold/italic via tags).
+  html = html.replace(/\sstyle\s*=\s*(["'])([\s\S]*?)\1/gi, (_match, quote: string, style: string) => {
+    if (/expression\s*\(|javascript\s*:|url\s*\(\s*['"]?\s*javascript/i.test(style)) {
       return "";
     }
-    return match;
+    const kept = style
+      .split(";")
+      .map((part) => part.trim())
+      .filter(Boolean)
+      .filter((part) => {
+        const prop = part.split(":")[0]?.trim().toLowerCase() ?? "";
+        if (!prop) return false;
+        if (
+          prop === "color" ||
+          prop === "background" ||
+          prop === "background-color" ||
+          prop === "-webkit-text-fill-color" ||
+          prop === "caret-color" ||
+          prop === "text-decoration-color"
+        ) {
+          return false;
+        }
+        return true;
+      });
+    if (kept.length === 0) return "";
+    return ` style=${quote}${kept.join("; ")}${quote}`;
   });
 
   // iframe: keep only YouTube / Vimeo embeds.

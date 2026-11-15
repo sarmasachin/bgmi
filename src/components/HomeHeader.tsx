@@ -4,7 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useId, useRef, useState, useTransition } from "react";
-import type { MouseEvent } from "react";
+import type { MouseEvent, ReactNode } from "react";
 import { HomeHeaderChipNav } from "@/src/components/HomeHeaderChipNav";
 import { HomeHeaderDesktopNav } from "@/src/components/HomeHeaderDesktopNav";
 import { HomeHeaderSideNav } from "@/src/components/HomeHeaderSideNav";
@@ -31,13 +31,15 @@ type HomeHeaderProps = {
   navigation: NavLink[];
   /** Clone page game. Unknown slugs use this game's own menu. */
   menuGame?: string;
+  /** Replaces the default mobile chip row (same header branding). */
+  chipNav?: ReactNode;
 };
 
 function normalizePath(path: string | null | undefined) {
   return typeof path === "string" ? path : "";
 }
 
-export function HomeHeader({ siteTitle, navigation, menuGame }: HomeHeaderProps) {
+export function HomeHeader({ siteTitle, navigation, menuGame, chipNav }: HomeHeaderProps) {
   const pathname = normalizePath(usePathname());
   const router = useRouter();
   const [, startTransition] = useTransition();
@@ -260,13 +262,15 @@ export function HomeHeader({ siteTitle, navigation, menuGame }: HomeHeaderProps)
             />
           </div>
 
-          <HomeHeaderChipNav
-            activePath={activePath}
-            pathname={pathname}
-            normalizedNav={normalized}
-            menuGame={menuGame}
-            onNavigate={onNavClick}
-          />
+          {chipNav ?? (
+            <HomeHeaderChipNav
+              activePath={activePath}
+              pathname={pathname}
+              normalizedNav={normalized}
+              menuGame={menuGame}
+              onNavigate={onNavClick}
+            />
+          )}
         </div>
       </header>
 

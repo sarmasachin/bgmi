@@ -1,9 +1,11 @@
 import type { Metadata, Viewport } from "next";
 import { Barlow_Condensed, DM_Sans } from "next/font/google";
 import { FaqAccordion } from "@/src/components/FaqAccordion";
+import { HomeHeader } from "@/src/components/HomeHeader";
+import { SiteFooter } from "@/src/components/SiteFooter";
 import { Gta6Calculator } from "@/src/features/gta6Calculator/Gta6Calculator";
-import { Gta6Header } from "@/src/features/gta6Calculator/Gta6Header";
 import { Gta6DetailsSections } from "@/src/features/gta6Calculator/Gta6DetailsSections";
+import { Gta6Header } from "@/src/features/gta6Calculator/Gta6Header";
 import { GTA6_FAQ } from "@/src/features/gta6Calculator/gta6-faq";
 import {
   GTA6_PAGE_DESCRIPTION,
@@ -16,10 +18,10 @@ import {
 import "@/src/features/gta6Calculator/gta6Calculator.css";
 import "@/src/features/gta6Calculator/gta6-details.css";
 import "@/src/features/gta6Calculator/gta6-map.css";
-import { SiteFooter } from "@/src/components/SiteFooter";
 import { breadcrumbListSchema, faqSchema, webPageSchema } from "@/src/lib/schema";
 import { buildSocialMetadata } from "@/src/lib/socialMeta";
 import { toCanonicalUrl } from "@/src/lib/siteUrl";
+import { getSettings } from "@/src/server/repositories/settingsRepository";
 
 const display = Barlow_Condensed({
   subsets: ["latin"],
@@ -68,14 +70,18 @@ const webPageLd = webPageSchema({
 });
 const extraLd = gta6StructuredData(canonical);
 
-export default function Gta6SensitivityPage() {
+export default async function Gta6SensitivityPage() {
+  const settings = await getSettings();
   const jsonLd = [webPageLd, breadcrumbLd, faqLd, ...extraLd].filter(Boolean);
 
   return (
     <>
+      <HomeHeader
+        siteTitle={settings.homeDisplay.headerTitle}
+        navigation={settings.navigation}
+        chipNav={<Gta6Header path={PATH} />}
+      />
       <div className={`gta6-root ${display.variable} ${body.variable}`}>
-        <Gta6Header path={PATH} />
-
         <main id="top">
           <section className="gta6-hero" aria-labelledby="gta6-hero-title">
             <div className="gta6-wrap gta6-hero-grid">

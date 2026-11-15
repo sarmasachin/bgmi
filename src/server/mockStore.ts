@@ -26,6 +26,8 @@ type PageClone = {
   ogImageUrl?: string;
   publishAsNews?: boolean;
   content?: unknown;
+  updatedAt?: string | Date;
+  createdAt?: string | Date;
 };
 
 type AdSlot = {
@@ -77,7 +79,7 @@ type MockStore = {
     id: string;
     pageKey: string;
     name: string;
-    email?: string;
+    email?: string | null;
     message: string;
     status: string;
     createdAt: string;

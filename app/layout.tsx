@@ -16,7 +16,10 @@ import { getSiteUrl } from "@/src/lib/siteUrl";
 import { DEFAULT_OG_IMAGE_PATH } from "@/src/lib/socialMeta";
 import { defaultSeoSettings } from "@/src/lib/siteSettings";
 import { isAdminAdsHidden } from "@/src/server/adminNoAds";
-import { getHeadSnippets, getSettings } from "@/src/server/repositories/settingsRepository";
+import { DiwaliDecorProvider } from "@/src/components/DiwaliDecorProvider";
+import { isDiwaliDiyasEnabled } from "@/src/lib/diwaliDecor";
+import { getHeadSnippets } from "@/src/server/repositories/headSnippetsRepository";
+import { getSettings } from "@/src/server/repositories/settingsRepository";
 import "./globals.css";
 
 /** Google AdSense Auto ads. Must be in the initial HTML <head>, not injected later. */
@@ -131,9 +134,10 @@ export default async function RootLayout({
   const isAdminPage = requestPath === "/admin" || requestPath.startsWith("/admin/");
   const hideAdsForAdmin = await isAdminAdsHidden();
   const skipAds = isAdminPage || hideAdsForAdmin;
-  const snippets = await getHeadSnippets();
+  const [snippets, settings] = await Promise.all([getHeadSnippets(), getSettings()]);
   const analytics = parseAnalyticsSnippet(snippets.analyticsScript);
   const adsense = parseAdsenseSnippet(snippets.adsenseScript);
+  const showDiwaliDiyas = isDiwaliDiyasEnabled(settings.integrations);
 
   return (
     <html lang="en" className={geistSans.variable} data-scroll-behavior="smooth">
@@ -185,46 +189,48 @@ export default async function RootLayout({
               "@media (min-width:851px){.home-header-spacer{height:64px}}",
           }}
         />
-        {children}
-        <GoogleVignetteScrollFix />
-        <BlockAdminAds sessionHidden={hideAdsForAdmin} />
-        <PushSoftPrompt />
-        <DeferredMarketingScripts
-          analytics={
-            analytics
-              ? {
-                  id: "site-analytics",
-                  externalSrc: analytics.externalSrc,
-                  inlineJs: analytics.inlineJs,
-                }
-              : null
-          }
-          adsense={
-            !skipAds &&
-            adsense &&
-            adsense.clientId !== ADSENSE_CLIENT &&
-            !adsense.externalSrc?.includes(ADSENSE_CLIENT)
-              ? {
-                  id: "site-adsense",
-                  externalSrc: adsense.externalSrc,
-                  inlineJs: adsense.inlineJs,
-                  crossOrigin: adsense.crossOrigin,
-                }
-              : null
-          }
-        />
-        <script
-          type="application/ld+json"
-          dangerouslySetInnerHTML={{
-            __html: JSON.stringify(websiteSchema(baseUrl)),
-          }}
-        />
-        <script
-          type="application/ld+json"
-          dangerouslySetInnerHTML={{
-            __html: JSON.stringify(organizationSchema(baseUrl)),
-          }}
-        />
+        <DiwaliDecorProvider enabled={showDiwaliDiyas}>
+          {children}
+          <GoogleVignetteScrollFix />
+          <BlockAdminAds sessionHidden={hideAdsForAdmin} />
+          <PushSoftPrompt />
+          <DeferredMarketingScripts
+            analytics={
+              analytics
+                ? {
+                    id: "site-analytics",
+                    externalSrc: analytics.externalSrc,
+                    inlineJs: analytics.inlineJs,
+                  }
+                : null
+            }
+            adsense={
+              !skipAds &&
+              adsense &&
+              adsense.clientId !== ADSENSE_CLIENT &&
+              !adsense.externalSrc?.includes(ADSENSE_CLIENT)
+                ? {
+                    id: "site-adsense",
+                    externalSrc: adsense.externalSrc,
+                    inlineJs: adsense.inlineJs,
+                    crossOrigin: adsense.crossOrigin,
+                  }
+                : null
+            }
+          />
+          <script
+            type="application/ld+json"
+            dangerouslySetInnerHTML={{
+              __html: JSON.stringify(websiteSchema(baseUrl)),
+            }}
+          />
+          <script
+            type="application/ld+json"
+            dangerouslySetInnerHTML={{
+              __html: JSON.stringify(organizationSchema(baseUrl)),
+            }}
+          />
+        </DiwaliDecorProvider>
       </body>
     </html>
   );

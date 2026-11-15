@@ -38,7 +38,8 @@
     ".next-prod/types/**/*.ts",
     ".next/dev/types/**/*.ts",
     ".next/types/**/*.ts",
-    "next-env.d.ts"
+    "next-env.d.ts",
+    ".next-diwali-nav/types/**/*.ts"
   ],
   "exclude": [
     "node_modules"

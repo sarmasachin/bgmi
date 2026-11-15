@@ -119,13 +119,15 @@ export function normalizeFreeFireMaxRedeemPage(raw: unknown): FreeFireRedeemCode
   const servers = normalizeRedeemServersList(hasServersField ? raw.servers : defaults.servers);
 
   const hasCodesField = Array.isArray(raw.codes);
-  const codes = (hasCodesField ? raw.codes : defaults.codes)
-    .map((row, index) => normalizeCode(row, index, servers))
+  const codesRaw: unknown[] = hasCodesField ? (raw.codes as unknown[]) : defaults.codes;
+  const codes = codesRaw
+    .map((row: unknown, index: number) => normalizeCode(row, index, servers))
     .filter((row): row is FreeFireRedeemCodeItem => Boolean(row));
 
   const hasFaqsField = Array.isArray(raw.faqs);
-  const faqs = (hasFaqsField ? raw.faqs : defaults.faqs)
-    .map((row, index) => normalizeFaq(row, index))
+  const faqsRaw: unknown[] = hasFaqsField ? (raw.faqs as unknown[]) : defaults.faqs;
+  const faqs = faqsRaw
+    .map((row: unknown, index: number) => normalizeFaq(row, index))
     .filter((row): row is FreeFireRedeemFaqItem => Boolean(row));
 
   return {

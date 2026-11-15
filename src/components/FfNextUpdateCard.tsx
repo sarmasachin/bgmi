@@ -2,7 +2,8 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { DiwaliCardDiyas, withDiwaliClass } from "@/src/components/DiwaliCardDiyas";
+import { DiwaliCardDiyas } from "@/src/components/DiwaliCardDiyas";
+import { useDiwaliClass } from "@/src/components/DiwaliDecorProvider";
 import { FF_MAX_NEXT_UPDATE, FF_NEXT_UPDATE } from "@/src/lib/ffNextUpdate";
 import { FREE_FIRE_MAX_PATH } from "@/src/lib/freeFirePages";
 import type { FfHomeFeatureCard } from "@/src/lib/homeCardsTypes";
@@ -17,6 +18,7 @@ type Props = {
  */
 export function FfNextUpdateCard({ homeContent }: Props) {
   const pathname = usePathname() ?? "";
+  const nextClass = useDiwaliClass("ff-next", "ff-next--diwali");
   const isHome = pathname === "/" || pathname === "";
   const isMax = pathname === FREE_FIRE_MAX_PATH;
   if (!isHome && !isMax) return null;
@@ -28,10 +30,7 @@ export function FfNextUpdateCard({ homeContent }: Props) {
       : { ...FF_NEXT_UPDATE, features: [...FF_NEXT_UPDATE.features] });
 
   return (
-    <section
-      className={withDiwaliClass("ff-next", "ff-next--diwali")}
-      aria-labelledby="ff-next-title"
-    >
+    <section className={nextClass} aria-labelledby="ff-next-title">
       <article className="ff-next-card">
         <DiwaliCardDiyas />
         <div className="ff-next-top">

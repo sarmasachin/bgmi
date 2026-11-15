@@ -3,6 +3,7 @@ import { DEFAULT_BGMI_ARTICLE_HTML } from "@/src/lib/bgmiArticleDefault";
 import { DEFAULT_BGMI_LITE_ARTICLE_HTML } from "@/src/lib/bgmiLiteArticleDefault";
 import { DEFAULT_PUBG_ARTICLE_HTML } from "@/src/lib/pubgArticleDefault";
 import { DEFAULT_PUBG_MOBILE_LITE_ARTICLE_HTML } from "@/src/lib/pubgMobileLiteArticleDefault";
+import { sanitizeHtml } from "@/src/lib/sanitizeHtml";
 
 type HomeFaqItem = {
   id: string;
@@ -45,8 +46,9 @@ export function ArticleFaqContent({
 }: Props) {
   const wrapClass = ["light-content-wrapper", wrapperClassName].filter(Boolean).join(" ");
   const custom = typeof articleHtml === "string" ? articleHtml.trim() : "";
-  const html =
-    custom && isMeaningfulArticleHtml(custom) ? custom : defaultHtmlForGame(game);
+  const html = sanitizeHtml(
+    custom && isMeaningfulArticleHtml(custom) ? custom : defaultHtmlForGame(game),
+  );
 
   return (
     <div className={wrapClass}>

@@ -70,7 +70,9 @@ function stripPastedAppearanceStyles(raw: string) {
 function sanitizeHtml(raw: string) {
   if (typeof window === "undefined") return raw;
 
-  const doc = new DOMParser().parseFromString(raw, "text/html");
+  // Always strip paste/editor color wrappers so white <font> never reaches publish.
+  const cleaned = stripPastedAppearanceStyles(raw);
+  const doc = new DOMParser().parseFromString(cleaned, "text/html");
   const blockedTags = ["script", "style", "object", "embed", "form", "meta", "link"];
 
   for (const tag of blockedTags) {

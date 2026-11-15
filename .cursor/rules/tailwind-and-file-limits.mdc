@@ -1,0 +1,21 @@
+---
+description: New/updated UI uses Tailwind; keep source files under 400 lines
+alwaysApply: true
+---
+
+# Tailwind + 400-line rule
+
+## Tailwind CSS (new / updated UI)
+
+- **Jo bhi naya UI update** ho (components, pages, layouts, feature CSS): prefer **Tailwind utility classes** in JSX/TSX.
+- Do **not** grow big new plain CSS files for fresh UI work when Tailwind can cover it.
+- Existing large CSS (`globals.css`, older feature CSS) — sirf touch karo jab usi change ke liye zaruri ho; whole-site Tailwind rewrite mat karo unless user bole.
+- Agar Tailwind project me setup nahi hai aur UI change chahiye: **pehle Tailwind install/configure**, phir UI.
+- Keep design consistent with the page you are editing (do not invent a new purple/dashboard look).
+
+## Max 400 lines (strict)
+
+- Source files (`app/`, `src/`, `scripts/`) **400 lines se upar mat rakho**.
+- ~350+ pe split plan; edit se 400 cross hoga to **pehle split**, phir change.
+- Generated dumps mat chhedo: `node_modules`, `.next`, `.next-old-*`.
+- Already-over-400: next touch pe pehle split (see `max-file-lines.mdc`).

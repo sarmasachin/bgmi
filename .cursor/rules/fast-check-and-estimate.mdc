@@ -1,0 +1,22 @@
+---
+description: Fast checks (~3 min), speak up if delayed, always give time estimates
+alwaysApply: true
+---
+
+# Fast check + time estimate
+
+## Speed
+
+- Simple check / “kyun ho raha hai” / e2e verify: **~3 minutes** target — direct cause pe jao, lamba exploration mat ghumao.
+- Pehle sabse likely file/path kholo (e.g. live `sw.js`, API route, click handler). Guess-loops aur parallel rabbit holes avoid karo jab seedha evidence mil sakta ho.
+
+## Agar time lag raha ho
+
+- **Turant bolo** — chhupa ke mat chalte raho.
+- Short update do: kya check ho raha hai + **estimate** (e.g. “abhi 5–10 min lagenge, X/Y pending”).
+- Agar 3 min me clear answer/fix nahi aa raha: explicitly likho **“time lag raha hai”** + naya estimate + blocker kya hai.
+
+## Fix vs check
+
+- Bug clear ho to **turant fix**, phir short verify — hours tak “checking” mat karo.
+- User ko har turn pe roughly batao: abhi kitna time / kab tak done.

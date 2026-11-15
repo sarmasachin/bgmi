@@ -2987,6 +2987,17 @@ footer,
   line-height: 1.65;
 }
 
+/* Editor/paste white <font color="#ffffff"> hides text on white cards site-wide. */
+.news-detail-card font,
+.news-detail-card font[color],
+.legal-document-body font,
+.legal-document-body font[color],
+.article font,
+.article font[color] {
+  color: inherit !important;
+  -webkit-text-fill-color: currentColor !important;
+}
+
 .news-detail-card blockquote {
   border-left: 4px solid #14b8a6;
   padding: 10px 14px;

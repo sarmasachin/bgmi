@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
-import { getHeadSnippets, saveHeadSnippets } from "@/src/server/repositories/settingsRepository";
+import { getHeadSnippets, saveHeadSnippets } from "@/src/server/repositories/headSnippetsRepository";
 import { addAuditLog } from "@/src/server/repositories/auditRepository";
 import { readAdminJsonBody } from "@/src/server/admin/adminApiHelpers";
 import { enforceAdminApiAccess } from "@/src/server/rbac/enforceAdminApiAccess";

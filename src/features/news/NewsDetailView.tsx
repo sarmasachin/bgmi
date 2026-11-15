@@ -5,6 +5,7 @@ import { NewsCommentSection } from "@/src/components/NewsCommentSection";
 import { RatingWidget } from "@/src/components/RatingWidget";
 import { SiteFooter } from "@/src/components/SiteFooter";
 import { extractNewsMeta, resolveNewsSeoDescription } from "@/src/lib/newsContent";
+import { sanitizeHtml } from "@/src/lib/sanitizeHtml";
 import {
   coerceNewsCategory,
   newsCategoryLabel,
@@ -168,7 +169,9 @@ export async function NewsDetailView({ item: itemProp }: { item: NewsDetailItem 
           {item.content && typeof item.content === "object" && "html" in item.content ? (
             <div
               className="news-detail-body"
-              dangerouslySetInnerHTML={{ __html: String(item.content.html ?? "") }}
+              dangerouslySetInnerHTML={{
+                __html: sanitizeHtml(String(item.content.html ?? "")),
+              }}
             />
           ) : null}
           {adPlaces.newsArticle.news_detail_mid ? <AdSlot slotKey="news_detail_mid" /> : null}

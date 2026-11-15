@@ -16,7 +16,8 @@ import {
   type FfTrustBarItem,
 } from "@/src/lib/ffTrustBar";
 import { FF_SET_ROLE_EVENT } from "@/src/lib/ffPlayModes";
-import { DiwaliCardDiyas, withDiwaliClass } from "@/src/components/DiwaliCardDiyas";
+import { DiwaliCardDiyas } from "@/src/components/DiwaliCardDiyas";
+import { useDiwaliClass } from "@/src/components/DiwaliDecorProvider";
 import { FfCalculatorHeader } from "./FfCalculatorHeader";
 import { FfDeviceField } from "./FfDeviceField";
 import { resolveLockedPhone, searchPhones } from "@/src/lib/calculatorPhoneBrand";
@@ -88,6 +89,8 @@ export function FfCalculator({
 
   const detectedTier = detectHardwareTier(deviceName);
   const deviceSuggestions = searchPhones(deviceNames, phoneBrand, deviceName, true);
+  const cardClass = useDiwaliClass("ffc-card", "ffc-card--diwali");
+  const formColClass = useDiwaliClass("ffc-form-col", "ffc-form-col--diwali");
 
   // Visual fire button (display only — reads the already-calculated value).
   // Fire button % is always 35–65; map it to 70–130px and a subtle hue shift.
@@ -132,8 +135,8 @@ export function FfCalculator({
     <div className="ffc-root">
       <FfCalculatorHeader showPlayStoreCta={showPlayStoreCta} />
 
-      <div className={withDiwaliClass("ffc-card", "ffc-card--diwali")}>
-        <div className={withDiwaliClass("ffc-form-col", "ffc-form-col--diwali")}>
+      <div className={cardClass}>
+        <div className={formColClass}>
         <DiwaliCardDiyas />
         <div className="ffc-grid">
           {/* 1. Smart Device Selection */}

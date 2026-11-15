@@ -2,7 +2,7 @@
 
 import { useState, type MouseEvent } from "react";
 import { DiwaliDiya } from "@/src/components/DiwaliDiya";
-import { SHOW_DIWALI_DIYAS } from "@/src/lib/diwaliDecor";
+import { useDiwaliDecorEnabled } from "@/src/components/DiwaliDecorProvider";
 import "@/src/components/diwaliDiya.css";
 
 function InteractiveDiya({ side }: { side: "left" | "right" }) {
@@ -30,16 +30,12 @@ function InteractiveDiya({ side }: { side: "left" | "right" }) {
 
 /** Two diyas for a card’s top-left / top-right border. Parent must be position:relative. */
 export function DiwaliCardDiyas() {
-  if (!SHOW_DIWALI_DIYAS) return null;
+  const enabled = useDiwaliDecorEnabled();
+  if (!enabled) return null;
   return (
     <>
       <InteractiveDiya side="left" />
       <InteractiveDiya side="right" />
     </>
   );
-}
-
-/** Append Diwali layout class when decorations are on. */
-export function withDiwaliClass(base: string, diwaliClass: string): string {
-  return SHOW_DIWALI_DIYAS ? `${base} ${diwaliClass}` : base;
 }

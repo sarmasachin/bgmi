@@ -295,42 +295,6 @@ export async function listPages() {
   return dbData ?? mockStore.pages;
 }
 
-/** Published CMS pages for sitemap (excludes home slug "/"). */
-export async function listPublishedPagesForSitemap(): Promise<
-  Array<{ slug: string; updatedAt: Date }>
-> {
-  const dbData = await tryPrismaLong(async () =>
-    prisma.pageTemplate.findMany({
-      where: { status: "published" },
-      select: { slug: true, updatedAt: true },
-      orderBy: { updatedAt: "desc" },
-    }),
-  );
-
-  const rows: Array<{ slug: string; updatedAt: Date }> = dbData
-    ? dbData.map((row) => ({
-        slug: row.slug,
-        updatedAt: row.updatedAt,
-      }))
-    : mockStore.pages
-        .filter((p) => p.status === "published")
-        .map((row) => ({
-          slug: row.slug,
-          updatedAt:
-            row.updatedAt instanceof Date
-              ? row.updatedAt
-              : typeof row.updatedAt === "string"
-                ? new Date(row.updatedAt)
-                : new Date(0),
-        }))
-        .filter((row) => !Number.isNaN(row.updatedAt.getTime()) && row.updatedAt.getTime() > 0);
-
-  return rows.filter((row) => {
-    const slug = (row.slug || "").trim();
-    return Boolean(slug) && slug !== "/";
-  });
-}
-
 export const getPublishedPageBySlug = cache(async function getPublishedPageBySlug(slug: string) {
   const variants = pageSlugVariants(slug);
   const dbData = await tryPrisma(async () =>

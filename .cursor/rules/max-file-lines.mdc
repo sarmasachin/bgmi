@@ -1,0 +1,26 @@
+---
+description: Keep source files under 400 lines — split when larger
+alwaysApply: true
+---
+
+# Max file length: 400 lines
+
+- **Never keep a source file above 400 lines.**
+- If a file is approaching ~350+ lines, or an edit would push it over 400, **split it** before/while editing.
+- Prefer extracting by responsibility — do not grow one giant file.
+- Applies to this BGMI project (`app/`, `src/`, `scripts/` source). Do not split generated dumps (`node_modules`, `.next`, `.next-old-*`).
+- Already-over-400 files stay until you touch them. On that edit, split first. Do not refactor the whole repo in an unrelated change.
+- The GTA 6 calculator (see `PLAN.md`) is new files under `src/features/gta6Calculator/`. Do not add it to `FfCalculator.tsx` or `LiteSensCalculator.tsx`.
+
+## Already over 400 — split on next touch
+
+- `src/components/admin/RichTextEditor.tsx`
+- `app/admin/pages/AdminPagesClient.tsx`
+- `app/admin/news/AdminNewsClient.tsx`
+- `src/server/repositories/pagesRepository.ts`
+- `app/admin/settings/AdminSettingsClient.tsx`
+- `app/admin/advance-server/AdminAdvanceServerForm.tsx`
+- `app/admin/contact/AdminContactClient.tsx`
+- `app/admin/users/AdminUsersClient.tsx`
+- `app/admin/legal-pages/AdminLegalPagesClient.tsx`
+- `src/server/repositories/adminUsersRepository.ts`

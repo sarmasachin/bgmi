@@ -7,7 +7,8 @@ import {
   getStoredHomeFaqRaw,
   type HomeFaqItem,
 } from "@/src/server/repositories/homeFaqRepository";
-import { getHeadSnippets, getSettings } from "@/src/server/repositories/settingsRepository";
+import { getHeadSnippets } from "@/src/server/repositories/headSnippetsRepository";
+import { getSettings } from "@/src/server/repositories/settingsRepository";
 import { defaultSeoSettings } from "@/src/lib/siteSettings";
 
 export type AdminSettingsLink = { label: string; href: string };
@@ -26,6 +27,7 @@ export type AdminSettingsPageData = {
   cdnBaseUrl: string;
   smtpHost: string;
   showShareRail: boolean;
+  showDiwaliDiyas: boolean;
   footerCopyright: string;
   footerBrandTitle: string;
   footerTagline: string;
@@ -53,6 +55,7 @@ export async function prefetchAdminSettingsPageData(): Promise<AdminSettingsPage
     cdn?: { baseUrl?: string };
     smtp?: { host?: string };
     showShareRail?: boolean;
+    showDiwaliDiyas?: boolean;
   };
 
   const seo = settings.seo as Record<string, unknown>;
@@ -89,6 +92,7 @@ export async function prefetchAdminSettingsPageData(): Promise<AdminSettingsPage
     cdnBaseUrl: integrations.cdn?.baseUrl ?? "",
     smtpHost: integrations.smtp?.host ?? "",
     showShareRail: integrations.showShareRail !== false,
+    showDiwaliDiyas: integrations.showDiwaliDiyas === true,
     footerCopyright: settings.footerCopyright,
     footerBrandTitle: settings.footerBranding.brandTitle,
     footerTagline: settings.footerBranding.tagline,

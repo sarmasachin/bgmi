@@ -99,13 +99,15 @@ export function normalizeBgmiLiteRedeemPage(raw: unknown): BgmiLiteRedeemCodePag
   if (!isPlainObject(raw)) return renameLiteDisplayDeep(cloneBgmiLiteRedeemPage(defaults));
 
   const hasCodesField = Array.isArray(raw.codes);
-  const codes = (hasCodesField ? raw.codes : defaults.codes)
-    .map((row, index) => normalizeCode(row, index))
+  const codesRaw: unknown[] = hasCodesField ? (raw.codes as unknown[]) : defaults.codes;
+  const codes = codesRaw
+    .map((row: unknown, index: number) => normalizeCode(row, index))
     .filter((row): row is BgmiLiteRedeemCodeItem => Boolean(row));
 
   const hasFaqsField = Array.isArray(raw.faqs);
-  const faqs = (hasFaqsField ? raw.faqs : defaults.faqs)
-    .map((row, index) => normalizeFaq(row, index))
+  const faqsRaw: unknown[] = hasFaqsField ? (raw.faqs as unknown[]) : defaults.faqs;
+  const faqs = faqsRaw
+    .map((row: unknown, index: number) => normalizeFaq(row, index))
     .filter((row): row is BgmiLiteRedeemFaqItem => Boolean(row));
 
   return renameLiteDisplayDeep({

@@ -6,6 +6,7 @@ import {
   defaultTitleForSlug,
   isCoreLegalSlug,
 } from "@/src/lib/legalPages";
+import { sanitizeHtml } from "@/src/lib/sanitizeHtml";
 import { toCanonicalUrl } from "@/src/lib/siteUrl";
 import { buildSocialMetadata } from "@/src/lib/socialMeta";
 import {
@@ -97,7 +98,9 @@ export async function LegalDocumentPage({ slug, softFallback = false }: Props) {
           {html || fallbackHtml ? (
             <div
               className="legal-document-body"
-              dangerouslySetInnerHTML={{ __html: html || fallbackHtml }}
+              dangerouslySetInnerHTML={{
+                __html: sanitizeHtml(html || fallbackHtml),
+              }}
             />
           ) : (
             <p>No content yet.</p>

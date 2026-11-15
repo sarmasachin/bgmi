@@ -1,15 +1,17 @@
 import type { Metadata, Viewport } from "next";
 import { Barlow_Condensed, DM_Sans } from "next/font/google";
+import { HomeHeader } from "@/src/components/HomeHeader";
+import { SiteFooter } from "@/src/components/SiteFooter";
 import { Gta6CheatArticle } from "@/src/features/gta6Calculator/Gta6CheatArticle";
 import { GTA6_CHEAT_DESCRIPTION, GTA6_CHEAT_TITLE } from "@/src/features/gta6Calculator/gta6-cheat-copy";
 import { Gta6Header } from "@/src/features/gta6Calculator/Gta6Header";
 import { GTA6_PATH } from "@/src/features/gta6Calculator/gta6-seo";
 import "@/src/features/gta6Calculator/gta6-tw.css";
 import "@/src/features/gta6Calculator/gta6Calculator.css";
-import { SiteFooter } from "@/src/components/SiteFooter";
 import { breadcrumbListSchema, webPageSchema } from "@/src/lib/schema";
 import { buildSocialMetadata } from "@/src/lib/socialMeta";
 import { toCanonicalUrl } from "@/src/lib/siteUrl";
+import { getSettings } from "@/src/server/repositories/settingsRepository";
 
 const display = Barlow_Condensed({
   subsets: ["latin"],
@@ -58,11 +60,17 @@ const jsonLd = [
   ]),
 ].filter(Boolean);
 
-export default function Gta6CheatCodePage() {
+export default async function Gta6CheatCodePage() {
+  const settings = await getSettings();
+
   return (
     <>
+      <HomeHeader
+        siteTitle={settings.homeDisplay.headerTitle}
+        navigation={settings.navigation}
+        chipNav={<Gta6Header path={GTA6_PATH} />}
+      />
       <div className={`gta6-root ${display.variable} ${body.variable}`}>
-        <Gta6Header path={GTA6_PATH} />
         <main id="top">
           <Gta6CheatArticle />
         </main>

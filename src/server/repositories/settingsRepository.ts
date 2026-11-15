@@ -18,9 +18,11 @@ import {
   type FfTrustBarItem,
 } from "@/src/lib/ffTrustBar";
 import { bumpSitemapLastmod } from "@/src/server/repositories/sitemapLastmodRepository";
+import { isDiwaliDiyasEnabled } from "@/src/lib/diwaliDecor";
 
 export type { FfTrustBarItem };
 export { DEFAULT_FF_TRUST_BAR };
+export { isDiwaliDiyasEnabled };
 
 type SettingsPayload = {
   seo?: Record<string, unknown>;
@@ -59,6 +61,8 @@ const defaultSettings = {
     cdn: { provider: "supabase", baseUrl: "" },
     /** When false, footer social share links are hidden on public pages. */
     showShareRail: true,
+    /** When true, Diwali diyas show on calculators / update boxes. */
+    showDiwaliDiyas: false,
   },
   navigation: [
     ...FREE_FIRE_NAV.map((item) => ({ label: item.label, href: item.href })),
@@ -217,10 +221,17 @@ export const getSettings = cache(async function getSettings() {
       ...defaultSettings.theme,
       ...(map[SETTINGS_KEYS.theme] as Record<string, unknown> | undefined),
     },
-    integrations: {
-      ...defaultSettings.integrations,
-      ...(map[SETTINGS_KEYS.integrations] as Record<string, unknown> | undefined),
-    },
+    integrations: (() => {
+      const merged = {
+        ...defaultSettings.integrations,
+        ...(map[SETTINGS_KEYS.integrations] as Record<string, unknown> | undefined),
+      };
+      return {
+        ...merged,
+        showShareRail: isShareRailEnabled(merged),
+        showDiwaliDiyas: isDiwaliDiyasEnabled(merged),
+      };
+    })(),
     navigation: ensurePubgMobileLiteNavigation(
       ensurePubgMobileCodesNavigation(
         ensureFreeFireNavigation(
@@ -382,31 +393,4 @@ export async function saveSettings(payload: SettingsPayload) {
   }
 }
 
-export const getHeadSnippets = cache(async function getHeadSnippets() {
-  const row = await tryPrisma(async () =>
-    prisma.siteSetting.findUnique({ where: { key: SETTINGS_KEYS.headSnippets } }),
-  );
-  return (
-    (row?.value as
-      | { googleVerificationMeta?: string; analyticsScript?: string; adsenseScript?: string }
-      | undefined) ?? {
-      googleVerificationMeta: "",
-      analyticsScript: "",
-      adsenseScript: "",
-    }
-  );
-});
-
-export async function saveHeadSnippets(payload: {
-  googleVerificationMeta?: string;
-  analyticsScript?: string;
-  adsenseScript?: string;
-}) {
-  await tryPrisma(async () =>
-    prisma.siteSetting.upsert({
-      where: { key: SETTINGS_KEYS.headSnippets },
-      create: { key: SETTINGS_KEYS.headSnippets, value: payload },
-      update: { value: payload },
-    }),
-  );
-}
+export { getHeadSnippets, saveHeadSnippets } from "@/src/server/repositories/headSnippetsRepository";

@@ -9,7 +9,7 @@ import { legalSlugToSitemapPath, pickLatestDate, toSitemapLastmodIst } from "@/s
 import { listPublishedLegalForSitemap } from "@/src/server/repositories/legalPagesRepository";
 import { listNewsCategorySlugs } from "@/src/server/repositories/newsCategoryRepository";
 import { listPublishedNewsForSitemap } from "@/src/server/repositories/newsRepository";
-import { listPublishedPagesForSitemap } from "@/src/server/repositories/pagesRepository";
+import { listPublishedPagesForSitemap } from "@/src/server/repositories/pagesSitemapRepository";
 import {
   getSitemapLastmodMap,
   resolveSitemapLastmod,

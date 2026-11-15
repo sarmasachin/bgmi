@@ -2,7 +2,8 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { DiwaliCardDiyas, withDiwaliClass } from "@/src/components/DiwaliCardDiyas";
+import { DiwaliCardDiyas } from "@/src/components/DiwaliCardDiyas";
+import { useDiwaliClass } from "@/src/components/DiwaliDecorProvider";
 import { FF_MAX_SITE_PATCH, FF_SITE_PATCH } from "@/src/lib/ffOfficialPatch";
 import { FREE_FIRE_MAX_PATH } from "@/src/lib/freeFirePages";
 import {
@@ -27,6 +28,7 @@ type Props = {
  */
 export function FfPatchStrip({ homeContent, indiaContent, liteContent, pubgLiteContent }: Props) {
   const pathname = usePathname() ?? "";
+  const stripClass = useDiwaliClass("ff-patch-strip", "ff-patch-strip--diwali");
   const isHome = isHomeFfPath(pathname);
   const isMax = pathname === FREE_FIRE_MAX_PATH;
   const isLite = isLiteCalculatorPath(pathname);
@@ -54,7 +56,7 @@ export function FfPatchStrip({ homeContent, indiaContent, liteContent, pubgLiteC
             : "Free Fire update news";
 
   return (
-    <aside className={withDiwaliClass("ff-patch-strip", "ff-patch-strip--diwali")} aria-label={aria}>
+    <aside className={stripClass} aria-label={aria}>
       <div className="ff-patch-strip-inner">
         <DiwaliCardDiyas />
         <div className="ff-patch-strip-main">

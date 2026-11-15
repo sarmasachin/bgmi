@@ -21,10 +21,10 @@ Shared UI: `DiwaliCardDiyas` + `SHOW_DIWALI_DIYAS` in `src/lib/diwaliDecor.ts`.
 
 ## After Diwali — same website layout
 
-1. Set `SHOW_DIWALI_DIYAS = false` in `src/lib/diwaliDecor.ts`.
+1. Admin → Website Settings → uncheck **Show Diwali diya decorations** (`integrations.showDiwaliDiyas = false`).
 2. That turns off **all** diyas and drops `--diwali` extra top margin everywhere.
 3. Do **not** bake Diwali-only spacing into default card/strip rules.
-4. Optional cleanup: delete `DiwaliDiya.tsx`, `DiwaliCardDiyas.tsx`, `diwaliDiya.css`, `diwaliDecor.ts`, and `--diwali` CSS.
+4. Optional cleanup: delete Diwali components/CSS/provider and `--diwali` CSS.
 
 ## Never
 

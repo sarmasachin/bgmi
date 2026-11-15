@@ -1,0 +1,28 @@
+---
+description: Jo bola jaye usko poora proper fix karo; bina check/test ke kaam mat chhodo
+alwaysApply: true
+---
+
+# Complete fix + verify (no half work)
+
+User ne jo bug/feature bola hai, **end-to-end working** banana hai. “Code likh diya” kaafi nahi.
+
+## Must
+
+1. **Poora fix** — sirf ek layer mat chhodo (API theek, UI cache/stale; ya mock OK, DB skip). Public page, admin, save path, timeout, cache — jo user dekhega woh sab.
+2. **Pehle cause, phir patch** — guess pe “ho gaya” mat bolo. File/path khol ke evidence lo.
+3. **Bina check/test ke mat chhodo** — local verify: relevant page/API, empty/error path, jo pehle toot raha tha. UI change ho to browser ya curl. Test/e2e ho to chalao.
+4. **Final working** — timeout, cache (`force-dynamic`), galat field (`publishedAt` vs `updatedAt`), mock-vs-DB, deploy ke bina live pe dikhega ya nahi — yeh soch ke band karo.
+5. **Honest status** — half fix ho to “done” mat likho. Kya verify hua, kya nahi, seedha batao.
+6. **400 lines** — source file 400 se upar mat rakho. Edit se 400 cross ho to pehle split, phir fix.
+
+## Don't
+
+- Adha patch + “fix ho gaya”
+- Sirf repo function change, page cache/timeout ignore
+- Bina run/check ke push/deploy ready claim
+
+## Example
+
+- ❌ News date: `publishedAt = now` repo me, 2s `tryPrisma` timeout + cached article page — live purani date.
+- ✅ Same save DB pe persist, public date latest time, article route fresh, phir verify.

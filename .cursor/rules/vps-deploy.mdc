@@ -1,0 +1,35 @@
+---
+description: Safe VPS deploy for BGMI (sensitivitysettings.com) — avoid 502
+alwaysApply: true
+---
+
+# BGMI VPS deploy rule (zero-downtime)
+
+App: PM2 `bgmi`, path `/var/www/bgmi`, port **3001**, site `sensitivitysettings.com`.
+
+## Always use this order
+
+```bash
+cd /var/www/bgmi
+git fetch && git reset --hard origin/main
+npx prisma generate && npx prisma db push
+npm run build
+# ONLY if build succeeds:
+pm2 reload bgmi
+curl -sI http://127.0.0.1:3001/ | head -n 3
+```
+
+Prefer **`pm2 reload`** over `pm2 restart` so the site does not go fully down.
+
+## Never
+
+- Reload/restart if `npm run build` failed
+- Delete `.next` without immediately running a successful `npm run build`
+- Run `pm2 kill` during traffic
+- Deploy `app/[category]` beside `app/[slug]` (Next.js clash → crash/502). Article route must stay `app/[slug]/[newsSlug]`
+
+## After outage checklist
+
+- Nginx `Connection refused` on `:3001` = Node/PM2 not listening (not always a code bug)
+- Check: `grep 'New PM2 Daemon' ~/.pm2/pm2.log | tail -5`
+- Ensure: `pm2 startup` + `pm2 save` so PM2 survives reboot

@@ -125,6 +125,13 @@
   line-height: 1.65;
 }
 
+/* Editor/paste often saves <font color="#ffffff"> — white text on white card = “hidden”. */
+.news-detail-page .news-detail-card font,
+.news-detail-page .news-detail-card font[color] {
+  color: inherit !important;
+  -webkit-text-fill-color: currentColor !important;
+}
+
 .news-detail-page .news-detail-breadcrumb {
   margin: 0 0 14px;
 }

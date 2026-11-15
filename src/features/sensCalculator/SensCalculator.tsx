@@ -16,7 +16,8 @@ import {
   playerRoleOptions,
   ramOptions,
 } from "./constants";
-import { DiwaliCardDiyas, withDiwaliClass } from "@/src/components/DiwaliCardDiyas";
+import { DiwaliCardDiyas } from "@/src/components/DiwaliCardDiyas";
+import { useDiwaliClass } from "@/src/components/DiwaliDecorProvider";
 import { resolveLockedPhone, searchPhones } from "@/src/lib/calculatorPhoneBrand";
 
 type FormState = {
@@ -95,10 +96,12 @@ export function SensCalculator({ phoneModels, game = "bgmi", phoneBrand }: Props
     setBrandError(null);
   }
 
+  const cardClass = useDiwaliClass("calc-card", "calc-card--diwali");
+
   return (
     <div className="main-wrapper">
       <form
-        className={withDiwaliClass("calc-card", "calc-card--diwali")}
+        className={cardClass}
         onSubmit={(e) => {
           e.preventDefault();
           runCalculate();

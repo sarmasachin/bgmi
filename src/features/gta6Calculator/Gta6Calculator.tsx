@@ -1,7 +1,8 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { DiwaliCardDiyas, withDiwaliClass } from "@/src/components/DiwaliCardDiyas";
+import { DiwaliCardDiyas } from "@/src/components/DiwaliCardDiyas";
+import { useDiwaliClass } from "@/src/components/DiwaliDecorProvider";
 import { Gta6ConsoleFields } from "@/src/features/gta6Calculator/Gta6ConsoleFields";
 import { Gta6SensFields } from "@/src/features/gta6Calculator/Gta6SensFields";
 import { copyPlainText, gta6CopyText } from "@/src/features/gta6Calculator/gta6-copy";
@@ -52,11 +53,10 @@ export function Gta6Calculator() {
     setCopied(await copyPlainText(text));
   }
 
+  const formClass = useDiwaliClass("gta6-form", "gta6-form--diwali");
+
   return (
-    <form
-      className={withDiwaliClass("gta6-form", "gta6-form--diwali")}
-      onSubmit={(event) => event.preventDefault()}
-    >
+    <form className={formClass} onSubmit={(event) => event.preventDefault()}>
       <DiwaliCardDiyas />
       <div className="gta6-picks">
         <div className="gta6-pick">

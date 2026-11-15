@@ -17,7 +17,8 @@ import {
   liteRamOptions,
 } from "./liteConstants";
 import type { LiteCalcBrand } from "@/src/lib/gamePagePath";
-import { DiwaliCardDiyas, withDiwaliClass } from "@/src/components/DiwaliCardDiyas";
+import { DiwaliCardDiyas } from "@/src/components/DiwaliCardDiyas";
+import { useDiwaliClass } from "@/src/components/DiwaliDecorProvider";
 import { resolveLockedPhone, searchPhones } from "@/src/lib/calculatorPhoneBrand";
 import {
   LITE_SET_PLAY_STYLE_EVENT,
@@ -129,6 +130,8 @@ export function LiteSensCalculator({ phoneModels, brand = "bgmi-lite", banner, p
     }
   }
 
+  const cardClass = useDiwaliClass("calc-card", "calc-card--diwali");
+
   return (
     <div id={copy.id} className="lite-calc">
       <p className="lite-calc__banner" role="note">
@@ -138,7 +141,7 @@ export function LiteSensCalculator({ phoneModels, brand = "bgmi-lite", banner, p
 
       <div className="main-wrapper">
         <form
-          className={withDiwaliClass("calc-card", "calc-card--diwali")}
+          className={cardClass}
           onSubmit={(e) => {
             e.preventDefault();
             runCalculate();
