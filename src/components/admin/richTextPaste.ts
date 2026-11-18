@@ -89,7 +89,25 @@ export function sanitizeHtml(raw: string) {
     }
   });
 
+  stripSheetsOrigin(doc);
   return doc.body.innerHTML;
+}
+
+/** Google Sheets puts this empty marker above the copied table, which shows as a blank line. */
+function stripSheetsOrigin(doc: Document) {
+  doc.querySelectorAll("google-sheets-html-origin").forEach((element) => {
+    const parent = element.parentNode;
+    if (!parent) return;
+    while (element.firstChild) parent.insertBefore(element.firstChild, element);
+    parent.removeChild(element);
+    if (parent.nodeType !== Node.ELEMENT_NODE || parent === doc.body) return;
+    const block = parent as Element;
+    if (!/^(P|DIV)$/.test(block.tagName)) return;
+    const text = (block.textContent ?? "").replace(/\u00a0/g, " ").trim();
+    if (!text && !block.querySelector("img,table,iframe,video,ul,ol,hr")) {
+      block.remove();
+    }
+  });
 }
 
 function escapeCell(text: string) {

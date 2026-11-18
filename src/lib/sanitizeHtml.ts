@@ -83,5 +83,12 @@ export function sanitizeHtml(raw: string): string {
     return allowed ? tag : "";
   });
 
+  // Google Sheets clipboard marker. Empty, and it renders as a blank line above the table.
+  html = html.replace(
+    /<p>\s*(?:<br\s*\/?>\s*)*<google-sheets-html-origin\b[^>]*>(?:\s|<br\s*\/?>)*<\/google-sheets-html-origin>\s*(?:<br\s*\/?>\s*)*<\/p>/gi,
+    "",
+  );
+  html = html.replace(/<\/?google-sheets-html-origin\b[^>]*>/gi, "");
+
   return html;
 }
