@@ -6,6 +6,7 @@ import {
   DEFAULT_NEWS_CATEGORIES,
   DEFAULT_NEWS_CATEGORY,
   FREE_FIRE_INDIA_NEWS_CATEGORY,
+  GTA6_NEWS_CATEGORY,
   isValidCategorySlugFormat,
   normalizeCategorySlugInput,
   PUBG_MOBILE_LITE_NEWS_CATEGORY,
@@ -67,6 +68,7 @@ async function ensureBgmiHubs() {
     { slug: BGMI_LITE_NEWS_CATEGORY, label: "BGMI Air" },
     { slug: PUBG_MOBILE_LITE_NEWS_CATEGORY, label: "PUBG Mobile Flash" },
     { slug: FREE_FIRE_INDIA_NEWS_CATEGORY, label: "Free Fire India" },
+    { slug: GTA6_NEWS_CATEGORY, label: "GTA 6" },
   ] as const;
   for (const hub of required) {
     const existing = await prisma.newsCategory.findUnique({ where: { slug: hub.slug } });
@@ -80,13 +82,17 @@ async function ensureBgmiHubs() {
       continue;
     }
     const max = await prisma.newsCategory.aggregate({ _max: { sortOrder: true } });
-    await prisma.newsCategory.create({
-      data: {
-        slug: hub.slug,
-        label: hub.label,
-        sortOrder: (max._max.sortOrder ?? -1) + 1,
-      },
-    });
+    try {
+      await prisma.newsCategory.create({
+        data: {
+          slug: hub.slug,
+          label: hub.label,
+          sortOrder: (max._max.sortOrder ?? -1) + 1,
+        },
+      });
+    } catch {
+      // Another request inserted this slug first.
+    }
   }
 }
 

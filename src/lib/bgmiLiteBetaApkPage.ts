@@ -13,6 +13,10 @@ import {
 
 export const BGMI_LITE_APK_PAGE_KEY = "bgmi-lite-apk";
 
+/** Official Krafton listing. Admin can replace this URL. */
+export const BGMI_LITE_PLAY_STORE_URL =
+  "https://play.google.com/store/apps/details?id=com.krafton.bgmilite";
+
 export type BgmiLiteApkHeroButton = ApkHeroButton;
 export type BgmiLiteApkCountdown = ApkHeroCountdown;
 
@@ -106,13 +110,13 @@ export const DEFAULT_BGMI_LITE_APK_PAGE: BgmiLiteBetaApkPageContent = {
   heroButtons: {
     playStore: {
       label: "Play Store",
-      href: "",
+      href: BGMI_LITE_PLAY_STORE_URL,
       visible: true,
     },
     apk: {
-      label: "APK",
-      href: "",
-      visible: false,
+      label: "Download",
+      href: BGMI_LITE_PLAY_STORE_URL,
+      visible: true,
     },
   },
   countdown: {

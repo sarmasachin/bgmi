@@ -155,8 +155,12 @@ export async function createGta6LeafletMap(
     map,
     markers,
     destroy: () => {
-      mapContainer.removeEventListener("touchmove", blockTouchScroll);
-      map.remove();
+      try {
+        mapContainer.removeEventListener("touchmove", blockTouchScroll);
+        map.remove();
+      } catch {
+        // Second remove throws "container is being reused" and was crashing the next page.
+      }
     },
     flyToPin: (pin) => {
       if (!visibleIds.has(pin.id)) return;

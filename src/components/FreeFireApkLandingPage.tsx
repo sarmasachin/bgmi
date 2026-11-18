@@ -6,6 +6,7 @@ import { HomeHeader } from "@/src/components/HomeHeader";
 import { HomeTitleDummyAd } from "@/src/components/HomeTitleDummyAd";
 import { PageCommentSection } from "@/src/components/PageCommentSection";
 import { RatingWidget } from "@/src/components/RatingWidget";
+import { ApkStoreIntro } from "@/src/components/ApkStoreIntro";
 import { FreeFireApkHeroActions } from "@/src/components/FreeFireApkHeroActions";
 import { FreeFireIndiaApkIntro } from "@/src/components/FreeFireIndiaApkIntro";
 import { SiteFooter } from "@/src/components/SiteFooter";
@@ -85,7 +86,7 @@ async function loadLandingData(variant: ApkLandingVariant): Promise<LandingData>
       variant === "india" ? getFreeFireIndiaApkPage() : getFreeFireApkPage(),
       listApprovedPageComments(meta.pageKey),
       getRatingSummary("tool", meta.pageKey),
-      variant === "india" ? getApkDownloadCount(meta.pageKey) : Promise.resolve(0),
+      getApkDownloadCount(meta.pageKey),
     ]);
 
   if (settingsResult.status === "rejected") {
@@ -177,14 +178,26 @@ async function FreeFireStyleApkLanding({ variant }: { variant: ApkLandingVariant
             ratingSummary={ratingSummary}
             downloadCount={downloadCount}
           />
-        ) : null}
+        ) : (
+          <ApkStoreIntro
+            rows={page.facts.rows}
+            heroTitle={page.heroTitle}
+            fallbackTitle="Free Fire"
+            imageSrc="/ff/free-fire-icon.jpg"
+            imageAlt={page.heroImageAlt}
+            dateText={page.countdown.dateText}
+            pageKey={meta.pageKey}
+            downloadCount={downloadCount}
+            ratingSummary={ratingSummary}
+          />
+        )}
 
         <FreeFireApkHeroActions
           countdown={page.countdown}
           playStore={page.heroButtons.playStore}
           apk={page.heroButtons.apk}
           groupLabel={meta.downloadLabel}
-          downloadCountPageKey={variant === "india" ? meta.pageKey : undefined}
+          downloadCountPageKey={meta.pageKey}
         />
         <HomeTitleDummyAd slotKey="apk_below_actions" />
 

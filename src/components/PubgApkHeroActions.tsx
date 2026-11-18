@@ -4,6 +4,8 @@ import Link from "next/link";
 import { useEffect, useState, type ReactNode } from "react";
 import { ClientErrorBoundary } from "@/src/components/ClientErrorBoundary";
 import { FfAdvanceServerCountdown } from "@/src/components/FfAdvanceServerCountdown";
+import { trackApkDownloadClick } from "@/src/lib/apkDownloadCountClient";
+import { isHostedApkFileHref } from "@/src/lib/apkHeroCta";
 import {
   isPubgApkCountdownTicking,
   isPubgApkHeroButtonPublic,
@@ -15,28 +17,44 @@ function HeroCtaLink({
   btn,
   className,
   icon,
+  onNavigate,
 }: {
   btn: PubgApkHeroButton;
   className: string;
   icon: string;
+  onNavigate?: () => void;
 }) {
   const href = btn.href.trim();
   const external = /^https?:\/\//i.test(href);
+  const hostedFile = isHostedApkFileHref(href);
   const inner: ReactNode = (
     <>
       <i className={`fa-solid ${icon}`} aria-hidden />
       <span>{btn.label}</span>
     </>
   );
+  if (hostedFile) {
+    return (
+      <a className={className} href={href} download onClick={onNavigate}>
+        {inner}
+      </a>
+    );
+  }
   if (external) {
     return (
-      <a className={className} href={href} target="_blank" rel="noopener noreferrer">
+      <a
+        className={className}
+        href={href}
+        target="_blank"
+        rel="noopener noreferrer"
+        onClick={onNavigate}
+      >
         {inner}
       </a>
     );
   }
   return (
-    <Link className={className} href={href}>
+    <Link className={className} href={href} onClick={onNavigate}>
       {inner}
     </Link>
   );
@@ -46,6 +64,7 @@ type Props = {
   countdown: PubgApkCountdown;
   playStore: PubgApkHeroButton;
   apk: PubgApkHeroButton;
+  downloadCountPageKey?: string;
 };
 
 /**
@@ -53,7 +72,7 @@ type Props = {
  * When the timer is off or the target time has passed, Play/APK buttons show
  * automatically (if Show + label + URL are set).
  */
-export function PubgApkHeroActions({ countdown, playStore, apk }: Props) {
+export function PubgApkHeroActions({ countdown, playStore, apk, downloadCountPageKey }: Props) {
   const showCountdown = Boolean(countdown.visible && countdown.targetIso.trim());
   const [ticking, setTicking] = useState(() => isPubgApkCountdownTicking(countdown));
 
@@ -67,6 +86,9 @@ export function PubgApkHeroActions({ countdown, playStore, apk }: Props) {
 
   const showPlay = !ticking && isPubgApkHeroButtonPublic(playStore);
   const showApk = !ticking && isPubgApkHeroButtonPublic(apk);
+  const onApkClick = downloadCountPageKey
+    ? () => trackApkDownloadClick(downloadCountPageKey)
+    : undefined;
 
   return (
     <>
@@ -91,6 +113,7 @@ export function PubgApkHeroActions({ countdown, playStore, apk }: Props) {
               btn={apk}
               className="ff-as-apk-btn ff-as-apk-btn--alt"
               icon="fa-download"
+              onNavigate={onApkClick}
             />
           ) : null}
         </div>

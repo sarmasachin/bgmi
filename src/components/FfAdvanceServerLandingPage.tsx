@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { ApkStoreIntro } from "@/src/components/ApkStoreIntro";
 import { ClientErrorBoundary } from "@/src/components/ClientErrorBoundary";
 import { FaqAccordion } from "@/src/components/FaqAccordion";
 import { FfAdvanceServerCountdown } from "@/src/components/FfAdvanceServerCountdown";
@@ -19,6 +20,7 @@ import {
 } from "@/src/lib/schema";
 import { toCanonicalUrl } from "@/src/lib/siteUrl";
 import { toSitemapLastmodIst } from "@/src/lib/sitemapLastmod";
+import { getApkDownloadCount } from "@/src/server/repositories/apkDownloadCountRepository";
 import { getAdvanceServerPage, getAdvanceServerUpdatedAt } from "@/src/server/repositories/advanceServerPageRepository";
 import { listApprovedPageComments } from "@/src/server/repositories/pageCommentsRepository";
 import { getRatingSummary } from "@/src/server/repositories/ratingSummaryRepository";
@@ -41,13 +43,15 @@ function renderCardPoint(cardId: string, point: string) {
  * No APK hosted and no publisher / Garena outbound links.
  */
 export async function FfAdvanceServerLandingPage() {
-  const [settings, page, pageComments, ratingSummary, contentUpdatedAt] = await Promise.all([
-    getSettings(),
-    getAdvanceServerPage(),
-    listApprovedPageComments(FREE_FIRE_ADVANCE_SERVER_PAGE_KEY),
-    getRatingSummary("tool", FREE_FIRE_ADVANCE_SERVER_PAGE_KEY),
-    getAdvanceServerUpdatedAt(),
-  ]);
+  const [settings, page, pageComments, ratingSummary, contentUpdatedAt, downloadCount] =
+    await Promise.all([
+      getSettings(),
+      getAdvanceServerPage(),
+      listApprovedPageComments(FREE_FIRE_ADVANCE_SERVER_PAGE_KEY),
+      getRatingSummary("tool", FREE_FIRE_ADVANCE_SERVER_PAGE_KEY),
+      getAdvanceServerUpdatedAt(),
+      getApkDownloadCount(FREE_FIRE_ADVANCE_SERVER_PAGE_KEY).catch(() => 0),
+    ]);
   const faqItems = page.faqs.map((item) => ({
     id: item.id,
     question: item.question,
@@ -106,6 +110,22 @@ export async function FfAdvanceServerLandingPage() {
             </li>
           ))}
         </ul>
+
+        <ApkStoreIntro
+          rows={[
+            { label: "Game", value: "FF & FF Max Advance Server" },
+            { label: "Publisher", value: "Publisher portal" },
+            { label: "Android", value: "Android only" },
+          ]}
+          heroTitle={page.heroTitle}
+          fallbackTitle="Advance Server"
+          imageSrc="/ff/advance-server-icon.jpg"
+          imageAlt={page.heroImageAlt || "Advance Server"}
+          dateText={page.countdown.dateText}
+          pageKey={FREE_FIRE_ADVANCE_SERVER_PAGE_KEY}
+          downloadCount={downloadCount}
+          ratingSummary={ratingSummary}
+        />
 
         <FfAdvanceServerCountdown
           label={page.countdown.label}

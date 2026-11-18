@@ -5,6 +5,7 @@ import { FaqAccordion } from "@/src/components/FaqAccordion";
 import { HomeHeader } from "@/src/components/HomeHeader";
 import { HomeTitleDummyAd } from "@/src/components/HomeTitleDummyAd";
 import { PageCommentSection } from "@/src/components/PageCommentSection";
+import { ApkStoreIntro } from "@/src/components/ApkStoreIntro";
 import { PubgApkHeroActions } from "@/src/components/PubgApkHeroActions";
 import { RatingWidget } from "@/src/components/RatingWidget";
 import { SiteFooter } from "@/src/components/SiteFooter";
@@ -23,6 +24,7 @@ import {
   webPageSchema,
 } from "@/src/lib/schema";
 import { toCanonicalUrl } from "@/src/lib/siteUrl";
+import { getApkDownloadCount } from "@/src/server/repositories/apkDownloadCountRepository";
 import { getPubgApkPage } from "@/src/server/repositories/pubgApkPageRepository";
 import {
   getRatingSummary,
@@ -39,16 +41,19 @@ type LandingData = {
   page: PubgApkPageContent;
   pageComments: PublicPageComment[];
   ratingSummary: RatingSummary | null;
+  downloadCount: number;
 };
 
 /** Isolate data failures so comments/CMS cannot blank the whole page. */
 async function loadLandingData(): Promise<LandingData> {
-  const [settingsResult, pageResult, commentsResult, ratingResult] = await Promise.allSettled([
-    getSettings(),
-    getPubgApkPage(),
-    listApprovedPageComments(PUBG_APK_PAGE_KEY),
-    getRatingSummary("tool", PUBG_APK_PAGE_KEY),
-  ]);
+  const [settingsResult, pageResult, commentsResult, ratingResult, downloadResult] =
+    await Promise.allSettled([
+      getSettings(),
+      getPubgApkPage(),
+      listApprovedPageComments(PUBG_APK_PAGE_KEY),
+      getRatingSummary("tool", PUBG_APK_PAGE_KEY),
+      getApkDownloadCount(PUBG_APK_PAGE_KEY),
+    ]);
 
   if (settingsResult.status === "rejected") {
     throw settingsResult.reason instanceof Error
@@ -61,11 +66,12 @@ async function loadLandingData(): Promise<LandingData> {
     page: pageResult.status === "fulfilled" ? pageResult.value : DEFAULT_PUBG_APK_PAGE,
     pageComments: commentsResult.status === "fulfilled" ? commentsResult.value : [],
     ratingSummary: ratingResult.status === "fulfilled" ? ratingResult.value : null,
+    downloadCount: downloadResult.status === "fulfilled" ? downloadResult.value : 0,
   };
 }
 
 export async function PubgApkLandingPage() {
-  const { settings, pageComments, page, ratingSummary } = await loadLandingData();
+  const { settings, pageComments, page, ratingSummary, downloadCount } = await loadLandingData();
   const canonical = toCanonicalUrl(PUBG_APK_PATH);
   const homeUrl = toCanonicalUrl("/");
   const pubgUrl = toCanonicalUrl("/pubg");
@@ -132,10 +138,23 @@ export async function PubgApkLandingPage() {
           ))}
         </ul>
 
+        <ApkStoreIntro
+          rows={page.facts.rows}
+          heroTitle={page.heroTitle}
+          fallbackTitle="PUBG Mobile"
+          imageSrc="/pubg/pubg-mobile-icon.jpg"
+          imageAlt={page.heroImageAlt}
+          dateText={page.countdown.dateText}
+          pageKey={PUBG_APK_PAGE_KEY}
+          downloadCount={downloadCount}
+          ratingSummary={ratingSummary}
+        />
+
         <PubgApkHeroActions
           countdown={page.countdown}
           playStore={page.heroButtons.playStore}
           apk={page.heroButtons.apk}
+          downloadCountPageKey={PUBG_APK_PAGE_KEY}
         />
         <HomeTitleDummyAd slotKey="apk_below_actions" />
 

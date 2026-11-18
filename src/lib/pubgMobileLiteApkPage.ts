@@ -17,6 +17,10 @@ export { PUBG_MOBILE_LITE_APK_PATH };
 
 export const PUBG_MOBILE_LITE_APK_PAGE_KEY = "pubg-mobile-lite-apk";
 
+/** Official Level Infinite listing. Admin can replace this URL. */
+export const PUBG_MOBILE_LITE_PLAY_STORE_URL =
+  "https://play.google.com/store/apps/details?id=com.tencent.igfit";
+
 /** Same site-tracked launch target as BGMI Air APK (IST). */
 export const PUBG_MOBILE_LITE_LAUNCH_TARGET_ISO = BGMI_LITE_LAUNCH_TARGET_ISO;
 
@@ -103,13 +107,13 @@ export const DEFAULT_PUBG_MOBILE_LITE_APK_PAGE: PubgMobileLiteApkPageContent = {
   heroButtons: {
     playStore: {
       label: "Play Store",
-      href: "",
+      href: PUBG_MOBILE_LITE_PLAY_STORE_URL,
       visible: true,
     },
     apk: {
-      label: "APK",
-      href: "",
-      visible: false,
+      label: "Download",
+      href: PUBG_MOBILE_LITE_PLAY_STORE_URL,
+      visible: true,
     },
   },
   countdown: {

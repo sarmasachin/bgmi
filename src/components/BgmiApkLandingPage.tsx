@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { ApkStoreIntro } from "@/src/components/ApkStoreIntro";
 import { BgmiApkHeroActions } from "@/src/components/BgmiApkHeroActions";
 import { BgmiLiteBetaApkInfoBlocks } from "@/src/components/BgmiLiteBetaApkInfoBlocks";
 import { ClientErrorBoundary } from "@/src/components/ClientErrorBoundary";
@@ -23,6 +24,7 @@ import {
   webPageSchema,
 } from "@/src/lib/schema";
 import { toCanonicalUrl } from "@/src/lib/siteUrl";
+import { getApkDownloadCount } from "@/src/server/repositories/apkDownloadCountRepository";
 import { getBgmiApkPage } from "@/src/server/repositories/bgmiApkPageRepository";
 import {
   getRatingSummary,
@@ -39,16 +41,19 @@ type LandingData = {
   page: BgmiApkPageContent;
   pageComments: PublicPageComment[];
   ratingSummary: RatingSummary | null;
+  downloadCount: number;
 };
 
 /** Isolate data failures so comments/CMS cannot blank the whole page. */
 async function loadLandingData(): Promise<LandingData> {
-  const [settingsResult, pageResult, commentsResult, ratingResult] = await Promise.allSettled([
-    getSettings(),
-    getBgmiApkPage(),
-    listApprovedPageComments(BGMI_APK_PAGE_KEY),
-    getRatingSummary("tool", BGMI_APK_PAGE_KEY),
-  ]);
+  const [settingsResult, pageResult, commentsResult, ratingResult, downloadResult] =
+    await Promise.allSettled([
+      getSettings(),
+      getBgmiApkPage(),
+      listApprovedPageComments(BGMI_APK_PAGE_KEY),
+      getRatingSummary("tool", BGMI_APK_PAGE_KEY),
+      getApkDownloadCount(BGMI_APK_PAGE_KEY),
+    ]);
 
   if (settingsResult.status === "rejected") {
     throw settingsResult.reason instanceof Error
@@ -61,11 +66,12 @@ async function loadLandingData(): Promise<LandingData> {
     page: pageResult.status === "fulfilled" ? pageResult.value : DEFAULT_BGMI_APK_PAGE,
     pageComments: commentsResult.status === "fulfilled" ? commentsResult.value : [],
     ratingSummary: ratingResult.status === "fulfilled" ? ratingResult.value : null,
+    downloadCount: downloadResult.status === "fulfilled" ? downloadResult.value : 0,
   };
 }
 
 export async function BgmiApkLandingPage() {
-  const { settings, pageComments, page, ratingSummary } = await loadLandingData();
+  const { settings, pageComments, page, ratingSummary, downloadCount } = await loadLandingData();
   const canonical = toCanonicalUrl(BGMI_APK_PATH);
   const homeUrl = toCanonicalUrl("/");
   const bgmiUrl = toCanonicalUrl("/bgmi");
@@ -132,10 +138,23 @@ export async function BgmiApkLandingPage() {
           ))}
         </ul>
 
+        <ApkStoreIntro
+          rows={page.facts.rows}
+          heroTitle={page.heroTitle}
+          fallbackTitle="BGMI"
+          imageSrc="/bgmi/bgmi-icon.jpg"
+          imageAlt={page.heroImageAlt}
+          dateText={page.countdown.dateText}
+          pageKey={BGMI_APK_PAGE_KEY}
+          downloadCount={downloadCount}
+          ratingSummary={ratingSummary}
+        />
+
         <BgmiApkHeroActions
           countdown={page.countdown}
           playStore={page.heroButtons.playStore}
           apk={page.heroButtons.apk}
+          downloadCountPageKey={BGMI_APK_PAGE_KEY}
         />
         <HomeTitleDummyAd slotKey="apk_below_actions" />
 

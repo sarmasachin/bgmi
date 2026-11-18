@@ -1,8 +1,24 @@
+import { BGMI_APK_PAGE_KEY } from "@/src/lib/bgmiApkPage";
+import { BGMI_LITE_APK_PAGE_KEY } from "@/src/lib/bgmiLiteBetaApkPage";
+import { FREE_FIRE_ADVANCE_SERVER_PAGE_KEY } from "@/src/lib/ffAdvanceServerPage";
+import { FREE_FIRE_APK_PAGE_KEY } from "@/src/lib/freeFireApkPage";
 import { FREE_FIRE_INDIA_APK_PAGE_KEY } from "@/src/lib/freeFireIndiaApkPage";
+import { FREE_FIRE_MAX_APK_PAGE_KEY } from "@/src/lib/freeFireMaxApkPage";
+import { PUBG_APK_PAGE_KEY } from "@/src/lib/pubgApkPage";
+import { PUBG_MOBILE_LITE_APK_PAGE_KEY } from "@/src/lib/pubgMobileLiteApkPage";
 import { prisma, tryPrisma, tryPrismaLong } from "@/src/server/dbSafe";
 import { mockStore } from "@/src/server/mockStore";
 
-const ALLOWED_KEYS = new Set<string>([FREE_FIRE_INDIA_APK_PAGE_KEY]);
+const ALLOWED_KEYS = new Set<string>([
+  FREE_FIRE_APK_PAGE_KEY,
+  FREE_FIRE_INDIA_APK_PAGE_KEY,
+  FREE_FIRE_MAX_APK_PAGE_KEY,
+  PUBG_APK_PAGE_KEY,
+  BGMI_APK_PAGE_KEY,
+  PUBG_MOBILE_LITE_APK_PAGE_KEY,
+  BGMI_LITE_APK_PAGE_KEY,
+  FREE_FIRE_ADVANCE_SERVER_PAGE_KEY,
+]);
 
 export function isAllowedApkDownloadPageKey(pageKey: string): boolean {
   return ALLOWED_KEYS.has(pageKey.trim());

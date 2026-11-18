@@ -1,5 +1,6 @@
 "use client";
 
+import { AdminApkFileUpload } from "@/src/components/admin/AdminApkFileUpload";
 import { apkHeroButtonPublicStatus } from "@/src/lib/apkHeroCta";
 import {
   BGMI_LITE_APK_PATH,
@@ -105,9 +106,9 @@ export function AdminBgmiLiteApkFormTop({ page, openIds, onToggle, onPatch }: Pr
         onToggle={onToggle}
       >
         <p style={{ margin: "0 0 12px", fontSize: 12, color: "#94a3b8", lineHeight: 1.45 }}>
-          Public page shows a button only if Show is on, label is filled, and URL is filled. While
-          the countdown is ticking, buttons stay hidden — they show when the timer ends or is
-          turned off.
+          Public page shows a button only if Show is on, label is filled, and URL is filled.
+          Upload an APK file (max 1GB) and the URL fills in, or paste your own link. While the
+          countdown is ticking, buttons stay hidden — they show when the timer ends or is turned off.
         </p>
         <strong style={{ display: "block", color: "#e2e8f0", marginBottom: 8 }}>Play Store</strong>
         <HeroButtonStatus btn={page.heroButtons.playStore} countdown={page.countdown} />
@@ -167,6 +168,14 @@ export function AdminBgmiLiteApkFormTop({ page, openIds, onToggle, onPatch }: Pr
           label="APK URL (required to show on public page)"
           value={page.heroButtons.apk.href}
           onChange={(href) =>
+            onPatch((p) => ({
+              ...p,
+              heroButtons: { ...p.heroButtons, apk: { ...p.heroButtons.apk, href } },
+            }))
+          }
+        />
+        <AdminApkFileUpload
+          onUploaded={(href) =>
             onPatch((p) => ({
               ...p,
               heroButtons: { ...p.heroButtons, apk: { ...p.heroButtons.apk, href } },

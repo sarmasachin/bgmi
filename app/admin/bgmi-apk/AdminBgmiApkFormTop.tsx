@@ -5,6 +5,7 @@ import {
   type BgmiApkPageContent,
   type BgmiApkPageSectionId,
 } from "@/src/lib/bgmiApkPage";
+import { AdminApkFileUpload } from "@/src/components/admin/AdminApkFileUpload";
 import { AdminAccordionSection, AdminCheckbox, AdminCountdownTarget, AdminField, AdminLinesEditor } from "./adminBgmiApkFields";
 
 function HeroButtonStatus({
@@ -99,8 +100,8 @@ export function AdminBgmiApkFormTop({ page, openIds, onToggle, onPatch }: Props)
       >
         <p style={{ margin: "0 0 12px", fontSize: 12, color: "#94a3b8", lineHeight: 1.45 }}>
           Public page shows a button only if Show is on, label is filled, and URL is filled.
-          We do not host APK files — paste the link you want. Check the yellow/green status under
-          each button before saving.
+          Upload an APK file (max 1GB) and the URL fills in, or paste your own link. Check the
+          yellow/green status under each button before saving.
         </p>
         <strong style={{ display: "block", color: "#e2e8f0", marginBottom: 8 }}>Play Store</strong>
         <HeroButtonStatus btn={page.heroButtons.playStore} countdown={page.countdown} />
@@ -160,6 +161,14 @@ export function AdminBgmiApkFormTop({ page, openIds, onToggle, onPatch }: Props)
           label="APK URL (required to show on public page)"
           value={page.heroButtons.apk.href}
           onChange={(href) =>
+            onPatch((p) => ({
+              ...p,
+              heroButtons: { ...p.heroButtons, apk: { ...p.heroButtons.apk, href } },
+            }))
+          }
+        />
+        <AdminApkFileUpload
+          onUploaded={(href) =>
             onPatch((p) => ({
               ...p,
               heroButtons: { ...p.heroButtons, apk: { ...p.heroButtons.apk, href } },

@@ -11,6 +11,7 @@ export const DEFAULT_NEWS_CATEGORIES: readonly NewsCategoryDef[] = [
   { slug: "bgmi-lite", label: "BGMI Air" },
   { slug: "pubg", label: "PUBG Mobile" },
   { slug: "pubg-mobile-lite", label: "PUBG Mobile Flash" },
+  { slug: "gta-6", label: "GTA 6" },
 ] as const;
 
 /** Category used for /bgmi-air calculator news hub. */
@@ -21,6 +22,9 @@ export const PUBG_MOBILE_LITE_NEWS_CATEGORY = "pubg-mobile-lite";
 
 /** Free Fire India news hub. Listing stays under /news so it does not take the calculator URL. */
 export const FREE_FIRE_INDIA_NEWS_CATEGORY = "free-fire-india";
+
+/** GTA 6 news hub. Listing stays under /news. */
+export const GTA6_NEWS_CATEGORY = "gta-6";
 
 /** Public listing slug when it differs from the stored category slug. */
 const NEWS_CATEGORY_PUBLIC_SLUG: Record<string, string> = {
@@ -154,6 +158,7 @@ export function newsCategoryListingTitle(
   if (slug === "pubg") return "PUBG Mobile News";
   if (slug === BGMI_LITE_NEWS_CATEGORY) return "BGMI Air News";
   if (slug === PUBG_MOBILE_LITE_NEWS_CATEGORY) return "PUBG Mobile Flash News";
+  if (slug === GTA6_NEWS_CATEGORY) return "GTA 6 News";
   return `${label} News`;
 }
 
@@ -186,6 +191,9 @@ export function newsCategoryListingDescription(
   if (slug === PUBG_MOBILE_LITE_NEWS_CATEGORY) {
     return "Latest PUBG Mobile Flash news, updates, and guides for PUBG Mobile Flash players.";
   }
+  if (slug === GTA6_NEWS_CATEGORY) {
+    return "Latest GTA 6 news, launch updates, and guides.";
+  }
   return `Latest ${label} news, updates, and guides.`;
 }
 
@@ -201,6 +209,7 @@ const NEWS_LISTING_UNDER_NEWS_PREFIX = new Set([
   "free-fire",
   "free-fire-india",
   "ff-max",
+  "gta-6",
 ]);
 
 export function categoryListingOccupiesTopSlug(slug: string): boolean {
@@ -228,5 +237,6 @@ export function newsCategoryRelatedContentPath(slug: string): string | null {
   if (cat === "pubg") return "/pubg";
   if (cat === "ff-max") return "/free-fire-max-sensitivity-settings-calculator";
   if (cat === "free-fire") return "/";
+  if (cat === GTA6_NEWS_CATEGORY) return "/gta-6-sensitivity-settings-calculator";
   return null;
 }

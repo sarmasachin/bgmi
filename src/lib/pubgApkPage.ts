@@ -163,9 +163,9 @@ export const DEFAULT_PUBG_APK_PAGE: PubgApkPageContent = {
       visible: true,
     },
     apk: {
-      label: "APK",
-      href: "",
-      visible: false,
+      label: "Download",
+      href: PUBG_PLAY_STORE_URL,
+      visible: true,
     },
   },
   countdown: {

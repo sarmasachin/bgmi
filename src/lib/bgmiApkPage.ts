@@ -163,10 +163,9 @@ export const DEFAULT_BGMI_APK_PAGE: BgmiApkPageContent = {
       visible: true,
     },
     apk: {
-      label: "APK",
-      href: "",
-      // Off until admin pastes a URL — avoids “Show on” but button missing on public page.
-      visible: false,
+      label: "Download",
+      href: BGMI_PLAY_STORE_URL,
+      visible: true,
     },
   },
   countdown: {

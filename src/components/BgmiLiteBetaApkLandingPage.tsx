@@ -3,6 +3,7 @@ import { BgmiLiteBetaApkInfoBlocks } from "@/src/components/BgmiLiteBetaApkInfoB
 import { ClientErrorBoundary } from "@/src/components/ClientErrorBoundary";
 import { FaqAccordion } from "@/src/components/FaqAccordion";
 import { ApkHeroDownloadActions } from "@/src/components/ApkHeroDownloadActions";
+import { ApkStoreIntro } from "@/src/components/ApkStoreIntro";
 import { HomeHeader } from "@/src/components/HomeHeader";
 import { HomeTitleDummyAd } from "@/src/components/HomeTitleDummyAd";
 import { PageCommentSection } from "@/src/components/PageCommentSection";
@@ -20,6 +21,7 @@ import {
   webPageSchema,
 } from "@/src/lib/schema";
 import { toCanonicalUrl } from "@/src/lib/siteUrl";
+import { getApkDownloadCount } from "@/src/server/repositories/apkDownloadCountRepository";
 import { getBgmiLiteApkPage } from "@/src/server/repositories/bgmiLiteApkPageRepository";
 import { listApprovedPageComments } from "@/src/server/repositories/pageCommentsRepository";
 import { getRatingSummary } from "@/src/server/repositories/ratingSummaryRepository";
@@ -32,11 +34,12 @@ import { getSettings } from "@/src/server/repositories/settingsRepository";
  * Then rating, then comments.
  */
 export async function BgmiLiteBetaApkLandingPage() {
-  const [settings, pageComments, page, ratingSummary] = await Promise.all([
+  const [settings, pageComments, page, ratingSummary, downloadCount] = await Promise.all([
     getSettings(),
     listApprovedPageComments(BGMI_LITE_APK_PAGE_KEY),
     getBgmiLiteApkPage(),
     getRatingSummary("tool", BGMI_LITE_APK_PAGE_KEY).catch(() => null),
+    getApkDownloadCount(BGMI_LITE_APK_PAGE_KEY).catch(() => 0),
   ]);
   const canonical = toCanonicalUrl(BGMI_LITE_APK_PATH);
   const homeUrl = toCanonicalUrl("/");
@@ -102,11 +105,24 @@ export async function BgmiLiteBetaApkLandingPage() {
           ))}
         </ul>
 
+        <ApkStoreIntro
+          rows={page.facts.rows}
+          heroTitle={page.heroTitle}
+          fallbackTitle="BGMI Air"
+          imageSrc="/bgmi/bgmi-air-icon.jpg"
+          imageAlt={page.heroImageAlt}
+          dateText={page.countdown.dateText}
+          pageKey={BGMI_LITE_APK_PAGE_KEY}
+          downloadCount={downloadCount}
+          ratingSummary={ratingSummary}
+        />
+
         <ApkHeroDownloadActions
           countdown={page.countdown}
           playStore={page.heroButtons.playStore}
           apk={page.heroButtons.apk}
           groupLabel="BGMI Air download options"
+          downloadCountPageKey={BGMI_LITE_APK_PAGE_KEY}
         />
         <HomeTitleDummyAd slotKey="apk_below_actions" />
 

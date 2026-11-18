@@ -6,6 +6,7 @@ import { HomeHeader } from "@/src/components/HomeHeader";
 import { HomeTitleDummyAd } from "@/src/components/HomeTitleDummyAd";
 import { PageCommentSection } from "@/src/components/PageCommentSection";
 import { RatingWidget } from "@/src/components/RatingWidget";
+import { ApkStoreIntro } from "@/src/components/ApkStoreIntro";
 import { FreeFireMaxApkHeroActions } from "@/src/components/FreeFireMaxApkHeroActions";
 import { SiteFooter } from "@/src/components/SiteFooter";
 import {
@@ -23,6 +24,7 @@ import {
   webPageSchema,
 } from "@/src/lib/schema";
 import { toCanonicalUrl } from "@/src/lib/siteUrl";
+import { getApkDownloadCount } from "@/src/server/repositories/apkDownloadCountRepository";
 import { getFreeFireMaxApkPage } from "@/src/server/repositories/freeFireMaxApkPageRepository";
 import {
   getRatingSummary,
@@ -39,16 +41,19 @@ type LandingData = {
   page: FreeFireMaxApkPageContent;
   pageComments: PublicPageComment[];
   ratingSummary: RatingSummary | null;
+  downloadCount: number;
 };
 
 /** Isolate data failures so comments/CMS cannot blank the whole page. */
 async function loadLandingData(): Promise<LandingData> {
-  const [settingsResult, pageResult, commentsResult, ratingResult] = await Promise.allSettled([
-    getSettings(),
-    getFreeFireMaxApkPage(),
-    listApprovedPageComments(FREE_FIRE_MAX_APK_PAGE_KEY),
-    getRatingSummary("tool", FREE_FIRE_MAX_APK_PAGE_KEY),
-  ]);
+  const [settingsResult, pageResult, commentsResult, ratingResult, downloadResult] =
+    await Promise.allSettled([
+      getSettings(),
+      getFreeFireMaxApkPage(),
+      listApprovedPageComments(FREE_FIRE_MAX_APK_PAGE_KEY),
+      getRatingSummary("tool", FREE_FIRE_MAX_APK_PAGE_KEY),
+      getApkDownloadCount(FREE_FIRE_MAX_APK_PAGE_KEY),
+    ]);
 
   if (settingsResult.status === "rejected") {
     throw settingsResult.reason instanceof Error
@@ -61,11 +66,12 @@ async function loadLandingData(): Promise<LandingData> {
     page: pageResult.status === "fulfilled" ? pageResult.value : DEFAULT_FREE_FIRE_MAX_APK_PAGE,
     pageComments: commentsResult.status === "fulfilled" ? commentsResult.value : [],
     ratingSummary: ratingResult.status === "fulfilled" ? ratingResult.value : null,
+    downloadCount: downloadResult.status === "fulfilled" ? downloadResult.value : 0,
   };
 }
 
 export async function FreeFireMaxApkLandingPage() {
-  const { settings, pageComments, page, ratingSummary } = await loadLandingData();
+  const { settings, pageComments, page, ratingSummary, downloadCount } = await loadLandingData();
   const canonical = toCanonicalUrl(FREE_FIRE_MAX_APK_PATH);
   const homeUrl = toCanonicalUrl("/");
   const ogImageAbs = toCanonicalUrl(page.heroImage || "/icon.png?v=3");
@@ -127,10 +133,23 @@ export async function FreeFireMaxApkLandingPage() {
           ))}
         </ul>
 
+        <ApkStoreIntro
+          rows={page.facts.rows}
+          heroTitle={page.heroTitle}
+          fallbackTitle="Free Fire MAX"
+          imageSrc="/ff/free-fire-max-icon.jpg"
+          imageAlt={page.heroImageAlt}
+          dateText={page.countdown.dateText}
+          pageKey={FREE_FIRE_MAX_APK_PAGE_KEY}
+          downloadCount={downloadCount}
+          ratingSummary={ratingSummary}
+        />
+
         <FreeFireMaxApkHeroActions
           countdown={page.countdown}
           playStore={page.heroButtons.playStore}
           apk={page.heroButtons.apk}
+          downloadCountPageKey={FREE_FIRE_MAX_APK_PAGE_KEY}
         />
         <HomeTitleDummyAd slotKey="apk_below_actions" />
 

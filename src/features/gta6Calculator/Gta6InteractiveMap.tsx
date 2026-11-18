@@ -67,9 +67,10 @@ export function Gta6InteractiveMap() {
 
     return () => {
       cancelled = true;
-      handles?.destroy();
-      handlesRef.current?.destroy();
+      const current = handles ?? handlesRef.current;
+      handles = null;
       handlesRef.current = null;
+      current?.destroy();
       setReady(false);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps

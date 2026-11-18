@@ -93,7 +93,10 @@ export const SITE_GAME_NAV: readonly SiteNavItem[] = [
     href: "/gta-6-sensitivity-settings-calculator",
     children: [
       { label: "Home", href: "/gta-6-sensitivity-settings-calculator" },
-      { label: "News", href: "/gta-6-sensitivity-settings-calculator#news" },
+      { label: "Calculator", href: "/gta-6-sensitivity-settings-calculator#calculator" },
+      { label: "Cheats", href: "/gta-6-cheat-code" },
+      { label: "GT6 APK", href: "/gta-6-apk" },
+      { label: "News", href: newsCategoryListingPath("gta-6") },
     ],
   },
 ];
@@ -183,7 +186,15 @@ export function isSiteNavItemActive(item: SiteNavItem, pathname: string): boolea
     );
   }
   if (item.id === "gta6") {
-    return p === "/gta-6-sensitivity-settings-calculator";
+    return (
+      p === "/gta-6-sensitivity-settings-calculator" ||
+      p === "/gta-6-cheat-code" ||
+      p.startsWith("/gta-6-cheat-code/") ||
+      p === "/gta-6-apk" ||
+      p.startsWith("/gta-6-apk/") ||
+      p === "/news/gta-6" ||
+      p.startsWith("/news/gta-6/")
+    );
   }
   if (item.id === "bgmi") {
     return (

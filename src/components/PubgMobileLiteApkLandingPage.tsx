@@ -2,6 +2,7 @@ import Link from "next/link";
 import { ClientErrorBoundary } from "@/src/components/ClientErrorBoundary";
 import { FaqAccordion } from "@/src/components/FaqAccordion";
 import { ApkHeroDownloadActions } from "@/src/components/ApkHeroDownloadActions";
+import { ApkStoreIntro } from "@/src/components/ApkStoreIntro";
 import { HomeHeader } from "@/src/components/HomeHeader";
 import { HomeTitleDummyAd } from "@/src/components/HomeTitleDummyAd";
 import { PageCommentSection } from "@/src/components/PageCommentSection";
@@ -25,6 +26,7 @@ import {
 } from "@/src/lib/schema";
 import { toCanonicalUrl } from "@/src/lib/siteUrl";
 import { listApprovedPageComments } from "@/src/server/repositories/pageCommentsRepository";
+import { getApkDownloadCount } from "@/src/server/repositories/apkDownloadCountRepository";
 import { getPubgMobileLiteApkPage } from "@/src/server/repositories/pubgMobileLiteApkPageRepository";
 import { getRatingSummary } from "@/src/server/repositories/ratingSummaryRepository";
 import { getSettings } from "@/src/server/repositories/settingsRepository";
@@ -33,11 +35,12 @@ import { getSettings } from "@/src/server/repositories/settingsRepository";
  * PUBG Mobile Flash APK page — same dark hero + countdown layout as BGMI Air APK.
  */
 export async function PubgMobileLiteApkLandingPage() {
-  const [settings, pageComments, ratingSummary, pageResult] = await Promise.all([
+  const [settings, pageComments, ratingSummary, pageResult, downloadCount] = await Promise.all([
     getSettings(),
     listApprovedPageComments(PUBG_MOBILE_LITE_APK_PAGE_KEY),
     getRatingSummary("tool", PUBG_MOBILE_LITE_APK_PAGE_KEY).catch(() => null),
     getPubgMobileLiteApkPage().catch(() => DEFAULT_PUBG_MOBILE_LITE_APK_PAGE),
+    getApkDownloadCount(PUBG_MOBILE_LITE_APK_PAGE_KEY).catch(() => 0),
   ]);
   const page = pageResult;
   const canonical = toCanonicalUrl(PUBG_MOBILE_LITE_APK_PATH);
@@ -104,11 +107,24 @@ export async function PubgMobileLiteApkLandingPage() {
           ))}
         </ul>
 
+        <ApkStoreIntro
+          rows={page.facts.rows}
+          heroTitle={page.heroTitle}
+          fallbackTitle="PUBG Mobile Flash"
+          imageSrc="/pubg/pubg-flash-icon.jpg"
+          imageAlt={page.heroImageAlt}
+          dateText={page.countdown.dateText}
+          pageKey={PUBG_MOBILE_LITE_APK_PAGE_KEY}
+          downloadCount={downloadCount}
+          ratingSummary={ratingSummary}
+        />
+
         <ApkHeroDownloadActions
           countdown={page.countdown}
           playStore={page.heroButtons.playStore}
           apk={page.heroButtons.apk}
           groupLabel="PUBG Mobile Flash download options"
+          downloadCountPageKey={PUBG_MOBILE_LITE_APK_PAGE_KEY}
         />
         <HomeTitleDummyAd slotKey="apk_below_actions" />
 

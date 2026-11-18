@@ -111,6 +111,12 @@ export const DEFAULT_FREE_FIRE_INDIA_APK_PAGE: FreeFireApkPageContent = (() => {
         ...page.heroButtons.playStore,
         href: FREE_FIRE_INDIA_PLAY_STORE_URL,
       },
+      apk: {
+        ...page.heroButtons.apk,
+        label: "Download",
+        href: FREE_FIRE_INDIA_PLAY_STORE_URL,
+        visible: true,
+      },
     },
   };
 })();

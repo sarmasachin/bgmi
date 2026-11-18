@@ -198,7 +198,6 @@
 
 @media (min-width: 800px) {
   .gta6-spec-grid,
-  .gta6-news-grid,
   .gta6-editions-grid {
     grid-template-columns: 1fr 1fr;
   }
@@ -206,10 +205,6 @@
   .gta6-platform-grid {
     grid-template-columns: 1fr 1fr 1fr;
   }
-}
-
-.gta6-news {
-  background: var(--gta6-bg, #0b0b10);
 }
 
 /* Dark FAQ accordion — same layout as site FAQ, GTA page colors (no white block) */
@@ -281,65 +276,9 @@
   line-height: 1.65;
 }
 
-.gta6-news-grid {
-  display: grid;
-  gap: 12px;
-  width: min(100%, var(--gta6-wrap, 1080px));
-  margin-inline: auto;
-}
-
-.gta6-card {
-  display: flex;
-  align-items: center;
-  gap: 14px;
-  padding: 16px;
-  border: 1px solid var(--gta6-line, rgba(255, 178, 198, 0.28));
-  border-radius: 14px;
-  background: var(--gta6-panel, #14141c);
-}
-
-.gta6-card-image {
-  width: 132px;
-  height: 78px;
-  flex: 0 0 auto;
-  object-fit: cover;
-  border-radius: 10px;
-}
-
-.gta6-card-copy {
-  min-width: 0;
-}
-
-.gta6-card p {
-  margin: 6px 0 0;
-  color: var(--gta6-muted, #c8c8d0);
-  font-size: 14px;
-  font-weight: 500;
-  line-height: 1.55;
-}
-
-.gta6-card h3 {
-  margin: 0;
-  color: #fff;
-  font-size: 17px;
-  font-weight: 700;
-  line-height: 1.3;
-  text-transform: none;
-}
-
 @media (max-width: 560px) {
   .gta6-spec-card {
     grid-template-columns: 1fr;
     gap: 4px;
-  }
-
-  .gta6-card {
-    flex-direction: column;
-    align-items: stretch;
-  }
-
-  .gta6-card-image {
-    width: 100%;
-    height: 140px;
   }
 }

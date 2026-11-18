@@ -163,9 +163,9 @@ export const DEFAULT_FREE_FIRE_APK_PAGE: FreeFireApkPageContent = {
       visible: true,
     },
     apk: {
-      label: "APK",
-      href: "",
-      visible: false,
+      label: "Download",
+      href: FREE_FIRE_PLAY_STORE_URL,
+      visible: true,
     },
   },
   countdown: {

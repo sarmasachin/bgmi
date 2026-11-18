@@ -5,6 +5,7 @@ import { useEffect, useState, type ReactNode } from "react";
 import { ClientErrorBoundary } from "@/src/components/ClientErrorBoundary";
 import { FfAdvanceServerCountdown } from "@/src/components/FfAdvanceServerCountdown";
 import { isHostedApkFileHref } from "@/src/lib/apkHeroCta";
+import { trackApkDownloadClick } from "@/src/lib/apkDownloadCountClient";
 import {
   isFreeFireMaxApkCountdownTicking,
   isFreeFireMaxApkHeroButtonPublic,
@@ -16,10 +17,12 @@ function HeroCtaLink({
   btn,
   className,
   icon,
+  onNavigate,
 }: {
   btn: FreeFireMaxApkHeroButton;
   className: string;
   icon: string;
+  onNavigate?: () => void;
 }) {
   const href = btn.href.trim();
   const external = /^https?:\/\//i.test(href);
@@ -32,20 +35,20 @@ function HeroCtaLink({
   );
   if (hostedFile) {
     return (
-      <a className={className} href={href} download>
+      <a className={className} href={href} download onClick={onNavigate}>
         {inner}
       </a>
     );
   }
   if (external) {
     return (
-      <a className={className} href={href} target="_blank" rel="noopener noreferrer">
+      <a className={className} href={href} target="_blank" rel="noopener noreferrer" onClick={onNavigate}>
         {inner}
       </a>
     );
   }
   return (
-    <Link className={className} href={href}>
+    <Link className={className} href={href} onClick={onNavigate}>
       {inner}
     </Link>
   );
@@ -55,6 +58,7 @@ type Props = {
   countdown: FreeFireMaxApkCountdown;
   playStore: FreeFireMaxApkHeroButton;
   apk: FreeFireMaxApkHeroButton;
+  downloadCountPageKey?: string;
 };
 
 /**
@@ -62,7 +66,12 @@ type Props = {
  * When the timer is off or the target time has passed, Play/APK buttons show
  * automatically (if Show + label + URL are set).
  */
-export function FreeFireMaxApkHeroActions({ countdown, playStore, apk }: Props) {
+export function FreeFireMaxApkHeroActions({
+  countdown,
+  playStore,
+  apk,
+  downloadCountPageKey,
+}: Props) {
   const showCountdown = Boolean(countdown.visible && countdown.targetIso.trim());
   // Start false so SSR + first client paint match; sync after mount (avoids React #418).
   const [ticking, setTicking] = useState(false);
@@ -77,6 +86,9 @@ export function FreeFireMaxApkHeroActions({ countdown, playStore, apk }: Props) 
 
   const showPlay = !ticking && isFreeFireMaxApkHeroButtonPublic(playStore);
   const showApk = !ticking && isFreeFireMaxApkHeroButtonPublic(apk);
+  const onApkClick = downloadCountPageKey
+    ? () => trackApkDownloadClick(downloadCountPageKey)
+    : undefined;
 
   return (
     <>
@@ -101,6 +113,7 @@ export function FreeFireMaxApkHeroActions({ countdown, playStore, apk }: Props) 
               btn={apk}
               className="ff-as-apk-btn ff-as-apk-btn--alt"
               icon="fa-download"
+              onNavigate={onApkClick}
             />
           ) : null}
         </div>

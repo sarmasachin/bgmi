@@ -155,8 +155,7 @@ body:has(.gta6-root) {
   border-block: 1px solid var(--gta6-line);
 }
 
-.gta6-band h2,
-.gta6-news h2 {
+.gta6-band h2 {
   width: min(100%, var(--gta6-wrap));
   margin: 0 auto 20px;
   color: #fff;

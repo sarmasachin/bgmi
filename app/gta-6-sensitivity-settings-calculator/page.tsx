@@ -127,36 +127,6 @@ export default async function Gta6SensitivityPage() {
 
           <Gta6DetailsSections />
 
-          <section className="gta6-band gta6-news" id="news" aria-labelledby="gta6-news-title">
-            <h2 id="gta6-news-title">News</h2>
-            <div className="gta6-news-grid">
-              <article className="gta6-card">
-                <img className="gta6-card-image" src="/gta6/news-launch.jpg" alt="" />
-                <div className="gta6-card-copy">
-                  <h3>November 19, 2026</h3>
-                  <p>
-                    Launch day on PlayStation 5 and Xbox Series X|S. Preload begins November 12,
-                    2026.
-                  </p>
-                </div>
-              </article>
-              <article className="gta6-card">
-                <img className="gta6-card-image" src="/gta6/news-city.jpg" alt="" />
-                <div className="gta6-card-copy">
-                  <h3>Vice City, Leonida</h3>
-                  <p>Single-player at launch. Jason and Lucia. Settings menu not public yet.</p>
-                </div>
-              </article>
-              <article className="gta6-card">
-                <img className="gta6-card-image" src="/gta6/news-ps5.jpg" alt="" />
-                <div className="gta6-card-copy">
-                  <h3>Plays best on PS5</h3>
-                  <p>Haptic feedback, adaptive triggers, and controller speaker called out by Sony.</p>
-                </div>
-              </article>
-            </div>
-          </section>
-
           <section className="gta6-band gta6-faq" id="faq" aria-label="Frequently Asked Questions">
             <div className="gta6-faq-panel">
               <FaqAccordion
