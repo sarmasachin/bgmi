@@ -114,6 +114,8 @@ export async function PubgMobileLiteApkLandingPage() {
           imageSrc="/pubg/pubg-flash-icon.jpg"
           imageAlt={page.heroImageAlt}
           dateText={page.countdown.dateText}
+          fileSizeFallback="Under 0.96 GB"
+          contentRatingFallback="Teen"
           pageKey={PUBG_MOBILE_LITE_APK_PAGE_KEY}
           downloadCount={downloadCount}
           ratingSummary={ratingSummary}

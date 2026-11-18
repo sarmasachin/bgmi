@@ -1,12 +1,11 @@
 "use client";
 
-import Link from "next/link";
-import { ReactNode, useEffect, useMemo, useState } from "react";
+import { ReactNode, Suspense, useEffect, useState } from "react";
 import { usePathname } from "next/navigation";
 import { AdminLogoutButton } from "@/src/components/admin/AdminLogoutButton";
 import { AdminToastProvider } from "@/src/components/admin/AdminToast";
-import { ADMIN_NAV_ACCESS } from "@/src/server/rbac/routeAccess";
-import { canAny, type AdminPermission, type AdminRole } from "@/src/server/rbac/permissions";
+import { AdminSidebarNav } from "@/app/admin/AdminSidebarNav";
+import { type AdminPermission, type AdminRole } from "@/src/server/rbac/permissions";
 
 type SidebarIconName =
   | "dashboard"
@@ -51,14 +50,6 @@ type MeState = {
   role: AdminRole;
   permissions: AdminPermission[];
 };
-
-/** Avoid prefix bugs e.g. /admin/notifications matching /admin/news via startsWith("news"). */
-function isNavItemActive(pathname: string, href: string) {
-  if (href === "/admin") {
-    return pathname === "/admin" || pathname === "/admin/";
-  }
-  return pathname === href || pathname.startsWith(`${href}/`);
-}
 
 function SidebarIcon({ name }: { name: SidebarIconName }) {
   const shared = {
@@ -246,17 +237,6 @@ export default function AdminLayoutClient({ children }: { children: ReactNode })
     return () => window.removeEventListener("pageshow", onPageShow);
   }, [isLoginPage]);
 
-  const visibleNav = useMemo(() => {
-    if (!meLoaded) return [];
-    // Until /me loads, hide links to avoid flashing forbidden modules.
-    if (!me) return [];
-    return ADMIN_NAV_ACCESS.filter((item) => canAny(me, item.anyOf)).map((item) => ({
-      label: item.label,
-      href: item.href,
-      icon: item.icon as SidebarIconName,
-    }));
-  }, [me, meLoaded]);
-
   return (
     <AdminToastProvider>
       <div className="admin-shell">
@@ -303,27 +283,15 @@ export default function AdminLayoutClient({ children }: { children: ReactNode })
                       Retry
                     </button>
                   </p>
-                ) : visibleNav.length === 0 ? (
-                  <p style={{ padding: "8px 12px", opacity: 0.7, fontSize: 13 }}>No modules assigned.</p>
                 ) : (
-                  visibleNav.map((item) => {
-                    const isActive = isNavItemActive(pathname, item.href);
-                    return (
-                      <Link
-                        key={item.label}
-                        href={item.href}
-                        replace
-                        prefetch={false}
-                        className={`admin-nav-link ${isActive ? "is-active" : ""}`}
-                        onClick={() => setMobileMenuOpen(false)}
-                      >
-                        <span className="admin-nav-icon">
-                          <SidebarIcon name={item.icon} />
-                        </span>
-                        <span>{item.label}</span>
-                      </Link>
-                    );
-                  })
+                  <Suspense fallback={<p style={{ padding: "8px 12px", opacity: 0.7, fontSize: 13 }}>Loading menu…</p>}>
+                    <AdminSidebarNav
+                      me={me}
+                      pathname={pathname}
+                      onNavigate={() => setMobileMenuOpen(false)}
+                      renderIcon={(icon) => <SidebarIcon name={icon as SidebarIconName} />}
+                    />
+                  </Suspense>
                 )}
               </nav>
               <div className="admin-sidebar-footer">

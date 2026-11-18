@@ -3713,7 +3713,7 @@ footer,
 }
 
 .admin-sidebar {
-  width: 300px;
+  width: 320px;
   border-right: 1px solid #22334f;
   background: linear-gradient(180deg, #0a1730 0%, #081327 100%);
   padding: 16px 12px;
@@ -3751,6 +3751,7 @@ footer,
   font-weight: 600;
   line-height: 1.2;
   padding: 12px 12px;
+  white-space: nowrap;
   border-radius: 10px;
   border: 1px solid transparent;
   text-decoration: none;
@@ -3781,6 +3782,57 @@ footer,
 
 .admin-nav-link.is-active .admin-nav-icon {
   color: #2f83ff;
+}
+
+.admin-nav-section {
+  margin: 14px 10px 4px;
+  color: #6f86a8;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+button.admin-nav-link {
+  width: 100%;
+  background: transparent;
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 16px;
+  font-weight: 600;
+  line-height: 1.2;
+  text-align: left;
+}
+
+.admin-nav-group-btn .admin-nav-chevron {
+  margin-left: auto;
+  color: #7f97bb;
+  font-size: 18px;
+  line-height: 1;
+  transition: transform 0.16s ease;
+}
+
+.admin-nav-group.is-open > .admin-nav-group-btn .admin-nav-chevron {
+  transform: rotate(90deg);
+}
+
+.admin-nav-group.is-current > .admin-nav-group-btn {
+  color: #dbeafe;
+}
+
+.admin-nav-sub {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin: 2px 0 4px 12px;
+  padding-left: 8px;
+  border-left: 1px solid #1b3561;
+}
+
+.admin-nav-sub .admin-nav-link {
+  font-size: 16px;
+  font-weight: 600;
+  padding: 10px 12px;
 }
 
 .admin-sidebar-footer {
@@ -6488,7 +6540,7 @@ footer,
   }
 
   .admin-sidebar {
-    width: min(300px, 84vw);
+    width: min(320px, 92vw);
     height: 100vh;
     position: fixed;
     top: 0;
@@ -6531,13 +6583,73 @@ footer,
   }
 
   .admin-nav-link {
-    font-size: 15px;
+    font-size: 16px;
     padding: 10px;
   }
 
   .admin-logout-btn {
     font-size: 15px;
     padding: 10px;
+  }
+
+  .admin-layout {
+    max-width: 100%;
+    overflow-x: hidden;
+  }
+
+  .admin-main {
+    padding: 12px;
+    overflow-x: auto;
+  }
+
+  .admin-section,
+  .admin-dashboard-root,
+  .admin-card,
+  .admin-dashboard-panel,
+  .admin-main fieldset {
+    min-width: 0;
+    max-width: 100%;
+  }
+
+  .admin-section h1 {
+    font-size: 22px;
+    overflow-wrap: anywhere;
+  }
+
+  .admin-actions,
+  .admin-comments-head,
+  .admin-subscribers-head-actions,
+  .admin-news-actions,
+  .admin-modal-actions {
+    flex-wrap: wrap;
+  }
+
+  .admin-main input,
+  .admin-main select,
+  .admin-main textarea,
+  .admin-main img,
+  .admin-main video,
+  .admin-main iframe {
+    max-width: 100%;
+    box-sizing: border-box;
+  }
+
+  .admin-card-grid,
+  .admin-inline-form,
+  .admin-pages-inline-form {
+    grid-template-columns: 1fr;
+  }
+
+  .admin-table-wrap,
+  .admin-subscribers-table-wrap {
+    max-width: 100%;
+  }
+
+  .admin-modal,
+  .admin-confirm-modal {
+    width: min(420px, calc(100vw - 24px));
+    max-height: calc(100vh - 24px);
+    overflow: auto;
   }
 
   .admin-link-row {
@@ -6571,7 +6683,7 @@ footer,
 
 @media (max-width: 1200px) and (min-width: 901px) {
   .admin-sidebar {
-    width: 260px;
+    width: 320px;
     padding: 14px 10px;
   }
 

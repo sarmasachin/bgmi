@@ -25,6 +25,9 @@ export const BGMI_APK_FACTS: BgmiApkFactsBlock = {
   rows: [
     { label: "Game", value: "Battlegrounds Mobile India (BGMI)" },
     { label: "Publisher", value: "KRAFTON, Inc." },
+    { label: "File size", value: "1.4 GB" },
+    { label: "Content rating", value: "Teen" },
+    { label: "Android OS", value: "Android 5.0+" },
     { label: "Region", value: "India" },
     { label: "Platform", value: "Android · Google Play" },
     { label: "Official install", value: "Google Play Store listing" },

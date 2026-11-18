@@ -8,10 +8,16 @@ function factValue(rows: FactRow[], pattern: RegExp): string {
   return rows.find((row) => pattern.test(row.label))?.value.trim() || "";
 }
 
+const UPDATE_DATE =
+  /\b\d{1,2}\s+(?:January|February|March|April|May|June|July|August|September|October|November|December)\s+\d{4}\b/i;
+
+/** Keep a real short date. Drop admin notes that have no date. */
 export function cleanApkUpdateDate(raw: string): string {
   const text = raw.trim();
-  if (!text || text.length > 32) return "";
-  if (/set the official update date|confirm|countdown|launch date/i.test(text)) return "";
+  if (!text || /set the official update date|estimated/i.test(text)) return "";
+  const dated = text.match(UPDATE_DATE);
+  if (dated) return dated[0].replace(/\s+/g, " ");
+  if (text.length > 32 || /confirm|countdown|launch date/i.test(text)) return "";
   return text;
 }
 
@@ -22,6 +28,13 @@ function compactStat(value: string): string {
   return text;
 }
 
+/** Pull "1.4 GB" out of a longer admin sentence. */
+function sizeToken(value: string): string {
+  const match = value.match(/\d+(?:\.\d+)?\s*(?:GB|MB)\b/i);
+  if (!match) return "";
+  return match[0].replace(/\s+/g, " ").replace(/gb/i, "GB").replace(/mb/i, "MB");
+}
+
 type Props = {
   rows: FactRow[];
   heroTitle: string;
@@ -29,6 +42,12 @@ type Props = {
   imageSrc: string;
   imageAlt: string;
   dateText: string;
+  /** Used when no short file-size fact is saved. */
+  fileSizeFallback?: string;
+  /** Used when no short Android fact is saved. */
+  androidFallback?: string;
+  /** Used when no short content-rating fact is saved. */
+  contentRatingFallback?: string;
   pageKey: string;
   downloadCount?: number;
   ratingSummary: RatingSummary | null;
@@ -42,6 +61,9 @@ export function ApkStoreIntro({
   imageSrc,
   imageAlt,
   dateText,
+  fileSizeFallback = "",
+  androidFallback = "",
+  contentRatingFallback = "",
   pageKey,
   downloadCount = 0,
   ratingSummary,
@@ -51,9 +73,18 @@ export function ApkStoreIntro({
     heroTitle.replace(/\s+APK$/i, "").trim() ||
     fallbackTitle;
   const publisher = factValue(rows, /publisher|developer/i);
-  const fileSize = compactStat(factValue(rows, /file\s*size|download\s*size/i));
-  const androidOs = compactStat(factValue(rows, /android\s*os|^android$/i));
-  const contentRating = compactStat(factValue(rows, /content\s*rating|^teen$|age\s*rating/i));
+  const labeledSize = factValue(rows, /file\s*size|download\s*size|^size$/i);
+  const fileSize =
+    compactStat(labeledSize) ||
+    sizeToken(labeledSize) ||
+    rows.map((row) => sizeToken(row.value)).find(Boolean) ||
+    compactStat(fileSizeFallback) ||
+    sizeToken(fileSizeFallback);
+  const androidOs =
+    compactStat(factValue(rows, /android\s*os|^android$/i)) || compactStat(androidFallback);
+  const contentRating =
+    compactStat(factValue(rows, /content\s*rating|^teen$|age\s*rating/i)) ||
+    compactStat(contentRatingFallback);
   const date = cleanApkUpdateDate(dateText);
   const initial = (title.trim().charAt(0) || "A").toUpperCase();
   const rating =

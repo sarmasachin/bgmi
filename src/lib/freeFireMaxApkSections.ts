@@ -25,6 +25,9 @@ export const FREE_FIRE_MAX_APK_FACTS: FreeFireMaxApkFactsBlock = {
   rows: [
     { label: "Game", value: "Free Fire MAX" },
     { label: "Publisher", value: "Confirm on Google Play (Garena)" },
+    { label: "File size", value: "407.7 MB" },
+    { label: "Content rating", value: "Teen" },
+    { label: "Android OS", value: "Android 5.0+" },
     { label: "Package", value: "com.dts.freefiremax" },
     { label: "Platform", value: "Android · Google Play" },
     { label: "Official install", value: "Google Play Store listing" },

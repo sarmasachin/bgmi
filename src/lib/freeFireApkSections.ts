@@ -25,6 +25,9 @@ export const FREE_FIRE_APK_FACTS: FreeFireApkFactsBlock = {
   rows: [
     { label: "Game", value: "Free Fire" },
     { label: "Publisher", value: "Confirm on Google Play (Garena)" },
+    { label: "File size", value: "389.7 MB" },
+    { label: "Content rating", value: "Teen" },
+    { label: "Android OS", value: "Android 5.0+" },
     { label: "Package", value: "com.dts.freefireth" },
     { label: "Platform", value: "Android · Google Play" },
     { label: "Official install", value: "Google Play Store listing" },

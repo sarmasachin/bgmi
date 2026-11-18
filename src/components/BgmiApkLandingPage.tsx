@@ -145,6 +145,9 @@ export async function BgmiApkLandingPage() {
           imageSrc="/bgmi/bgmi-icon.jpg"
           imageAlt={page.heroImageAlt}
           dateText={page.countdown.dateText}
+          fileSizeFallback="1.4 GB"
+          androidFallback="Android 5.0+"
+          contentRatingFallback="Teen"
           pageKey={BGMI_APK_PAGE_KEY}
           downloadCount={downloadCount}
           ratingSummary={ratingSummary}

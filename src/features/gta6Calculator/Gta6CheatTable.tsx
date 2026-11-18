@@ -1,29 +1,24 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { GTA6_CHEAT_ROWS } from "@/src/features/gta6Calculator/gta6-cheat-rows";
+import type { Gta6CheatRow } from "@/src/lib/gta6PageTypes";
 
-const FILTERS = [
-  { id: "All", label: "GTA 6 All Cheat Codes" },
-  { id: "Weapons and health", label: "GTA 6 Weapons Cheat Code" },
-  { id: "Police", label: "GTA 6 Police Cheat Code" },
-  { id: "Movement", label: "GTA 6 Movement Cheat Code" },
-  { id: "Vehicles", label: "GTA 6 Vehicles Cheat Code" },
-  { id: "Street and world", label: "GTA 6 World Cheat Code" },
-  { id: "Phone and character", label: "GTA 6 Phone Cheat Code" },
-] as const;
-
-type FilterId = (typeof FILTERS)[number]["id"];
-
-export function Gta6CheatTable() {
-  const [filter, setFilter] = useState<FilterId>("All");
+export function Gta6CheatTable({ rows: source }: { rows: Gta6CheatRow[] }) {
+  const [filter, setFilter] = useState("All");
   const [query, setQuery] = useState("");
+  const filters = useMemo(() => {
+    const groups = source.filter((row) => row.kind === "group");
+    return [
+      { id: "All", label: "GTA 6 All Cheat Codes" },
+      ...groups.map((row) => ({ id: row.label, label: row.filterLabel || row.label })),
+    ];
+  }, [source]);
 
   const rows = useMemo(() => {
     const q = query.trim().toLowerCase();
     let activeGroup: string | null = null;
-    const out: typeof GTA6_CHEAT_ROWS = [];
-    for (const row of GTA6_CHEAT_ROWS) {
+    const out: Gta6CheatRow[] = [];
+    for (const row of source) {
       if (row.kind === "group") {
         activeGroup = row.label;
         continue;
@@ -31,18 +26,19 @@ export function Gta6CheatTable() {
       if (filter !== "All" && activeGroup !== filter) continue;
       if (q && !row.name.toLowerCase().includes(q)) continue;
       if (activeGroup && !out.some((item) => item.kind === "group" && item.label === activeGroup)) {
-        out.push({ kind: "group", label: activeGroup });
+        const group = source.find((item) => item.kind === "group" && item.label === activeGroup);
+        if (group) out.push(group);
       }
       out.push(row);
     }
     return out;
-  }, [filter, query]);
+  }, [filter, query, source]);
 
   return (
     <div className="gta6-cheat-board">
       <div className="gta6-cheat-table-bar">
         <div className="gta6-cheat-filters">
-          {FILTERS.map((item) => (
+          {filters.map((item) => (
             <button
               key={item.id}
               type="button"

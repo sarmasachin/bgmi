@@ -186,6 +186,9 @@ async function FreeFireStyleApkLanding({ variant }: { variant: ApkLandingVariant
             imageSrc="/ff/free-fire-icon.jpg"
             imageAlt={page.heroImageAlt}
             dateText={page.countdown.dateText}
+            fileSizeFallback="389.7 MB"
+            androidFallback="Android 5.0+"
+            contentRatingFallback="Teen"
             pageKey={meta.pageKey}
             downloadCount={downloadCount}
             ratingSummary={ratingSummary}

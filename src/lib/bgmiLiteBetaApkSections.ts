@@ -42,8 +42,9 @@ export const BGMI_LITE_BETA_FACTS: BgmiLiteBetaFactsBlock = {
     },
     {
       label: "Expected download size",
-      value: "Around 1 GB on Android (initial)",
+      value: "1 GB",
     },
+    { label: "Content rating", value: "Teen" },
     { label: "Developer", value: "KRAFTON, Inc." },
     { label: "Platform (confirmed path)", value: "Android · Google Play" },
     { label: "Account", value: "Expect existing BGMI login if Krafton enables it" },

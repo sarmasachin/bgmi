@@ -25,6 +25,8 @@ export const PUBG_APK_FACTS: PubgApkFactsBlock = {
   rows: [
     { label: "Game", value: "PUBG Mobile" },
     { label: "Publisher", value: "Confirm on Google Play (Krafton / Level Infinite)" },
+    { label: "Content rating", value: "Teen" },
+    { label: "Android OS", value: "Android 5.0+" },
     { label: "Region", value: "Global (not BGMI India listing)" },
     { label: "Platform", value: "Android · Google Play" },
     { label: "Official install", value: "Google Play Store listing" },

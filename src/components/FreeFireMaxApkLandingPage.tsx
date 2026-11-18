@@ -140,6 +140,9 @@ export async function FreeFireMaxApkLandingPage() {
           imageSrc="/ff/free-fire-max-icon.jpg"
           imageAlt={page.heroImageAlt}
           dateText={page.countdown.dateText}
+          fileSizeFallback="407.7 MB"
+          androidFallback="Android 5.0+"
+          contentRatingFallback="Teen"
           pageKey={FREE_FIRE_MAX_APK_PAGE_KEY}
           downloadCount={downloadCount}
           ratingSummary={ratingSummary}

@@ -14,22 +14,28 @@ import {
   createGta6LeafletMap,
   type Gta6LeafletHandles,
 } from "@/src/features/gta6Calculator/gta6-map-leaflet";
-export function Gta6InteractiveMap() {
+export function Gta6InteractiveMap({
+  pins = GTA6_MAP_PINS,
+  disclaimer = GTA6_MAP_IMAGE.disclaimer,
+}: {
+  pins?: Gta6MapPin[];
+  disclaimer?: string;
+}) {
   const mapElRef = useRef<HTMLDivElement | null>(null);
   const handlesRef = useRef<Gta6LeafletHandles | null>(null);
   const [ready, setReady] = useState(false);
   const [query, setQuery] = useState("");
   const [filter, setFilter] = useState<Gta6MapFilter>("all");
-  const [activeId, setActiveId] = useState(GTA6_MAP_PINS[3]?.id ?? GTA6_MAP_PINS[0].id);
+  const [activeId, setActiveId] = useState(pins[3]?.id ?? pins[0]?.id ?? "");
   const [fullscreen, setFullscreen] = useState(false);
   const [copied, setCopied] = useState(false);
 
-  const active: Gta6MapPin =
-    GTA6_MAP_PINS.find((pin) => pin.id === activeId) ?? GTA6_MAP_PINS[0];
+  const active: Gta6MapPin | undefined =
+    pins.find((pin) => pin.id === activeId) ?? pins[0];
 
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
-    return GTA6_MAP_PINS.filter((pin) => {
+    return pins.filter((pin) => {
       if (filter !== "all" && pinFilterKind(pin) !== filter) return false;
       if (!q) return true;
       return (
@@ -38,7 +44,7 @@ export function Gta6InteractiveMap() {
         pin.region.toLowerCase().includes(q)
       );
     });
-  }, [query, filter]);
+  }, [query, filter, pins]);
 
   const visibleIds = useMemo(() => new Set(filtered.map((pin) => pin.id)), [filtered]);
 
@@ -48,7 +54,7 @@ export function Gta6InteractiveMap() {
     let cancelled = false;
     let handles: Gta6LeafletHandles | null = null;
 
-    createGta6LeafletMap(el, GTA6_MAP_PINS, {
+    createGta6LeafletMap(el, pins, {
       activeId,
       onSelect: (id) => setActiveId(id),
     })
@@ -73,8 +79,7 @@ export function Gta6InteractiveMap() {
       current?.destroy();
       setReady(false);
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [pins]);
 
   useEffect(() => {
     handlesRef.current?.setActive(activeId);
@@ -191,7 +196,7 @@ export function Gta6InteractiveMap() {
 
       <div className="gta6-map-chips" role="listbox" aria-label="Jump to location">
         {filtered.map((pin) => {
-          const isActive = pin.id === active.id;
+          const isActive = pin.id === active?.id;
           return (
             <button
               key={pin.id}
@@ -210,15 +215,17 @@ export function Gta6InteractiveMap() {
         ) : null}
       </div>
 
-      <div className="gta6-map-panel" aria-live="polite">
-        <p className="gta6-map-type">{active.type}</p>
-        <h3 className="gta6-map-panel-title">{active.name}</h3>
-        <p className="gta6-map-region">{active.region}</p>
-        <p className="gta6-details-copy">{active.summary}</p>
-      </div>
+      {active ? (
+        <div className="gta6-map-panel" aria-live="polite">
+          <p className="gta6-map-type">{active.type}</p>
+          <h3 className="gta6-map-panel-title">{active.name}</h3>
+          <p className="gta6-map-region">{active.region}</p>
+          <p className="gta6-details-copy">{active.summary}</p>
+        </div>
+      ) : null}
 
       <figcaption className="gta6-map-caption">
-        <span>{GTA6_MAP_IMAGE.disclaimer}</span>
+        <span>{disclaimer}</span>
         <span>
           Tip: pinch / double-tap to zoom · drag to pan · use filters to jump places.
         </span>

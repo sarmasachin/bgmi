@@ -3,17 +3,14 @@ import { Barlow_Condensed, DM_Sans } from "next/font/google";
 import { HomeHeader } from "@/src/components/HomeHeader";
 import { SiteFooter } from "@/src/components/SiteFooter";
 import { Gta6ApkArticle } from "@/src/features/gta6Calculator/Gta6ApkArticle";
-import {
-  GTA6_APK_DESCRIPTION,
-  GTA6_APK_PATH,
-  GTA6_APK_TITLE,
-} from "@/src/features/gta6Calculator/gta6-apk-copy";
+import { GTA6_APK_PATH } from "@/src/features/gta6Calculator/gta6-apk-copy";
 import { Gta6Header } from "@/src/features/gta6Calculator/Gta6Header";
 import { GTA6_PATH } from "@/src/features/gta6Calculator/gta6-seo";
 import "@/src/features/gta6Calculator/gta6Calculator.css";
 import { breadcrumbListSchema, webPageSchema } from "@/src/lib/schema";
 import { buildSocialMetadata } from "@/src/lib/socialMeta";
 import { toCanonicalUrl } from "@/src/lib/siteUrl";
+import { getGta6Page } from "@/src/server/repositories/gta6PageRepository";
 import { getSettings } from "@/src/server/repositories/settingsRepository";
 
 const display = Barlow_Condensed({
@@ -30,40 +27,45 @@ const body = DM_Sans({
   variable: "--gta6-body",
 });
 
-const canonical = toCanonicalUrl(GTA6_APK_PATH);
+export const dynamic = "force-dynamic";
 
 export const viewport: Viewport = {
   themeColor: "#0b0b10",
   colorScheme: "dark",
 };
 
-export const metadata: Metadata = {
-  title: { absolute: GTA6_APK_TITLE },
-  description: GTA6_APK_DESCRIPTION,
-  alternates: { canonical },
-  robots: { index: true, follow: true },
-  ...buildSocialMetadata({
-    title: GTA6_APK_TITLE,
-    description: GTA6_APK_DESCRIPTION,
-    url: canonical,
-  }),
-};
-
-const jsonLd = [
-  webPageSchema({
-    name: GTA6_APK_TITLE,
-    description: GTA6_APK_DESCRIPTION,
-    url: canonical,
-  }),
-  breadcrumbListSchema([
-    { name: "Home", url: toCanonicalUrl("/") },
-    { name: "GTA 6", url: toCanonicalUrl(GTA6_PATH) },
-    { name: GTA6_APK_TITLE, url: canonical },
-  ]),
-].filter(Boolean);
+export async function generateMetadata(): Promise<Metadata> {
+  const page = await getGta6Page();
+  const canonical = toCanonicalUrl(GTA6_APK_PATH);
+  return {
+    title: { absolute: page.apk.seoTitle },
+    description: page.apk.seoDescription,
+    alternates: { canonical },
+    robots: { index: true, follow: true },
+    ...buildSocialMetadata({
+      title: page.apk.seoTitle,
+      description: page.apk.seoDescription,
+      url: canonical,
+    }),
+  };
+}
 
 export default async function Gta6ApkPage() {
   const settings = await getSettings();
+  const page = await getGta6Page();
+  const canonical = toCanonicalUrl(GTA6_APK_PATH);
+  const jsonLd = [
+    webPageSchema({
+      name: page.apk.seoTitle,
+      description: page.apk.seoDescription,
+      url: canonical,
+    }),
+    breadcrumbListSchema([
+      { name: "Home", url: toCanonicalUrl("/") },
+      { name: "GTA 6", url: toCanonicalUrl(GTA6_PATH) },
+      { name: page.apk.title, url: canonical },
+    ]),
+  ].filter(Boolean);
 
   return (
     <>
@@ -74,7 +76,7 @@ export default async function Gta6ApkPage() {
       />
       <div className={`gta6-root ${display.variable} ${body.variable}`}>
         <main id="top">
-          <Gta6ApkArticle />
+          <Gta6ApkArticle apk={page.apk} />
         </main>
         {jsonLd.map((block, index) => (
           <script

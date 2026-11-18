@@ -145,6 +145,8 @@ export async function PubgApkLandingPage() {
           imageSrc="/pubg/pubg-mobile-icon.jpg"
           imageAlt={page.heroImageAlt}
           dateText={page.countdown.dateText}
+          androidFallback="Android 5.0+"
+          contentRatingFallback="Teen"
           pageKey={PUBG_APK_PAGE_KEY}
           downloadCount={downloadCount}
           ratingSummary={ratingSummary}

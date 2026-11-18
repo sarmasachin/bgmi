@@ -3,7 +3,6 @@ import { Barlow_Condensed, DM_Sans } from "next/font/google";
 import { HomeHeader } from "@/src/components/HomeHeader";
 import { SiteFooter } from "@/src/components/SiteFooter";
 import { Gta6CheatArticle } from "@/src/features/gta6Calculator/Gta6CheatArticle";
-import { GTA6_CHEAT_DESCRIPTION, GTA6_CHEAT_TITLE } from "@/src/features/gta6Calculator/gta6-cheat-copy";
 import { Gta6Header } from "@/src/features/gta6Calculator/Gta6Header";
 import { GTA6_PATH } from "@/src/features/gta6Calculator/gta6-seo";
 import "@/src/features/gta6Calculator/gta6-tw.css";
@@ -11,6 +10,7 @@ import "@/src/features/gta6Calculator/gta6Calculator.css";
 import { breadcrumbListSchema, webPageSchema } from "@/src/lib/schema";
 import { buildSocialMetadata } from "@/src/lib/socialMeta";
 import { toCanonicalUrl } from "@/src/lib/siteUrl";
+import { getGta6Page } from "@/src/server/repositories/gta6PageRepository";
 import { getSettings } from "@/src/server/repositories/settingsRepository";
 
 const display = Barlow_Condensed({
@@ -28,40 +28,46 @@ const body = DM_Sans({
 });
 
 const PATH = "/gta-6-cheat-code";
-const canonical = toCanonicalUrl(PATH);
+
+export const dynamic = "force-dynamic";
 
 export const viewport: Viewport = {
   themeColor: "#0b0b10",
   colorScheme: "dark",
 };
 
-export const metadata: Metadata = {
-  title: { absolute: `${GTA6_CHEAT_TITLE} — TBA Until Launch` },
-  description: GTA6_CHEAT_DESCRIPTION,
-  alternates: { canonical },
-  robots: { index: true, follow: true },
-  ...buildSocialMetadata({
-    title: GTA6_CHEAT_TITLE,
-    description: GTA6_CHEAT_DESCRIPTION,
-    url: canonical,
-  }),
-};
-
-const jsonLd = [
-  webPageSchema({
-    name: GTA6_CHEAT_TITLE,
-    description: GTA6_CHEAT_DESCRIPTION,
-    url: canonical,
-  }),
-  breadcrumbListSchema([
-    { name: "Home", url: toCanonicalUrl("/") },
-    { name: "GTA 6", url: toCanonicalUrl(GTA6_PATH) },
-    { name: GTA6_CHEAT_TITLE, url: canonical },
-  ]),
-].filter(Boolean);
+export async function generateMetadata(): Promise<Metadata> {
+  const page = await getGta6Page();
+  const canonical = toCanonicalUrl(PATH);
+  return {
+    title: { absolute: page.cheat.seoTitle },
+    description: page.cheat.seoDescription,
+    alternates: { canonical },
+    robots: { index: true, follow: true },
+    ...buildSocialMetadata({
+      title: page.cheat.seoTitle,
+      description: page.cheat.seoDescription,
+      url: canonical,
+    }),
+  };
+}
 
 export default async function Gta6CheatCodePage() {
   const settings = await getSettings();
+  const page = await getGta6Page();
+  const canonical = toCanonicalUrl(PATH);
+  const jsonLd = [
+    webPageSchema({
+      name: page.cheat.seoTitle,
+      description: page.cheat.seoDescription,
+      url: canonical,
+    }),
+    breadcrumbListSchema([
+      { name: "Home", url: toCanonicalUrl("/") },
+      { name: "GTA 6", url: toCanonicalUrl(GTA6_PATH) },
+      { name: page.cheat.title, url: canonical },
+    ]),
+  ].filter(Boolean);
 
   return (
     <>
@@ -72,7 +78,7 @@ export default async function Gta6CheatCodePage() {
       />
       <div className={`gta6-root ${display.variable} ${body.variable}`}>
         <main id="top">
-          <Gta6CheatArticle />
+          <Gta6CheatArticle cheat={page.cheat} />
         </main>
         {jsonLd.map((block, index) => (
           <script

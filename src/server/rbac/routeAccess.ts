@@ -1,207 +1,25 @@
 import type { AdminPermission } from "@/src/server/rbac/permissions";
+import { ADMIN_NAV_ACCESS } from "@/src/server/rbac/adminNav";
 
 export type AdminNavPermission = AdminPermission | readonly AdminPermission[];
-
-/** Sidebar + page access: need ANY of these to see the module. */
-export const ADMIN_NAV_ACCESS: ReadonlyArray<{
-  label: string;
-  href: string;
-  icon: string;
-  anyOf: readonly AdminPermission[];
-}> = [
-  { label: "Dashboard", href: "/admin", icon: "dashboard", anyOf: ["dashboard.view"] },
-  { label: "News", href: "/admin/news", icon: "news", anyOf: ["news.view"] },
-  {
-    label: "News Categories",
-    href: "/admin/news-categories",
-    icon: "news",
-    anyOf: ["news.view"],
-  },
-  { label: "Pages", href: "/admin/pages", icon: "pages", anyOf: ["pages.view"] },
-  {
-    label: "Game Articles",
-    href: "/admin/game-articles",
-    icon: "gameArticles",
-    anyOf: ["gameArticles.view"],
-  },
-  {
-    label: "Page Cards",
-    href: "/admin/home-cards",
-    icon: "homeCards",
-    anyOf: ["homeCards.view"],
-  },
-  {
-    label: "Advance Server",
-    href: "/admin/advance-server",
-    icon: "advanceServer",
-    anyOf: ["advanceServer.view"],
-  },
-  {
-    label: "BGMI Air Redeem",
-    href: "/admin/bgmi-lite-redeem",
-    icon: "bgmiLiteRedeem",
-    anyOf: ["bgmiLiteRedeem.view"],
-  },
-  {
-    label: "BGMI Air APK",
-    href: "/admin/bgmi-lite-apk",
-    icon: "bgmiLiteApk",
-    anyOf: ["bgmiLiteApk.view"],
-  },
-  {
-    label: "BGMI APK",
-    href: "/admin/bgmi-apk",
-    icon: "bgmiApk",
-    anyOf: ["bgmiApk.view"],
-  },
-  {
-    label: "PUBG APK",
-    href: "/admin/pubg-apk",
-    icon: "pubgApk",
-    anyOf: ["pubgApk.view"],
-  },
-  {
-    label: "PUBG Flash APK",
-    href: "/admin/pubg-mobile-lite-apk",
-    icon: "pubgApk",
-    anyOf: ["pubgApk.view"],
-  },
-  {
-    label: "FF Apk",
-    href: "/admin/free-fire-apk",
-    icon: "freeFireApk",
-    anyOf: ["freeFireApk.view"],
-  },
-  {
-    label: "FF India Apk",
-    href: "/admin/free-fire-india-apk",
-    icon: "freeFireApk",
-    anyOf: ["freeFireIndiaApk.view"],
-  },
-  {
-    label: "FF Max Apk",
-    href: "/admin/free-fire-max-apk",
-    icon: "freeFireMaxApk",
-    anyOf: ["freeFireMaxApk.view"],
-  },
-  {
-    label: "BGMI Redeem",
-    href: "/admin/bgmi-redeem",
-    icon: "bgmiRedeem",
-    anyOf: ["bgmiRedeem.view"],
-  },
-  {
-    label: "PUBG Redeem",
-    href: "/admin/pubg-redeem",
-    icon: "pubgRedeem",
-    anyOf: ["pubgRedeem.view"],
-  },
-  {
-    label: "PUBG Flash Redeem",
-    href: "/admin/pubg-mobile-lite-redeem",
-    icon: "pubgMobileLiteRedeem",
-    anyOf: ["pubgMobileLiteRedeem.view"],
-  },
-  {
-    label: "FF Redeem",
-    href: "/admin/free-fire-redeem",
-    icon: "freeFireRedeem",
-    anyOf: ["freeFireRedeem.view"],
-  },
-  {
-    label: "FF India Redeem",
-    href: "/admin/free-fire-india-redeem",
-    icon: "freeFireRedeem",
-    anyOf: ["freeFireIndiaRedeem.view"],
-  },
-  {
-    label: "FF Max Redeem",
-    href: "/admin/free-fire-max-redeem",
-    icon: "freeFireMaxRedeem",
-    anyOf: ["freeFireMaxRedeem.view"],
-  },
-  {
-    label: "BGMI Air Stylish Name",
-    href: "/admin/bgmi-lite-stylish",
-    icon: "bgmiLiteStylish",
-    anyOf: ["bgmiLiteStylish.view"],
-  },
-  {
-    label: "PUBG Flash Name",
-    href: "/admin/pubg-mobile-lite-name",
-    icon: "pubgMobileLiteName",
-    anyOf: ["pubgMobileLiteName.view"],
-  },
-  {
-    label: "FF Names",
-    href: "/admin/free-fire-stylish",
-    icon: "freeFireStylish",
-    anyOf: ["freeFireStylish.view"],
-  },
-  {
-    label: "FF India Names",
-    href: "/admin/free-fire-india-stylish",
-    icon: "freeFireStylish",
-    anyOf: ["freeFireIndiaStylish.view"],
-  },
-  {
-    label: "FF Max Names",
-    href: "/admin/free-fire-max-stylish",
-    icon: "freeFireMaxStylish",
-    anyOf: ["freeFireMaxStylish.view"],
-  },
-  { label: "Game FAQs", href: "/admin/game-faqs", icon: "gameFaqs", anyOf: ["gameFaqs.view"] },
-  { label: "Legal Pages", href: "/admin/legal-pages", icon: "legal", anyOf: ["legal.view"] },
-  { label: "Comments", href: "/admin/comments", icon: "comments", anyOf: ["comments.view"] },
-  { label: "Contact", href: "/admin/contact", icon: "contact", anyOf: ["contact.view"] },
-  {
-    label: "Testimonials",
-    href: "/admin/testimonials",
-    icon: "testimonials",
-    anyOf: ["testimonials.view"],
-  },
-  {
-    label: "Notifications",
-    href: "/admin/notifications",
-    icon: "notifications",
-    anyOf: ["notifications.view"],
-  },
-  {
-    label: "Auto Notify",
-    href: "/admin/auto-notify",
-    icon: "notifications",
-    anyOf: ["notifications.view"],
-  },
-  { label: "Ratings", href: "/admin/ratings", icon: "ratings", anyOf: ["ratings.view"] },
-  { label: "Ads", href: "/admin/ad-placements", icon: "ads", anyOf: ["ads.view"] },
-  { label: "Media", href: "/admin/media", icon: "media", anyOf: ["media.view"] },
-  {
-    label: "Backups",
-    href: "/admin/backups",
-    icon: "backups",
-    anyOf: ["backups.download", "backups.restore"],
-  },
-  { label: "Users", href: "/admin/users", icon: "users", anyOf: ["users.manage"] },
-  {
-    label: "Roles & Permissions",
-    href: "/admin/roles",
-    icon: "users",
-    anyOf: ["users.manage"],
-  },
-  { label: "Audit", href: "/admin/audit", icon: "audit", anyOf: ["audit.view"] },
-  { label: "System", href: "/admin/system", icon: "system", anyOf: ["system.view"] },
-  { label: "Settings", href: "/admin/settings", icon: "settings", anyOf: ["settings.view"] },
-];
+export { ADMIN_NAV_ACCESS };
+function navHrefPath(href: string): string {
+  const path = href.split("?")[0] ?? href;
+  return path.replace(/\/$/, "") || "/admin";
+}
 
 export function pagePermissionForPath(pathname: string): readonly AdminPermission[] | null {
   const path = pathname.replace(/\/$/, "") || "/admin";
   if (path === "/admin/login") return null;
-  const exact = ADMIN_NAV_ACCESS.find((item) => item.href === path);
+  const exact = ADMIN_NAV_ACCESS.find((item) => navHrefPath(item.href) === path);
   if (exact) return exact.anyOf;
   // Nested admin paths (rare) — match longest prefix.
   const nested = [...ADMIN_NAV_ACCESS]
-    .filter((item) => item.href !== "/admin" && path.startsWith(`${item.href}/`))
-    .sort((a, b) => b.href.length - a.href.length)[0];
+    .filter((item) => {
+      const href = navHrefPath(item.href);
+      return href !== "/admin" && path.startsWith(`${href}/`);
+    })
+    .sort((a, b) => navHrefPath(b.href).length - navHrefPath(a.href).length)[0];
   return nested?.anyOf ?? ["dashboard.view"];
 }
 
@@ -263,6 +81,11 @@ export function resolveAdminApiPermission(
   if (path.startsWith("/api/admin/game-articles")) {
     if (isRead) return { type: "permission", permission: "gameArticles.view" };
     return { type: "permission", permission: "gameArticles.edit" };
+  }
+
+  if (path.startsWith("/api/admin/gta-6")) {
+    if (isRead) return { type: "permission", permission: "gta6.view" };
+    return { type: "permission", permission: "gta6.edit" };
   }
 
   if (path.startsWith("/api/admin/home-cards")) {

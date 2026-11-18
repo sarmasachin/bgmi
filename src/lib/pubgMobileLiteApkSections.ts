@@ -41,6 +41,8 @@ export const PUBG_MOBILE_LITE_APK_FACTS: PubgMobileLiteApkFactsBlock = {
     },
     { label: "Install path", value: "Android · Google Play (official only)" },
     { label: "Developer", value: "PUBG / Krafton (confirm on store)" },
+    { label: "File size", value: "Under 0.96 GB" },
+    { label: "Content rating", value: "Teen" },
     { label: "Sensitivity", value: "Use /pubg-mobile-flash calculator on this site" },
   ],
   note:

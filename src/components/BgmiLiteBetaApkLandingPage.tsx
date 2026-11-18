@@ -112,6 +112,8 @@ export async function BgmiLiteBetaApkLandingPage() {
           imageSrc="/bgmi/bgmi-air-icon.jpg"
           imageAlt={page.heroImageAlt}
           dateText={page.countdown.dateText}
+          fileSizeFallback="1 GB"
+          contentRatingFallback="Teen"
           pageKey={BGMI_LITE_APK_PAGE_KEY}
           downloadCount={downloadCount}
           ratingSummary={ratingSummary}

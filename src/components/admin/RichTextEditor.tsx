@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useAdminToast } from "@/src/components/admin/AdminToast";
 import { removeEditorImageOnKey, selectEditorImage } from "@/src/components/admin/richTextImageEdit";
+import { resolveEditorPaste, sanitizeHtml } from "@/src/components/admin/richTextPaste";
 
 type Props = {
   value: string;
@@ -20,100 +21,6 @@ type UploadedImage = {
 const DEFAULT_STORAGE_KEY = "bgmi_admin_news_editor_draft_v1";
 const TABLE_PICKER_ROWS = 8;
 const TABLE_PICKER_COLS = 10;
-
-/** Paste colors + foreign fonts (Word/Georgia) that override the site typeface. */
-const PASTE_STYLE_DROP =
-  /^(?:color|background(?:-color|-image|-position|-size|-repeat|-attachment|-clip|-origin)?|-webkit-text-fill-color|-webkit-text-stroke(?:-color)?|caret-color|text-decoration-color|font(?:-family|-size|-stretch|-variant|-kerning|-feature-settings)?)$/i;
-
-function unwrapFontTags(doc: Document) {
-  doc.querySelectorAll("font").forEach((element) => {
-    const parent = element.parentNode;
-    if (!parent) return;
-    while (element.firstChild) parent.insertBefore(element.firstChild, element);
-    parent.removeChild(element);
-  });
-}
-
-function stripPastedAppearanceStyles(raw: string) {
-  if (typeof window === "undefined") return raw;
-
-  const doc = new DOMParser().parseFromString(raw, "text/html");
-  unwrapFontTags(doc);
-  doc.querySelectorAll("*").forEach((element) => {
-    if (element.hasAttribute("color")) element.removeAttribute("color");
-    if (element.hasAttribute("bgcolor")) element.removeAttribute("bgcolor");
-    if (element.hasAttribute("face")) element.removeAttribute("face");
-    if (element.hasAttribute("size")) element.removeAttribute("size");
-
-    const style = element.getAttribute("style");
-    if (!style) return;
-
-    const kept = style
-      .split(";")
-      .map((part) => part.trim())
-      .filter(Boolean)
-      .filter((part) => {
-        const prop = part.split(":")[0]?.trim() ?? "";
-        if (!prop) return false;
-        if (/^font-weight$/i.test(prop) || /^font-style$/i.test(prop)) return true;
-        if (/font/i.test(prop)) return false;
-        return !PASTE_STYLE_DROP.test(prop);
-      });
-
-    if (kept.length === 0) element.removeAttribute("style");
-    else element.setAttribute("style", kept.join("; "));
-  });
-
-  return doc.body.innerHTML;
-}
-
-function sanitizeHtml(raw: string) {
-  if (typeof window === "undefined") return raw;
-
-  // Always strip paste/editor color wrappers so white <font> never reaches publish.
-  const cleaned = stripPastedAppearanceStyles(raw);
-  const doc = new DOMParser().parseFromString(cleaned, "text/html");
-  const blockedTags = ["script", "style", "object", "embed", "form", "meta", "link"];
-
-  for (const tag of blockedTags) {
-    doc.querySelectorAll(tag).forEach((node) => node.remove());
-  }
-
-  doc.querySelectorAll("*").forEach((element) => {
-    for (const attr of Array.from(element.attributes)) {
-      const name = attr.name.toLowerCase();
-      const value = attr.value.trim().toLowerCase();
-
-      if (name.startsWith("on")) {
-        element.removeAttribute(attr.name);
-        continue;
-      }
-
-      if ((name === "href" || name === "src") && value.startsWith("javascript:")) {
-        element.removeAttribute(attr.name);
-        continue;
-      }
-
-      if (name === "style" && /expression|javascript:/i.test(attr.value)) {
-        element.removeAttribute(attr.name);
-      }
-    }
-
-    if (element.tagName === "IFRAME") {
-      const src = element.getAttribute("src") ?? "";
-      const allowed =
-        src.includes("youtube.com/embed/") ||
-        src.includes("youtube-nocookie.com/embed/") ||
-        src.includes("player.vimeo.com/video/");
-
-      if (!allowed) {
-        element.remove();
-      }
-    }
-  });
-
-  return doc.body.innerHTML;
-}
 
 function escapeRegExp(input: string) {
   return input.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
@@ -2520,22 +2427,17 @@ export function RichTextEditor({
   }
 
   function handleEditorPaste(event: React.ClipboardEvent<HTMLDivElement>) {
-    const files = event.clipboardData.files;
-    if (files && files.length > 0) {
+    const action = resolveEditorPaste(event.clipboardData);
+    if (action.type === "files") {
       event.preventDefault();
-      void handleFiles(files);
+      void handleFiles(event.clipboardData.files);
       return;
     }
-
-    const html = event.clipboardData.getData("text/html")?.trim() ?? "";
-    if (!html) return;
-
-    // Strip paste colors and Word/Georgia fonts so body stays the site typeface.
-    event.preventDefault();
-    const cleaned = sanitizeHtml(stripPastedAppearanceStyles(html)).trim();
-    const plain = event.clipboardData.getData("text/plain") ?? "";
-    document.execCommand("insertHTML", false, cleaned || plain.replace(/\n/g, "<br>"));
-    syncEditorValue();
+    if (action.type === "html") {
+      event.preventDefault();
+      document.execCommand("insertHTML", false, action.html);
+      syncEditorValue();
+    }
   }
 
   function ensureEditableRoot() {

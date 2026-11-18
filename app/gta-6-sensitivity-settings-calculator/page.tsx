@@ -6,13 +6,9 @@ import { SiteFooter } from "@/src/components/SiteFooter";
 import { Gta6Calculator } from "@/src/features/gta6Calculator/Gta6Calculator";
 import { Gta6DetailsSections } from "@/src/features/gta6Calculator/Gta6DetailsSections";
 import { Gta6Header } from "@/src/features/gta6Calculator/Gta6Header";
-import { GTA6_FAQ } from "@/src/features/gta6Calculator/gta6-faq";
 import {
-  GTA6_PAGE_DESCRIPTION,
-  GTA6_PAGE_TITLE,
   GTA6_PATH,
   gta6BreadcrumbItems,
-  gta6Keywords,
   gta6StructuredData,
 } from "@/src/features/gta6Calculator/gta6-seo";
 import "@/src/features/gta6Calculator/gta6Calculator.css";
@@ -21,6 +17,7 @@ import "@/src/features/gta6Calculator/gta6-map.css";
 import { breadcrumbListSchema, faqSchema, webPageSchema } from "@/src/lib/schema";
 import { buildSocialMetadata } from "@/src/lib/socialMeta";
 import { toCanonicalUrl } from "@/src/lib/siteUrl";
+import { getGta6Page } from "@/src/server/repositories/gta6PageRepository";
 import { getSettings } from "@/src/server/repositories/settingsRepository";
 
 const display = Barlow_Condensed({
@@ -38,41 +35,47 @@ const body = DM_Sans({
 });
 
 const PATH = GTA6_PATH;
-const canonical = toCanonicalUrl(PATH);
-const keywords = gta6Keywords();
+
+export const dynamic = "force-dynamic";
 
 export const viewport: Viewport = {
   themeColor: "#0b0b10",
   colorScheme: "dark",
 };
 
-export const metadata: Metadata = {
-  title: { absolute: GTA6_PAGE_TITLE },
-  description: GTA6_PAGE_DESCRIPTION,
-  keywords: [...keywords],
-  alternates: { canonical },
-  robots: { index: true, follow: true },
-  ...buildSocialMetadata({
-    title: GTA6_PAGE_TITLE,
-    description: GTA6_PAGE_DESCRIPTION,
-    url: canonical,
-  }),
-};
-
-const faqLd = faqSchema(GTA6_FAQ.map((item) => ({ question: item.question, answer: item.answer })));
-const breadcrumbLd = breadcrumbListSchema(gta6BreadcrumbItems());
-const webPageLd = webPageSchema({
-  name: GTA6_PAGE_TITLE,
-  description: GTA6_PAGE_DESCRIPTION,
-  url: canonical,
-  keywords,
-  mainEntityId: `${canonical}#calculator`,
-});
-const extraLd = gta6StructuredData(canonical);
+export async function generateMetadata(): Promise<Metadata> {
+  const page = await getGta6Page();
+  const canonical = toCanonicalUrl(PATH);
+  return {
+    title: { absolute: page.home.seoTitle },
+    description: page.home.seoDescription,
+    keywords: page.home.keywords,
+    alternates: { canonical },
+    robots: { index: true, follow: true },
+    ...buildSocialMetadata({
+      title: page.home.seoTitle,
+      description: page.home.seoDescription,
+      url: canonical,
+    }),
+  };
+}
 
 export default async function Gta6SensitivityPage() {
   const settings = await getSettings();
-  const jsonLd = [webPageLd, breadcrumbLd, faqLd, ...extraLd].filter(Boolean);
+  const page = await getGta6Page();
+  const canonical = toCanonicalUrl(PATH);
+  const jsonLd = [
+    webPageSchema({
+      name: page.home.seoTitle,
+      description: page.home.seoDescription,
+      url: canonical,
+      keywords: page.home.keywords,
+      mainEntityId: `${canonical}#calculator`,
+    }),
+    breadcrumbListSchema(gta6BreadcrumbItems()),
+    faqSchema(page.faq.map((item) => ({ question: item.question, answer: item.answer }))),
+    ...gta6StructuredData(canonical),
+  ].filter(Boolean);
 
   return (
     <>
@@ -86,29 +89,23 @@ export default async function Gta6SensitivityPage() {
           <section className="gta6-hero" aria-labelledby="gta6-hero-title">
             <div className="gta6-wrap gta6-hero-grid">
               <div className="gta6-hero-copy">
-                <p className="gta6-eyebrow">Coming November 19, 2026 · PS5 & Xbox Series</p>
-                <h1 id="gta6-hero-title">Sensitivity Settings</h1>
-                <p className="gta6-lead">
-                  Free controller calculator for Grand Theft Auto VI — look, aim, deadzone,
-                  acceleration, and DualSense options before launch day.
-                </p>
-                <p className="gta6-banner">
-                  Menu names follow the usual controller pattern until Rockstar shows the real
-                  settings screen. Values are a starting range, not an official preset.
-                </p>
+                <p className="gta6-eyebrow">{page.home.eyebrow}</p>
+                <h1 id="gta6-hero-title">{page.home.title}</h1>
+                <p className="gta6-lead">{page.home.lead}</p>
+                <p className="gta6-banner">{page.home.banner}</p>
                 <div className="gta6-hero-actions">
                   <a className="primary" href="#calculator">
-                    Open calculator
+                    {page.home.primaryLabel}
                   </a>
                   <a className="ghost" href="#specs">
-                    View specs
+                    {page.home.secondaryLabel}
                   </a>
                 </div>
               </div>
               <div className="gta6-hero-media">
                 <img
-                  src="/gta6/news-city.jpg"
-                  alt="Vice City style night skyline for Grand Theft Auto VI"
+                  src={page.home.imageSrc}
+                  alt={page.home.imageAlt}
                   width={720}
                   height={480}
                 />
@@ -121,17 +118,17 @@ export default async function Gta6SensitivityPage() {
             className="gta6-band gta6-band-calc"
             aria-labelledby="gta6-calc-title"
           >
-            <h2 id="gta6-calc-title">GTA 6 sensitivity calculator</h2>
+            <h2 id="gta6-calc-title">{page.home.calculatorTitle}</h2>
             <Gta6Calculator />
           </section>
 
-          <Gta6DetailsSections />
+          <Gta6DetailsSections page={page} />
 
           <section className="gta6-band gta6-faq" id="faq" aria-label="Frequently Asked Questions">
             <div className="gta6-faq-panel">
               <FaqAccordion
                 title="Frequently Asked Questions"
-                items={GTA6_FAQ.map((item, index) => ({
+                items={page.faq.map((item, index) => ({
                   id: `gta6-faq-${index + 1}`,
                   question: item.question,
                   answer: item.answer,

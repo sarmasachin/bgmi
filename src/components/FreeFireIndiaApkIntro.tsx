@@ -1,4 +1,5 @@
 import { ApkDownloadCountStat } from "@/src/components/ApkDownloadCountStat";
+import { cleanApkUpdateDate } from "@/src/components/ApkStoreIntro";
 import styles from "@/src/components/FreeFireIndiaApkIntro.module.css";
 import {
   isUsableFreeFireHeroImageSrc,
@@ -33,9 +34,7 @@ export function FreeFireIndiaApkIntro({
     "Free Fire India";
   const publisher =
     factValue(page.facts.rows, /publisher/i) || "Garena International I Private Limited";
-  const rawDate = page.countdown.dateText.trim();
-  // Hide the old admin-instruction placeholder if it was saved as page content.
-  const dateText = /set the official update date in admin/i.test(rawDate) ? "" : rawDate;
+  const dateText = cleanApkUpdateDate(page.countdown.dateText);
   const fileSize = factValue(page.facts.rows, /file\s*size/i) || "389.7 MB";
   const androidOs =
     factValue(page.facts.rows, /android\s*os|^android$/i) || "Android 5.0+";
