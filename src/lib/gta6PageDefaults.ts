@@ -38,12 +38,11 @@ import { GTA6_PAGE_DESCRIPTION, GTA6_PAGE_TITLE } from "@/src/features/gta6Calcu
 import type { Gta6PageContent } from "@/src/lib/gta6PageTypes";
 
 const FILTER_LABEL: Record<string, string> = {
-  "Weapons and health": "GTA 6 Weapons Cheat Code",
-  Police: "GTA 6 Police Cheat Code",
-  Movement: "GTA 6 Movement Cheat Code",
-  Vehicles: "GTA 6 Vehicles Cheat Code",
-  "Street and world": "GTA 6 World Cheat Code",
-  "Phone and character": "GTA 6 Phone Cheat Code",
+  Player: "Player",
+  Combat: "Combat",
+  Environment: "Environment",
+  Vehicles: "Vehicles",
+  "Screen filters": "Screen filters",
 };
 
 function lines(list: readonly string[]): string[] {
@@ -120,14 +119,14 @@ export const DEFAULT_GTA6_PAGE: Gta6PageContent = {
     })),
   },
   cheat: {
-    seoTitle: `${GTA6_CHEAT_TITLE} — TBA Until Launch`,
+    seoTitle: GTA6_CHEAT_TITLE,
     seoDescription: GTA6_CHEAT_DESCRIPTION,
     title: GTA6_CHEAT_TITLE,
     updated: GTA6_CHEAT_UPDATED,
     intro: lines(GTA6_CHEAT_INTRO),
     tableTitle: "GTA 6 Cheat Codes for PS5 and Xbox Series X|S",
     tableWarning: GTA6_CHEAT_TABLE_WARNING,
-    verifyTitle: "How we label every code",
+    verifyTitle: "Where these codes come from",
     verify: lines(GTA6_CHEAT_VERIFY),
     howToTitle: "How to enter GTA 6 cheat codes",
     howTo: GTA6_CHEAT_HOW_TO.map((block) => ({
@@ -136,13 +135,13 @@ export const DEFAULT_GTA6_PAGE: Gta6PageContent = {
     })),
     benefitsTitle: "Benefits of cheat codes in GTA",
     benefits: GTA6_CHEAT_BENEFITS.map((item) => ({ h3: item.h3, body: item.body })),
-    pcTitle: "GTA 6 Cheat Codes for PC",
+    pcTitle: "GTA 6 cheat codes on PC",
     pc: lines(GTA6_CHEAT_PC),
-    pcHowTitle: "How GTA 6 PC cheats will probably work",
+    pcHowTitle: "Why the PC column says no PC version",
     pcHow: lines(GTA6_CHEAT_PC_HOW),
     pcMethods: lines(GTA6_CHEAT_PC_METHODS),
     pcHowEnd: lines(GTA6_CHEAT_PC_HOW_END),
-    expectTitle: "Other cheats to expect in GTA 6",
+    expectTitle: "Button codes that are still missing",
     expect: lines(GTA6_CHEAT_EXPECT),
     conclusionTitle: "Conclusion",
     conclusion: lines(GTA6_CHEAT_CONCLUSION),

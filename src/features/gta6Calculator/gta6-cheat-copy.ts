@@ -1,108 +1,105 @@
-export const GTA6_CHEAT_TITLE =
-  "GTA 6 Cheat Codes: Full List for PS5, Xbox Series & PC";
+export const GTA6_CHEAT_TITLE = "GTA 6 Cheat Codes for PS5 and Xbox Series";
 
 export const GTA6_CHEAT_DESCRIPTION =
-  "There are no confirmed GTA 6 cheat codes yet. Grand Theft Auto 6 launches November 19, 2026 on PS5 and Xbox Series X|S. Every cheat name is listed here with TBA until tested in the real game.";
+  "GTA 6 has 61 reported cheat codes on PS5 and Xbox Series X|S. They unlock only after the main story, and each code needs its own challenge. There is no PC version. Button sequences that guides have not published are marked Not found yet.";
 
-export const GTA6_CHEAT_UPDATED = "5 November, 2026";
+export const GTA6_CHEAT_UPDATED = "18 November, 2026";
 
 export const GTA6_CHEAT_INTRO = [
-  "There are no confirmed GTA 6 cheat codes yet. Grand Theft Auto 6 launches November 19, 2026 on PS5 and Xbox Series X|S, and Rockstar has not published the game’s cheat list. The names in the table below are the effects players expect from past Grand Theft Auto games. Every code cell stays TBA until it is tested in the released game.",
-  "GTA 6 cheat codes are button sequences, in-game phone numbers, or typed PC commands that unlock effects like invincibility, weapons, vehicles, and wanted-level control. This page is the full checklist for PS5, Xbox Series, and PC — with a clear status on every row so you know what is real and what is still waiting.",
+  "Early guides published on 18 November 2026 list 61 GTA 6 cheats for PlayStation 5 and Xbox Series X|S. Rockstar’s own GTA VI page does not publish a cheat list. The table below follows those guides. It is not an official Rockstar list, and the public game unlocks on 19 November 2026.",
+  "You cannot use a code at the start of the game. Finish Jason and Lucia’s main story first. One guide counted 91 story missions and checked that codes do nothing before the credits. After the story, each cheat still needs its own challenge. The D-pad sequence is the same on PS5 and Xbox. There is no PC release, so there is no PC code.",
 ] as const;
 
 export const GTA6_CHEAT_TABLE_WARNING =
-  "All codes below are Unconfirmed until November 19, 2026. Inputs are carried over from GTA V as placeholders — not tested in GTA 6.";
+  "Reported by early guides on 18 November 2026, not posted by Rockstar. Not found yet means the cheat has a name and an unlock, but no published button sequence. A cheat turns off saving, trophies, and achievements for that play session.";
 
 export const GTA6_CHEAT_VERIFY = [
-  "Every row carries a status. Unconfirmed means the button string is carried over from GTA V as a placeholder and has not been tested in GTA 6. TBA means we do not have a past-game string for that effect yet. Confirmed will mean the code was entered in the finished game and the result was recorded. Anyone posting “working” GTA 6 codes before November 19, 2026 is guessing.",
+  "Where GamesRadar and PC Gamer print the same D-pad sequence, that sequence is in the table. Where only GamesRadar prints the buttons, the sequence is still shown, because both guides are covering the same early build and PC Gamer left those cells blank. A few unlock counts do not match: PC Gamer says 20 bronze shooting medals for max ammo, and GamesRadar says 25. This page uses the GamesRadar unlock when they disagree. Not found yet means neither guide has published the buttons.",
 ] as const;
 
 export const GTA6_CHEAT_HOW_TO = [
   {
-    h3: "Controller (PS5 and Xbox Series)",
+    h3: "Finish the story first",
     paragraphs: [
-      "In past GTA games you enter the button sequence quickly during Story Mode play. Directions use the D-pad. A short on-screen message usually confirms the cheat. Whether GTA 6 keeps the same rules will be clear on launch day.",
+      "The cheat menu is not on the Progress tab until Jason and Lucia’s story is over. Open the main menu with the touchpad on PS5 or the menu button on Xbox, then press R1 or RB to reach Progress. Knowing a button code before that point does not make it work.",
     ],
   },
   {
-    h3: "In-game phone",
+    h3: "Enter the code",
     paragraphs: [
-      "Since GTA IV, many cheats are phone numbers. Open the in-game phone, dial the number, and call. Rockstar’s trailers put the phone at the centre of Leonida life, so this method is likely again — but the numbers themselves are still TBA.",
+      "In free roam, press Up on the D-pad to open the phone. Hold L1 and R1 on PS5, or LB and RB on Xbox, then enter the D-pad sequence. One guide phrases the shoulder step as hold L1 or LB and press R1 or RB. Both agree the code itself is only Up, Down, Left, and Right, so PS5 and Xbox share one sequence.",
     ],
   },
   {
-    h3: "PC",
+    h3: "What a cheat costs",
     paragraphs: [
-      "There is no official GTA 6 PC date yet. When a PC version arrives, cheats have historically used typed console words (tilde key ~) or the same phone numbers. A controller on PC has usually accepted the Xbox sequences too.",
+      "While a cheat is active you cannot save, and trophies or achievements stay off for that session. Quit without saving if you turned a cheat on. You also cannot use cheats to finish the challenges that unlock more cheats.",
     ],
   },
 ] as const;
 
 export const GTA6_CHEAT_BENEFITS = [
   {
-    h3: "Faster story progress",
-    body: "Codes like weapons, health, armor, and special-ability recharge help clear tough missions when you want the story, not a grind.",
+    h3: "Money, armor, and ammo",
+    body: "The reported player and combat rows cover a $250,000 payout, body armor, full ammo, infinite ammo, and a no-reload mode. Each one still needs its unlock, and most of those unlocks are story completion or a long challenge.",
   },
   {
-    h3: "Escape the police",
-    body: "Wanted-level down, fast run, fast swim, and a parachute are the classic tools for getting out of a chase once the stars light up.",
+    h3: "Vehicles",
+    body: "The vehicle rows spawn a named car, boat, bike, or aircraft, including a bulldozer, a taxi, and a Rhino tank. Only a few of those spawn codes have a published D-pad sequence so far.",
   },
   {
-    h3: "Mess around in free roam",
-    body: "Drunk mode, skyfall, slow motion, slidey cars, and weather changes exist for laughs — not for a clean trophy run.",
-  },
-  {
-    h3: "Spawn what you need",
-    body: "Vehicle and weapon rows cover tanks, bikes, planes, and loadouts so you can jump straight into the chaos you want to test.",
+    h3: "Weather, time, and filters",
+    body: "Cycle Weather is the one environment code with published buttons. The screen-filter rows change how Leonida looks, from a CRT image to a heat haze. Most of those button sequences are still unpublished.",
   },
 ] as const;
 
 export const GTA6_CHEAT_PC = [
-  "There are no GTA 6 PC cheat codes yet, because Rockstar has not announced a PC version.",
-  "GTA 6 is confirmed for PlayStation 5 and Xbox Series X|S on November 19, 2026. No PC storefront listing, no system requirements, and no PC release window have been published.",
-  "Even when PC arrives, the inputs will almost certainly be their own list — typed commands and phone numbers — not a copy-paste of the console pad strings. Until then, every PC cell on this page stays TBA.",
+  "There are no GTA 6 PC cheat codes. Rockstar has not announced a PC version.",
+  "GTA 6 launches on PlayStation 5 and Xbox Series X|S on 19 November 2026. No PC store page, system requirements, or PC date has been published, so a typed PC command cannot exist yet.",
 ] as const;
 
 export const GTA6_CHEAT_PC_HOW = [
-  "PC cheats in Grand Theft Auto have never matched console pad input one-for-one. Two methods showed up again and again:",
+  "The PC column says No PC version on every row for that reason. It is not a hidden code.",
 ] as const;
 
 export const GTA6_CHEAT_PC_METHODS = [
-  "Typed commands — in GTA V you press ~, type a word like PAINKILLER or SKYFALL, then Enter.",
-  "In-game phone numbers — open the phone and dial a saved contact-style number, the same idea that started in GTA IV.",
+  "PS5 and Xbox use the same D-pad sequence. There is no separate Xbox string and no keyboard word.",
+  "Old GTA phone numbers and GTA V words such as HESOYAM are not in this list. Those were placeholders from the older games and are not GTA 6 codes.",
 ] as const;
 
 export const GTA6_CHEAT_PC_HOW_END = [
-  "Both are likely to return for GTA 6 if cheats ship at all. One unknown from V still matters: many cheats only worked in free roam and refused mid-mission. GTA 6 may keep that lock, change it, or drop cheats entirely. We will update this page when the retail build answers that.",
+  "If Rockstar later ships a PC version, this column can take real PC inputs. Until then it stays empty on purpose.",
 ] as const;
 
 export const GTA6_CHEAT_EXPECT = [
-  "The table is not a promise that every older cheat returns. Leonida is larger than Los Santos, the wanted system looks rebuilt, and new vehicles and abilities may need new rows. Expect this list to grow after launch if Rockstar ships cheats.",
-  "Ignore “day-one working code” videos posted before November 19, 2026. Fill a TBA cell only after the string works in the finished game on PS5, Xbox Series, or PC — and label the platform if the inputs differ.",
+  "Most of the 61 cheats still have no published buttons. The names and unlock challenges are in the table so you can see what the guides found in the cheat menu. The D-pad cells fill in only when a guide prints the sequence.",
+  "Treat every sequence as reported, not as something this site tested in a retail copy. The public unlock is 19 November 2026. After players can enter the codes in the finished game, rows that fail that test should come off the page.",
 ] as const;
 
 export const GTA6_CHEAT_CONCLUSION = [
-  "That is the full pre-launch checklist for Grand Theft Auto 6 cheat codes on PS5 and Xbox Series X|S: effect names ready, every input cell still TBA, zero confirmed codes.",
-  "GTA 6 launches Thursday, November 19, 2026 on those consoles only. Rockstar has still not announced PC. No cheat list appeared in the Extended Look trailer — that is normal; Rockstar almost never markets cheats before release, and GTA V still shipped a full day-one list that players found themselves.",
-  "This page will change after launch. When a code is verified, the TBA cell gets the real input and the status flips. Until then, blank is honest.",
+  "GTA 6’s reported cheat list is 61 effects on PS5 and Xbox Series X|S. The story has to be finished first, then each cheat needs its own challenge. The button code, when one has been published, is the same D-pad sequence on both consoles.",
+  "Rockstar has not posted the list. A lot of buttons are still missing, and there is no PC code. Using a cheat blocks saving and trophies for that session.",
 ] as const;
 
 export const GTA6_CHEAT_FAQS = [
   {
-    q: "Will there be cheat codes for Grand Theft Auto 6?",
-    a: "Unconfirmed. Every mainline Grand Theft Auto has shipped with cheats, and GTA V had a full list on day one. Rockstar removed cheats from GTA Online and has said nothing about GTA 6. We will know on November 19, 2026.",
+    q: "Are GTA 6 cheat codes out?",
+    a: "Guides dated 18 November 2026 list 61 cheats. Rockstar’s GTA VI page does not publish them. They only work after the main story, and many button sequences are still marked Not found yet.",
   },
   {
-    q: "Will GTA 6 be on PlayStation 4 or Xbox One?",
-    a: "No. Rockstar is releasing GTA 6 on PlayStation 5 and Xbox Series X|S only at launch.",
+    q: "Do the codes work at the start of the game?",
+    a: "No. Finish Jason and Lucia’s story first. One guide loaded an earlier save and the codes did nothing. After the story, you still have to clear that cheat’s challenge.",
   },
   {
-    q: "When will GTA 6 cheat codes be confirmed?",
-    a: "Launch day onward — when players can enter them in the retail game. Anyone publishing “confirmed” codes before November 19, 2026 is guessing.",
+    q: "Are PS5 and Xbox codes different?",
+    a: "No. The published codes use only the D-pad, so the same sequence works on PlayStation 5 and Xbox Series X|S.",
   },
   {
-    q: "Do GTA cheat codes work in Online?",
-    a: "In GTA V they do not work in GTA Online. Until Rockstar says otherwise, treat Online as separate from Story Mode cheats.",
+    q: "Is there a GTA 6 PC cheat code?",
+    a: "No. There is no PC version, so there is no PC cheat code.",
+  },
+  {
+    q: "Will cheats disable trophies?",
+    a: "Yes, according to the same guides. Saving is also disabled while a cheat is on, and trophies or achievements stay off for that session.",
   },
 ] as const;
