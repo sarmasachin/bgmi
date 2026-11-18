@@ -92,5 +92,12 @@ export type Gta6PageContent = {
     updated: string;
     intro: string[];
     sections: Gta6Section[];
+    /** Article body. Empty only when an admin cleared the editor. */
+    articleHtml: string;
+    keywords: string[];
+    /** Empty uses the real /gta-6-apk URL. */
+    canonicalUrl: string;
+    featureImage: string;
+    featureImageAlt: string;
   };
 };

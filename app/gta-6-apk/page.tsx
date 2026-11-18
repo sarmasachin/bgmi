@@ -34,18 +34,29 @@ export const viewport: Viewport = {
   colorScheme: "dark",
 };
 
+function shareImageUrl(raw: string) {
+  const value = raw.trim();
+  return value ? toCanonicalUrl(value) : "";
+}
+
 export async function generateMetadata(): Promise<Metadata> {
   const page = await getGta6Page();
-  const canonical = toCanonicalUrl(GTA6_APK_PATH);
+  const canonical = toCanonicalUrl(page.apk.canonicalUrl || GTA6_APK_PATH);
+  const featureImage = shareImageUrl(page.apk.featureImage);
+  const keywords = page.apk.keywords.map((item) => item.trim()).filter(Boolean);
   return {
     title: { absolute: page.apk.seoTitle },
     description: page.apk.seoDescription,
+    keywords,
     alternates: { canonical },
     robots: { index: true, follow: true },
     ...buildSocialMetadata({
       title: page.apk.seoTitle,
       description: page.apk.seoDescription,
       url: canonical,
+      image: featureImage || undefined,
+      imageAlt: page.apk.featureImageAlt.trim() || page.apk.seoTitle,
+      type: "article",
     }),
   };
 }
@@ -53,12 +64,16 @@ export async function generateMetadata(): Promise<Metadata> {
 export default async function Gta6ApkPage() {
   const settings = await getSettings();
   const page = await getGta6Page();
-  const canonical = toCanonicalUrl(GTA6_APK_PATH);
+  const canonical = toCanonicalUrl(page.apk.canonicalUrl || GTA6_APK_PATH);
+  const featureImage = shareImageUrl(page.apk.featureImage);
+  const keywords = page.apk.keywords.map((item) => item.trim()).filter(Boolean);
   const jsonLd = [
     webPageSchema({
       name: page.apk.seoTitle,
       description: page.apk.seoDescription,
       url: canonical,
+      image: featureImage || undefined,
+      keywords,
     }),
     breadcrumbListSchema([
       { name: "Home", url: toCanonicalUrl("/") },

@@ -1,3 +1,4 @@
+import { gta6ApkHtmlFromParts } from "@/src/lib/gta6ApkArticleHtml";
 import { DEFAULT_GTA6_PAGE } from "@/src/lib/gta6PageDefaults";
 import type {
   Gta6Benefit,
@@ -275,6 +276,14 @@ export function normalizeGta6Page(raw: unknown): Gta6PageContent {
       updated: text(apk.updated, base.apk.updated),
       intro: lines(apk.intro, base.apk.intro),
       sections: sections(apk.sections, base.apk.sections),
+      articleHtml:
+        typeof apk.articleHtml === "string"
+          ? apk.articleHtml
+          : gta6ApkHtmlFromParts(lines(apk.intro, base.apk.intro), sections(apk.sections, base.apk.sections)),
+      keywords: lines(apk.keywords, base.apk.keywords),
+      canonicalUrl: text(apk.canonicalUrl, ""),
+      featureImage: text(apk.featureImage, ""),
+      featureImageAlt: text(apk.featureImageAlt, ""),
     },
   };
 }

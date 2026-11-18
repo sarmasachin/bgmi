@@ -73,6 +73,37 @@
   margin: 0.45em 0;
 }
 
+.gta6-cheat-body ul,
+.gta6-cheat-body ol {
+  margin: 0.85em 0 0.85em 1.2rem;
+  padding: 0;
+  color: #d4d4dc;
+  font-size: 1rem;
+  line-height: 1.7;
+}
+
+.gta6-cheat-body li {
+  margin: 0.45em 0;
+}
+
+.gta6-cheat-body a {
+  color: #ffb2c6;
+}
+
+.gta6-cheat-body table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 1em 0;
+}
+
+.gta6-cheat-body th,
+.gta6-cheat-body td {
+  border: 1px solid rgba(255, 178, 198, 0.35);
+  padding: 8px 10px;
+  text-align: left;
+  color: #d4d4dc;
+}
+
 .gta6-cheat-table-block {
   margin: 0 0 36px;
 }

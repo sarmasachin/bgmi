@@ -35,6 +35,7 @@ import { GTA6_EDITIONS, GTA6_STORY, GTA6_TIMELINE } from "@/src/features/gta6Cal
 import { GTA6_FAQ } from "@/src/features/gta6Calculator/gta6-faq";
 import { GTA6_MAP, GTA6_MAP_IMAGE, GTA6_MAP_PINS } from "@/src/features/gta6Calculator/gta6-map";
 import { GTA6_PAGE_DESCRIPTION, GTA6_PAGE_TITLE } from "@/src/features/gta6Calculator/gta6-seo";
+import { gta6ApkHtmlFromParts } from "@/src/lib/gta6ApkArticleHtml";
 import type { Gta6PageContent } from "@/src/lib/gta6PageTypes";
 
 const FILTER_LABEL: Record<string, string> = {
@@ -48,6 +49,12 @@ const FILTER_LABEL: Record<string, string> = {
 function lines(list: readonly string[]): string[] {
   return [...list];
 }
+
+const GTA6_APK_INTRO_LINES = lines(GTA6_APK_INTRO);
+const GTA6_APK_SECTION_LINES = GTA6_APK_SECTIONS.map((section) => ({
+  h2: section.h2,
+  paragraphs: lines(section.paragraphs),
+}));
 
 export const DEFAULT_GTA6_PAGE: Gta6PageContent = {
   home: {
@@ -167,10 +174,12 @@ export const DEFAULT_GTA6_PAGE: Gta6PageContent = {
     seoDescription: GTA6_APK_DESCRIPTION,
     title: GTA6_APK_TITLE,
     updated: GTA6_APK_UPDATED,
-    intro: lines(GTA6_APK_INTRO),
-    sections: GTA6_APK_SECTIONS.map((section) => ({
-      h2: section.h2,
-      paragraphs: lines(section.paragraphs),
-    })),
+    intro: GTA6_APK_INTRO_LINES,
+    sections: GTA6_APK_SECTION_LINES,
+    articleHtml: gta6ApkHtmlFromParts(GTA6_APK_INTRO_LINES, GTA6_APK_SECTION_LINES),
+    keywords: ["GTA 6 APK", "GTA VI", "Grand Theft Auto VI", "no official GTA 6 APK"],
+    canonicalUrl: "",
+    featureImage: "",
+    featureImageAlt: "",
   },
 };
