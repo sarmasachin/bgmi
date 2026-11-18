@@ -1,6 +1,7 @@
-import { getPublicAdSlot } from "@/src/server/repositories/adsRepository";
-import { isAdminAdsHidden } from "@/src/server/adminNoAds";
+import { AdLayoutPreview } from "@/src/components/AdLayoutPreview";
 import { AdSlotClient } from "@/src/components/AdSlotClient";
+import { isAdminAdsHidden } from "@/src/server/adminNoAds";
+import { getPublicAdSlot } from "@/src/server/repositories/adsRepository";
 
 type Props = {
   slotKey: string;
@@ -8,6 +9,7 @@ type Props = {
 
 /** Server: loads enabled ad code from DB; client injects HTML + scripts. */
 export async function AdSlot({ slotKey }: Props) {
+  if (process.env.NODE_ENV === "development") return <AdLayoutPreview />;
   if (await isAdminAdsHidden()) return null;
   const slot = await getPublicAdSlot(slotKey);
   if (!slot) return null;

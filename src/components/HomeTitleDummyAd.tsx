@@ -1,3 +1,4 @@
+import { AdLayoutPreview } from "@/src/components/AdLayoutPreview";
 import { AdSlotClient } from "@/src/components/AdSlotClient";
 import { isAdminAdsHidden } from "@/src/server/adminNoAds";
 import { getAdPlacementVisibility } from "@/src/server/repositories/adPlacementRepository";
@@ -9,7 +10,6 @@ export async function HomeTitleDummyAd({
 }: {
   slotKey?: string;
 } = {}) {
-  if (await isAdminAdsHidden()) return null;
   const [places, slot] = await Promise.all([
     getAdPlacementVisibility(),
     getPublicAdSlot(slotKey),
@@ -22,7 +22,10 @@ export async function HomeTitleDummyAd({
         : slotKey === "apk_below_actions"
           ? places.home.apk_below_actions
           : places.home.home_below_title;
-  if (!visible || !slot) return null;
+  if (!visible) return null;
+  if (process.env.NODE_ENV === "development") return <AdLayoutPreview wide />;
+  if (await isAdminAdsHidden()) return null;
+  if (!slot) return null;
 
   return (
     <div className="ff-home-ad">

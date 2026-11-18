@@ -14,62 +14,94 @@ declare global {
   }
 }
 
+/** Cap so the box stays 260px and does not hang downward. */
+const MAX_AD_HEIGHT = 260;
+
 function isAdReady(ins: HTMLElement): boolean {
   const status = (ins.getAttribute("data-ad-status") || "").toLowerCase();
   if (status === "filled" || status === "unfill-optimized") return true;
   return Boolean(ins.querySelector("iframe"));
 }
 
-/** Phone: square card. Wider screens: horizontal bar, sized to the column. */
-const SQUARE_MAX_PX = 720;
-const SQUARE_WIDTH = 300;
-const SQUARE_HEIGHT = 250;
-
-function useSquareAd() {
-  return window.matchMedia(`(max-width: ${SQUARE_MAX_PX}px)`).matches;
-}
-
-function applyAdShape(el: HTMLElement, ins: HTMLElement | null) {
-  const square = useSquareAd();
-  el.dataset.adShape = square ? "square" : "horizontal";
-  el.style.display = "block";
-  el.style.marginLeft = "auto";
-  el.style.marginRight = "auto";
-  el.style.maxWidth = "100%";
-  if (!ins) return;
-
-  if (square) {
-    ins.setAttribute("data-ad-format", "rectangle");
-    ins.setAttribute("data-full-width-responsive", "false");
-    ins.style.display = "inline-block";
-    ins.style.width = `${SQUARE_WIDTH}px`;
-    ins.style.maxWidth = "100%";
-    ins.style.height = `${SQUARE_HEIGHT}px`;
-    ins.style.maxHeight = `${SQUARE_HEIGHT}px`;
-    el.style.width = `${SQUARE_WIDTH}px`;
-    el.style.height = `${SQUARE_HEIGHT}px`;
-    el.style.maxHeight = `${SQUARE_HEIGHT}px`;
-    el.style.overflow = "hidden";
-    return;
+/** Actual creative height — never the tall empty reserve AdSense leaves behind. */
+function measureCreativeHeight(ins: HTMLElement): number {
+  const iframe = ins.querySelector("iframe");
+  if (iframe instanceof HTMLElement && iframe.offsetHeight > 20) {
+    return Math.ceil(iframe.offsetHeight);
   }
 
-  ins.setAttribute("data-ad-format", "horizontal");
-  ins.setAttribute("data-full-width-responsive", "true");
-  ins.style.display = "block";
-  ins.style.width = "100%";
-  ins.style.maxWidth = "100%";
-  ins.style.height = "";
-  ins.style.minHeight = "";
-  ins.style.maxHeight = "";
+  let childMax = 0;
+  for (const child of Array.from(ins.children)) {
+    if (!(child instanceof HTMLElement)) continue;
+    if (child.tagName === "SCRIPT") continue;
+    childMax = Math.max(childMax, child.offsetHeight, child.scrollHeight);
+  }
+  if (childMax > 20) return Math.ceil(childMax);
+
+  return 0;
+}
+
+/**
+ * Keep the creative inside the column. A unit wider than the slot is scaled
+ * down so the right edge stays visible, then the box hugs that height.
+ */
+function fitWrapToAd(el: HTMLElement, ins: HTMLElement) {
+  if (!isAdReady(ins)) return;
+
+  ins.style.minHeight = "0px";
+  el.style.minHeight = "0px";
   el.style.width = "100%";
-  el.style.height = "auto";
-  el.style.maxHeight = "none";
-  el.style.overflow = "visible";
+  el.style.maxWidth = "100%";
+
+  const iframe = ins.querySelector("iframe");
+  let creativeH = measureCreativeHeight(ins);
+  const slotW = el.clientWidth;
+
+  if (iframe instanceof HTMLElement && slotW > 20) {
+    const naturalW = iframe.offsetWidth;
+    const naturalH = iframe.offsetHeight;
+    if (naturalW > slotW + 2 && naturalH > 20) {
+      const scale = slotW / naturalW;
+      const next = `scale(${scale})`;
+      creativeH = Math.round(naturalH * scale);
+      if (iframe.style.transform !== next) {
+        iframe.style.width = `${naturalW}px`;
+        iframe.style.height = `${naturalH}px`;
+        iframe.style.maxWidth = "none";
+        iframe.style.transformOrigin = "top left";
+        iframe.style.transform = next;
+        iframe.style.position = "absolute";
+        iframe.style.left = "0";
+        iframe.style.top = "0";
+        ins.style.position = "relative";
+        ins.style.overflow = "hidden";
+      }
+    }
+  }
+
+  if (creativeH < 20) return;
+
+  const h = `${Math.min(creativeH, MAX_AD_HEIGHT)}px`;
+  if (el.style.height === h && ins.style.height === h) return;
+
+  ins.style.height = h;
+  ins.style.maxHeight = h;
+  el.style.height = h;
+  el.style.maxHeight = h;
+  el.style.overflow = "hidden";
+  el.style.display = "block";
+
+  const shell = el.closest(".ff-home-ad, .ff-public-ad");
+  if (shell instanceof HTMLElement) {
+    shell.style.minHeight = "0px";
+    shell.style.height = "auto";
+    shell.style.display = "block";
+  }
 }
 
 /**
  * Injects ad HTML and re-executes inline <script> tags.
- * Desktop and tablet: horizontal responsive ad. Phone: 300×250 square.
+ * Width is the column. Height hugs the creative, capped at 260px.
  */
 export function AdSlotClient({ html, slotKey }: Props) {
   const ref = useRef<HTMLDivElement>(null);
@@ -100,8 +132,21 @@ export function AdSlotClient({ html, slotKey }: Props) {
     el.style.minHeight = "";
     el.style.overflow = "";
     el.innerHTML = html;
-    const firstIns = el.querySelector("ins.adsbygoogle");
-    applyAdShape(el, firstIns instanceof HTMLElement ? firstIns : null);
+
+    el.querySelectorAll("ins.adsbygoogle").forEach((node) => {
+      if (!(node instanceof HTMLElement)) return;
+      node.setAttribute("data-full-width-responsive", "true");
+      const format = (node.getAttribute("data-ad-format") || "").toLowerCase();
+      if (!format || format === "rectangle") {
+        node.setAttribute("data-ad-format", "auto");
+      }
+      node.style.display = "block";
+      node.style.width = "100%";
+      node.style.maxWidth = "100%";
+      node.style.height = "";
+      node.style.minHeight = "";
+      node.style.maxHeight = "";
+    });
 
     el.querySelectorAll("script").forEach((oldScript) => {
       const src = (oldScript.getAttribute("src") || "").toLowerCase();
@@ -140,14 +185,8 @@ export function AdSlotClient({ html, slotKey }: Props) {
     }
 
     const fit = () => {
-      if (cancelled || !isAdReady(ins)) return;
-      const square = useSquareAd();
-      if (square) {
-        if (el.dataset.adShape === "square" && ins.style.width === "300px") return;
-      } else if (el.dataset.adShape === "horizontal" && ins.style.width === "100%") {
-        return;
-      }
-      applyAdShape(el, ins);
+      if (cancelled) return;
+      fitWrapToAd(el, ins);
     };
 
     const mo = new MutationObserver(fit);
@@ -185,7 +224,10 @@ export function AdSlotClient({ html, slotKey }: Props) {
           display: block;
           width: 100%;
           max-width: 100%;
+          min-width: 0;
+          min-height: 0;
           height: auto;
+          max-height: ${MAX_AD_HEIGHT}px;
           box-sizing: border-box;
           background: transparent !important;
           border: 0 !important;
@@ -193,35 +235,38 @@ export function AdSlotClient({ html, slotKey }: Props) {
           outline: 0 !important;
           box-shadow: none !important;
           padding: 0 !important;
-          margin: 12px auto !important;
-          overflow: visible;
+          margin: 0 !important;
+          overflow: hidden;
         }
         .ad-slot.ad-slot--flush:empty {
           display: none;
         }
-        .ad-slot.ad-slot--flush ins.adsbygoogle,
-        .ad-slot.ad-slot--flush iframe,
-        .ad-slot.ad-slot--flush img {
+        .ad-slot.ad-slot--flush ins.adsbygoogle {
           display: block;
           width: 100% !important;
-          max-width: 100% !important;
+          max-width: 100%;
+          min-width: 0;
+          min-height: 0;
+          max-height: ${MAX_AD_HEIGHT}px;
           box-sizing: border-box;
-          margin: 0 auto !important;
+          margin: 0 !important;
           padding: 0 !important;
-          border: 0;
           background: transparent !important;
         }
-        .ad-slot.ad-slot--flush[data-ad-shape="square"] {
-          width: 300px;
-          height: 250px;
-          overflow: hidden;
+        .ad-slot.ad-slot--flush iframe {
+          display: block;
+          border: 0;
+          margin: 0;
+          vertical-align: bottom;
         }
-        .ad-slot.ad-slot--flush[data-ad-shape="square"] ins.adsbygoogle,
-        .ad-slot.ad-slot--flush[data-ad-shape="square"] iframe,
-        .ad-slot.ad-slot--flush[data-ad-shape="square"] img {
-          width: 300px !important;
-          height: 250px !important;
+        .ad-slot.ad-slot--flush img {
+          display: block;
+          width: 100%;
+          max-width: 100%;
+          height: auto;
+          max-height: ${MAX_AD_HEIGHT}px;
           object-fit: contain;
+          object-position: center;
         }
       `}</style>
     </>

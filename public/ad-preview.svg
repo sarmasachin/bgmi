@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="480" viewBox="0 0 1200 480" role="img" aria-label="Advertisement">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#141c24"/>
+      <stop offset="0.55" stop-color="#10161c"/>
+      <stop offset="1" stop-color="#0c1418"/>
+    </linearGradient>
+    <radialGradient id="glow" cx="50%" cy="46%" r="42%">
+      <stop offset="0" stop-color="#45c4b0" stop-opacity="0.22"/>
+      <stop offset="1" stop-color="#45c4b0" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="btn" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#45c4b0"/>
+      <stop offset="1" stop-color="#5ed4c2"/>
+    </linearGradient>
+  </defs>
+  <rect width="1200" height="480" fill="url(#bg)"/>
+  <rect width="1200" height="480" fill="url(#glow)"/>
+  <text x="600" y="168" text-anchor="middle" fill="#8fb9b2" font-family="Segoe UI, Arial, sans-serif" font-size="18" font-weight="700" letter-spacing="3">ADVERTISEMENT</text>
+  <text x="600" y="232" text-anchor="middle" fill="#e6edf3" font-family="Segoe UI, Arial, sans-serif" font-size="42" font-weight="800">Tune your sensitivity</text>
+  <text x="600" y="278" text-anchor="middle" fill="#b7c5d6" font-family="Segoe UI, Arial, sans-serif" font-size="22">Updated settings for every phone</text>
+  <rect x="470" y="312" width="260" height="52" rx="26" fill="url(#btn)"/>
+  <text x="600" y="346" text-anchor="middle" fill="#06221c" font-family="Segoe UI, Arial, sans-serif" font-size="20" font-weight="800">View settings</text>
+</svg>
