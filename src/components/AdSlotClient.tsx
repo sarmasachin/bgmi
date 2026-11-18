@@ -14,9 +14,6 @@ declare global {
   }
 }
 
-/** Cap so the box stays 260px and does not hang downward. */
-const MAX_AD_HEIGHT = 260;
-
 function isAdReady(ins: HTMLElement): boolean {
   const status = (ins.getAttribute("data-ad-status") || "").toLowerCase();
   if (status === "filled" || status === "unfill-optimized") return true;
@@ -43,7 +40,7 @@ function measureCreativeHeight(ins: HTMLElement): number {
 
 /**
  * Keep the creative inside the column. A unit wider than the slot is scaled
- * down so the right edge stays visible, then the box hugs that height.
+ * down so the right edge stays visible. Height follows the creative.
  */
 function fitWrapToAd(el: HTMLElement, ins: HTMLElement) {
   if (!isAdReady(ins)) return;
@@ -81,13 +78,13 @@ function fitWrapToAd(el: HTMLElement, ins: HTMLElement) {
 
   if (creativeH < 20) return;
 
-  const h = `${Math.min(creativeH, MAX_AD_HEIGHT)}px`;
+  const h = `${creativeH}px`;
   if (el.style.height === h && ins.style.height === h) return;
 
   ins.style.height = h;
-  ins.style.maxHeight = h;
+  ins.style.maxHeight = "none";
   el.style.height = h;
-  el.style.maxHeight = h;
+  el.style.maxHeight = "none";
   el.style.overflow = "hidden";
   el.style.display = "block";
 
@@ -101,7 +98,7 @@ function fitWrapToAd(el: HTMLElement, ins: HTMLElement) {
 
 /**
  * Injects ad HTML and re-executes inline <script> tags.
- * Width is the column. Height hugs the creative, capped at 260px.
+ * Width is the column. Height follows the creative so the bottom is not cut.
  */
 export function AdSlotClient({ html, slotKey }: Props) {
   const ref = useRef<HTMLDivElement>(null);
@@ -184,9 +181,13 @@ export function AdSlotClient({ html, slotKey }: Props) {
       };
     }
 
+    const ro = typeof ResizeObserver !== "undefined" ? new ResizeObserver(() => fit()) : null;
+
     const fit = () => {
       if (cancelled) return;
       fitWrapToAd(el, ins);
+      const frame = ins.querySelector("iframe");
+      if (frame instanceof HTMLElement) ro?.observe(frame);
     };
 
     const mo = new MutationObserver(fit);
@@ -197,7 +198,6 @@ export function AdSlotClient({ html, slotKey }: Props) {
       subtree: true,
     });
 
-    const ro = typeof ResizeObserver !== "undefined" ? new ResizeObserver(fit) : null;
     ro?.observe(ins);
 
     const times = [400, 1000, 2000, 4000, 7000].map((ms) => window.setTimeout(fit, ms));
@@ -227,7 +227,6 @@ export function AdSlotClient({ html, slotKey }: Props) {
           min-width: 0;
           min-height: 0;
           height: auto;
-          max-height: ${MAX_AD_HEIGHT}px;
           box-sizing: border-box;
           background: transparent !important;
           border: 0 !important;
@@ -247,7 +246,8 @@ export function AdSlotClient({ html, slotKey }: Props) {
           max-width: 100%;
           min-width: 0;
           min-height: 0;
-          max-height: ${MAX_AD_HEIGHT}px;
+          height: auto;
+          max-height: none;
           box-sizing: border-box;
           margin: 0 !important;
           padding: 0 !important;
@@ -264,7 +264,7 @@ export function AdSlotClient({ html, slotKey }: Props) {
           width: 100%;
           max-width: 100%;
           height: auto;
-          max-height: ${MAX_AD_HEIGHT}px;
+          max-height: none;
           object-fit: contain;
           object-position: center;
         }

@@ -10,7 +10,7 @@ export function AdLayoutPreview({ wide = false }: { wide?: boolean }) {
           display: block;
           width: 100%;
           max-width: 100%;
-          height: 260px;
+          height: auto;
           margin: 12px 0;
           padding: 0;
           box-sizing: border-box;
@@ -33,10 +33,8 @@ export function AdLayoutPreview({ wide = false }: { wide?: boolean }) {
         .ad-layout-preview img {
           display: block;
           width: 100%;
-          height: 100%;
+          height: auto;
           max-width: 100%;
-          object-fit: cover;
-          object-position: center;
         }
       `}</style>
     </div>
