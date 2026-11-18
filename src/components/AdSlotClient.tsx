@@ -20,55 +20,56 @@ function isAdReady(ins: HTMLElement): boolean {
   return Boolean(ins.querySelector("iframe"));
 }
 
-/** Actual creative height — never the tall empty reserve AdSense leaves behind. */
-function measureCreativeHeight(ins: HTMLElement): number {
-  const iframe = ins.querySelector("iframe");
-  if (iframe instanceof HTMLElement && iframe.offsetHeight > 20) {
-    return Math.ceil(iframe.offsetHeight);
-  }
+/** Phone: square card. Wider screens: horizontal bar, sized to the column. */
+const SQUARE_MAX_PX = 720;
+const SQUARE_WIDTH = 300;
+const SQUARE_HEIGHT = 250;
 
-  let childMax = 0;
-  for (const child of Array.from(ins.children)) {
-    if (!(child instanceof HTMLElement)) continue;
-    if (child.tagName === "SCRIPT") continue;
-    childMax = Math.max(childMax, child.offsetHeight, child.scrollHeight);
-  }
-  if (childMax > 20) return Math.ceil(childMax);
-
-  return 0;
+function useSquareAd() {
+  return window.matchMedia(`(max-width: ${SQUARE_MAX_PX}px)`).matches;
 }
 
-function fitWrapToAd(el: HTMLElement, ins: HTMLElement) {
-  if (!isAdReady(ins)) return;
-
-  // Drop AdSense reserved min-height so we can hug the creative.
-  ins.style.minHeight = "0px";
-  el.style.minHeight = "0px";
-
-  const creativeH = measureCreativeHeight(ins);
-  if (creativeH < 20) return;
-
-  const h = `${creativeH}px`;
-  if (el.style.height === h && ins.style.height === h) return;
-
-  ins.style.height = h;
-  ins.style.maxHeight = h;
-  el.style.height = h;
-  el.style.maxHeight = h;
-  el.style.overflow = "hidden";
+function applyAdShape(el: HTMLElement, ins: HTMLElement | null) {
+  const square = useSquareAd();
+  el.dataset.adShape = square ? "square" : "horizontal";
   el.style.display = "block";
+  el.style.marginLeft = "auto";
+  el.style.marginRight = "auto";
+  el.style.maxWidth = "100%";
+  if (!ins) return;
 
-  const shell = el.closest(".ff-home-ad, .ff-public-ad");
-  if (shell instanceof HTMLElement) {
-    shell.style.minHeight = "0px";
-    shell.style.height = "auto";
-    shell.style.display = "block";
+  if (square) {
+    ins.setAttribute("data-ad-format", "rectangle");
+    ins.setAttribute("data-full-width-responsive", "false");
+    ins.style.display = "inline-block";
+    ins.style.width = `${SQUARE_WIDTH}px`;
+    ins.style.maxWidth = "100%";
+    ins.style.height = `${SQUARE_HEIGHT}px`;
+    ins.style.maxHeight = `${SQUARE_HEIGHT}px`;
+    el.style.width = `${SQUARE_WIDTH}px`;
+    el.style.height = `${SQUARE_HEIGHT}px`;
+    el.style.maxHeight = `${SQUARE_HEIGHT}px`;
+    el.style.overflow = "hidden";
+    return;
   }
+
+  ins.setAttribute("data-ad-format", "horizontal");
+  ins.setAttribute("data-full-width-responsive", "true");
+  ins.style.display = "block";
+  ins.style.width = "100%";
+  ins.style.maxWidth = "100%";
+  ins.style.height = "";
+  ins.style.minHeight = "";
+  ins.style.maxHeight = "";
+  el.style.width = "100%";
+  el.style.height = "auto";
+  el.style.maxHeight = "none";
+  el.style.overflow = "visible";
 }
 
 /**
  * Injects ad HTML and re-executes inline <script> tags.
- * Wrap width = 100% (responsive). Height hugs the creative — no tall empty div.
+ * Desktop and tablet: horizontal responsive ad. Phone: 300×250 square.
  */
 export function AdSlotClient({ html, slotKey }: Props) {
   const ref = useRef<HTMLDivElement>(null);
@@ -99,22 +100,8 @@ export function AdSlotClient({ html, slotKey }: Props) {
     el.style.minHeight = "";
     el.style.overflow = "";
     el.innerHTML = html;
-
-    el.querySelectorAll("ins.adsbygoogle").forEach((node) => {
-      if (!(node instanceof HTMLElement)) return;
-      // Responsive unit: full width of parent, AdSense picks height.
-      node.setAttribute("data-full-width-responsive", "true");
-      const format = (node.getAttribute("data-ad-format") || "").toLowerCase();
-      if (!format || format === "rectangle") {
-        node.setAttribute("data-ad-format", "auto");
-      }
-      node.style.display = "block";
-      node.style.width = "100%";
-      node.style.maxWidth = "100%";
-      node.style.height = "";
-      node.style.minHeight = "";
-      node.style.maxHeight = "";
-    });
+    const firstIns = el.querySelector("ins.adsbygoogle");
+    applyAdShape(el, firstIns instanceof HTMLElement ? firstIns : null);
 
     el.querySelectorAll("script").forEach((oldScript) => {
       const src = (oldScript.getAttribute("src") || "").toLowerCase();
@@ -153,8 +140,14 @@ export function AdSlotClient({ html, slotKey }: Props) {
     }
 
     const fit = () => {
-      if (cancelled) return;
-      fitWrapToAd(el, ins);
+      if (cancelled || !isAdReady(ins)) return;
+      const square = useSquareAd();
+      if (square) {
+        if (el.dataset.adShape === "square" && ins.style.width === "300px") return;
+      } else if (el.dataset.adShape === "horizontal" && ins.style.width === "100%") {
+        return;
+      }
+      applyAdShape(el, ins);
     };
 
     const mo = new MutationObserver(fit);
@@ -192,8 +185,6 @@ export function AdSlotClient({ html, slotKey }: Props) {
           display: block;
           width: 100%;
           max-width: 100%;
-          min-width: 0;
-          min-height: 0;
           height: auto;
           box-sizing: border-box;
           background: transparent !important;
@@ -202,29 +193,35 @@ export function AdSlotClient({ html, slotKey }: Props) {
           outline: 0 !important;
           box-shadow: none !important;
           padding: 0 !important;
-          margin: 0 !important;
+          margin: 12px auto !important;
+          overflow: visible;
         }
         .ad-slot.ad-slot--flush:empty {
           display: none;
         }
-        .ad-slot.ad-slot--flush ins.adsbygoogle {
+        .ad-slot.ad-slot--flush ins.adsbygoogle,
+        .ad-slot.ad-slot--flush iframe,
+        .ad-slot.ad-slot--flush img {
           display: block;
           width: 100% !important;
-          max-width: 100%;
-          min-width: 0;
-          min-height: 0;
+          max-width: 100% !important;
           box-sizing: border-box;
-          margin: 0 !important;
+          margin: 0 auto !important;
           padding: 0 !important;
+          border: 0;
           background: transparent !important;
         }
-        .ad-slot.ad-slot--flush iframe {
-          display: block;
-          width: 100% !important;
-          max-width: 100%;
-          border: 0;
-          margin: 0;
-          vertical-align: bottom;
+        .ad-slot.ad-slot--flush[data-ad-shape="square"] {
+          width: 300px;
+          height: 250px;
+          overflow: hidden;
+        }
+        .ad-slot.ad-slot--flush[data-ad-shape="square"] ins.adsbygoogle,
+        .ad-slot.ad-slot--flush[data-ad-shape="square"] iframe,
+        .ad-slot.ad-slot--flush[data-ad-shape="square"] img {
+          width: 300px !important;
+          height: 250px !important;
+          object-fit: contain;
         }
       `}</style>
     </>

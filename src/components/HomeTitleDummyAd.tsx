@@ -39,7 +39,8 @@ export async function HomeTitleDummyAd({
           box-sizing: border-box;
           background: transparent;
           border: 0;
-          overflow: hidden;
+          overflow: visible;
+          text-align: center;
         }
         .lite-redeem-inner .ff-home-ad,
         .ff-as-article-head .ff-home-ad {

@@ -26,7 +26,8 @@ export async function AdSlot({ slotKey }: Props) {
           box-sizing: border-box;
           background: transparent;
           border: 0;
-          overflow: hidden;
+          overflow: visible;
+          text-align: center;
         }
       `}</style>
     </div>
