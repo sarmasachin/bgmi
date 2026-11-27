@@ -3,6 +3,7 @@ import { AdSlot } from "@/src/components/AdSlot";
 import { HomeHeader } from "@/src/components/HomeHeader";
 import { SiteFooter } from "@/src/components/SiteFooter";
 import type { Metadata } from "next";
+import { redirect } from "next/navigation";
 import {
   coerceNewsCategory,
   newsArticlePath,
@@ -13,6 +14,7 @@ import {
   collectionPageSchema,
   webPageSchema,
 } from "@/src/lib/schema";
+import { clampNewsListPage, newsListPagePath, parseNewsListPage } from "@/src/lib/newsListPage";
 import { toCanonicalUrl } from "@/src/lib/siteUrl";
 import { buildSocialMetadata } from "@/src/lib/socialMeta";
 import { getNewsListingSeo } from "@/src/server/repositories/listingSeoRepository";
@@ -27,19 +29,16 @@ type Props = {
   searchParams: Promise<{ page?: string }>;
 };
 
-function resolveNewsPage(raw?: string) {
-  return Math.max(Number(raw ?? "1") || 1, 1);
-}
-
 export async function generateMetadata({ searchParams }: Props): Promise<Metadata> {
   const params = await searchParams;
-  const page = resolveNewsPage(params.page);
+  const requested = parseNewsListPage(params.page);
+  const listed = await listPublishedNews(requested, NEWS_PAGE_SIZE);
+  const page = clampNewsListPage(requested, listed.total, NEWS_PAGE_SIZE);
   const seo = await getNewsListingSeo();
   const title = page > 1 ? `${seo.title} — Page ${page}` : seo.title;
   const description =
     page > 1 ? `Page ${page} of ${seo.description}` : seo.description;
-  const canonical =
-    page > 1 ? toCanonicalUrl(`/news?page=${page}`) : toCanonicalUrl("/news");
+  const canonical = toCanonicalUrl(newsListPagePath("/news", page));
 
   return {
     title,
@@ -51,15 +50,16 @@ export async function generateMetadata({ searchParams }: Props): Promise<Metadat
 
 export default async function NewsPage({ searchParams }: Props) {
   const params = await searchParams;
-  const page = resolveNewsPage(params.page);
+  const requested = parseNewsListPage(params.page);
   const [settings, seo, listed] = await Promise.all([
     getSettings(),
     getNewsListingSeo(),
-    listPublishedNews(page, NEWS_PAGE_SIZE),
+    listPublishedNews(requested, NEWS_PAGE_SIZE),
   ]);
+  const page = clampNewsListPage(requested, listed.total, NEWS_PAGE_SIZE);
+  if (page !== requested) redirect(newsListPagePath("/news", page));
 
-  const canonical =
-    page > 1 ? toCanonicalUrl(`/news?page=${page}`) : toCanonicalUrl("/news");
+  const canonical = toCanonicalUrl(newsListPagePath("/news", page));
   const homeUrl = toCanonicalUrl("/");
 
   const listItems = (listed.data ?? []).map((raw) => {

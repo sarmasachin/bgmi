@@ -30,7 +30,31 @@ export function isPushSupported() {
 
 export type SubscribePushResult =
   | { ok: true }
-  | { ok: false; message: string };
+  | { ok: false; message: string; unavailable?: boolean };
+
+const PUSH_UNAVAILABLE_KEY = "ss_push_unavailable";
+
+/** This browser has no push service (embedded webview). Remember for the tab. */
+export function isPushUnavailable() {
+  try {
+    return sessionStorage.getItem(PUSH_UNAVAILABLE_KEY) === "1";
+  } catch {
+    return false;
+  }
+}
+
+function markPushUnavailable() {
+  try {
+    sessionStorage.setItem(PUSH_UNAVAILABLE_KEY, "1");
+  } catch {
+    /* ignore */
+  }
+}
+
+function pushServiceMissing(error: unknown) {
+  if (!(error instanceof Error)) return false;
+  return error.name === "AbortError" || error.message.includes("push service not available");
+}
 
 /**
  * Soft-prompt flow: call AFTER the user clicks Enable (or when permission already granted — sync only).
@@ -40,8 +64,12 @@ export async function subscribeWebPush(options?: {
   /** When true, only sync if permission is already granted (no permission prompt). */
   syncOnly?: boolean;
 }): Promise<SubscribePushResult> {
-  if (!isPushSupported()) {
-    return { ok: false, message: "Push is not supported in this browser." };
+  if (!isPushSupported() || isPushUnavailable()) {
+    return {
+      ok: false,
+      unavailable: true,
+      message: "Push is not available in this browser.",
+    };
   }
 
   try {
@@ -120,6 +148,14 @@ export async function subscribeWebPush(options?: {
     }
     return { ok: true };
   } catch (error) {
+    if (pushServiceMissing(error)) {
+      markPushUnavailable();
+      return {
+        ok: false,
+        unavailable: true,
+        message: "Push is not available in this browser.",
+      };
+    }
     const detail = error instanceof Error ? error.message : "";
     return {
       ok: false,

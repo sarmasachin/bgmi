@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { usePathname } from "next/navigation";
 import { isFreeFireIndiaPath } from "@/src/lib/gamePagePath";
-import { isPushSupported, subscribeWebPush } from "@/src/lib/webPushClient";
+import { isPushSupported, isPushUnavailable, subscribeWebPush } from "@/src/lib/webPushClient";
 import styles from "./PushSoftPrompt.module.css";
 
 const STORAGE_DISMISS = "ss_push_soft_dismissed_v2";
@@ -49,7 +49,7 @@ export function PushSoftPrompt() {
   useEffect(() => {
     if (typeof window === "undefined") return;
     if (window.location.pathname.startsWith("/admin")) return;
-    if (!isPushSupported()) return;
+    if (!isPushSupported() || isPushUnavailable()) return;
 
     // Already allowed in browser but row may be missing on server (DB wipe / failed save).
     if (Notification.permission === "granted") {
@@ -58,7 +58,7 @@ export function PushSoftPrompt() {
           const result = await subscribeWebPush({ syncOnly: true });
           if (result.ok) {
             markDismissed();
-          } else {
+          } else if (!result.unavailable) {
             console.error("[push] Sync failed:", result.message);
           }
         })();
@@ -114,6 +114,7 @@ export function PushSoftPrompt() {
       markDismissed();
       return;
     }
+    if (result.unavailable) return;
     // Failed save → allow banner again next visit / refresh
     clearDismissed();
     console.error("[push] Enable failed:", result.message);

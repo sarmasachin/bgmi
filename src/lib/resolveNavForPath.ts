@@ -82,6 +82,21 @@ export const PUBG_FAMILY_NAV: NavLink[] = [
   { label: "News", href: newsCategoryListingPath("pubg") },
 ];
 
+/** Header chips on GTA 6 news — same items as the GTA 6 menu. */
+export const GTA6_FAMILY_NAV: NavLink[] = [
+  { label: "Home", href: "/gta-6-sensitivity-settings-calculator" },
+  { label: "Calculator", href: "/gta-6-sensitivity-settings-calculator#calculator" },
+  { label: "Cheats", href: "/gta-6-cheat-code" },
+  { label: "GT6 APK", href: "/gta-6-apk" },
+  { label: "News", href: newsCategoryListingPath("gta-6") },
+];
+
+function isGta6NewsPath(pathname: string): boolean {
+  const raw = typeof pathname === "string" ? pathname.trim() : "";
+  const p = raw.replace(/\/+$/, "") || "/";
+  return p === "/news/gta-6" || p.startsWith("/news/gta-6/");
+}
+
 function pathIsOrUnder(pathname: string, base: string): boolean {
   return pathname === base || pathname.startsWith(`${base}/`);
 }
@@ -263,6 +278,9 @@ function linkFamily(link: NavLink): "freefire" | "pubg" | "other" {
 export function resolveNavForPath(pathname: string, navigation: NavLink[]): NavLink[] {
   const raw = typeof pathname === "string" ? pathname.trim() : "";
   const p = raw.replace(/\/+$/, "") || "/";
+  if (isGta6NewsPath(p)) {
+    return GTA6_FAMILY_NAV;
+  }
   if (isBgmiLiteFamilyPath(p)) {
     return BGMI_LITE_NAV;
   }
@@ -311,6 +329,8 @@ export function navForCloneGame(game: string | undefined): NavLink[] | null {
       return [...PUBG_FAMILY_NAV];
     case "pubg-mobile-lite":
       return [...PUBG_MOBILE_LITE_NAV];
+    case "gta6":
+      return [...GTA6_FAMILY_NAV];
     default:
       return null;
   }
@@ -332,6 +352,10 @@ export function sideNavIdForCloneGame(game: string | undefined): string | null {
       return "pubg";
     case "pubg-mobile-lite":
       return "pubg-lite";
+    case "gta6":
+      return "gta6";
+    case "freefire-india":
+      return "free-fire-india";
     default:
       return null;
   }

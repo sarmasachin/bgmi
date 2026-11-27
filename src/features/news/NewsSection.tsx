@@ -9,6 +9,9 @@ import {
   type NewsCategorySlug,
 } from "@/src/lib/newsCategories";
 import { formatNewsPublishedAtIst, latestNewsDateValue } from "@/src/lib/formatNewsPublishedAt";
+import { clampNewsListPage, newsListTotalPages, parseNewsListPage } from "@/src/lib/newsListPage";
+import { NewsPagination } from "@/src/features/news/NewsPagination";
+import { publicImageSrc } from "@/src/lib/publicImageSrc";
 import { renameLiteNewsPost } from "@/src/lib/renameLiteDisplayNames";
 import Link from "next/link";
 
@@ -45,7 +48,7 @@ function FeaturedBlock({
   eager?: boolean;
 }) {
   return (
-    <Link href={item.href} className={`news-featured ${item.imageClass}`}>
+    <Link href={item.href} className="news-featured">
       {item.featureImage ? (
         <img
           className="news-featured-image"
@@ -53,8 +56,10 @@ function FeaturedBlock({
           alt={item.title}
           loading={eager ? "eager" : "lazy"}
         />
-      ) : null}
-      <div className="news-featured-overlay">
+      ) : (
+        <div className={`news-featured-image ${item.imageClass}`} aria-hidden />
+      )}
+      <div className="news-featured-body">
         <div className="news-meta-row">
           <span className="news-category featured">{item.category}</span>
           <span className="news-date">{item.publishedAt}</span>
@@ -109,12 +114,12 @@ function buildNewsBlocks(items: NewsCardItem[]) {
 }
 
 export async function NewsSection({ page = 1, category, heading, listBasePath }: Props) {
-  const requestedPage = Math.max(1, page);
+  const requestedPage = parseNewsListPage(page);
   const first = category
     ? await listPublishedNewsByCategory(category, requestedPage, NEWS_PAGE_SIZE)
     : await listPublishedNews(requestedPage, NEWS_PAGE_SIZE);
-  const totalPages = Math.max(1, Math.ceil(first.total / NEWS_PAGE_SIZE));
-  const currentPage = Math.min(requestedPage, totalPages);
+  const currentPage = clampNewsListPage(requestedPage, first.total, NEWS_PAGE_SIZE);
+  const totalPages = newsListTotalPages(first.total, NEWS_PAGE_SIZE);
   const result =
     currentPage === requestedPage
       ? first
@@ -137,7 +142,7 @@ export async function NewsSection({ page = 1, category, heading, listBasePath }:
       excerpt: renamed.excerpt ?? "",
       category: newsCategoryLabel(primary),
       publishedAt: formatNewsPublishedAtIst(latestNewsDateValue(renamed)),
-      featureImage: renamed.featureImage ?? "",
+      featureImage: publicImageSrc(renamed.featureImage),
       imageClass: `news-image-${(index % 5) + 1}`,
     };
   });
@@ -183,23 +188,7 @@ export async function NewsSection({ page = 1, category, heading, listBasePath }:
       })}
 
       {totalPages > 1 ? (
-        <div className="news-pagination-row">
-          {currentPage > 1 ? (
-            <Link href={currentPage === 2 ? basePath : `${basePath}?page=${currentPage - 1}`}>
-              Prev
-            </Link>
-          ) : (
-            <span aria-disabled="true">Prev</span>
-          )}
-          <span>
-            Page {currentPage} of {totalPages}
-          </span>
-          {currentPage < totalPages ? (
-            <Link href={`${basePath}?page=${currentPage + 1}`}>Next</Link>
-          ) : (
-            <span aria-disabled="true">Next</span>
-          )}
-        </div>
+        <NewsPagination currentPage={currentPage} totalPages={totalPages} basePath={basePath} />
       ) : null}
     </section>
   );

@@ -240,3 +240,27 @@ export function newsCategoryRelatedContentPath(slug: string): string | null {
   if (cat === GTA6_NEWS_CATEGORY) return "/gta-6-sensitivity-settings-calculator";
   return null;
 }
+
+/** Mobile header menu for a news category. Unknown categories keep the current page menu. */
+export function menuGameForNewsCategory(category?: string | null): string | null {
+  switch (canonicalNewsCategorySlug(category ?? "")) {
+    case "ff-max":
+      return "freefire-max";
+    case "free-fire":
+      return "freefire";
+    case "free-fire-india":
+      return "freefire-india";
+    case "bgmi":
+      return "bgmi";
+    case "bgmi-lite":
+      return "bgmi-lite";
+    case "pubg":
+      return "pubg";
+    case "pubg-mobile-lite":
+      return "pubg-mobile-lite";
+    case "gta-6":
+      return "gta6";
+    default:
+      return null;
+  }
+}

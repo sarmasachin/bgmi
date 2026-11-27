@@ -83,9 +83,14 @@ export function HomeHeaderChipNav({
   const pathMenu = resolveNavForPath(activePath, normalizedNav);
   const cloneMenu =
     detectNavGameContext(activePath) === "default" ? navForCloneGame(menuGame) : null;
-  const familyLinks = isFreeFireIndiaDesktopPath(activePath)
+  const onNews =
+    activePath === "/news" || activePath.startsWith("/news/");
+  const indiaNews = menuGame === "freefire-india" || isFreeFireIndiaDesktopPath(activePath);
+  const familyLinks = indiaNews
     ? FREE_FIRE_INDIA_CHIPS
-    : withFreeFireIndiaChip(cloneMenu ?? pathMenu);
+    : onNews || menuGame
+      ? (cloneMenu ?? pathMenu)
+      : withFreeFireIndiaChip(cloneMenu ?? pathMenu);
 
   // Mouse wheel is vertical by default — map it to horizontal chip scroll.
   useEffect(() => {

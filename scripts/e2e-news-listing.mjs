@@ -86,9 +86,12 @@ function checkNewsSectionSource() {
   assert(src.includes("news-thumb"), "card must have left thumb");
   assert(src.includes("news-content"), "card must have right content");
   assert(src.includes("news-listing-light"), "light listing class missing");
-  assert(src.includes("?page="), "pagination query missing");
-  assert(src.includes(">Prev<") || src.includes(">Prev\n") || src.includes("Prev"), "Prev link");
-  assert(src.includes("Next"), "Next link");
+  assert(src.includes("NewsPagination"), "listing must render NewsPagination");
+  const pager = read("src/features/news/NewsPagination.tsx");
+  assert(pager.includes("newsListPagePath"), "pagination links must use newsListPagePath");
+  assert(pager.includes("Back"), "Back link");
+  assert(pager.includes("Next"), "Next link");
+  assert(read("src/lib/newsListPage.ts").includes("?page="), "pagination query missing");
   assert(!src.includes("Showing "), "FAIL: Showing X–Y kicker should be removed");
   assert(!src.includes("rangeStart"), "FAIL: rangeStart leftover");
   assert(lineCount("src/features/news/NewsSection.tsx") <= 1000, "NewsSection over 1000");

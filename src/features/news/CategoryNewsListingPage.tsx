@@ -3,6 +3,8 @@ import { AdSlot } from "@/src/components/AdSlot";
 import { HomeHeader } from "@/src/components/HomeHeader";
 import { SiteFooter } from "@/src/components/SiteFooter";
 import type { Metadata } from "next";
+import { redirect } from "next/navigation";
+import { clampNewsListPage, newsListPagePath, parseNewsListPage } from "@/src/lib/newsListPage";
 import { toCanonicalUrl } from "@/src/lib/siteUrl";
 import { buildSocialMetadata } from "@/src/lib/socialMeta";
 import {
@@ -12,6 +14,7 @@ import {
   newsCategoryListingDescription,
   newsCategoryListingPath,
   newsCategoryListingTitle,
+  menuGameForNewsCategory,
   type NewsCategorySlug,
 } from "@/src/lib/newsCategories";
 import { renameLiteNewsPost } from "@/src/lib/renameLiteDisplayNames";
@@ -34,14 +37,13 @@ type Props = {
   page?: number;
 };
 
-function resolvePage(raw?: number) {
-  return Math.max(Number(raw ?? 1) || 1, 1);
-}
-
 export async function buildCategoryNewsMetadata(
   category: NewsCategorySlug,
   page = 1,
 ): Promise<Metadata> {
+  const requested = parseNewsListPage(page);
+  const listed = await listPublishedNewsByCategory(category, requested, NEWS_PAGE_SIZE);
+  const safePage = clampNewsListPage(requested, listed.total, NEWS_PAGE_SIZE);
   const [categories, catRow] = await Promise.all([
     listNewsCategories(),
     getNewsCategoryBySlug(category),
@@ -52,12 +54,9 @@ export async function buildCategoryNewsMetadata(
     categories,
     catRow?.seoDescription,
   );
-  const title = page > 1 ? `${titleBase} — Page ${page}` : titleBase;
-  const desc = page > 1 ? `Page ${page} of ${description}` : description;
-  const path =
-    page > 1
-      ? `${newsCategoryListingPath(category)}?page=${page}`
-      : newsCategoryListingPath(category);
+  const title = safePage > 1 ? `${titleBase} — Page ${safePage}` : titleBase;
+  const desc = safePage > 1 ? `Page ${safePage} of ${description}` : description;
+  const path = newsListPagePath(newsCategoryListingPath(category), safePage);
   const canonical = toCanonicalUrl(path);
   const keywords = (catRow?.seoKeywords ?? "")
     .split(",")
@@ -73,23 +72,24 @@ export async function buildCategoryNewsMetadata(
 }
 
 export async function CategoryNewsListingPage({ category, page }: Props) {
-  const currentPage = resolvePage(page);
+  const requested = parseNewsListPage(page);
   const [settings, categories, catRow, listed] = await Promise.all([
     getSettings(),
     listNewsCategories(),
     getNewsCategoryBySlug(category),
-    listPublishedNewsByCategory(category, currentPage, NEWS_PAGE_SIZE),
+    listPublishedNewsByCategory(category, requested, NEWS_PAGE_SIZE),
   ]);
+  const currentPage = clampNewsListPage(requested, listed.total, NEWS_PAGE_SIZE);
+  if (currentPage !== requested) {
+    redirect(newsListPagePath(newsCategoryListingPath(category), currentPage));
+  }
   const title = newsCategoryListingTitle(category, categories, catRow?.seoTitle);
   const description = newsCategoryListingDescription(
     category,
     categories,
     catRow?.seoDescription,
   );
-  const listPath =
-    currentPage > 1
-      ? `${newsCategoryListingPath(category)}?page=${currentPage}`
-      : newsCategoryListingPath(category);
+  const listPath = newsListPagePath(newsCategoryListingPath(category), currentPage);
   const canonical = toCanonicalUrl(listPath);
   const homeUrl = toCanonicalUrl("/");
   const newsUrl = toCanonicalUrl("/news");
@@ -135,7 +135,11 @@ export async function CategoryNewsListingPage({ category, page }: Props) {
 
   return (
     <div>
-      <HomeHeader siteTitle={settings.homeDisplay.headerTitle} navigation={settings.navigation} />
+      <HomeHeader
+        siteTitle={settings.homeDisplay.headerTitle}
+        navigation={settings.navigation}
+        menuGame={menuGameForNewsCategory(category) ?? undefined}
+      />
       <main className="page-container news-listing-page">
         <h1 className="main-title">{title}</h1>
         <AdSlot slotKey="news_list_top" />

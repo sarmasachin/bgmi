@@ -10,6 +10,7 @@ import {
   isLiteCalculatorPath,
 } from "@/src/lib/gamePagePath";
 import { newsCategoryListingPath } from "@/src/lib/newsCategories";
+import { publicImageSrc } from "@/src/lib/publicImageSrc";
 
 export const FF_NEWS_HUB_LIMIT = 5;
 
@@ -130,17 +131,19 @@ export function FfNewsHub({
         role="list"
         aria-label="Latest news stories"
       >
-        {visible.map((item) => (
+        {visible.map((item) => {
+          const imageSrc = publicImageSrc(item.featureImage);
+          return (
           <Link
             key={item.id}
             href={item.href}
             className="ff-news-hub-card"
             role="listitem"
           >
-            {item.featureImage ? (
+            {imageSrc ? (
               <img
                 className="ff-news-hub-card-image"
-                src={item.featureImage}
+                src={imageSrc}
                 alt=""
                 loading="lazy"
               />
@@ -162,7 +165,8 @@ export function FfNewsHub({
               </span>
             </span>
           </Link>
-        ))}
+          );
+        })}
       </div>
 
       <Link className="ff-news-hub-cta" href={viewAllHref}>

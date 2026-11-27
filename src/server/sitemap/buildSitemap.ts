@@ -4,6 +4,7 @@ import {
   newsCategoryListingPath,
   newsCategoryRelatedContentPath,
 } from "@/src/lib/newsCategories";
+import { publicImageSrc } from "@/src/lib/publicImageSrc";
 import { getSiteUrl, toCanonicalUrl } from "@/src/lib/siteUrl";
 import { legalSlugToSitemapPath, pickLatestDate, toSitemapLastmodIst } from "@/src/lib/sitemapLastmod";
 import { listPublishedLegalForSitemap } from "@/src/server/repositories/legalPagesRepository";
@@ -33,9 +34,9 @@ function row(baseUrl: string, path: string, lastmod: string | undefined): Sitema
 }
 
 function absoluteImage(raw?: string | null): string | undefined {
-  const trimmed = (raw ?? "").trim();
-  if (!trimmed || trimmed.startsWith("data:")) return undefined;
-  const abs = toCanonicalUrl(trimmed);
+  const src = publicImageSrc(raw);
+  if (!src) return undefined;
+  const abs = toCanonicalUrl(src);
   return abs.startsWith("http://") || abs.startsWith("https://") ? abs : undefined;
 }
 

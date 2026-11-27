@@ -8,14 +8,17 @@ import { extractNewsMeta, resolveNewsSeoDescription } from "@/src/lib/newsConten
 import { sanitizeHtml } from "@/src/lib/sanitizeHtml";
 import {
   coerceNewsCategory,
+  menuGameForNewsCategory,
+  newsArticlePath,
   newsCategoryLabel,
   newsCategoryListingPath,
 } from "@/src/lib/newsCategories";
+import { NewsMoreFromGame } from "@/src/features/news/NewsMoreFromGame";
 import "@/src/features/news/newsDetail.css";
 import { getAdPlacementVisibility } from "@/src/server/repositories/adPlacementRepository";
 import { listApprovedCommentsByNewsId } from "@/src/server/repositories/commentsRepository";
 import { listNewsCategories } from "@/src/server/repositories/newsCategoryRepository";
-import { resolveNewsCanonicalUrl } from "@/src/server/repositories/newsRepository";
+import { listPublishedNewsByCategory, resolveNewsCanonicalUrl } from "@/src/server/repositories/newsRepository";
 import { getRatingSummary } from "@/src/server/repositories/ratingSummaryRepository";
 import { getSettings } from "@/src/server/repositories/settingsRepository";
 import { getSiteUrl, toCanonicalUrl } from "@/src/lib/siteUrl";
@@ -23,6 +26,7 @@ import { breadcrumbListSchema, newsArticleSchema } from "@/src/lib/schema";
 import { ratingWidgetRemountKey } from "@/src/lib/ratingWidgetKey";
 import { buildSocialMetadata, DEFAULT_OG_IMAGE_PATH } from "@/src/lib/socialMeta";
 import { formatNewsPublishedAtIst, latestNewsDateValue } from "@/src/lib/formatNewsPublishedAt";
+import { publicImageSrc } from "@/src/lib/publicImageSrc";
 import { renameLiteNewsPost } from "@/src/lib/renameLiteDisplayNames";
 import type { Metadata } from "next";
 import Link from "next/link";
@@ -56,7 +60,7 @@ export function buildNewsDetailMetadata(item: NewsDetailItem): Metadata {
   const socialTitle = meta.socialTitle?.trim() || pageTitle;
   const socialDescription = meta.socialDescription?.trim() || description;
   const imageAlt = meta.socialImageAlt?.trim() || item.title;
-  const image = meta.ogImageUrl?.trim() || item.featureImage;
+  const image = publicImageSrc(meta.ogImageUrl) || publicImageSrc(item.featureImage);
   const keywords = (meta.keywords ?? "")
     .split(",")
     .map((part) => part.trim())
@@ -93,6 +97,7 @@ export async function NewsDetailView({ item: itemProp }: { item: NewsDetailItem 
   ) as unknown as NewsDetailItem;
   const meta = extractNewsMeta(item.content);
   const imageAlt = meta.socialImageAlt?.trim() || item.title;
+  const featureSrc = publicImageSrc(item.featureImage);
 
   const [adPlaces, settings, comments, categories, ratingSummary] = await Promise.all([
     getAdPlacementVisibility(),
@@ -106,6 +111,28 @@ export async function NewsDetailView({ item: itemProp }: { item: NewsDetailItem 
   const primary = coerceNewsCategory(item.primaryCategory, knownSlugs);
   const categoryHref = newsCategoryListingPath(primary);
   const categoryLabel = newsCategoryLabel(primary, categories);
+  const related = await listPublishedNewsByCategory(primary, 1, 6);
+  const moreNews = (related.data ?? [])
+    .filter((row) => row.id !== item.id)
+    .slice(0, 5)
+    .map((row) => {
+      const renamed = renameLiteNewsPost(row as unknown as Record<string, unknown>) as {
+        id: string;
+        title?: string;
+        slug?: string;
+        featureImage?: string | null;
+        publishedAt?: Date | string | null;
+        createdAt?: Date | string;
+        updatedAt?: Date | string;
+      };
+      return {
+        id: renamed.id,
+        href: newsArticlePath(primary, renamed.slug || renamed.id),
+        title: (renamed.title ?? "").trim() || "News",
+        date: formatNewsPublishedAtIst(latestNewsDateValue(renamed)),
+        image: publicImageSrc(renamed.featureImage),
+      };
+    });
 
   const baseUrl = getSiteUrl();
   const articleUrl = resolveNewsCanonicalUrl(item.slug, meta.canonicalUrl, primary);
@@ -127,13 +154,17 @@ export async function NewsDetailView({ item: itemProp }: { item: NewsDetailItem 
     }),
     datePublished: item.publishedAt ?? item.createdAt,
     dateModified: item.updatedAt,
-    image: meta.ogImageUrl?.trim() || item.featureImage || `${baseUrl}${DEFAULT_OG_IMAGE_PATH}`,
+    image: publicImageSrc(meta.ogImageUrl) || featureSrc || `${baseUrl}${DEFAULT_OG_IMAGE_PATH}`,
     mainEntityOfPage: articleUrl,
   });
 
   return (
     <div>
-      <HomeHeader siteTitle={settings.homeDisplay.headerTitle} navigation={settings.navigation} />
+      <HomeHeader
+        siteTitle={settings.homeDisplay.headerTitle}
+        navigation={settings.navigation}
+        menuGame={menuGameForNewsCategory(primary) ?? undefined}
+      />
       <main className="page-container news-detail-page">
         <article className="news-detail-card">
           <nav className="news-detail-breadcrumb" aria-label="Breadcrumb">
@@ -155,10 +186,10 @@ export async function NewsDetailView({ item: itemProp }: { item: NewsDetailItem 
             {formatNewsPublishedAtIst(latestNewsDateValue(item))}
           </p>
           {adPlaces.newsArticle.news_detail_top ? <AdSlot slotKey="news_detail_top" /> : null}
-          {item.featureImage ? (
+          {featureSrc ? (
             <img
               className="news-detail-hero"
-              src={item.featureImage}
+              src={featureSrc}
               alt={imageAlt}
               loading="eager"
             />
@@ -189,6 +220,11 @@ export async function NewsDetailView({ item: itemProp }: { item: NewsDetailItem 
         <ClientErrorBoundary label="Comments">
           <NewsCommentSection newsId={item.id} initialComments={comments} />
         </ClientErrorBoundary>
+        <NewsMoreFromGame
+          heading={`Latest ${categoryLabel} news`}
+          items={moreNews}
+          moreHref={categoryHref}
+        />
         {breadcrumbLd ? (
           <script
             type="application/ld+json"
