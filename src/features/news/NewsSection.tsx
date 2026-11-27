@@ -15,8 +15,9 @@ import { publicImageSrc } from "@/src/lib/publicImageSrc";
 import { renameLiteNewsPost } from "@/src/lib/renameLiteDisplayNames";
 import Link from "next/link";
 
-/** 15 per page. First story is the lead; the rest sit in one 3-column grid. */
+/** 15 per page: 1 big story, then 6 cards (two full rows of 3), then repeat. */
 const NEWS_PAGE_SIZE = 15;
+const FEATURED_EVERY = 7;
 
 type Props = {
   page?: number;
@@ -95,16 +96,20 @@ function CardBlock({ item }: { item: NewsCardItem }) {
   );
 }
 
-/** First story is the lead. Every story after it is a card in one grid. */
+/** Big story, then 6 cards, then the next big story. */
 function buildNewsBlocks(items: NewsCardItem[]) {
   const blocks: Array<
     | { type: "featured"; item: NewsCardItem }
     | { type: "cards"; items: NewsCardItem[] }
   > = [];
-  const [lead, ...rest] = items;
-  if (!lead) return blocks;
-  blocks.push({ type: "featured", item: lead });
-  if (rest.length) blocks.push({ type: "cards", items: rest });
+
+  for (let i = 0; i < items.length; i += FEATURED_EVERY) {
+    const featured = items[i];
+    if (!featured) break;
+    blocks.push({ type: "featured", item: featured });
+    const cards = items.slice(i + 1, i + FEATURED_EVERY);
+    if (cards.length) blocks.push({ type: "cards", items: cards });
+  }
   return blocks;
 }
 

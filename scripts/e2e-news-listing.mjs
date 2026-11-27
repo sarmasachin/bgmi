@@ -3,7 +3,7 @@
  * Usage: node scripts/e2e-news-listing.mjs
  *
  * Verifies:
- * - page size 15, one lead story then the rest in one card grid
+ * - page size 15, pattern 1 big + 6 cards (repeat)
  * - light listing + article white styles present
  * - breadcrumb not killed by article ol decimal CSS
  * - rating widget centered / title below stars line
@@ -33,12 +33,15 @@ function lineCount(rel) {
 }
 
 /** Mirror of NewsSection buildNewsBlocks */
-function buildNewsBlocks(items) {
+function buildNewsBlocks(items, every = 7) {
   const blocks = [];
-  const [lead, ...rest] = items;
-  if (!lead) return blocks;
-  blocks.push({ type: "featured", item: lead });
-  if (rest.length) blocks.push({ type: "cards", items: rest });
+  for (let i = 0; i < items.length; i += every) {
+    const featured = items[i];
+    if (!featured) break;
+    blocks.push({ type: "featured", item: featured });
+    const cards = items.slice(i + 1, i + every);
+    if (cards.length) blocks.push({ type: "cards", items: cards });
+  }
   return blocks;
 }
 
@@ -47,12 +50,12 @@ function checkListingPatternLogic() {
   const blocks = buildNewsBlocks(ids.map((id) => ({ id })));
   const featured = blocks.filter((b) => b.type === "featured");
   const cardBlocks = blocks.filter((b) => b.type === "cards");
-  assert(featured.length === 1, `expected 1 featured on a page, got ${featured.length}`);
-  assert(cardBlocks.length === 1, `expected 1 card grid, got ${cardBlocks.length}`);
-  assert(cardBlocks[0].items.length === 14, "the other 14 stories stay in one grid");
-  assert(featured[0].item.id === "n1", "lead is the first story");
-  assert(cardBlocks[0].items[0].id === "n2", "first card is the second story");
-  assert(cardBlocks[0].items[13].id === "n15", "last card is the 15th story");
+  assert(featured.length === 3, `expected 3 featured on a full page, got ${featured.length}`);
+  assert(cardBlocks.length === 2, `expected 2 card grids, got ${cardBlocks.length}`);
+  assert(cardBlocks.every((b) => b.items.length === 6), "each card grid must have 6 items");
+  assert(featured[0].item.id === "n1", "1st big story is item 1");
+  assert(featured[1].item.id === "n8", "2nd big story comes after 6 cards");
+  assert(featured[2].item.id === "n15", "3rd big story is the last item");
 
   const partial = buildNewsBlocks([{ id: "a" }, { id: "b" }]);
   assert(partial.length === 2, "partial: featured + 1-card grid");
@@ -66,13 +69,13 @@ function checkListingPatternLogic() {
   assert(pages === 3, "37 items → 3 pages");
   const page2Start = (2 - 1) * pageSize; // skip index
   assert(page2Start === 15, "page 2 starts at index 15 (16th item)");
-  console.log("PASS  listing pattern logic (1 lead + 14 cards) + pagination offsets");
+  console.log("PASS  listing pattern logic (1 big + 6 cards) + pagination offsets");
 }
 
 function checkNewsSectionSource() {
   const src = read("src/features/news/NewsSection.tsx");
   assert(src.includes("const NEWS_PAGE_SIZE = 15"), "NEWS_PAGE_SIZE must be 15");
-  assert(!src.includes("FEATURED_EVERY"), "card groups of 4 must not split the grid");
+  assert(src.includes("const FEATURED_EVERY = 7"), "big story must return after 6 cards");
   assert(src.includes("buildNewsBlocks"), "missing buildNewsBlocks");
   assert(src.includes("news-featured"), "missing featured markup");
   assert(src.includes("news-card"), "missing card markup");
