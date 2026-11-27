@@ -1140,7 +1140,7 @@ button {
 .news-card {
   display: flex;
   gap: 14px;
-  align-items: stretch;
+  align-items: flex-start;
   padding: 12px;
   border: 1px solid #273549;
   border-radius: 12px;
@@ -1155,17 +1155,23 @@ button {
 }
 
 .news-thumb {
-  width: 184px;
-  min-width: 184px;
-  aspect-ratio: 16 / 9;
-  border-radius: 9px;
-  background-size: cover;
+  width: 112px;
+  min-width: 112px;
+  height: 84px;
+  flex: 0 0 auto;
+  align-self: flex-start;
+  border-radius: 8px;
+  background-color: #e8edf3;
+  background-size: contain;
+  background-repeat: no-repeat;
   background-position: center;
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(15, 23, 42, 0.08);
+  object-fit: contain;
+  object-position: center;
 }
 
 .news-thumb-image {
-  object-fit: cover;
+  object-fit: contain;
 }
 
 .news-content h4 {
@@ -2087,8 +2093,9 @@ footer,
   }
 
   .news-thumb {
-    width: 118px;
-    min-width: 118px;
+    width: 84px;
+    min-width: 84px;
+    height: 64px;
   }
 
   .news-section-kicker {
