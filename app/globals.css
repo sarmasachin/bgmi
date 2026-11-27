@@ -1066,6 +1066,14 @@ button {
   background-position: center;
 }
 
+@media (min-width: 851px) {
+  .news-featured-image {
+    height: 420px;
+    max-height: 420px;
+    aspect-ratio: auto;
+  }
+}
+
 .news-featured-body {
   padding: 16px 20px 18px;
   display: flex;
@@ -1162,14 +1170,8 @@ button {
 
 .news-content h4 {
   font-size: clamp(19px, 2vw, 28px);
-  line-height: 1.18;
+  line-height: 1.25;
   margin: 7px 0 8px;
-  overflow: hidden;
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  line-clamp: 2;
-  -webkit-box-orient: vertical;
-  text-wrap: balance;
 }
 
 .news-content p {
