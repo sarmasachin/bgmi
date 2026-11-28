@@ -1,5 +1,3 @@
-/* Professional light article reader — scoped to /news/[slug] */
-
 .news-detail-page {
   padding: 28px 0 48px;
   width: 100%;
@@ -38,8 +36,8 @@
 .news-detail-page .news-detail-lead {
   margin: 0 0 18px;
   color: #334155;
-  font-size: 1.05rem;
-  line-height: 1.65;
+  font-size: 16px;
+  line-height: 1.75;
 }
 
 .news-detail-page .news-detail-hero {
@@ -54,7 +52,6 @@
   background: #e2e8f0;
 }
 
-/* Saved editor images carry width/height and object-fit:cover. Show the full picture. */
 .news-detail-page .news-detail-body img {
   display: block !important;
   width: 100% !important;
@@ -93,12 +90,16 @@
   line-height: 1.3;
 }
 
-.news-detail-page .news-detail-card p {
-  margin: 0.85em 0;
+.news-detail-page .news-detail-card p,
+.news-detail-page .news-detail-body div {
+  font-size: 16px;
   line-height: 1.75;
   color: #1f2937;
 }
 
+.news-detail-page .news-detail-card p {
+  margin: 0.85em 0;
+}
 .news-detail-page .news-detail-card i,
 .news-detail-page .news-detail-card em {
   font-style: italic;
@@ -123,10 +124,9 @@
 .news-detail-page .news-detail-card ol:not(.news-detail-breadcrumb-list) > li,
 .news-detail-page .news-detail-card ul > li {
   margin: 6px 0;
-  line-height: 1.65;
+  font-size: 16px;
+  line-height: 1.75;
 }
-
-/* Editor/paste often saves <font color="#ffffff"> — white text on white card = “hidden”. */
 .news-detail-page .news-detail-card font,
 .news-detail-page .news-detail-card font[color] {
   color: inherit !important;
