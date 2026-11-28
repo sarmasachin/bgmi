@@ -1096,11 +1096,10 @@ button {
 
 .news-featured h3 {
   margin: 0;
-  font-size: 22px;
+  font-size: 16px;
   font-weight: 700;
-  line-height: 1.35;
+  line-height: 1.45;
   color: #f8fafc;
-  text-wrap: balance;
 }
 
 .news-featured p {
@@ -1200,7 +1199,7 @@ button {
 .news-content h4 {
   font-size: 16px;
   font-weight: 700;
-  line-height: 1.35;
+  line-height: 1.45;
   margin: 6px 0 6px;
   color: #0f172a;
 }
@@ -2105,13 +2104,9 @@ footer,
     padding: 14px 14px 16px;
   }
 
-  .news-featured h3 {
-    font-size: 20px;
-    line-height: 1.35;
-  }
-
   .news-content h4 {
     font-size: 16px;
+    line-height: 1.45;
   }
 
   .news-grid {
